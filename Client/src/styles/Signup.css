@@ -1,0 +1,553 @@
+/* Signup Container */
+.signup-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Left Sidebar */
+.signup-left {
+    width: 35%;
+    background: #c93d818e;
+    display: flex;
+    align-items: center;
+    border-radius: 24px;
+    color: white;
+    padding: 20px;
+    position: relative;
+    justify-content: space-between;
+}
+
+/* Steps Indicator */
+.steps-singe {
+    display: flex;
+    flex-direction: column;
+    padding-left: 20px;
+    position: relative;
+    padding: 5rem 0;
+
+}
+
+
+/* Steps Styling */
+.step {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+
+}
+.step-text h3{
+    font-family: "Montserrat", serif;
+    font-size: 1.2rem;
+}
+.step-text p{
+    font-family: "Nunito", serif;
+    font-size: 0.8rem;
+}
+
+/* Step Circles */
+.circle-signa3, .circle-snda3 {
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 50%;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+    z-index: 1;
+}
+.circle-signa3-unto{
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid white;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+}
+
+
+.circle-signa3 svg{
+   width: 1.4rem;
+   height: 1.4rem;
+   object-fit: cover;
+   color: black;
+}
+/* Inner Dot */
+.circle-currnet-si, .circle-nnot-si {
+    width: 10px;
+    height: 10px;
+    background-color: #bd0058;
+    border-radius: 50%;
+}
+
+/* Signup Form Section */
+.signup-right {
+    width: 65%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: black;
+    position: relative;
+    flex-direction: column;
+}
+
+.last-sinin-con{
+    width: 100%;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: center;
+}
+.last-hearder-sini{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: "Nunito", serif;
+    font-size: 0.8rem;
+}
+
+.last-ssx-con-line{
+    width: 5rem;
+    height: 0.1px;
+    background-color: rgba(255, 255, 255, 0.598);
+}
+.authO2-container3d{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1rem;
+    gap: 0.5rem;
+}
+.authO2-container3d span {
+    border: 1px solid rgba(255, 250, 250, 0.646);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 5rem;
+    height: 3rem;
+    border-radius: 8px;
+    
+}
+.authO2-container3d span:hover{
+    background-color: #ffb7d12b;
+}
+
+
+.authO2-container3d span img{
+    width: 2rem;
+    height: 2rem;
+    object-fit: contain;
+}
+.have-h2dx{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Inter", serif;
+    font-size: 0.8rem;
+    margin-top: 1rem;
+}
+.have-h2dx span{
+    color: #c93d81;
+    margin-left: 0.4rem;
+}
+
+
+
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .signup-left {
+        display: none;
+    }
+   .signup-right {
+        width: 100%;
+        padding: 20px;
+    }
+
+    .signup-box {
+        width: 90%;
+    }
+
+    .signup-right {
+        align-items: start;
+
+    }
+
+    /* Signup Container */
+.signup-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  align-items: start;
+  justify-content: center;
+}
+
+}
+
+
+
+
+.signup-sidebar img{
+    width: 2.5rem;
+    height: 2.5rem;
+    object-fit: cover;
+}
+.sideup-top-sanp{
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: start;
+    gap: 1rem;
+    font-family: "Montserrat", serif;
+
+}
+.signup-footerse{
+    width: 100%;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    justify-content: start;
+    font-family: "Nunito", serif;
+    cursor: pointer;
+
+}
+
+.signup-box {
+    padding: 2rem;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    justify-content: start;
+    text-align: start;
+    transition: all 0.3s ease;
+    color: white;
+  }
+
+  .signup-box h2{
+    font-family: "Poppins", serif;
+    margin-bottom: 2rem;
+
+  }
+
+  .inputs-sign{
+    margin-top: 2rem;
+    width: 90%;
+    max-width: 400px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: start;
+  }
+
+  .password-input {
+    position: relative;
+    width: 100%;
+  }
+  
+  .password-input input {
+    width: 100%;
+    padding-right: 40px; /* Make space for the eye icon */
+  }
+  
+  .eye-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+  }
+  
+  .signup-box input, select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    outline: none;
+  }
+  .signup-box select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    background: rgb(185, 185, 185);
+    color: black;
+    outline: none;
+  }
+  
+  .signup-box input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+ .signup-box label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    font-family: "Inter", serif;
+
+  }
+  
+ .signup-box input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+  }
+  
+  @media (max-width: 600px) {
+    .signup-box {
+      width: 95%;
+      padding: 0.5rem;
+    }
+  
+
+  
+   .signup-box input, button {
+      padding: 10px;
+    }
+  }
+  .signup-iimage-preview {
+    margin-top: 10px;
+    text-align: center;
+  }
+  
+  .signup-iimage-preview img {
+    width: 100px; /* Adjust size as needed */
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
+  }
+
+  .otp-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .otp-input {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    font-size: 20px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    outline: none;
+  }
+  .email-opt-sen-signpa{
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .email-opt-sen-signpa button{
+    padding: 0.5rem 0.7rem;
+    background-color: #c93d81;
+    color: white;
+    border: 0;
+    border-radius: 7px;
+  }
+  .sign-up-page-cons2{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.4rem;
+  }
+
+  .sign-up-page-cons2 button{
+    padding: 0.5rem 0.7rem;
+    background-color: #c93d81;
+    color: white;
+    border: 0;
+    border-radius: 7px;
+  }
+  .sign-up-page-cons2 button:hover{
+    background-color: #ffb7d2;
+    color: black;
+  }
+
+  .singip-instrwe {
+    width: 100%;
+}
+
+.emojis-dign {
+    width: 100%;
+    height: 5rem;
+    display: flex;
+    gap: 7px; /* Space between child elements */
+    overflow-x: auto; /* Enable horizontal scrolling */
+    overflow-y: hidden; /* Hide vertical overflow */
+    white-space: nowrap; /* Prevent line breaks */
+    scrollbar-width: thin; /* Optional: Thin scrollbar for better UI */
+    border-radius: 4px;
+}
+/* For Webkit browsers (Chrome, Safari) */
+.emojis-dign::-webkit-scrollbar {
+    height: 6px; /* Scrollbar height */
+}
+
+.emojis-dign::-webkit-scrollbar-track {
+    background: #222; /* Dark track background */
+    border-radius: 4px;
+}
+
+.emojis-dign::-webkit-scrollbar-thumb {
+    background: #444; /* Dark grey thumb */
+    border-radius: 4px;
+}
+
+.emojis-dign::-webkit-scrollbar-thumb:hover {
+    background: #666; /* Lighter grey on hover */
+}
+
+/* For Firefox */
+.emojis-dign {
+    scrollbar-color: #444 #222; /* Thumb & Track */
+}
+
+.crete-3-box3s {
+    padding: 0.4rem 0.8rem;
+    flex-shrink: 0; /* Prevent items from shrinking */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: 5px; /* Optional rounded corners */
+    cursor: pointer;
+    font-size: 0.7rem;
+}
+
+.crete-3-box3s img {
+    width: 3rem;
+    height: 3rem;
+    object-fit: cover; /* Ensures image fits within the box */
+    border-radius: 5px;
+}
+.sign-fdwf4{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  font-family: "Nunito", serif;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.sign-fdwf4 p{
+  font-size: 0.8rem;
+  margin-left: 0.4rem;
+ color: rgba(255, 255, 255, 0.776);
+}
+
+.logsubmit-btn{
+  font-family: "Inter", serif;
+  padding: 0.8rem 1.3rem;
+  background-color: #d6659c;
+  color: white;
+  border: 0;
+  border-radius: 8px;
+}
+
+
+.signup-left video {
+  width: 153vh;
+  height: 110vh;
+  margin-left: -18.5rem;
+}
+.veriy-btn-654{
+  padding: 0.4rem 0.8rem;
+  font-family: "Inter", serif;
+  background-color: #d6659c;
+  color: white;
+  border: 0;
+  border-radius: 8px;
+
+}
+.sitmer-se3{
+  background-color: black;
+  font-family: "Inter", serif;
+color: white;
+border: 0;
+}
+
+.otp-btn-singr {
+  background-color: #d6659c;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.otp-btn-singr:disabled {
+  background-color: #b5b5b5;
+  cursor: not-allowed;
+}
+
+.loader-signin {
+  border: 3px solid #ffffff;
+  border-top: 3px solid transparent;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.sign-upbtn-se{
+  padding: 0.5rem 0.7rem;
+  background-color: #c93d81;
+  color: white;
+  border: 0;
+  border-radius: 7px;
+}
+
+.upload-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  height: 150px;
+  border: 2px dashed #ccc;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.upload-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}

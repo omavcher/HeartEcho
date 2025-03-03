@@ -1,0 +1,115 @@
+.footer-main-container{
+    width: 60%;
+    height: 10rem;
+    background-color: #ffb7d137;
+    border: 1px solid #d541887e;
+    border-radius: 18px;
+    display: flex;
+    padding: 0.5rem;
+}
+.leftc-footter-contex{
+    width: 70%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    font-family: "Montserrat", serif;
+    color: white;
+}
+.leftc-footter-contex img{
+    width: 3rem;
+    height: 3rem;
+    object-fit: cover;
+    margin-bottom: 0.4rem;
+}
+.leftc-footter-contex img:hover {
+    transform: scale(1.2); 
+    transition: transform 0.3s ease-in-out; 
+}
+
+.leftc-footter-contex h6{
+    font-size: 0.8rem;
+    margin-bottom: 0.4rem;
+}
+.leftc-footter-contex p{
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.658);
+}
+
+.right-footer-nlings{
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+}
+.right-footer-nlings span{
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+}
+
+.footer-nav-sw{
+    color: white;
+    text-decoration: none;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid white;
+    border-radius: 4px;
+    font-family: "Nunito", serif;
+    font-size: 0.7rem;
+    gap: 0.4rem;
+
+}
+.footer-nav-sw:hover{
+    background-color: #ce4085;
+    border: 1px solid #ce4085;
+}
+
+.rights-h6{
+    color: rgba(255, 255, 255, 0.388);
+    font-family: "Inter", serif;
+    margin-top: 1rem;
+    cursor: default;
+}
+.rights-h6:hover{
+    color: rgba(255, 255, 255, 0.639);
+}
+.leftr-logo{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: "Poppins", serif;
+    cursor: default;
+
+}
+.leftr-logo span{
+    font-family: "Montserrat", serif;
+    margin-left: -0.5rem;
+    font-weight: bold;
+}
+
+
+/* Responsive */
+@media (max-width: 700px) {
+    .footer-main-container{
+     flex-direction: column;
+     height: auto;
+    }
+    .leftc-footter-contex{
+     width: 100%;
+    }
+    .right-footer-nlings{
+        width: 100%;
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+    .right-footer-nlings span{
+        display: flex;
+        width: 100%;
+        justify-content: space-around;
+    }
+    .footer-main-container{
+       width: 80%;
+       border-radius: 10px;
+    }
+
+}

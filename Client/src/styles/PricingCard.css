@@ -1,0 +1,103 @@
+.pricing-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    background-color: #000;
+  }
+  
+  .card {
+    width: 300px;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    color: #000;
+    font-family: Arial, sans-serif;
+  }
+  
+  .basic {
+    background-color: #fff;
+  }
+  
+  .enterprise {
+    background-color: #ffdde1;
+    position: relative;
+  }
+  
+  .business {
+    background-color: #d4ffdc;
+  }
+  
+  .card-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  
+  .best-offer {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    color: #000;
+  }
+  
+  h2 {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+  }
+  
+  .subtitle {
+    margin: 0 0 20px 0;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .price {
+    font-size: 36px;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+  
+  .features {
+    text-align: left;
+    margin-bottom: 20px;
+  }
+  
+  .features h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+  }
+  
+  .features ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .features li {
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+  
+  .upgrade-btn {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .upgrade-btn:hover {
+    background-color: #333;
+  }
+  
+  .contact {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+  }

@@ -1,0 +1,13 @@
+
+/* 🌌 Fullscreen Dark Mode Canvas */
+.home-container {
+  width: 5vw;
+  height: 5vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: black;
+  overflow: hidden;
+  position: relative;
+}
+

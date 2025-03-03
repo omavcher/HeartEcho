@@ -1,0 +1,67 @@
+
+
+.steps-home-container-dsree{
+    position: relative;
+    width: 25rem;
+    height: 25rem;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    /* border: 1px solid #cf4185; */
+    border: 1px solid #cf41867a;
+    background-color: #ffb7d111;
+    padding: 1rem;
+    border-radius: 25px;
+    justify-content: space-between
+    ;
+}
+.steps-home-step{
+    width: 100%;
+    color: white;
+font-family: "Montserrat", serif;
+}
+.steps-home-title{
+    font-family: "Poppins", serif;
+    color: #c93e83;
+    font-size: 1.5rem;
+    margin-top: 1rem;
+}
+.steps-home-container-dsree p{
+    color: white;
+    width: 100%;
+    font-family: "Inter", serif;
+
+}
+
+.steps-home-container-dsree svg{
+    color: #c93e83;
+}
+.steps-home-image-ec{
+    width: 50%;
+    object-fit: cover;
+
+}
+@media screen and (max-width: 768px){
+    .home-seteps-showcase{
+        flex-direction: column;
+    }
+
+    .steps-home-container-dsree{
+        width: 15rem;
+        height: 15rem;
+    }
+
+    .steps-home-title{
+        font-size: 0.9rem;
+    }
+
+    .steps-home-step{
+        font-size: 0.8rem;
+
+    }
+
+    .steps-home-container-dsree p{
+        font-size: 0.6rem;
+
+}
+}

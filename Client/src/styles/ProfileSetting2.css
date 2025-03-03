@@ -1,0 +1,306 @@
+.ticket-container{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+}
+.ticket-container h2{
+  color: white;
+}
+
+  .ticket-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffffff;
+  }
+  
+  .sub-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #ffffff;
+  }
+  
+  .previous-tickets {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .ticket-list {
+    width: 80%;
+    display: flex;
+    flex-direction: row; /* Ensures tickets are in a row */
+    height: 9rem;
+    overflow-x: auto; /* Enables horizontal scrolling */
+    gap: 10px;
+    white-space: nowrap; /* Prevents wrapping */
+}
+.ticket-list::-webkit-scrollbar {
+    width: 10px; 
+    height: 10px; 
+    
+  }
+  
+.ticket-form-ticket-sectd textarea{
+  background-color: #1E1E1E;
+  border: none;
+  color: white;
+}
+  
+  
+  .ticket-card {
+    background: #2f2f2f;
+    padding: 10px;
+    border-radius: 5px;
+    height: 7rem;
+    display: flex;
+    border-left: 5px solid #cb3e83;
+    flex-direction: column;
+    color: white;
+    gap: 0.4rem;
+}
+  
+  .tstatus-yellow {
+    font-weight: bold;
+    color: #dbd403;
+  }
+  .tstatus-green {
+    font-weight: bold;
+    color: #00c20d;
+  }
+  
+  .date-tickes {
+    font-size: 12px;
+    color: #bebebe;
+  }
+  
+  .no-tickets {
+    text-align: center;
+    color: #666;
+  }
+  
+  .ticket-form-ticket-sectd {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+
+  
+  .textarea-ticket-sectd {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: none;
+    font-family: "Montserrat", serif;
+    margin-top: 1rem;
+  }
+  
+  .submit-btn-ticket-sectd {
+    margin-top: 10px;
+    padding: 10px;
+    background: #cb3e83;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .submit-btn-ticket-sectd:hover {
+    background: #9b2b54;
+  }
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  .security-page {
+    padding: 20px;
+    color: #fff;
+    min-height: 80vh;
+  }
+  
+  
+  .login-history {
+
+    margin: 20px 0;
+
+  }
+  
+  .table-wrapper {
+    overflow-x: auto; /* Allows horizontal scrolling */
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #1E1E1E;
+    color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 0.4rem;
+  }
+  
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #444;
+  }
+  
+  th {
+    background: #cb3e83;
+  }
+  .two-factor-auth h2{
+    font-size: 0.9rem;
+
+  }
+  .mini-map {
+    width: 150px;
+    height: 100px;
+    border-radius: 5px;
+  }
+  
+
+  
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    table {
+      width: 100%;
+      font-size: 14px; /* Adjust font size for smaller screens */
+    }
+  
+    th, td {
+      padding: 8px; /* Reduce padding for smaller screens */
+    }
+  
+    .mini-map {
+      width: 100px;
+      height: 70px;
+    }
+  
+    .enable-2fa {
+      padding: 8px 12px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .login-history h2 {
+      font-size: 16px; /* Smaller heading on very small screens */
+    }
+  
+    table {
+      font-size: 12px; /* Smaller font size for very small screens */
+    }
+  
+    th, td {
+      padding: 6px; /* Even smaller padding */
+    }
+  }
+  
+
+
+
+
+
+
+
+
+
+  .subscription-page {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .subscription-plans {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 50px;
+  }
+  
+  .plan-card {
+    border: 2px solid #ccc;
+    padding: 20px;
+    text-align: center;
+    width: 200px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+  }
+  
+  .plan-card:hover {
+    transform: scale(1.05);
+  }
+  
+  .plan-card h3 {
+    font-size: 24px;
+    color: #fb4b04;
+  }
+  
+  .plan-card p {
+    font-size: 18px;
+  }
+  
+  .plan-card button {
+    background-color: #fb4b04;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .plan-card button:hover {
+    background-color: #e94303;
+  }
+  
+  .subscription-details {
+    margin-top: 50px;
+  }
+  
+  .subscription-details h2 {
+    color: #fb4b04;
+  }
+  
+  .subscription-info {
+    margin: 20px 0;
+  }
+  
+  .subscription-info p {
+    font-size: 18px;
+  }
+  
+  .subscription-info ul {
+    list-style-type: none;
+    padding-left: 0;
+  }
+  
+  .subscription-info ul li {
+    background-color: #f7f7f7;
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  .subscription-info h3 {
+    font-size: 22px;
+    color: #fb4b04;
+  }
+  

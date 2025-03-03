@@ -1,0 +1,123 @@
+/* Black theme with #dc4788 accent */
+.chat-containergenrated {
+  width: 100%;
+  max-width: 600px;
+  height: 500px;
+  background: #1a1a1a;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+  font-family: Arial, sans-serif;
+  margin: 20px auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Chat Header */
+.chat-headerinergenrated {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background: #252525;
+  border-bottom: 1px solid #333;
+}
+
+.profile-pic-ainergenrated {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 10px;
+}
+
+.profile-pic-ainergenrated img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+.placeholder-img-ainergenrated {
+  width: 100%;
+  height: 100%;
+  background: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #888;
+}
+
+.profile-info-ainergenrated {
+  flex-grow: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile-info-ainergenrated h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #ffffff;
+}
+
+
+
+/* Chat Body */
+.chat-body-ainergenrated {
+  padding: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.message-ainergenrated.received-ainergenrated {
+  background: #333;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.message-ainergenrated.received-ainergenrated p {
+  margin: 5px 0;
+  color: #ddd;
+}
+
+.message-ainergenrated.received-ainergenrated strong {
+  color: #dc4788;
+}
+
+/* Chat Footer */
+.chat-footer-ainergenrated {
+  padding: 10px;
+  background: #252525;
+  border-top: 1px solid #333;
+  display: flex;
+  justify-content: center;
+}
+
+.send-btn-ainergenrated {
+  background: #dc4788;
+  color: #ffffff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  width: 100%;
+  max-width: 200px;
+  transition: background 0.3s;
+}
+
+.send-btn-ainergenrated:hover {
+  background: #b3376e;
+}
+
+/* No Character message-ainergenrated */
+.no-character-ainergenrated {
+  text-align: center;
+  color: #888;
+  padding: 20px;
+}
