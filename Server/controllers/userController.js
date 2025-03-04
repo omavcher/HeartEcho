@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");
 const User = require("../models/User");
 const AIFriend = require("../models/AIFriend");
 const Chat = require("../models/Chat");
@@ -337,22 +337,28 @@ exports.chatFriends = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Fetch AI friends using their IDs
-    const friends = await AIFriend.find({ _id: { $in: userData.ai_friends } });
+    // Fetch AI Friends from both AIFriend and PrebuiltAIFriend collections
+    const aiFriends = await AIFriend.find({ _id: { $in: userData.ai_friends } });
+    const prebuiltAIFriends = await PrebuiltAIFriend.find({ _id: { $in: userData.ai_friends } });
+
+    // Combine both AI friend lists
+    const allFriends = [...aiFriends, ...prebuiltAIFriends];
 
     // Fetch the last AI-sent message for each AI friend
     const chatDetails = await Promise.all(
-      friends.map(async (friend) => {
+      allFriends.map(async (friend) => {
         const lastMessageData = await Chat.findOne({
-          participants: userId // Make sure user is in the chat
+          participants: userId, // Ensure user is in the chat
+          "messages.sender": friend._id, // Ensure messages from this AI friend
         })
           .sort({ "messages.time": -1 }) // Get the latest message
           .select("messages") // Select only messages
           .lean();
         
+        // Get last message from either AIFriend or PrebuiltAIFriend
         const lastAIMsg = lastMessageData?.messages
-          .filter((msg) => msg.senderModel === "AIFriend")
-          .pop(); // Get last AI message
+          .filter((msg) => msg.senderModel === "AIFriend" || msg.senderModel === "PrebuiltAIFriend")
+          .pop();
 
         return {
           _id: friend._id,
@@ -381,9 +387,10 @@ exports.chatsDatas = async (req, res) => {
       return res.status(400).json({ error: "Invalid Chat ID" });
     }
 
+    // Try to find chat in `Chat` collection
     const chat = await Chat.findById(chatId)
-      .populate("participants", "name image") 
-      .populate("aiParticipants", "name avatar") 
+      .populate("participants", "name image")
+      .populate("aiParticipants", "name avatar")
       .populate({
         path: "messages",
         populate: {
@@ -392,13 +399,16 @@ exports.chatsDatas = async (req, res) => {
         },
       });
 
+    // If chat is not found, check in PrebuiltAIFriend or AIFriend
     if (!chat) {
-      const AiModelData = await AIFriend.findById(chatId);
-      return res.status(200).json(AiModelData || { error: "Chat not found" });
+      const aiModelData =
+        (await PrebuiltAIFriend.findById(chatId)) ||
+        (await AIFriend.findById(chatId));
+
+      return res.status(200).json(aiModelData || { error: "Chat not found" });
     }
 
-    const AiModelData = await AIFriend.findById(chatId);
-    res.status(200).json({ chat,  AiModelData });
+    res.status(200).json({ chat });
   } catch (error) {
     console.error("Error fetching chat data:", error.stack);
     res.status(500).json({ error: "Internal server error" });
@@ -443,5 +453,27 @@ exports.latAichatmessage = async (req, res) => {
   } catch (error) {
     console.error("Error fetching chat data:", error.stack);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+
+
+exports.getAllPreAIFriends = async (req, res) => {
+  try {
+    const allFriends = await PrebuiltAIFriend.find();
+
+    res.status(200).json({
+      success: true,
+      message: "All AI Friends retrieved successfully!",
+      data: allFriends,
+    });
+  } catch (error) {
+    console.error("Error fetching AI Friend data:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
   }
 };

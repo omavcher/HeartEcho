@@ -81,6 +81,8 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  cursor: pointer;
+  user-select: none;
 }
 
 .sent {
@@ -136,4 +138,5 @@
 .chat-input button:hover {
   background: #911b56;
 }
+
 

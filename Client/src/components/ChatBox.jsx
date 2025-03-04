@@ -3,7 +3,7 @@ import "./ChatBox.css";
 import axios from "axios";
 import api from "../config/api";
 
-const ChatBox = ({ chatId, onBackBTNSelect }) => {
+const ChatBox = ({ chatId, onBackBTNSelect ,onSendMessage  }) => {
   const [messages, setMessages] = useState([]);
   const [userProfile, setUserProfile] = useState({});
   const [newMessage, setNewMessage] = useState("");
@@ -75,6 +75,8 @@ const ChatBox = ({ chatId, onBackBTNSelect }) => {
       const newMessages = response.data.messages.filter(
         (newMsg) => !messages.some((msg) => msg.time === newMsg.time) // Assuming `time` is unique
       );
+
+      onSendMessage(); // 🔹 Trigger chat list refresh
       setMessages((prevMessages) => [
         ...prevMessages.filter((msg) => !msg.isLoading),
         ...newMessages,
@@ -132,7 +134,7 @@ const ChatBox = ({ chatId, onBackBTNSelect }) => {
           onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
           placeholder="Type a message..."
         />
-        <button onClick={handleSendMessage} disabled={!newMessage.trim()}>Send</button>
+        <button onClick={handleSendMessage}  disabled={!newMessage.trim()}>Send</button>
       </div>
     </div>
   );

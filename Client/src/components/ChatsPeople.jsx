@@ -5,7 +5,7 @@ import PopNoti from "./PopNoti";
 import axios from "axios";
 import api from "../config/api";
 
-const ChatsPeople = ({ onChatSelect, onBackBTNSelect }) => {
+const ChatsPeople = ({ onChatSelect, onBackBTNSelect ,refreshTrigger  }) => {
   const [chats, setChats] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
@@ -34,7 +34,7 @@ const ChatsPeople = ({ onChatSelect, onBackBTNSelect }) => {
     if (token) {
       getUserFriendsToChat();
     }
-  }, [token]);
+  }, [token,refreshTrigger]);
 
   // Handle search filtering safely
   const filteredChats = searchTerm
@@ -88,7 +88,7 @@ const ChatsPeople = ({ onChatSelect, onBackBTNSelect }) => {
                 <div className="chat-message">
                 <p>
   {chat.lastMessage
-    ? chat.lastMessage.split(" ").slice(0, 7).join(" ") + (chat.lastMessage.split(" ").length > 5 ? "..." : "")
+    ? chat.lastMessage.split(" ").slice(0, 4).join(" ") + (chat.lastMessage.split(" ").length > 5 ? "..." : "")
     : "No messages yet."}
 </p>
                   {chat.unreadCount > 0 && <span className="unread-count">{chat.unreadCount}</span>}

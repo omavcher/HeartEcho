@@ -13,6 +13,7 @@ import Signup from "./pages/Signup.jsx";
 import Login from "./pages/Login.jsx";
 import Subscribe from "./pages/Subscribe.jsx";
 import ProtectedRoute from "./components/ProtectedRoute"; // Import the protected route component
+import AdminPanel from "./pages/AdminPanel.jsx";
 
 function App() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024); // Default check
@@ -75,6 +76,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/admin/*" element={<AdminPanel />} />
 
 
 

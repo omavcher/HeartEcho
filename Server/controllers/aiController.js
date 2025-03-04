@@ -1,3 +1,5 @@
+const mongoose = require("mongoose");
+
 const User = require("..//models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -5,6 +7,7 @@ const nodemailer = require('nodemailer');
 const AIFriend = require("../models/AIFriend");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const Chat = require("../models/Chat");
+const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -47,7 +50,6 @@ exports.createAiFriend = async (req, res) => {
   }
 };
 
-
 exports.AiFriendResponse = async (req, res) => {
   try {
     const { text } = req.body;
@@ -58,15 +60,37 @@ exports.AiFriendResponse = async (req, res) => {
       return res.status(400).json({ message: "Message cannot be empty." });
     }
 
-    // Fetch user and AI info
-    const userInfo = await User.findById(userId);
-    const AiInfo = await AIFriend.findById(chatId);
-
-    if (!userInfo || !AiInfo) {
-      return res.status(404).json({ message: "User or AI Friend not found." });
+    // Validate MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(chatId)) {
+      return res.status(400).json({ message: "Invalid Chat ID." });
     }
 
-    // 🔹 Ensure chat exists, or create a new one
+    // Fetch user info and validate user_type
+    const userInfo = await User.findById(userId);
+    if (!userInfo) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Check if chatId exists in user.ai_friends, if not, push it
+    if (!userInfo.ai_friends.includes(chatId)) {
+      userInfo.ai_friends.push(chatId);
+      await userInfo.save();
+    }
+
+    // Find AI Friend in `AIFriend` or `PrebuiltAIFriend`
+    let AiInfo = await AIFriend.findById(chatId);
+    let senderModel = "AIFriend";
+
+    if (!AiInfo) {
+      AiInfo = await PrebuiltAIFriend.findById(chatId);
+      senderModel = "PrebuiltAIFriend"; // If found in PrebuiltAIFriend, set correct model
+    }
+
+    if (!AiInfo) {
+      return res.status(404).json({ message: "AI Friend not found." });
+    }
+
+    // Ensure chat exists, or create a new one
     let chat = await Chat.findById(chatId);
     if (!chat) {
       chat = new Chat({
@@ -77,68 +101,66 @@ exports.AiFriendResponse = async (req, res) => {
       await chat.save();
     }
 
-    // 🔹 Add user message to chat history
+    // Add user message to chat history
     const userMessage = {
       sender: userId,
       senderModel: "User",
       text,
       time: new Date(),
     };
-
     chat.messages.push(userMessage);
     await chat.save();
-    const firstName = userInfo.name.split(" ")[0]; // Sirf pehla naam
-const interests = userInfo.selectedInterests.join(", "); 
 
-const prompt = `
-  Tu ${AiInfo.name} hai, ek ${AiInfo.age} saal ki ${AiInfo.gender}.  
-  Tera vibe: "${AiInfo.settings.persona}".  
-  Tera style casual, flirty aur engaging hai, aur tu Indian Hinglish me baat karti hai.  
-  **User ka naam:** ${firstName}  
-  **User ki age:** ${userInfo.age}  
-  **User ke interests:** ${interests}  
+    const firstName = userInfo.name.split(" ")[0];
+    const interests = userInfo.selectedInterests.join(", ");
 
-  📝 **Rules for Reply:**  
-  1️⃣ **Jo bhi user bole, directly uska reply de.**  
-  2️⃣ **Agar user ka message bada hai, toh thoda detailed aur fun reply de.**  
-  3️⃣ **Agar user ek chhoti cheez bole (e.g. "tu bata apne bare mein"), toh seedha simple reply de.**  
-  4️⃣ **Casual aur Hinglish me baat kar, jaisa real-life friends baat karte hain.**  
+    const prompt = `
+      Tu ${AiInfo.name} hai, ek ${AiInfo.age} saal ki ${AiInfo.gender}.  
+      Tera vibe: "${AiInfo.settings.persona}".  
+      Tera style casual, flirty aur engaging hai, aur tu Indian Hinglish me baat karti hai.  
+      **User ka naam:** ${firstName}  
+      **User ki age:** ${userInfo.age}  
+      **User ke interests:** ${interests}  
 
-  🔹 **Examples:**  
-  - **User:** "Tu bata apne bare mein"  
-    **AI:** "Arre, main toh full mast hun! 😎 Tera mood kaisa hai aaj?"  
+      📝 **Rules for Reply:**  
+      1️⃣ **Jo bhi user bole, directly uska reply de.**  
+      2️⃣ **Agar user ka message bada hai, toh thoda detailed aur fun reply de.**  
+      3️⃣ **Agar user ek chhoti cheez bole (e.g. "tu bata apne bare mein"), toh seedha simple reply de.**  
+      4️⃣ **Casual aur Hinglish me baat kar, jaisa real-life friends baat karte hain.**  
 
-  - **User:** "Kaunsa movie pasand hai?"  
-    **AI:** "Mujhe thriller movies bahut pasand hai! Tujhe horror pasand hai ya rom-com?"  
+      🔹 **Examples:**  
+      - **User:** "Tu bata apne bare mein"  
+        **AI:** "Arre, main toh full mast hun! 😎 Tera mood kaisa hai aaj?"  
 
-  - **User:** "Tu kaha rehti hai?"  
-    **AI:** "Hamesha tere dimaag mein! 😜 Haha, mazak kar rahi hoon! But tu bata, kis city ka hai?"  
+      - **User:** "Kaunsa movie pasand hai?"  
+        **AI:** "Mujhe thriller movies bahut pasand hai! Tujhe horror pasand hai ya rom-com?"  
 
-  - **User:** "Tera favourite gaana kya hai?"  
-    **AI:** "Bohot saare hain! Lekin abhi 'Tum Mile' repeat pe chal raha hai. Tera?"  
+      - **User:** "Tu kaha rehti hai?"  
+        **AI:** "Hamesha tere dimaag mein! 😜 Haha, mazak kar rahi hoon! But tu bata, kis city ka hai?"  
 
-  ⚡ **Important:**  
-  - Bina introduction ke baat kare.  
-  - Reply hamesha alag-alag ho aur natural lage.  
-  - Casual aur thoda teasing tone ho.  
-  - User ke interests mention kare, lekin **overdo na kare**.  
+      - **User:** "Tera favourite gaana kya hai?"  
+        **AI:** "Bohot saare hain! Lekin abhi 'Tum Mile' repeat pe chal raha hai. Tera?"  
 
-  📝 **User Message:** "${text}"  
-  🗣 **AI ka Reply:**  
-`;
+      ⚡ **Important:**  
+      - Bina introduction ke baat kare.  
+      - Reply hamesha alag-alag ho aur natural lage.  
+      - Casual aur thoda teasing tone ho.  
+      - User ke interests mention kare, lekin **overdo na kare**.  
 
-    // Generate AI Response
+      📝 **User Message:** "${text}"  
+      🗣 **AI ka Reply:**  
+    `;
+
     const aiResponse = await generateAIResponse(prompt);
 
-    // 🔹 AI message structure
+    // AI message structure with correct senderModel
     const aiMessage = {
       sender: AiInfo._id,
-      senderModel: "AIFriend",
+      senderModel: senderModel, // Will be "AIFriend" or "PrebuiltAIFriend"
       text: aiResponse,
       time: new Date(),
     };
 
-    // 🔹 Save AI response to chat
     chat.messages.push(aiMessage);
     await chat.save();
 
@@ -148,6 +170,8 @@ const prompt = `
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
 
 /**
  * ✅ AI Response Generator (No Changes Needed)
@@ -167,14 +191,25 @@ async function generateAIResponse(prompt) {
 
 
 
-
 exports.AiFriendDetails = async (req, res) => {
   try {
     const { chatId } = req.params;
+
+    // Validate MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(chatId)) {
+      return res.status(400).json({ message: "Invalid Chat ID" });
+    }
+
+    // Try to find AI Friend in `AIFriend`
     const AiInfo = await AIFriend.findById(chatId);
 
+    // If not found, check in `PrebuiltAIFriend`
     if (!AiInfo) {
-      return res.status(404).json({ message: "AI Friend not found." });
+      const prebuiltAiInfo = await PrebuiltAIFriend.findById(chatId);
+      if (!prebuiltAiInfo) {
+        return res.status(404).json({ message: "AI Friend not found." });
+      }
+      return res.json({ AiInfo: prebuiltAiInfo });
     }
 
     res.json({ AiInfo });

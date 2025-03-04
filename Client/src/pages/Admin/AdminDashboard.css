@@ -1,0 +1,316 @@
+/* === Global Styles === */
+.dashboard-container-admin-con {
+    background: black;
+    min-height: 100vh;
+    padding: 30px 5%;
+    font-family: "Poppins", sans-serif;
+    color: #e0e0e0;
+  }
+  
+  /* === header-dashboard-admin === */
+  .header-dashboard-admin {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 10px 0;
+    border-bottom: 1px solid #2d2d2d;
+  }
+  
+  .dashboard-title-dashboard-admin {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #fff;
+    flex-grow: 1;
+  }
+  
+  .header-dashboard-admin-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+  
+  .refresh-button-dashboard-admin,
+  .time-period-select-dashboard-admin,
+  .notifications-button-dashboard-admin {
+    background: #2d2d2d;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #e0e0e0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background 0.3s ease-in-out, transform 0.3s ease-in-out;
+  }
+  
+  .refresh-button-dashboard-admin:hover,
+  .time-period-select-dashboard-admin:hover,
+  .notifications-button-dashboard-admin:hover {
+    background: #3d3d3d;
+    transform: translateY(-2px);
+  }
+  
+  .refresh-button-dashboard-admin svg,
+  .notifications-button-dashboard-admin svg {
+    margin-right: 8px;
+  }
+  
+  .time-period-select-dashboard-admin {
+    padding: 10px;
+    appearance: none;
+    background: #2d2d2d url('data:image/svg+xml;utf8,<svg fill="%23e0e0e0" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 10px center;
+    background-size: 20px;
+  }
+  
+  .notifications-button-dashboard-admin {
+    position: relative;
+    padding: 10px 15px;
+  }
+  
+  .notification-count-dashboard-admin {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff4b5c;
+    color: #fff;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+  }
+  
+  /* === Notifications Panel === */
+  .notifications-panel-dashboard-admin {
+    background: #1e1e1e;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    margin-bottom: 30px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .notifications-panel-dashboard-admin h3 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 15px;
+  }
+  
+  .notifications-list-dashboard-admin {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .notification-item-dashboard-admin {
+    background: #2d2d2d;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: background 0.3s ease-in-out;
+  }
+  
+  .notification-item-dashboard-admin:hover {
+    background: #3d3d3d;
+  }
+  
+  .notification-time-dashboard-admin {
+    color: #a0a0a0;
+    font-size: 0.9rem;
+    margin-left: 10px;
+  }
+  
+  /* === Stats Grid Layout === */
+  .stats-grid-admin {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    margin-bottom: 30px;
+  }
+  
+  /* === Stat Card Styling === */
+  .stat-card-admin {
+    background: #1e1e1e;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    transition: transform 0.3s ease-in-out, background 0.3s ease-in-out;
+  }
+  
+  .stat-card-admin:hover {
+    transform: translateY(-5px);
+    background: #252525;
+  }
+  
+  .stat-card-admin .icon {
+    font-size: 2.5rem;
+    margin-right: 15px;
+    color: #cf4185;
+  }
+  
+  .stat-card-admin.users .icon { color: #cf4185; }
+  .stat-card-admin.active-users .icon { color: #00c49f; }
+  .stat-card-admin.messages .icon { color: #4a90e2; }
+  .stat-card-admin.revenue .icon { color: #ffcc00; }
+  
+  .stat-content-admin h3 {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 5px;
+  }
+  
+  .stat-content-admin p {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ffcc00;
+  }
+  
+  /* === Charts Grid Layout === */
+  .charts-grid-admin {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  /* === Chart Card Styling === */
+  .chart-card-admind {
+    background: #1e1e1e;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease-in-out, background 0.3s ease-in-out;
+  }
+  
+  .chart-card-admind:hover {
+    transform: scale(1.02);
+    background: #252525;
+  }
+  
+  .chart-card-admind h3 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  
+  /* === Responsive Adjustments === */
+  @media (max-width: 1024px) {
+    .stats-grid-admin,
+    .charts-grid-admin {
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+  
+    .dashboard-title-dashboard-admin {
+      font-size: 2rem;
+    }
+  
+    .refresh-button-dashboard-admin,
+    .time-period-select-dashboard-admin,
+    .notifications-button-dashboard-admin {
+      font-size: 0.9rem;
+      padding: 8px 16px;
+    }
+  
+    .notifications-panel-dashboard-admin {
+      max-height: 150px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .header-dashboard-admin{
+        flex-direction: column;
+    }
+
+    .chart-card{
+        flex-direction: column;
+    }
+    .stats-grid-admin,
+    .charts-grid-admin {
+      grid-template-columns: 1fr;
+    }
+  
+    .dashboard-container-admin-con {
+      padding: 20px 3%;
+    }
+  
+    .dashboard-title-dashboard-admin {
+      font-size: 1.8rem;
+    }
+  
+    .header-dashboard-admin-actions {
+        align-items: center;
+      gap: 10px;
+    }
+  
+    .refresh-button-dashboard-admin,
+    .time-period-select-dashboard-admin,
+    .notifications-button-dashboard-admin {
+      font-size: 0.8rem;
+      padding: 6px 12px;
+    }
+  
+    .stat-card-admin .icon {
+      font-size: 2rem;
+    }
+  
+    .stat-content-admin h3 {
+      font-size: 1.1rem;
+    }
+  
+    .stat-content-admin p {
+      font-size: 1.5rem;
+    }
+  
+    .chart-card-admind h3 {
+      font-size: 1.2rem;
+    }
+  
+    .notifications-panel-dashboard-admin {
+      max-height: 120px;
+    }
+  }
+
+/* === Loading and Error States === */
+.dash-loading, .dash-error {
+  text-align: center;
+  font-size: 1.5rem;
+  color: #fff;
+  padding: 20px;
+  background: #1e1e1e;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  margin: 20px 0;
+}
+
+.dash-error {
+  color: #ff4b5c;
+}
+
+.dash-retry-button {
+  background: #4a90e2;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  color: #e0e0e0;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: background 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.dash-retry-button:hover {
+  background: #357abd;
+  transform: translateY(-2px);
+}

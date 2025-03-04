@@ -12,9 +12,9 @@ function ChatPage() {
     const aiChatId = queryParams.get("chatId"); // Get AI Chat ID from URL
 
     const [selectedChatId, setSelectedChatId] = useState(aiChatId || null); // Default select AI Chat ID
+    const [refreshChats, setRefreshChats] = useState(false); // 🔹 Refresh state
 
 
-    console.log(selectedChatId)
 
     useEffect(() => {
         if (aiChatId) {
@@ -42,7 +42,7 @@ function ChatPage() {
                 ${chatBackBTN === false ? '' : 'show-message-main-send-minidxxdex'}
                 ${windowWidth > 550 && chatBackBTN === true ? 'big-smid3' : ''}
             `}>
-                <ChatsPeople onBackBTNSelect={handleChatBackBTN} onChatSelect={handleChatSelection} />
+                <ChatsPeople onBackBTNSelect={handleChatBackBTN} onChatSelect={handleChatSelection} refreshTrigger={refreshChats} />
             </div>
 
             <div className={`main-chat-container-c6 
@@ -52,7 +52,7 @@ function ChatPage() {
                 ${windowWidth > 550 && chatBackBTN === true ? 'big-srgsdf' : ''}
             `}>
                 {selectedChatId ? (
-                    <ChatBox onBackBTNSelect={handleChatBackBTN} chatId={selectedChatId} />
+                    <ChatBox onBackBTNSelect={handleChatBackBTN} chatId={selectedChatId} onSendMessage={() => setRefreshChats(prev => !prev)}/>
                 ) : (
                     <div className="main-start-char-cone0">
                         <i className="ri-chat-thread-line"></i>

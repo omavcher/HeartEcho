@@ -74,8 +74,3 @@ font-family: "Inter", serif;
   background: #666; /* Slightly lighter on hover */
 }
 
-.admin-app-container{
-  width: 100vw;
-  height: 100vh;
-  background-color: #ce4085;
-}

@@ -1,0 +1,316 @@
+/* === Global Styles === */
+.dex-container {
+    width: 100%;
+    min-height: 100vh;
+    padding: 30px 5%;
+    font-family: "Poppins", sans-serif;
+    color: #e0e0e0;
+  }
+  
+  /* === Header === */
+  .dex-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 10px 0;
+    border-bottom: 1px solid #2d2d2d;
+  }
+  
+  .dex-title {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #fff;
+    flex-grow: 1;
+  }
+  
+  .dex-header-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+  
+  .dex-search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .dex-search-icon {
+    position: absolute;
+    left: 10px;
+    color: #a0a0a0;
+    font-size: 1rem;
+  }
+  
+  .dex-search-input {
+    padding: 10px 10px 10px 30px;
+    border: none;
+    border-radius: 8px;
+    background: #2d2d2d;
+    color: #e0e0e0;
+    font-size: 1rem;
+    width: 200px;
+    transition: background 0.3s ease-in-out;
+  }
+  
+  .dex-search-input:focus {
+    outline: none;
+    background: #3d3d3d;
+  }
+  
+  .dex-filter-select {
+    background: #2d2d2d;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #e0e0e0;
+    cursor: pointer;
+    appearance: none;
+    background: #2d2d2d url('data:image/svg+xml;utf8,<svg fill="%23e0e0e0" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 10px center;
+    background-size: 20px;
+    transition: background 0.3s ease-in-out;
+  }
+  
+  .dex-filter-select:hover {
+    background: #3d3d3d;
+  }
+  
+  /* === Content Grid Layout === */
+  .dex-content-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  .dex-charts-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  /* === Charts Card Styling === */
+  .dex-chart-card {
+    background: #1e1e1e;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease-in-out, background 0.3s ease-in-out;
+  }
+  
+  .dex-chart-card:hover {
+    transform: scale(1.02);
+    background: #252525;
+  }
+  
+  .dex-chart-card h3 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 15px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  /* === Users Section === */
+  .dex-users-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* === Users Grid Layout === */
+  .dex-users-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  /* === User Card Styling === */
+  .dex-user-card {
+    background: #1e1e1e;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: flex-start;
+    transition: transform 0.3s ease-in-out, background 0.3s ease-in-out;
+  }
+  
+  .dex-user-card:hover {
+    transform: translateY(-5px);
+    background: #252525;
+  }
+  
+  .dex-user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+    object-fit: cover;
+  }
+  
+  .dex-user-content {
+    flex-grow: 1;
+  }
+  
+  .dex-user-content h3 {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 5px;
+  }
+  
+  .dex-user-content p {
+    font-size: 0.9rem;
+    color: #a0a0a0;
+    margin-bottom: 5px;
+  }
+  
+  .dex-user-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  .dex-action-button {
+    background: #2d2d2d;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    color: #e0e0e0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background 0.3s ease-in-out, transform 0.3s ease-in-out;
+  }
+  
+  .dex-action-button:hover {
+    transform: translateY(-2px);
+    background: #3d3d3d;
+  }
+  
+  .dex-action-button.dex-edit { color: #4a90e2; }
+  .dex-action-button.dex-delete { color: #ff4b5c; }
+  .dex-action-button.dex-upgrade { color: #ffcc00; }
+  
+  .dex-action-button svg {
+    margin-right: 5px;
+  }
+  
+  /* === Pagination === */
+  .dex-pagination {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .dex-pagination-button {
+    background: #2d2d2d;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    color: #e0e0e0;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out, transform 0.3s ease-in-out;
+  }
+  
+  .dex-pagination-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    background: #3d3d3d;
+  }
+  
+  .dex-pagination-button:disabled {
+    background: #1e1e1e;
+    color: #666;
+    cursor: not-allowed;
+  }
+  
+  .dex-pagination-button.dex-active {
+    background: #cf4185;
+    color: #fff;
+  }
+  
+  /* === Responsive Adjustments === */
+  @media (max-width: 1024px) {
+    .dex-content-grid,
+    .dex-charts-grid,
+    .dex-users-grid {
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+  
+    .dex-title {
+      font-size: 2rem;
+    }
+  
+    .dex-search-input {
+      width: 150px;
+    }
+  
+    .dex-action-button,
+    .dex-pagination-button {
+      font-size: 0.8rem;
+      padding: 6px 12px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .dex-content-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .dex-charts-grid,
+    .dex-users-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .dex-container {
+      padding: 20px 3%;
+    }
+  
+    .dex-title {
+      font-size: 1.8rem;
+    }
+  
+    .dex-header-actions {
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-end;
+    }
+  
+    .dex-search-input {
+      width: 120px;
+    }
+  
+    .dex-filter-select,
+    .dex-action-button,
+    .dex-pagination-button {
+      font-size: 0.8rem;
+      padding: 6px 12px;
+    }
+  
+    .dex-user-card {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+  
+    .dex-user-avatar {
+      margin-right: 0;
+      margin-bottom: 15px;
+    }
+  
+    .dex-user-actions {
+      justify-content: center;
+    }
+  }

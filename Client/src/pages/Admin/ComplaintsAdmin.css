@@ -1,0 +1,306 @@
+/* === Global Styles === */
+.cmp-container {
+    background: #0f0f0f; /* Slightly darker background for a premium look */
+    min-height: 100vh;
+    padding: 40px 6%;
+    font-family: "Poppins", sans-serif;
+    color: #e0e0e0;
+  }
+  
+  /* === Header === */
+  .cmp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    padding: 15px 0;
+    border-bottom: 2px solid #2d2d2d; /* Thicker, more defined border */
+  }
+  
+  .cmp-title {
+    text-align: center;
+    font-size: 3rem; /* Larger title for impact */
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #ffffff; /* Bright white for contrast */
+    flex-grow: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Subtle shadow for depth */
+  }
+  
+  /* === Header Actions === */
+  .cmp-header-actions {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+  
+  .cmp-search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 300px; /* Wider search input for better usability */
+  }
+  
+  .cmp-search-icon {
+    position: absolute;
+    left: 12px;
+    color: #a0a0a0;
+    font-size: 1.2rem;
+  }
+  
+  .cmp-search-input {
+    padding: 12px 12px 12px 40px; /* More padding for a spacious feel */
+    border: none;
+    border-radius: 12px; /* Larger radius for a softer look */
+    background: #2d2d2d;
+    color: #e0e0e0;
+    font-size: 1.1rem;
+    width: 100%;
+    transition: background 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+  }
+  
+  .cmp-search-input:focus {
+    outline: none;
+    background: #3d3d3d;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); /* Enhanced focus shadow */
+  }
+  
+  .cmp-filter-select {
+    background: #2d2d2d;
+    border: none;
+    border-radius: 12px; /* Larger radius for consistency */
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    color: #e0e0e0;
+    cursor: pointer;
+    appearance: none;
+    background: #2d2d2d url('data:image/svg+xml;utf8,<svg fill="%23e0e0e0" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 15px center;
+    background-size: 20px;
+    transition: background 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+  }
+  
+  .cmp-filter-select:hover {
+    background: #3d3d3d;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); /* Enhanced hover shadow */
+  }
+  
+  /* === Content Grid Layout === */
+  .cmp-content-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  /* === Tickets Section === */
+  .cmp-tickets-section {
+    background: #1e1e1e;
+    border-radius: 16px; /* Larger radius for a modern look */
+    padding: 25px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4); /* Deeper shadow for depth */
+    transition: transform 0.4s ease-in-out, background 0.4s ease-in-out;
+    border: 1px solid #333; /* Subtle border for definition */
+  }
+  
+  .cmp-tickets-section:hover {
+    transform: translateY(-8px); /* More pronounced lift on hover */
+    background: #252525;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5); /* Enhanced shadow on hover */
+  }
+  
+  /* === Tickets Grid Layout === */
+  .cmp-tickets-grid {
+    display: grid;
+    gap: 25px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Slightly wider cards */
+  }
+  
+  /* === Ticket Card Styling === */
+  .cmp-ticket-card {
+    background: #1e1e1e;
+    border-radius: 16px; /* Larger radius for a softer look */
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.4s ease-in-out, background 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+    border: 1px solid #333; /* Subtle border for definition */
+  }
+  
+  .cmp-ticket-card:hover {
+    transform: translateY(-6px); /* Smoother, more subtle lift */
+    background: #252525;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4); /* Enhanced shadow on hover */
+  }
+  
+  .cmp-ticket-content {
+    flex-grow: 1;
+  }
+  
+  .cmp-ticket-content h3 {
+    font-size: 1.5rem; /* Larger, bolder issue titles */
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 10px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); /* Subtle text shadow */
+  }
+  
+  .cmp-ticket-content p {
+    font-size: 1rem; /* Slightly larger text for readability */
+    color: #b0b0b0; /* Lighter gray for better contrast */
+    margin-bottom: 8px;
+    line-height: 1.5; /* Improved readability */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Subtle text shadow */
+  }
+  
+  .cmp-status {
+    margin-left: 10px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  
+  .cmp-status.pending {
+    background: #ff4b5c;
+    color: #ffffff;
+  }
+  
+  .cmp-status.resolved {
+    background: #00c49f;
+    color: #ffffff;
+  }
+  
+  /* === Ticket Actions === */
+  .cmp-ticket-actions {
+    display: flex;
+    gap: 15px; /* More spacing between buttons */
+    margin-top: 15px;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  }
+  
+  .cmp-action-button {
+    background: #2d2d2d;
+    border: none;
+    border-radius: 12px; /* Larger radius for a softer look */
+    padding: 10px 18px; /* More padding for a spacious feel */
+    font-size: 1rem; /* Larger text for buttons */
+    color: #e0e0e0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background 0.4s ease-in-out, transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for buttons */
+  }
+  
+  .cmp-action-button:hover {
+    transform: translateY(-4px); /* Smoother, more pronounced lift */
+    background: #3d3d3d;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+  }
+  
+  .cmp-action-button.cmp-edit { color: #4a90e2; }
+  .cmp-action-button.cmp-delete { color: #ff4b5c; }
+  .cmp-action-button.cmp-toggle { color: #00c49f; }
+  
+  .cmp-action-button svg {
+    margin-right: 8px; /* More spacing between icon and text */
+    font-size: 1.1rem; /* Larger icons for better visibility */
+  }
+  
+  /* === Pagination === */
+  .cmp-pagination {
+    display: flex;
+    gap: 15px; /* More spacing between pagination buttons */
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .cmp-pagination-button {
+    background: #2d2d2d;
+    border: none;
+    border-radius: 12px; /* Larger radius for consistency */
+    padding: 10px 18px; /* More padding for a spacious feel */
+    font-size: 1rem; /* Larger text for buttons */
+    color: #e0e0e0;
+    cursor: pointer;
+    transition: background 0.4s ease-in-out, transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for buttons */
+  }
+  
+  .cmp-pagination-button:hover:not(:disabled) {
+    transform: translateY(-4px); /* Smoother lift */
+    background: #3d3d3d;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+  }
+  
+  .cmp-pagination-button:disabled {
+    background: #1e1e1e;
+    color: #666;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  
+  .cmp-pagination-button.cmp-active {
+    background: #4a90e2; /* Distinct color for active page */
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4); /* Enhanced shadow for active state */
+  }
+  
+  /* === Responsive Adjustments === */
+  @media (max-width: 1024px) {
+    .cmp-content-grid,
+    .cmp-tickets-grid {
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+  
+    .cmp-title {
+      font-size: 2.5rem;
+    }
+  
+    .cmp-search-input,
+    .cmp-filter-select {
+      width: 250px;
+    }
+  
+    .cmp-action-button,
+    .cmp-pagination-button {
+      font-size: 0.9rem;
+      padding: 8px 16px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .cmp-content-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .cmp-tickets-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .cmp-container {
+      padding: 25px 4%;
+    }
+  
+    .cmp-title {
+      font-size: 2rem;
+    }
+  
+    .cmp-header-actions {
+      flex-direction: column;
+      gap: 15px;
+      align-items: flex-end;
+    }
+  
+    .cmp-search-input,
+    .cmp-filter-select {
+      width: 200px;
+    }
+  
+    .cmp-action-button,
+    .cmp-pagination-button {
+      font-size: 0.9rem;
+      padding: 8px 14px;
+    }
+  }

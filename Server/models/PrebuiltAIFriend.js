@@ -4,7 +4,7 @@ const prebuiltAIFriendSchema = new mongoose.Schema({
   gender: { type: String, enum: ["male", "female", "other"], required: true },
   relationship: { type: String, required: true },
   interests: [{ type: String }],
-  age: { type: String, enum: ["Teen", "Young", "Mature", "Old"], required: true },
+  age: { type: Number , required: true },
   name: { type: String, required: true },
   description: { type: String },
   settings: { type: Object },

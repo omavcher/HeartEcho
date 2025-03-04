@@ -18,5 +18,6 @@ router.post("/twofactor", authMiddleware, controller.twoFactor );
 router.get("/user-type", authMiddleware, controller.userType );
 router.get("/chat-friends", authMiddleware, controller.chatFriends );
 router.get("/chats/:chatId", authMiddleware, controller.chatsDatas );
+router.get("/get-pre-ai", controller.getAllPreAIFriends );
 
 module.exports = router;
