@@ -121,8 +121,8 @@ const [locationUser , setLocationUser] = useState(null);
           <img src='/heartechor.png' alt='HeartEcho' style={{ width: '4rem' }} />
           <h2>HeartEcho</h2>
         </span>
-        <p className='signup-footerse' style={{ position: 'absolute', bottom: '20%' }}>
-          © {new Date().getFullYear()} HeartEcho AI <br /> omawchar07@gmail.com
+        <p className='signup-footerse' style={{ position: 'absolute', bottom: '20%',textAlign:'start' }}>
+          © {new Date().getFullYear()} HeartEcho AI <br /> omawcharbusiness123@gmail.com
         </p>
       </div>
 

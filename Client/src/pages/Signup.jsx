@@ -404,7 +404,7 @@ const uploadToCloudinary = async (file) => {
 
 
 
-          <p className='signup-footerse'>© {new Date().getFullYear()} HeartEcho AI <br /> omawchar07@gmail.com</p>
+          <p className='signup-footerse'>© {new Date().getFullYear()} HeartEcho AI <br /> omawcharbusiness123@gmail.com</p>
         </div>
       </div>
       <div className='signup-right'>

@@ -22,7 +22,7 @@ exports.getProfile = async (req, res) => {
     }
   };
   
- exports.verifyUser = async (req, res) => {
+  exports.verifyUser = async (req, res) => {
     try {
         if (!req.user || !req.user.id) {
             return res.status(400).json({ status: false, message: "User ID not found" });
@@ -30,7 +30,7 @@ exports.getProfile = async (req, res) => {
 
         const user = await User.findById(req.user.id);
         if (user) {
-            res.json({ status: true });
+            res.json({ status: true, email: user.email });
         } else {
             res.json({ status: false });
         }
@@ -38,6 +38,7 @@ exports.getProfile = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 
 exports.updateProfile = async (req, res) => {

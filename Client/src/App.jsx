@@ -83,15 +83,21 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/admin/*" element={<AdminPanel />} />
             <Route path="/terms" element={<Terms />} />
         <Route path="/refund" element={<Refund />} />
         <Route path="/shipping" element={<Shipping />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/products" element={<Products />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/thank-you" element={<ThankYou />} />
 
+        <Route
+  path="/admin/*"
+  element={
+    <ProtectedRoute adminOnly={true}>
+      <AdminPanel />
+    </ProtectedRoute>
+  }
+/>
 
 
 {/* 🔒 Protected Routes */}
@@ -126,6 +132,14 @@ function App() {
     element={
       <ProtectedRoute>
         <Subscribe />
+      </ProtectedRoute>
+    }
+  />
+  <Route
+    path="/thank-you"
+    element={
+      <ProtectedRoute>
+        <ThankYou />
       </ProtectedRoute>
     }
   />
