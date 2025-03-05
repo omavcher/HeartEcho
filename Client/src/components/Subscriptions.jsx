@@ -50,7 +50,7 @@ const Subscriptions = () => {
     }
   
     const options = {
-      key: 'rzp_test_y6rhmgP580s3Yc', 
+      key: 'rzp_live_YHUPR56Ky9qPxC', 
       amount: amount * 100, 
       currency: 'INR',
       name: 'HeartEcho',
@@ -84,7 +84,7 @@ setNotification({ show: true, message: "Payment Successful! You are now a Premiu
         email: userData?.email || 'user@example.com',
         contact: userData?.phone_number || '9999999999'
       },
-      theme: { color: '#FB4B04' }
+      theme: { color: '#ce4085' }
     };
   
     const rzp = new window.Razorpay(options);

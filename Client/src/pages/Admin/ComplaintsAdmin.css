@@ -304,3 +304,60 @@
       padding: 8px 14px;
     }
   }
+
+  /* Modal Styles */
+.cmp-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.cmp-modal-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.cmp-modal-content h3 {
+  margin-bottom: 15px;
+}
+
+.cmp-modal-content label {
+  display: block;
+  margin: 10px 0 5px;
+}
+
+.cmp-modal-content input,
+.cmp-modal-content select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.cmp-modal-content div {
+  margin-top: 15px;
+  text-align: right;
+}
+
+.cmp-action-button.cmp-save {
+  background: #007bff;
+  color: white;
+  margin-right: 10px;
+}
+
+.cmp-action-button.cmp-cancel {
+  background: #dc3545;
+  color: white;
+}

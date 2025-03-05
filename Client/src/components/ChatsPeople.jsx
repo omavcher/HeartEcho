@@ -21,7 +21,6 @@ const ChatsPeople = ({ onChatSelect, onBackBTNSelect ,refreshTrigger  }) => {
         const chatData = Array.isArray(res.data) ? res.data : [];
 
         if (chatData.length === 0) {
-          setNotification({ show: true, message: "No chats found.", type: "info" });
         }
 
         setChats(chatData);
