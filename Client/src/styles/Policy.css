@@ -1,0 +1,127 @@
+/* Modern and Stylish CSS for Refund Page */
+.policy-container {
+    color: #ffffff; /* White primary text */
+    min-height: 100vh;
+    padding: 60px 20px;
+    font-family: 'Inter', 'Arial', sans-serif; /* Modern font (use Google Fonts if available) */
+    line-height: 1.8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: left;
+    margin-bottom: 5rem;
+  }
+  
+  .policy-container h1 {
+    color: #ffffff; /* White for main heading */
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 30px;
+    text-align: center;
+    border-bottom: 2px solid #D04084; /* Subtle secondary color underline */
+    padding-bottom: 10px;
+    max-width: 800px;
+  }
+  
+  .policy-container h2 {
+    color: #D04084; /* Secondary color for subheadings */
+    font-size: 1.7rem;
+    font-weight: 500;
+    margin-top: 40px;
+    margin-bottom: 15px;
+    position: relative;
+  }
+  
+  .policy-container h2::after {
+    content: '';
+    position: absolute;
+    width: 50px;
+    height: 1px;
+    background: #D04084;
+    bottom: -5px;
+    left: 0;
+  }
+  
+  .policy-container p {
+    max-width: 800px;
+    font-size: 1.1rem;
+    margin: 15px 0;
+    color: #e0e0e0; /* Slightly softer white for body text */
+  }
+  
+  .policy-container ul {
+    max-width: 800px;
+    padding-left: 25px;
+    list-style-type: none; /* Remove default bullets */
+  }
+  
+  .policy-container li {
+    margin: 12px 0;
+    font-size: 1.1rem;
+    position: relative;
+    color: #e0e0e0;
+  }
+  
+  .policy-container li::before {
+    content: '—'; /* Custom dash for list items */
+    color: #D04084;
+    position: absolute;
+    left: -20px;
+  }
+  
+  .policy-container a {
+    color: #D04084; /* Secondary color for links */
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  .policy-container a:hover {
+    color: #ff66a3; /* Lighter shade of secondary color on hover */
+    text-decoration: underline;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .policy-container {
+      padding: 40px 15px;
+    }
+  
+    .policy-container h1 {
+      font-size: 2rem;
+    }
+  
+    .policy-container h2 {
+      font-size: 1.5rem;
+    }
+  
+    .policy-container p,
+    .policy-container li {
+      font-size: 1rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .policy-container {
+      padding: 30px 10px;
+    }
+  
+    .policy-container h1 {
+      font-size: 1.8rem;
+    }
+  
+    .policy-container h2 {
+      font-size: 1.3rem;
+    }
+  
+    .policy-container p,
+    .policy-container li {
+      font-size: 0.9rem;
+    }
+  
+    .policy-container h2::after {
+      width: 30px; /* Shorter underline on mobile */
+    }
+  }
+
+
+  

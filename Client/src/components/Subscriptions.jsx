@@ -1,100 +1,160 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import '../styles/Subscriptions.css';
+import PopNoti from './PopNoti';
+import axios from "axios";
+import api from "../config/api";
 
 const Subscriptions = () => {
+  const [showQuotaMessage, setShowQuotaMessage] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [notification, setNotification] = useState({ show: false, message: "", type: "" });
+  const token = localStorage.getItem("token"); 
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('re') === 'quotaover') {
+      setShowQuotaMessage(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        const res = await axios.get(
+          `${api.Url}/user/get-user`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, 
+            },
+          }
+        );
+  
+        if (res.data) {
+          setUserData(res.data);
+          console.log(res.data.phone_number)
+        } 
+      } catch (error) {
+        setNotification({ show: true, message: "Error fetching user", type: "error" });
+      }
+    };
+  
+    if (token) {
+      getUserData();
+    }
+  }, [token]);
+
+  const handlePayment = async (amount, plan) => {
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+  
+    const options = {
+      key: 'rzp_test_y6rhmgP580s3Yc', 
+      amount: amount * 100, 
+      currency: 'INR',
+      name: 'HeartEcho',
+      description: `${plan} Subscription`,
+      handler: async function (response) {
+        try {
+          const paymentData = {
+            user: userData?._id, 
+            rupees: amount, 
+            transaction_id: response.razorpay_payment_id, 
+          }; 
+  
+          await axios.post(`${api.Url}/user/payment/save`, paymentData, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+  
+const storedUser = JSON.parse(localStorage.getItem("user"));
+if (storedUser) {
+  storedUser.user_type = "subscriber";
+  localStorage.setItem("user", JSON.stringify(storedUser));
+}
+setNotification({ show: true, message: "Payment Successful! You are now a Premium Member 🎉", type: "success" });
+
+          window.location.href = '/thank-you'; 
+        } catch (error) {
+          setNotification({ show: true, message: "Payment successful, but there was an issue saving the details.", type: "error" });
+        }
+      },
+      prefill: {
+        name: userData?.name || 'Your Name',
+        email: userData?.email || 'user@example.com',
+        contact: userData?.phone_number || '9999999999'
+      },
+      theme: { color: '#FB4B04' }
+    };
+  
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  };
+  
+
   return (
     <div className="subscriptions-container">
-      <div className="header">
-        <span className="nav-item">Subscriptions</span>
-        <span className="nav-item">Credits</span>
-        <span className="nav-item premium">Premium+</span>
-      </div>
-      
-      <div className="title">Subscriptions</div>
-      <div className="subtitle">
-        Upgrade Your Nectar Experience. Join 500,000+ users and take your journey to the next level
-        by creating unlimited fantasies, characters, and images.
+      <PopNoti
+        message={notification.message}
+        type={notification.type}
+        isVisible={notification.show}
+        onClose={() => setNotification({ ...notification, show: false })}
+      />
+      <div className="hero">
+        <h1 className="logo">HeartEcho</h1>
+        <h2 className="title">Choose Your HeartEcho Plan</h2>
+        <p className="subtitle">
+          Unlimited AI companionship, personalized just for you. Start free today!
+        </p>
+        {showQuotaMessage && (
+          <div className="quota-message">
+            <p>Your daily quota is over. Please subscribe to a plan to continue enjoying HeartEcho!</p>
+          </div>
+        )}
       </div>
 
-      <div className="billing-options">
-        <button className="billing-button yearly">Yearly<br /><span className="discount">50% off</span></button>
-        <button className="billing-button monthly">Monthly</button>
-      </div>
-
-      <div className="note">
-        Note that some crypto transactions may take time to reflect properly. Messaging quotas are for basic roleplay.
-      </div>
 
       <div className="plans">
         <div className="plan free">
-          <h2>FREE</h2>
-          <p className="price">$0/mo</p>
+          <h3>Free Trial</h3>
+          <p className="price">₹0 <span className="duration">/ 7 days</span></p>
           <ul>
-            <li>10 Generations / Day</li>
-            <li>4 customizations</li>
-            <li>15 Messages / Day</li>
-            <li>15 Messages in Memory</li>
-            <li>1 Photo Message</li>
-            <li>1 Customized Persona</li>
-            <li>Create 1 Custom Girl</li>
+            <li>20 AI messages/day</li>
+            <li>1 AI companion</li>
+            <li>Basic chat features</li>
           </ul>
-          <button className="subscribe-button">Subscribe</button>
+          <button className="subscribe-button">Start Free Trial</button>
         </div>
 
         <div className="plan premium">
-          <h2>PREMIUM</h2>
-          <p className="price">$9.99/mo<br /><span className="save">Save $9/mo</span></p>
+          <h3>Monthly</h3>
+          <p className="price">₹40 <span className="duration">/ month</span></p>
           <ul>
-            <li>100 Generations / Day</li>
-            <li>45+ additional customizations</li>
-            <li>6000 Messages/Mo</li>
-            <li>25 Messages in Memory</li>
-            <li>Faster Messaging Time</li>
-            <li>600 Photo Messages</li>
-            <li>1 Customized Persona</li>
-            <li>Create Unlimited Custom Fantasies with Girls</li>
+            <li>Unlimited AI messages</li>
+            <li>Unlimited companions</li>
+            <li>Exclusive features</li>
+            <li>Priority response</li>
           </ul>
-          <button className="subscribe-button">Subscribe</button>
-        </div>
-
-        <div className="plan pro">
-          <h2>PRO</h2>
-          <p className="price">$19.99/mo<br /><span className="save">Save $10/mo</span></p>
-          <ul>
-            <li>Unlimited Generations</li>
-            <li>95+ additional customizations</li>
-            <li>HD Generations</li>
-            <li>9000 Messages/Mo</li>
-            <li>35 Messages in Memory</li>
-            <li>Faster Messaging Time</li>
-            <li>900 Photo Messages</li>
-            <li>3 Customized Personas</li>
-            <li>Create and Edit Unlimited Custom Girls</li>
-          </ul>
-          <button className="subscribe-button">Subscribe</button>
+          <button className="subscribe-button premium-button" onClick={() => handlePayment(40, 'Monthly')}>Subscribe Now</button>
         </div>
 
         <div className="plan ultimate">
-          <h2>ULTIMATE</h2>
-          <p className="price">$34.99/mo<br /><span className="save">Save $15/mo</span></p>
-          <span className="popular">MOST POPULAR</span>
+          <span className="popular">Best Value</span>
+          <h3>Yearly</h3>
+          <p className="price">₹400 <span className="duration">/ year</span></p>
+          <p className="save">Save ₹80 – 2 months free!</p>
           <ul>
-            <li>Unlimited HD Generations</li>
-            <li>Create Unlimited Photos of Custom Girls</li>
-            <li>Best models & all 350+ customizations</li>
-            <li>Landscape and portrait modes</li>
-            <li>Unlimited messaging (incl photos)</li>
-            <li>2500 Advanced Roleplay Credits</li>
-            <li>45 Messages in Memory</li>
-            <li>Fastest Messaging Time</li>
-            <li>Video Generation</li>
-            <li>10 Customized Personas</li>
-            <li>Priority Customer Support</li>
-            <li>Voice Chat</li>
+            <li>Unlimited AI messages</li>
+            <li>Unlimited companions</li>
+            <li>Exclusive features</li>
+            <li>Priority response</li>
+            <li>Advanced customization</li>
           </ul>
-          <button className="subscribe-button ultimate">Subscribe</button>
+          <button className="subscribe-button ultimate-button" onClick={() => handlePayment(400, 'Yearly')}>Get Started</button>
         </div>
       </div>
+
+
     </div>
   );
 };

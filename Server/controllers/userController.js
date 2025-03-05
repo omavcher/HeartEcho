@@ -7,6 +7,7 @@ const LoginDetail = require("../models/LoginDetail");
 const moment = require("moment");  // Add this line if using Moment.js
 const Ticket = require("../models/Ticket");
 const nodemailer = require("nodemailer");
+const Payment = require("../models/Payment");
 
 require("dotenv").config();
 
@@ -475,5 +476,163 @@ exports.getAllPreAIFriends = async (req, res) => {
       message: "Internal Server Error",
       error: error.message,
     });
+  }
+};
+
+
+
+exports.getChatData = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId).select("joinedAt messageQuota user_type subscriptionExpiry");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const today = new Date();
+    let daysLeft = 0;
+    let messageQuota = user.messageQuota;
+
+    if (user.user_type === "subscriber" && user.subscriptionExpiry) {
+      const expiryDate = new Date(user.subscriptionExpiry);
+      daysLeft = Math.max(Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24)), 0);
+      messageQuota = 999; // Unlimited quota for subscribers
+    } else {
+      // Free user logic: 7 days free quota
+      const joinedAt = new Date(user.joinedAt);
+      const daysSinceJoined = Math.floor((today - joinedAt) / (1000 * 60 * 60 * 24));
+      daysLeft = Math.max(7 - daysSinceJoined, 0);
+    }
+
+    // Count total messages sent by the user from Chat model
+    const messagesSent = await Chat.aggregate([
+      { $match: { "messages.sender": user._id } },
+      { $unwind: "$messages" },
+      { $match: { "messages.sender": user._id } },
+      { $count: "totalMessages" }
+    ]);
+
+    res.status(200).json({
+      joinedAt: user.joinedAt,
+      messageQuota,
+      userType: user.user_type,
+      daysLeft,
+      totalMessagesSent: messagesSent.length > 0 ? messagesSent[0].totalMessages : 0,
+    });
+
+  } catch (error) {
+    console.error("Error fetching chat data:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+exports.deleteMessage = async (req, res) => {
+  try {
+    const { chatId, messageId } = req.params;
+    
+    await Chat.findByIdAndUpdate(chatId, {
+      $pull: { messages: { _id: messageId } },
+    });
+
+    res.json({ success: true, message: "Message deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error deleting message" });
+  }
+};
+
+
+
+exports.paymentSave = async (req, res) => {
+  try {
+    const { user, rupees, transaction_id } = req.body;
+
+    if (!user || !rupees || !transaction_id) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    // Find user
+    const existingUser = await User.findById(user);
+    if (!existingUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Calculate new expiry date
+    let expiryDate = new Date();
+    
+    if (existingUser.subscriptionExpiry && existingUser.subscriptionExpiry > expiryDate) {
+      expiryDate = new Date(existingUser.subscriptionExpiry); // Use existing expiry if it's in the future
+    }
+
+    if (rupees === 40) {
+      expiryDate.setMonth(expiryDate.getMonth() + 1); // Increase 1 month
+    } else if (rupees === 400) {
+      expiryDate.setFullYear(expiryDate.getFullYear() + 1); // Increase 1 year
+    }
+
+    // Create new payment entry
+    const payment = new Payment({
+      user,
+      rupees,
+      transaction_id,
+      expiry_date: expiryDate,
+    });
+
+    await payment.save();
+
+    // Update user subscription with new expiry date
+    const updatedUser = await User.findByIdAndUpdate(
+      user,
+      {
+        $set: { user_type: "subscriber", subscriptionExpiry: expiryDate },
+        $push: { payment_history: payment._id },
+      },
+      { new: true }
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Payment saved and subscription updated successfully",
+      updatedUser,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error saving payment and updating user" });
+  }
+};
+
+
+exports.getPaymentData = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Fetch user details with payment info
+    const user = await User.findById(userId)
+      .select("name profile_picture subscriptionExpiry")
+      .populate("payment_history"); // Correct reference
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Fetch user's payment history sorted by latest transaction
+    const payments = await Payment.find({ user: userId }).sort({ date: -1 });
+
+    // Determine next subscription renewal date
+    const nextSubscriptionDate = user.subscriptionExpiry
+      ? new Date(user.subscriptionExpiry).toLocaleDateString("en-GB")
+      : "No Active Subscription";
+
+    res.status(200).json({
+      name: user.name,
+      profilePicture: user.profile_picture || "", // Default if no profile picture
+      nextSubscriptionDate,
+      paymentHistory: payments,
+    });
+  } catch (error) {
+    console.error("Error fetching payment data:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };

@@ -16,19 +16,19 @@ function Footer() {
 
     <div className='right-footer-nlings'>
         <span> 
-        <Link className='footer-nav-sw'  to=''>FAQ</Link>
-        <Link className='footer-nav-sw'  to=''>Privacy</Link>
+        <Link className='footer-nav-sw'  to='/refund'>Refund</Link>
+        <Link className='footer-nav-sw'  to='/privacy'>Privacy</Link>
         </span>
 
         <span> 
 
-        <Link className='footer-nav-sw'  to=''>Terms of use</Link>
-        <Link className='footer-nav-sw'  to=''>Contact us</Link>
+        <Link className='footer-nav-sw'  to='/terms'>Terms of use</Link>
+        <Link className='footer-nav-sw'  to='/contact'>Contact us</Link>
         </span>
         <span> 
 
-        <Link className='footer-nav-sw'  to=''>Complaints</Link>
-        <Link className='footer-nav-sw'  to=''>Suggestions</Link>
+        <Link className='footer-nav-sw'  to='products'>Products</Link>
+        <Link className='footer-nav-sw'  to='/shipping'>Shipping</Link>
         </span>
 
     </div>

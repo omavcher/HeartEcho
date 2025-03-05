@@ -19,5 +19,9 @@ router.get("/user-type", authMiddleware, controller.userType );
 router.get("/chat-friends", authMiddleware, controller.chatFriends );
 router.get("/chats/:chatId", authMiddleware, controller.chatsDatas );
 router.get("/get-pre-ai", controller.getAllPreAIFriends );
+router.get("/get-chat-data", authMiddleware, controller.getChatData );
+router.delete("/chats/:chatId/messages/:messageId", authMiddleware, controller.deleteMessage );
+router.post('/payment/save', authMiddleware , controller.paymentSave);
+router.get('/payment-details', authMiddleware , controller.getPaymentData);
 
 module.exports = router;

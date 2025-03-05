@@ -43,10 +43,13 @@
   border-radius: 20%;
   object-fit: cover;
   object-position: top;
+  cursor: pointer;
 }
 
 .chat-header-details {
   margin-left: 0.8rem;
+  cursor: pointer;
+
 }
 
 .chat-header-details h4 {
@@ -73,7 +76,7 @@
 
 .message {
   max-width: 70%;
-  padding: 0.7rem;
+  padding: 1.3rem 0.7rem 0.7rem 0.7rem;
   margin: 0.5rem 0;
   border-radius: 10px;
   word-wrap: break-word;
@@ -138,5 +141,241 @@
 .chat-input button:hover {
   background: #911b56;
 }
+.overlay-container-chat-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #1f1f1f;
+  height: 80%;
+  font-family: "Montserrat", serif;
+  width: 70%;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+
+
+.overlay-content-header-chat-box button {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: #c23a7d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.overlay-content-header-chat-box button:hover {
+  background-color: #911b56;
+}
+
+.overlay-content-header-chat-box{
+ width: 100%;
+ padding: 0.5rem;
+ align-items: center;
+ justify-content: space-between;
+ display: flex;
+ height: 1.5rem;
+}
+.overlay-content-header-chat-box h1{
+  color: #c23a7d;
+}
+.over-conatiner-boc-chat4{
+  width: 100%;
+  display: flex;
+  height: calc(100% - 1.5rem);
+  margin-top: 0.5rem;
+  justify-content: space-around;
+}
+.overlay-conatiner-chat-left{
+  width: 60%;  
+}
+.overlay-conatiner-chat-left img{
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.overlay-conatiner-chat-right{
+  width: 55%;
+  background-color: #911b56;
+  height: 100%;
+  overflow-y: scroll ;
+}
+
+@media (max-width: 768px) {
+
+  .overlay-conatiner-chat-left{
+    width: 38%;  
+  }
+  .overlay-conatiner-chat-right{
+    width: 58%;
+    background-color: #911b56;
+  }
+}
+
+@media (max-width: 635px) {
+  .overlay-container-chat-box {
+   top: 50%;
+  }
+  .overlay-conatiner-chat-left img{
+      height: 100%;
+      object-fit: cover;
+      object-position: 0 -3rem;
+  }
+  .overlay-conatiner-chat-left{
+    width: 100%;
+    height: 50%;
+    margin-bottom: 0.5rem;
+  }
+  .overlay-container-chat-box {
+    height: 65%;
+  }
+  .over-conatiner-boc-chat4{
+   flex-direction: column;
+
+
+  }
+
+  .overlay-conatiner-chat-right{
+    width: 100%;
+    height: 100%;
+  }
+}
+.overlay-container-chat-right {
+  overflow-x: scroll;
+  text-align: start;
+  color: #e0e0e0;
+}
+
+.user-info-card {
+  height: 100%;
+  padding: 15px;
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+}
+
+.user-name {
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #c23a7d; /* Highlight Color */
+  margin-bottom: 10px;
+}
+
+.user-info-card p {
+  font-size: 1rem;
+  margin: 8px 0;
+  line-height: 1.5;
+  color: #eae9e9;
+}
+
+strong {
+  color: #c23a7d; 
+}
+
+.message {
+  position: relative;
+  max-width: 70%;
+  margin: 0.5rem 0;
+  border-radius: 10px;
+  word-wrap: break-word;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.3s ease-in-out;
+}
+
+.message:hover {
+  background: #292929;
+}
+
+.message-options {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  cursor: pointer;
+  font-size: 18px;
+  color: white;
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
+}
+.message-options svg{
+  width: 1.4rem;
+  height: 1.4rem;
+}
+.message:hover .message-options {
+  
+}
+
+.delete-menu {
+  position: absolute;
+  top: 20px;
+  right: 0;
+  background: rgb(18, 18, 18);
+  border-radius: 2px;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  width: 100px;
+  text-align: center;
+  z-index: 10;
+  gap: 0.5rem;
+  border-radius: 14px;
+}
+
+
+.btn-detle-x3{
+  background-color: #282828;
+  border: none;
+  color:red;
+  padding: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+
+.btn-closes-x3,.btn-copy-x3{
+  background-color: #282828;
+  border: none;
+  color: rgba(255, 255, 255, 0.886);
+  padding: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+
+.btn-closes-x3:hover,.btn-copy-x3:hover{
+  color: rgb(219, 3, 3);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

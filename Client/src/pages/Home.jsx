@@ -5,6 +5,7 @@ import StepsHome from "../components/StepsHome";
 import HomeFAQ from "../components/HomeFAQ";
 import HomeCosAi from "../components/HomeCosAi";
 import Footer from "../components/Footer";
+import HomeSubscriptions from "../components/HomeSubscriptions";
 
 function Home() {
   useEffect(() => {
@@ -42,7 +43,9 @@ function Home() {
       <HomeCosAi/>
     </div>
 
-
+    <div className="home-seteps-showcase">
+      <HomeSubscriptions/>
+    </div>
 
    <div className="home-seteps-showcase">
       <StepsHome/>

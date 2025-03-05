@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import "./AdminDashboard.css"; // Import local CSS
+import "./AdminDashboard.css";
 import axios from "axios";
 import {
   BarChart,
@@ -15,137 +15,192 @@ import {
   Legend,
   LineChart,
   Line,
-  AreaChart,
-  Area,
 } from "recharts";
 import {
   FaUsers,
   FaMoneyBillWave,
   FaEnvelope,
   FaUserCheck,
-  FaChartLine,
   FaBell,
 } from "react-icons/fa";
 import { IoMdRefresh } from "react-icons/io";
-import api from "../../config/api"; // Assuming this is your API config file
+import api from "../../config/api";
 import PopNoti from "../../components/PopNoti";
 
 const AdminDashboard = () => {
   const [refresh, setRefresh] = useState(false);
-  const [timePeriod, setTimePeriod] = useState("month"); // Filter for time period
+  const [timePeriod, setTimePeriod] = useState("month");
   const [notifications, setNotifications] = useState([]);
-  const [data, setData] = useState({
-    usersData: [],
+  const [statsData, setStatsData] = useState({
+    totalUsers: 0,
+    activeUsers: 0,
+    totalRevenue: 0,
+    messagesSent: 0,
+  });
+  const [graphData, setGraphData] = useState({
+    roleBreakdown: [],
     paymentsData: [],
     messageQuotaData: [],
-    activeUsers: [],
     revenueTrend: [],
+    userEngagement: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [notification, setNotification] = useState({
     show: false,
     message: "",
-    type: "error", // Can be "error", "success", "warning"
+    type: "error",
   });
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 3;
 
-  const token = localStorage.getItem("token") || ""; // Assuming token is stored in localStorage
+  const token = localStorage.getItem("token") || "";
 
-  // Memoized fetch function to prevent unnecessary re-renders
+  // Fetch stats data
   const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-  
-      const response = await axios.post(`${api.Url}/admin/dashboard-data`, { timePeriod }, {
-        headers: { Authorization: `Bearer ${token}` },
-        timeout: 10000,
+
+      const response = await axios.post(
+        `${api.Url}/admin/dashboard-data`,
+        { timePeriod },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const { usersData, activeUsers, paymentsData, messageQuotaData } = response.data;
+
+      setStatsData({
+        totalUsers: usersData || 0,
+        activeUsers: activeUsers || 0,
+        totalRevenue: paymentsData || 0,
+        messagesSent: messageQuotaData || 0,
       });
-  
-      console.log("API Raw Response:", JSON.stringify(response.data, null, 2));
-  
-      const {
-        usersData,
-        paymentsData,
-        messageQuotaData,
-        activeUsers,
-        revenueTrend,
-        notifications: backendNotifications,
-      } = response.data;
-  
-      // Convert numbers to arrays
-      setData({
-        usersData: Array.isArray(usersData) ? usersData : [{ value: usersData || 0 }],
-        paymentsData: Array.isArray(paymentsData) ? paymentsData : [{ value: paymentsData || 0 }],
-        messageQuotaData: Array.isArray(messageQuotaData) ? messageQuotaData : [{ value: messageQuotaData || 0 }],
-        activeUsers: Array.isArray(activeUsers) ? activeUsers : [{ users: activeUsers || 0 }],
-        revenueTrend: Array.isArray(revenueTrend) ? revenueTrend : [],
-      });
-  
-      setNotifications(Array.isArray(backendNotifications) ? backendNotifications : []);
-  
+
       setNotification({
         show: true,
-        message: "Dashboard data updated successfully!",
+        message: "Stats data updated successfully!",
         type: "success",
       });
     } catch (err) {
-      console.error("Fetch error:", err.message);
+      console.error("Stats fetch error:", err.message);
       setError(err.message);
       setNotification({
         show: true,
         message: err.message,
         type: "error",
       });
+      if (retryCount < maxRetries) {
+        setRetryCount((prev) => prev + 1);
+      }
     } finally {
       setLoading(false);
     }
   }, [timePeriod, refresh, token]);
-  
+
+  // Fetch graphs data
+  const fetchGraphsData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await axios.get(
+        `${api.Url}/admin/users-breakdown`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 10000,
+        }
+      );
+
+      const { roleBreakdown, payments, messageQuota, revenueTrend, userEngagement } = response.data;
+
+      setGraphData({
+        roleBreakdown: roleBreakdown.map(item => ({
+          name: item._id || "Users",
+          value: item.count
+        })),
+        paymentsData: payments.map((item, index) => ({
+          name: `Payment ${index + 1}`,
+          value: item.rupees,
+          date: new Date(item.date).toLocaleTimeString()
+        })),
+        messageQuotaData: messageQuota.map(item => ({
+          name: item._id.slice(-6),
+          value: item.count
+        })),
+        revenueTrend: revenueTrend.map(item => ({
+          date: item._id,
+          revenue: item.totalRevenue
+        })),
+        userEngagement: userEngagement.map(item => ({
+          name: item.name,
+          messages: item.totalMessages,
+          payments: item.totalPayments,
+          logins: item.totalLogins
+        }))
+      });
+
+      setNotifications([]); // Add notification logic if needed
+      setNotification({
+        show: true,
+        message: "Graph data updated successfully!",
+        type: "success",
+      });
+    } catch (err) {
+      console.error("Graphs fetch error:", err.message);
+      setError(err.message);
+      setNotification({
+        show: true,
+        message: err.message,
+        type: "error",
+      });
+      if (retryCount < maxRetries) {
+        setRetryCount((prev) => prev + 1);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [timePeriod, refresh, token]);
 
   useEffect(() => {
     fetchDashboardData();
+    fetchGraphsData();
 
-    // Real-time updates (optional, can be adjusted or removed based on backend support)
     const interval = setInterval(() => {
       fetchDashboardData();
-    }, 30000); // Refresh data every 30 seconds
+      fetchGraphsData();
+    }, 30000);
 
     return () => clearInterval(interval);
-  }, [fetchDashboardData]);
+  }, [fetchDashboardData, fetchGraphsData]);
 
   const colors = ["#cf4185", "#00c49f", "#4a90e2", "#ffcc00", "#ff4b5c", "#6ab0ff"];
 
   const handleRefresh = () => {
     setRefresh((prev) => !prev);
-    setRetryCount(0); // Reset retry count on manual refresh
+    setRetryCount(0);
   };
 
   const handleTimePeriodChange = (e) => {
     setTimePeriod(e.target.value);
-    setRetryCount(0); // Reset retry count on time period change
+    setRetryCount(0);
   };
 
   const handleNotificationClose = () => {
     setNotification({ ...notification, show: false });
   };
 
-  if (loading && retryCount === 0) {
-    return <div className="dash-loading">Loading...</div>;
-  }
-
-  if (error && retryCount >= maxRetries) {
-    return (
-      <div className="dash-error">
-        <p>Error: {error}</p>
-        <button className="dash-retry-button" onClick={fetchDashboardData}>
-          Retry
-        </button>
-      </div>
-    );
-  }
+  if (loading && retryCount === 0) return <div className="dash-loading">Loading...</div>;
+  if (error && retryCount >= maxRetries) return (
+    <div className="dash-error">
+      <p>Error: {error}</p>
+      <button className="dash-retry-button" onClick={() => { fetchDashboardData(); fetchGraphsData(); }}>
+        Retry
+      </button>
+    </div>
+  );
 
   return (
     <div className="dash-container">
@@ -161,11 +216,7 @@ const AdminDashboard = () => {
           <button className="dash-refresh-button" onClick={handleRefresh}>
             <IoMdRefresh /> Refresh Data
           </button>
-          <select
-            className="dash-time-period-select"
-            value={timePeriod}
-            onChange={handleTimePeriodChange}
-          >
+          <select className="dash-time-period-select" value={timePeriod} onChange={handleTimePeriodChange}>
             <option value="day">Day</option>
             <option value="week">Week</option>
             <option value="month">Month</option>
@@ -177,45 +228,33 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Notifications Panel */}
-      <div className="dash-notifications-panel">
-        <h3>Notifications</h3>
-        <ul className="dash-notifications-list">
-          {notifications.map((notif) => (
-            <li key={notif.id} className="dash-notification-item">
-              {notif.message} <span className="dash-notification-time">{notif.time}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
       <div className="dash-stats-grid">
         <div className="dash-stat-card">
           <FaUsers className="dash-icon users" />
           <div className="dash-stat-content">
             <h3>Total Users</h3>
-            <p>{data.usersData.reduce((sum, item) => sum + (item.value || 0), 0)}</p>
+            <p>{statsData.totalUsers}</p>
           </div>
         </div>
         <div className="dash-stat-card">
           <FaUserCheck className="dash-icon active-users" />
           <div className="dash-stat-content">
             <h3>Active Users</h3>
-            <p>{data.activeUsers.reduce((sum, item) => sum + (item.users || 0), 0) / 7 || 0}</p>
+            <p>{statsData.activeUsers}</p>
           </div>
         </div>
         <div className="dash-stat-card">
           <FaEnvelope className="dash-icon messages" />
           <div className="dash-stat-content">
             <h3>Messages Sent</h3>
-            <p>{data.messageQuotaData[0]?.value || 0}</p>
+            <p>{statsData.messagesSent}</p>
           </div>
         </div>
         <div className="dash-stat-card">
           <FaMoneyBillWave className="dash-icon revenue" />
           <div className="dash-stat-content">
             <h3>Total Revenue</h3>
-            <p>₹{data.revenueTrend.reduce((sum, item) => sum + (item.revenue || 0), 0)}</p>
+            <p>₹{statsData.totalRevenue}</p>
           </div>
         </div>
       </div>
@@ -226,52 +265,34 @@ const AdminDashboard = () => {
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
-                data={data.usersData}
+                data={graphData.roleBreakdown}
                 cx="50%"
                 cy="50%"
                 outerRadius={100}
                 dataKey="value"
-                label={({ name, percent }) =>
-                  data.usersData.length > 0 ? `${name} (${(percent * 100).toFixed(0)}%)` : "No Data"
-                }
+                label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                 startAngle={90}
                 endAngle={-270}
               >
-                {data.usersData.map((_, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={colors[index % colors.length]}
-                  />
+                {graphData.roleBreakdown.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                 ))}
               </Pie>
-              <Tooltip
-                formatter={(value) => `${value || "N/A"}`}
-                contentStyle={{
-                  background: "#2d2d2d",
-                  border: "none",
-                  color: "#e0e0e0",
-                }}
-              />
+              <Tooltip contentStyle={{ background: "#2d2d2d", border: "none", color: "#e0e0e0" }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
 
         <div className="dash-chart-card">
-          <h3>Monthly Payments</h3>
+          <h3>Payments</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data.paymentsData}>
+            <BarChart data={graphData.paymentsData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#333" />
               <XAxis dataKey="date" stroke="#e0e0e0" />
               <YAxis stroke="#e0e0e0" />
-              <Tooltip
-                contentStyle={{
-                  background: "#2d2d2d",
-                  border: "none",
-                  color: "#e0e0e0",
-                }}
-              />
+              <Tooltip contentStyle={{ background: "#2d2d2d", border: "none", color: "#e0e0e0" }} />
               <Legend wrapperStyle={{ color: "#e0e0e0" }} />
-              <Bar dataKey="payments" fill="#cf4185" barSize={30} />
+              <Bar dataKey="value" fill="#cf4185" barSize={30} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -281,105 +302,51 @@ const AdminDashboard = () => {
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
-                data={data.messageQuotaData}
+                data={graphData.messageQuotaData}
                 cx="50%"
                 cy="50%"
                 outerRadius={100}
                 dataKey="value"
-                label={({ name, percent }) =>
-                  data.messageQuotaData.length > 0 ? `${name} (${(percent * 100).toFixed(0)}%)` : "No Data"
-                }
+                label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                 startAngle={90}
                 endAngle={-270}
               >
-                {data.messageQuotaData.map((_, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={colors[index % colors.length]}
-                  />
+                {graphData.messageQuotaData.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                 ))}
               </Pie>
-              <Tooltip
-                formatter={(value) => `${value || "N/A"}`}
-                contentStyle={{
-                  background: "#2d2d2d",
-                  border: "none",
-                  color: "#e0e0e0",
-                }}
-              />
+              <Tooltip contentStyle={{ background: "#2d2d2d", border: "none", color: "#e0e0e0" }} />
             </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="dash-chart-card">
-          <h3>Active Users Per Day</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data.activeUsers}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-              <XAxis dataKey="day" stroke="#e0e0e0" />
-              <YAxis stroke="#e0e0e0" />
-              <Tooltip
-                contentStyle={{
-                  background: "#2d2d2d",
-                  border: "none",
-                  color: "#e0e0e0",
-                }}
-              />
-              <Legend wrapperStyle={{ color: "#e0e0e0" }} />
-              <Bar dataKey="users" fill="#00c49f" barSize={30} />
-            </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="dash-chart-card">
           <h3>Revenue Trend</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data.revenueTrend}>
+            <LineChart data={graphData.revenueTrend}>
               <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-              <XAxis dataKey="month" stroke="#e0e0e0" />
+              <XAxis dataKey="date" stroke="#e0e0e0" />
               <YAxis stroke="#e0e0e0" />
-              <Tooltip
-                contentStyle={{
-                  background: "#2d2d2d",
-                  border: "none",
-                  color: "#e0e0e0",
-                }}
-              />
+              <Tooltip contentStyle={{ background: "#2d2d2d", border: "none", color: "#e0e0e0" }} />
               <Legend wrapperStyle={{ color: "#e0e0e0" }} />
-              <Line
-                type="monotone"
-                dataKey="revenue"
-                stroke="#ffcc00"
-                strokeWidth={3}
-                dot={{ r: 6 }}
-              />
+              <Line type="monotone" dataKey="revenue" stroke="#ffcc00" strokeWidth={3} dot={{ r: 6 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         <div className="dash-chart-card">
-          <h3>User Engagement (Area Chart)</h3>
+          <h3>User Engagement</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={data.activeUsers}>
+            <BarChart data={graphData.userEngagement}>
               <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-              <XAxis dataKey="day" stroke="#e0e0e0" />
+              <XAxis dataKey="name" stroke="#e0e0e0" />
               <YAxis stroke="#e0e0e0" />
-              <Tooltip
-                contentStyle={{
-                  background: "#2d2d2d",
-                  border: "none",
-                  color: "#e0e0e0",
-                }}
-              />
+              <Tooltip contentStyle={{ background: "#2d2d2d", border: "none", color: "#e0e0e0" }} />
               <Legend wrapperStyle={{ color: "#e0e0e0" }} />
-              <Area
-                type="monotone"
-                dataKey="users"
-                stroke="#4a90e2"
-                fill="#4a90e2"
-                fillOpacity={0.3}
-              />
-            </AreaChart>
+              <Bar dataKey="messages" fill="#4a90e2" barSize={20} />
+              <Bar dataKey="payments" fill="#00c49f" barSize={20} />
+              <Bar dataKey="logins" fill="#ffcc00" barSize={20} />
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </div>

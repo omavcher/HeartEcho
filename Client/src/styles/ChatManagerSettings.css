@@ -1,100 +1,244 @@
-/* Dark Theme Chat Manager Settings */
-.chat-settings {
-    padding: 20px;
-    max-width: 500px;
-    margin: auto;
-    background: #121212;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+/* Futuristic Dark Black Theme */
+.je9c-dashboard {
+    width: 100%;
+    height: 20vh ;
+    background: #000000; /* Pure black */
+    padding: 30px;
+    font-family: "Roboto", sans-serif;
+    color: #ffffff; /* White primary color */
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  /* Header */
+  .je9c-dashboard-header {
     text-align: center;
-    color: #fff;
-    font-family: "Poppins", sans-serif;
-}
-
-h1 {
-    color: #ff4b2b;
-}
-
-h2 {
-    color: #ff7b42;
-    margin-top: 15px;
-}
-
-.quota-section,
-.toggle-section {
-    background: #1e1e1e;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 10px;
-}
-
-/* Quota Progress Bar */
-.quota-bar {
-    height: 10px;
-    background: #333;
-    border-radius: 5px;
-    margin: 10px 0;
-    position: relative;
-}
-
-.quota-progress {
-    height: 10px;
-    background: #ff4b2b;
-    border-radius: 5px;
-    transition: width 0.5s;
-}
-
-/* Toggle Switch */
-.toggle-switch {
-    position: relative;
-    display: inline-block;
-    width: 40px;
-    height: 20px;
-    margin: 5px;
-}
-
-.toggle-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.toggle-switch .slider {
-    position: absolute;
+    padding: 25px;
+    background: #0f0f0f; /* Slightly lighter black */
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+  }
+  
+  .je9c-dashboard-title {
+    font-size: 2.5rem;
+    color: #db4a8e; /* Pink secondary color */
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 700;
+  }
+  
+  .je9c-dashboard-subtitle {
+    font-size: 1.1rem;
+    color: #ffffff;
+    margin: 10px 0 0;
+    opacity: 0.7;
+  }
+  
+  /* Overview Section */
+  .je9c-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+  }
+  
+  .je9c-card {
+    background: #0f0f0f;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8);
+    border: 2px solid #db4a8e;
+    transition: all 0.3s ease;
+  }
+  
+  .je9c-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 25px rgba(219, 74, 142, 0.4);
+  }
+  
+  .je9c-card-heading {
+    font-size: 1.5rem;
+    color: #db4a8e;
+    margin: 0 0 20px;
+    font-weight: 600;
+  }
+  
+  /* Trial Info */
+  .je9c-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+  
+  .je9c-info-label {
+    font-size: 1rem;
+    color: #ffffff;
+    opacity: 0.8;
+  }
+  
+  .je9c-info-value {
+    font-size: 1rem;
+    color: #ffffff;
+    font-weight: 500;
+  }
+  
+  .je9c-accent {
+    color: #db4a8e;
+    font-weight: 700;
+  }
+  
+  /* Quota Info */
+  .je9c-plan-type {
+    font-size: 1.1rem;
+    margin: 0 0 15px;
+  }
+  
+  .je9c-plan-type span {
+    color: #db4a8e;
+    font-weight: 600;
+  }
+  
+  .je9c-progress-bar {
+    height: 18px;
+    background: #222222;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #db4a8e;
+    margin: 15px 0;
+  }
+  
+  .je9c-progress {
+    height: 100%;
+    background: linear-gradient(45deg, #db4a8e, #ff8aba);
+    border-radius: 12px;
+    transition: width 0.8s ease;
+  }
+  
+  .je9c-quota-text {
+    font-size: 1rem;
+    color: #ffffff;
+    text-align: center;
+  }
+  
+  /* Stats Section */
+  .je9c-stats {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .je9c-stats-info {
+    width: 100%;
+    max-width: 500px;
+  }
+  
+  .je9c-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    text-align: center;
+  }
+  
+  .je9c-stat-item {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .je9c-stat-value {
+    font-size: 1.8rem;
+    color: #db4a8e;
+    font-weight: 700;
+  }
+  
+  .je9c-stat-label {
+    font-size: 1rem;
+    color: #ffffff;
+    opacity: 0.8;
+  }
+  
+  /* Buttons */
+  .je9c-action-btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
     cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: #444;
-    transition: 0.4s;
-    border-radius: 20px;
-}
-
-.toggle-switch input:checked + .slider {
-    background: #ff4b2b;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 14px;
-    width: 14px;
-    left: 3px;
-    bottom: 3px;
-    background: white;
-    transition: 0.4s;
-    border-radius: 50%;
-}
-
-input:checked + .slider:before {
-    transform: translateX(20px);
-}
-
-/* Responsive Design */
-@media (max-width: 600px) {
-    .chat-settings {
-        max-width: 100%;
-        padding: 15px;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 200px;
+  }
+  
+  .je9c-upgrade {
+    background: #db4a8e;
+    color: #ffffff;
+    margin-top: 20px;
+  }
+  
+  .je9c-upgrade:hover {
+    background: #c0397a;
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(219, 74, 142, 0.6);
+  }
+  
+  .je9c-support {
+    background: #222222;
+    color: #ffffff;
+  }
+  
+  .je9c-support:hover {
+    background: #333333;
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(219, 74, 142, 0.4);
+  }
+  
+  /* Footer */
+  .je9c-dashboard-footer {
+    text-align: center;
+    padding: 20px 0;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .je9c-overview {
+      grid-template-columns: 1fr;
     }
-}
+  
+    .je9c-dashboard-title {
+      font-size: 2rem;
+    }
+  
+    .je9c-card-heading {
+      font-size: 1.4rem;
+    }
+  
+    .je9c-stats-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .je9c-dashboard {
+      padding: 20px;
+    }
+  
+    .je9c-dashboard-header {
+      padding: 15px;
+    }
+  
+    .je9c-dashboard-title {
+      font-size: 1.7rem;
+    }
+  
+    .je9c-card {
+      padding: 20px;
+    }
+  
+    .je9c-action-btn {
+      padding: 10px 20px;
+      font-size: 1rem;
+    }
+  
+    .je9c-info-grid {
+      grid-template-columns: 1fr;
+    }
+  }

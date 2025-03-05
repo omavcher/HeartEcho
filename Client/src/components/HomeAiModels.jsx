@@ -28,11 +28,19 @@ function HomeAiModels() {
   }, []);
 
   // ✅ Filter & Limit AI Models (Max 10 per category)
-  const filteredModels = aiModels
-    .filter((model) =>
+  const getRandomModels = (models, count) => {
+    return models
+      .sort(() => Math.random() - 0.5) // ✅ Shuffle the array randomly
+      .slice(0, count); // ✅ Pick the first `count` items
+  };
+  
+  const filteredModels = getRandomModels(
+    aiModels.filter((model) =>
       activeTab === "girls" ? model.gender === "female" : model.gender === "male"
-    )
-    .slice(0, 10); // ✅ Limit to 10 results
+    ),
+    10
+  );
+  
 
   return (
     <div className="ai-models-section">

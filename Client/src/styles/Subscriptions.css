@@ -1,194 +1,300 @@
+/* Add this to your existing Subscriptions.css */
+.quota-message {
+  background: rgba(229, 9, 20, 0.9); /* Netflix red with transparency */
+  color: #fff;
+  padding: 15px;
+  border-radius: 5px;
+  margin-top: 20px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 16px;
+  font-weight: bold;
+  animation: slideInFromTop 0.8s ease-out, pulse 2s infinite;
+}
+
+/* Ensure existing styles remain intact; only adding quota-message styles above */
 .subscriptions-container {
-    background-color: #1a1a1a;
-    color: #ffffff;
-    font-family: 'Arial', sans-serif;
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  
-  .header {
-    display: flex;
-    justify-content: flex-start;
-    gap: 20px;
-    margin-bottom: 20px;
-  }
-  
-  .nav-item {
-    font-size: 16px;
-    color: #ffffff;
-    cursor: pointer;
-  }
-  
-  .nav-item.premium {
-    color: #ff4d4d;
-    font-weight: bold;
-  }
-  
-  .title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 10px;
-  }
-  
-  .subtitle {
-    font-size: 14px;
-    color: #b3b3b3;
-    margin-bottom: 20px;
-  }
-  
-  .billing-options {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  
-  .billing-button {
-    background-color: #333333;
-    border: none;
-    color: #ffffff;
-    padding: 10px 20px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 14px;
-    width: 100px;
-  }
-  
-  .billing-button.yearly {
-    background-color: #ff4d4d;
-  }
-  
-  .billing-button.yearly .discount {
-    color: #ffffff;
-    font-size: 12px;
-  }
-  
-  .note {
-    font-size: 12px;
-    color: #b3b3b3;
-    margin-bottom: 20px;
-  }
-  
+  color: #fff;
+  font-family: 'Netflix Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  height: 100vh;
+  padding: 0;
+  margin: 0;
+  overflow-x: hidden;
+  margin-bottom: 5rem;
+}
+
+.hero {
+  text-align: center;
+  padding: 80px 20px 50px;
+  animation: fadeIn 1s ease-in;
+}
+
+.logo {
+  font-size: 48px;
+  font-weight: bold;
+  color: #D04084;
+  margin: 0 0 20px;
+  animation: slideInFromTop 0.8s ease-out;
+}
+
+.title {
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  animation: slideInFromLeft 1s ease-out;
+}
+
+.subtitle {
+  font-size: 20px;
+  color: #b3b3b3;
+  max-width: 600px;
+  margin: 0 auto;
+  animation: fadeIn 1.5s ease-in;
+}
+
+.plans {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  padding: 0 20px;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.plan {
+  background: #1f1f1f;
+  border-radius: 8px;
+  padding: 30px;
+  width: 300px;
+  text-align: center;
+  position: relative;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  animation: slideUp 1s ease-out forwards;
+}
+
+.plan:nth-child(1) { animation-delay: 0.2s; }
+.plan:nth-child(2) { animation-delay: 0.4s; }
+.plan:nth-child(3) { animation-delay: 0.6s; }
+
+.plan:hover {
+  transform: scale(1.08);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+}
+
+.plan h3 {
+  font-size: 28px;
+  margin: 0 0 15px;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.price {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.duration {
+  font-size: 18px;
+  color: #b3b3b3;
+}
+
+.save {
+  font-size: 16px;
+  color: #d2126c;
+  margin: 10px 0;
+  animation: pulse 2s infinite;
+}
+
+.popular {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #db1873;
+  color: #fff;
+  padding: 5px 15px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: bold;
+  animation: bounce 1.5s infinite;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+  text-align: left;
+}
+
+li {
+  font-size: 16px;
+  margin-bottom: 10px;
+  color: #b3b3b3;
+  opacity: 0;
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.plan ul li:nth-child(1) { animation-delay: 0.8s; }
+.plan ul li:nth-child(2) { animation-delay: 0.9s; }
+.plan ul li:nth-child(3) { animation-delay: 1.0s; }
+.plan ul li:nth-child(4) { animation-delay: 1.1s; }
+.plan ul li:nth-child(5) { animation-delay: 1.2s; }
+
+.subscribe-button {
+  background: #eb2e86;
+  border: none;
+  color: #fff;
+  padding: 15px;
+  width: 100%;
+  border-radius: 5px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.subscribe-button:hover {
+  background: #D04084;
+  transform: translateY(-3px);
+}
+
+.premium-button {
+  background: linear-gradient(135deg, #D04084, #f531cb);
+}
+
+.ultimate-button {
+  background: linear-gradient(135deg, #D04084, #f531cb);
+}
+
+.footer-note {
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 14px;
+  color: #737373;
+  animation: fadeIn 2s ease-in;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInFromTop {
+  from { transform: translateY(-50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideInFromLeft {
+  from { transform: translateX(-100px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+  40% { transform: translateX(-50%) translateY(-10px); }
+  60% { transform: translateX(-50%) translateY(-5px); }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
   .plans {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
+    padding: 0 10px;
   }
-  
+
   .plan {
-    background-color: #2d2d2d;
-    border-radius: 10px;
-    padding: 20px;
-    display: flex;
+    width: 280px;
+  }
+
+  .title {
+    font-size: 36px;
+  }
+
+  .subtitle {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 60px 15px 40px;
+  }
+
+  .logo {
+    font-size: 36px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+  }
+
+  .plans {
     flex-direction: column;
     align-items: center;
-    border: 2px solid transparent;
   }
-  
-  .plan.free {
-    border-color: #4d4d4d;
+
+  .plan {
+    width: 90%;
+    max-width: 350px;
   }
-  
-  .plan.premium {
-    border-color: #4d4d4d;
+
+  .quota-message {
+    font-size: 14px;
+    padding: 10px;
   }
-  
-  .plan.pro {
-    border-color: #4d4d4d;
+}
+
+@media (max-width: 480px) {
+  .logo {
+    font-size: 28px;
   }
-  
-  .plan.ultimate {
-    border-color: #ff4d4d;
+
+  .title {
+    font-size: 24px;
   }
-  
-  .plan h2 {
-    font-size: 20px;
-    margin: 0 0 10px 0;
+
+  .subtitle {
+    font-size: 14px;
   }
-  
+
+  .plan h3 {
+    font-size: 24px;
+  }
+
   .price {
-    font-size: 18px;
-    margin-bottom: 10px;
+    font-size: 30px;
   }
-  
-  .price .save {
-    font-size: 12px;
-    color: #b3b3b3;
-  }
-  
-  .popular {
-    background-color: #ff4d4d;
-    color: #ffffff;
-    padding: 5px 10px;
-    border-radius: 10px;
-    font-size: 12px;
-    margin-bottom: 10px;
-  }
-  
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 20px 0;
-    text-align: left;
-    width: 100%;
-  }
-  
-  li {
-    font-size: 14px;
-    margin-bottom: 5px;
-    color: #ffffff;
-  }
-  
+
   .subscribe-button {
-    background-color: #333333;
-    border: none;
-    color: #ffffff;
-    padding: 10px 20px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 14px;
-    width: 100%;
+    font-size: 16px;
+    padding: 12px;
   }
-  
-  .subscribe-button.ultimate {
-    background-color: #ff4d4d;
+
+  .quota-message {
+    font-size: 12px;
+    padding: 8px;
   }
-  
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .plans {
-      grid-template-columns: 1fr;
-    }
-  
-    .billing-options {
-      flex-direction: column;
-    }
-  
-    .billing-button {
-      width: 100%;
-      margin-bottom: 10px;
-    }
-  
-    .header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .title {
-      font-size: 20px;
-    }
-  
-    .subtitle {
-      font-size: 12px;
-    }
-  
-    .plan {
-      padding: 15px;
-    }
-  
-    .price {
-      font-size: 16px;
-    }
-  }
+}

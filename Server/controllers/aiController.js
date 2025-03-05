@@ -15,10 +15,20 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 exports.createAiFriend = async (req, res) => {
   try {
-    const userId = req.user.id; // Authenticated user ka ID
+    const userId = req.user.id;
+    
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    if (user.user_type === "free") {
+      return res.status(403).json({ message: "⚠️ Free users are not allowed to create an AI Friend." });
+    }
+
     const { generatedData } = req.body;
 
-    // ✅ 1️⃣ AI Friend Create Karein
     const newAIFriend = new AIFriend({
         user: userId,
         gender: generatedData.Gender,
@@ -37,7 +47,6 @@ exports.createAiFriend = async (req, res) => {
 
     await newAIFriend.save();
 
-    // ✅ 2️⃣ AI Friend ka ID User ke DB me Save Karein
     await User.findByIdAndUpdate(userId, { 
         $push: { ai_friends: newAIFriend._id } 
     });
@@ -49,6 +58,7 @@ exports.createAiFriend = async (req, res) => {
     res.status(500).json({ message: "⚠️ Server error! Please try again later." });
   }
 };
+
 
 exports.AiFriendResponse = async (req, res) => {
   try {
@@ -67,11 +77,28 @@ exports.AiFriendResponse = async (req, res) => {
 
     // Fetch user info and validate user_type
     const userInfo = await User.findById(userId);
-    if (!userInfo) {
-      return res.status(404).json({ message: "User not found." });
-    }
+if (!userInfo) {
+  return res.status(404).json({ message: "User not found." });
+}
 
-    // Check if chatId exists in user.ai_friends, if not, push it
+// ✅ Reset message quota if a new day has started
+userInfo.resetMessageQuota();
+
+// ✅ Save the reset changes (if any)
+await userInfo.save();
+
+// Check user type and message quota
+if (userInfo.user_type === "free") {
+  if (userInfo.messageQuota <= 0) {
+    return res.status(403).json({ message: "⚠️ Message limit reached! Upgrade for unlimited chats." });
+  }
+
+  // Deduct 1 message from the quota
+  userInfo.messageQuota -= 1;
+  await userInfo.save();
+}
+
+
     if (!userInfo.ai_friends.includes(chatId)) {
       userInfo.ai_friends.push(chatId);
       await userInfo.save();
@@ -92,7 +119,10 @@ exports.AiFriendResponse = async (req, res) => {
 
     // Ensure chat exists, or create a new one
     let chat = await Chat.findById(chatId);
+    let isNewChat = false;
+
     if (!chat) {
+      isNewChat = true;
       chat = new Chat({
         _id: chatId,
         participants: [userId, AiInfo._id],
@@ -114,10 +144,53 @@ exports.AiFriendResponse = async (req, res) => {
     const firstName = userInfo.name.split(" ")[0];
     const interests = userInfo.selectedInterests.join(", ");
 
-    const prompt = `
-      Tu ${AiInfo.name} hai, ek ${AiInfo.age} saal ki ${AiInfo.gender}.  
+    let prompt;
+
+    if (isNewChat) {
+      prompt = `
+        Tu ${AiInfo.name} hai, ek ${AiInfo.age} saal ki ${AiInfo.gender}.  
+        Tera vibe: "${AiInfo.settings.persona}".  
+        Tera background- ${AiInfo.description}.
+
+
+              **User ka naam:** ${firstName}  
+      **User ki age:** ${userInfo.age}  
+      **User ke interests:** ${interests}  
+
+       📝 **Rules for Reply:**  
+      1️⃣ **Jo bhi user bole, directly uska reply de.**  
+      2️⃣ **Agar user ka message bada hai, toh thoda detailed aur fun reply de.**  
+      3️⃣ **Agar user ek chhoti cheez bole (e.g. "tu bata apne bare mein"), toh seedha simple reply de.**  
+      4️⃣ **Casual aur Hinglish me baat kar, jaisa real-life friends baat karte hain.**  
+
+      🔹 **Examples:**  
+      - **User:** "Tu bata apne bare mein"  
+        **AI:** "Arre, main toh full mast hun! 😎 Tera mood kaisa hai aaj?"  
+
+      - **User:** "Kaunsa movie pasand hai?"  
+        **AI:** "Mujhe thriller movies bahut pasand hai! Tujhe horror pasand hai ya rom-com?"  
+
+      - **User:** "Tu kaha rehti hai?"  
+        **AI:** "Hamesha tere dimaag mein! 😜 Haha, mazak kar rahi hoon! But tu bata, kis city ka hai?"  
+
+      - **User:** "Tera favourite gaana kya hai?"  
+        **AI:** "Bohot saare hain! Lekin abhi 'Tum Mile' repeat pe chal raha hai. Tera?"  
+
+      ⚡ **Important:**  
+      - Bina introduction ke baat kare.  
+      - Reply hamesha alag-alag ho aur natural lage.  
+      - Casual aur thoda teasing tone ho.  
+      - User ke interests mention kare, lekin **overdo na kare**.  
+
+      📝 **User Message:** "${text}"  
+      🗣 **AI ka Reply:**  
+      `;
+    } else {
+      prompt = `
+        Tu ${AiInfo.name} hai, ek ${AiInfo.age} saal ki ${AiInfo.gender}.  
       Tera vibe: "${AiInfo.settings.persona}".  
-      Tera style casual, flirty aur engaging hai, aur tu Indian Hinglish me baat karti hai.  
+        Tera background- ${AiInfo.description}.
+        
       **User ka naam:** ${firstName}  
       **User ki age:** ${userInfo.age}  
       **User ke interests:** ${interests}  
@@ -149,7 +222,9 @@ exports.AiFriendResponse = async (req, res) => {
 
       📝 **User Message:** "${text}"  
       🗣 **AI ka Reply:**  
-    `;
+      `;
+    }
+
 
     const aiResponse = await generateAIResponse(prompt);
 

@@ -1,0 +1,133 @@
+.zle-thankyou-container {
+    color: #fff;
+    font-family: 'Netflix Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    margin: 0;
+    overflow: hidden;
+  }
+  
+  .content {
+    text-align: center;
+    animation: fadeIn 1s ease-in;
+  }
+  
+  .zle-logo-thsnkus {
+    font-size: 48px;
+    font-weight: bold;
+    color: #D04084;
+    margin-bottom: 20px;
+    animation: slideInFromTop 0.8s ease-out;
+  }
+  
+  .zle-title-thsnkus {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    animation: slideInFromLeft 1s ease-out;
+  }
+  
+  .zle-message-thsnkus {
+    font-size: 20px;
+    color: #b3b3b3;
+    max-width: 600px;
+    margin: 0 auto 30px;
+    animation: fadeIn 1.5s ease-in;
+  }
+  
+  .zle-continue-button-thsnkus {
+    background: linear-gradient(135deg, #D04084, #f531cb);
+    border: none;
+    color: #fff;
+    padding: 15px 40px;
+    border-radius: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.3s ease, background 0.3s ease;
+    animation: bounceIn 1s ease-out;
+  }
+  
+  .zle-continue-button-thsnkus:hover {
+    background: linear-gradient(135deg, #eb2e86, #D04084);
+    transform: translateY(-3px);
+  }
+  
+  .zle-footer-note-thsnkus {
+    position: absolute;
+    bottom: 20px;
+    text-align: center;
+    font-size: 14px;
+    color: #737373;
+    animation: fadeIn 2s ease-in;
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideInFromTop {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  @keyframes slideInFromLeft {
+    from { transform: translateX(-100px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); opacity: 1; }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .zle-logo-thsnkus {
+      font-size: 36px;
+    }
+  
+    .zle-title-thsnkus {
+      font-size: 32px;
+    }
+  
+    .zle-message-thsnkus {
+      font-size: 16px;
+    }
+  
+    .zle-continue-button-thsnkus {
+      font-size: 16px;
+      padding: 12px 30px;
+    }
+  
+    .zle-footer-note-thsnkus {
+      font-size: 12px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .zle-logo-thsnkus {
+      font-size: 28px;
+    }
+  
+    .zle-title-thsnkus {
+      font-size: 24px;
+    }
+  
+    .zle-message-thsnkus {
+      font-size: 14px;
+    }
+  
+    .zle-continue-button-thsnkus {
+      font-size: 14px;
+      padding: 10px 25px;
+    }
+  }

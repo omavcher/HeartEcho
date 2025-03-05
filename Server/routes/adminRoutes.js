@@ -5,6 +5,9 @@ const router = express.Router();
 
 router.post("/dashboard-data", authMiddleware, controller.dashboardData);
 
+router.get('/users-breakdown', controller.getUsersBreakdown);
+
 
 module.exports = router;
+
 

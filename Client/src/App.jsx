@@ -14,6 +14,13 @@ import Login from "./pages/Login.jsx";
 import Subscribe from "./pages/Subscribe.jsx";
 import ProtectedRoute from "./components/ProtectedRoute"; // Import the protected route component
 import AdminPanel from "./pages/AdminPanel.jsx";
+import Refund from "./pages/Refund.jsx";
+import Terms from "./pages/Terms.jsx";
+import Shipping from "./pages/Shipping.jsx";
+import Privacy from "./pages/Privacy.jsx";
+import Products from "./pages/Products.jsx";
+import Contact from "./pages/Contact.jsx";
+import ThankYou from "./pages/ThankYou.jsx";
 
 function App() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024); // Default check
@@ -77,6 +84,13 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/admin/*" element={<AdminPanel />} />
+            <Route path="/terms" element={<Terms />} />
+        <Route path="/refund" element={<Refund />} />
+        <Route path="/shipping" element={<Shipping />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/thank-you" element={<ThankYou />} />
 
 
 

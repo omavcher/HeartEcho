@@ -9,7 +9,7 @@ router.post('/google-login', controller.googleLogin);
 router.post('/send-otp', controller.sendOtp);
 router.post('/verify-otp', controller.verifyOtp);
 
-// router.post('/put-alldata', controller.PutAIFrindData);
+router.post('/put-alldata', controller.PutAIFrindData);
 
 
 

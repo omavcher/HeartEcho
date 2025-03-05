@@ -15,11 +15,15 @@ const userSchema = new mongoose.Schema({
   referralCode: { type: String },
   termsAccepted: { type: Boolean, default: false },
   subscribeNews: { type: Boolean, default: false },
-  selectedInterests:[{type: String}],
+  selectedInterests: [{ type: String }],
 
-  // New Fields for Free Message Quota
+  // New Fields for Subscription Management
   joinedAt: { type: Date, default: Date.now }, // Track account creation date
-  messageQuota: { type: Number, default: 10 }, // Default free messages per day
+  subscriptionExpiry: { type: Date, default: null }, // Null means no expiry (for lifetime access)
+  
+  // New Fields for Free Message Quota
+  messageQuota: { type: Number, default: 20 }, // Default free messages per day
+  lastQuotaReset: { type: Date, default: Date.now }, // Track last reset date
 
   // References to Other Models
   payment_history: [{ type: mongoose.Schema.Types.ObjectId, ref: "Payment" }],
@@ -29,16 +33,52 @@ const userSchema = new mongoose.Schema({
   ai_friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "AIFriend" }]
 });
 
-// Method to check if the user still qualifies for free daily messages
+// Method to reset message quota once per day (Only for free users)
 userSchema.methods.resetMessageQuota = function () {
   const today = new Date();
-  const joinedAt = new Date(this.joinedAt);
-  const daysSinceJoined = Math.floor((today - joinedAt) / (1000 * 60 * 60 * 24)); 
+  const lastReset = new Date(this.lastQuotaReset);
 
-  if (daysSinceJoined < 7) {
-    this.messageQuota = 10; // Reset free messages for the day
-  } else if (this.user_type === "free") {
-    this.messageQuota = 0; // Free users lose daily quota after 7 days
+  if (
+    today.getUTCFullYear() !== lastReset.getUTCFullYear() ||
+    today.getUTCMonth() !== lastReset.getUTCMonth() ||
+    today.getUTCDate() !== lastReset.getUTCDate()
+  ) {
+    if (this.user_type === "free") {
+      this.messageQuota = 20; // Reset only for free users
+    }
+    this.lastQuotaReset = today;
+  }
+};
+
+// Method to check if a user’s subscription is valid
+userSchema.methods.isSubscriptionActive = function () {
+  if (!this.subscriptionExpiry) return false; // No expiry date set means no active subscription
+  return new Date() <= this.subscriptionExpiry; // Check if the current date is before expiry
+};
+
+// Method to update subscription (monthly or yearly)
+userSchema.methods.subscribe = function (durationType) {
+  const now = new Date();
+
+  if (durationType === "monthly") {
+    now.setMonth(now.getMonth() + 1); // Add 1 month
+  } else if (durationType === "yearly") {
+    now.setFullYear(now.getFullYear() + 1); // Add 1 year
+  } else if (durationType === "lifetime") {
+    this.subscriptionExpiry = null; // Lifetime subscription (never expires)
+    this.user_type = "subscriber";
+    return;
+  }
+
+  this.subscriptionExpiry = now;
+  this.user_type = "subscriber";
+};
+
+// Method to check and reset subscription if expired
+userSchema.methods.checkSubscription = function () {
+  if (this.subscriptionExpiry && new Date() > this.subscriptionExpiry) {
+    this.user_type = "free"; // Revert user back to free if expired
+    this.subscriptionExpiry = null; // Clear expiry date
   }
 };
 
