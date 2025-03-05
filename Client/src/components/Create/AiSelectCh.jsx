@@ -62,8 +62,8 @@ function AiSelectCh({ onClose ,onSelect ,aigender}) {
     HairStyles.push(
       { name: "Straight", src: "/models_images_male/Hair/long.jpg" },
       { name: "Curly", src: "/models_images_male/Hair/curly.jpg" },
-      { name: "Ponytail", src: "/models_images_male/Hair/ponytail.jpg" },
-      { name: "Braids", src: "/models_images_male/Hair/braids.jpg" }
+      { name: "Dreadlocks", src: "/models_images_male/Hair/dreadlocks.jpg" },
+      { name: "Buzz Cut", src: "/models_images_male/Hair/buzz.jpg" }
     );
   
     BodyTypes.push(

@@ -154,7 +154,6 @@ function Create() {
         'poster_male_female/2.jpg',
         'poster_male_female/3.jpg',  
         'poster_male_female/4.jpg'  
-
     ];
 
 

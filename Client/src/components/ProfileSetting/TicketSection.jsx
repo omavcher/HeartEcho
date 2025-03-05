@@ -136,7 +136,7 @@ function TicketSection({ onBackSBTNSelect }) {
           ></textarea>
 
           <button style={{marginTop:'1rem'}} type="submit" className="otp-btn-singr" disabled={isSubmitting}>
-            {isSubmitting ? <span className="loader-signin"></span> : "Update Profile"}
+            {isSubmitting ? <span className="loader-signin"></span> : "Submit"}
 
           </button>
         </form>
