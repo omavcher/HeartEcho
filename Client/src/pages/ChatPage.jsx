@@ -16,6 +16,19 @@ function ChatPage() {
 
 
 
+
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const chatId = searchParams.get("chatId");
+      
+        if (location.pathname === "/chatbox" && chatId) {
+          setChatBackBTN(true);
+        } else {
+          setChatBackBTN(false);
+        }
+      }, [location]);
+
+
     useEffect(() => {
         if (aiChatId) {
             setSelectedChatId(aiChatId); // Open AI Chat automatically

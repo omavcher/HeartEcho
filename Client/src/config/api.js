@@ -1,5 +1,5 @@
 const api = {
-    Url: 'http://localhost:5000/v1/api'
-  };
-  export default api;
-  
+    Url: 'https://heartecho.in/api/v1/api'
+};
+export default api;
+

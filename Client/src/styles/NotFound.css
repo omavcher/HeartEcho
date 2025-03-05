@@ -1,7 +1,10 @@
 .not-found-container{
     width: 100vw;
     height: 100vh;
-    background-color: antiquewhite;
+    background-color: black;
+color: white;
+    font-size: 3rem;
+font-family: "Montserrat", serif;
     display: flex;
     align-items: center;
     justify-content: center;
