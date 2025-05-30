@@ -22,7 +22,7 @@ function Signup() {
     const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    phone: "",
+    phone:"+91 9999999999",
     password: "",
     confirmPassword: "",
     twoFA: false,
