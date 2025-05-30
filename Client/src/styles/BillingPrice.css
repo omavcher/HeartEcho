@@ -1,249 +1,256 @@
-/* BillingPrice.css */
+/* Pure Black Cyberpunk Billing Theme */
 .billing-container {
-    padding: 1.25rem;
-    border-radius: 0.625rem;
-    box-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.1);
-    font-family: "Montserrat", serif;
-    width: 100%;
-    margin: 0 auto;
-  }
-  
-  
-  .search-bar-billing-price {
-    display: flex;
-    gap: 0.625rem;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-  }
-  
-  .name-input, .id-input, .mileage-input {
-    padding: 0.625rem;
-    border-radius: 0.3125rem;
-    font-size: 0.875rem;
-    flex: 1;
-    min-width: 10rem;
-    background-color: #333;
-    color: white;
-  }
-  
-  .mileage-input {
-    width: 6rem;
-  }
-  
-  .mileage-input::after {
-    content: " mi";
-    margin-left: 0.3125rem;
-    color: #666;
-  }
-  
-  .search-btn-billing-price {
-    background: #f4f4f4;
-    border: none;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.3125rem;
-    font-size: 0.875rem;
-    cursor: pointer;
-    color: #000000;
-  }
-  
-  .customers-found {
-    margin-bottom: 1.25rem;
-    color: #666;
-    font-size: 0.875rem;
-  }
-  
-  .customer-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-    gap: 1.25rem;
-  }
-  
-  .customer-card {
-    background: #404040;
-    border-radius: 0.625rem;
-    padding: 1.25rem;
-    box-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.1);
-    color: white;
-    border: 1px solid #000000;
-  }
-  
-  .customer-header {
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
-    margin-bottom: 0.9375rem;
-  }
-  
-  .profile-img {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-  
-  .customer-abbr {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    background: #007bff;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.875rem;
-    font-weight: bold;
-  }
-  
-  .customer-info h3 {
-    font-size: 1rem;
-    margin: 0;
-    color: white;
-  }
-  
-  .customer-info p {
-    font-size: 0.875rem;
-    color: white;
-    margin: 0;
-  }
-  
-  .status {
-    margin-left: auto;
-    padding: 0.3125rem 0.625rem;
-    border-radius: 0.3125rem;
-    font-size: 0.75rem;
-  }
-  
-  .status.active {
-    background: #d4edda;
-    color: #096d20;
-    font-weight: bold;
-  }
-  
-  .status.inactive {
-    background: #f8d7da;
-    color: #a30818;
-    font-weight: bold;
-  }
-  
-  .customer-details {
-    margin-bottom: 1.25rem;
-    font-size: 0.875rem;
-    color: #333;
-  }
-  
-  .customer-details p {
-    margin: 0.3125rem 0;
-    color: white;
-  }
-  
-  .select-btn, .edit-merge-btn {
-    background: #000000;
-    color: white;
-    border: none;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.3125rem;
-    font-size: 0.875rem;
-    cursor: pointer;
-    width: 100%;
-    text-decoration: none;
-    font-weight: bold;
-
-  }
-  .edit-merge-btn:hover{
-    background: #191919;
-  }
-  .select-btn {
-    background: #000;
-  }
-  
-  /* Media Queries */
-  @media (max-width: 768px) {
-    .billing-container {
-      padding: 0.9375rem;
-    }
-  
-    .header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.625rem;
-    }
-  
-    .search-bar-billing-price {
-      flex-direction: column;
-      gap: 0.625rem;
-    }
-  
-    .name-input, .id-input, .mileage-input {
-      min-width: 100%;
-    }
-  
-    .mileage-input {
-      width: 100%;
-    }
-  
-    .customer-cards {
-      grid-template-columns: 1fr;
-    }
-  }
-  
-  @media (min-width: 769px) and (max-width: 1024px) {
-    .customer-cards {
-      grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-    }
-  }
-  
-  @media (min-width: 1025px) {
-    .customer-cards {
-      grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-    }
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  .customer-details {
-    max-height: 200px; /* Adjust as needed */
-    overflow-y: auto;
-    padding-right: 5px;
+  padding: 1.5rem;
+  background: #000000;
+  font-family: 'Inter', 'Roboto', sans-serif;
+  color: #ffffff;
+  max-width: 1200px;
+  margin: 0 auto;
 }
+
+/* Search Bar */
+.search-bar-billing-price {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.name-input, .id-input, .mileage-input {
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  flex: 1;
+  min-width: 12rem;
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.name-input:disabled {
+  opacity: 0.7;
+  background: #111111;
+}
+
+.name-input:focus, .id-input:focus, .mileage-input:focus {
+  border-color: #db4a8e;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(219, 74, 142, 0.2);
+}
+
+.search-btn-billing-price {
+  background: linear-gradient(135deg, #db4a8e, #c0397a);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #ffffff;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.search-btn-billing-price:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(219, 74, 142, 0.3);
+}
+
+/* Customers Found */
+.customers-found {
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  color: #a0a0a0;
+  text-align: center;
+  padding: 0.5rem;
+  background: #0a0a0a;
+  border-radius: 0.375rem;
+  border: 1px solid #2a2a2a;
+}
+
+/* Customer Cards */
+.customer-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: 1.5rem;
+}
+
+.customer-card {
+  background: #0a0a0a;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  border: 1px solid #2a2a2a;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.customer-card:hover {
+  border-color: #db4a8e;
+  box-shadow: 0 4px 16px rgba(219, 74, 142, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Customer Header */
+.customer-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.profile-img {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #db4a8e;
+}
+
+.customer-abbr {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #db4a8e, #c0397a);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: 2px solid #2a2a2a;
+}
+
+.customer-info h3 {
+  font-size: 1.1rem;
+  margin: 0;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.customer-info p {
+  font-size: 0.85rem;
+  color: #a0a0a0;
+  margin: 0.25rem 0 0;
+}
+
+/* Status Badges */
+.status {
+  margin-left: auto;
+  padding: 0.35rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status.active {
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+  border: 1px solid #28a745;
+}
+
+.status.inactive {
+  background: rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+  border: 1px solid #dc3545;
+}
+
+/* Customer Details */
+.customer-details {
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.customer-details::-webkit-scrollbar {
+  width: 4px;
+}
+
+.customer-details::-webkit-scrollbar-thumb {
+  background: #db4a8e;
+  border-radius: 2px;
+}
+
 .payment-item {
-  padding: 10px;
-  border-bottom: 1px solid #666;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #2a2a2a;
 }
+
 .payment-item:last-child {
   border-bottom: none;
 }
-.customer-card {
-  min-width: 18rem;
+
+.payment-item p {
+  margin: 0.5rem 0;
+  color: #e0e0e0;
 }
-.customer-cards {
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+
+.payment-item strong {
+  color: #db4a8e;
+  font-weight: 600;
 }
-.customer-details p {
-  color: #ddd;
+
+/* Edit Button */
+.edit-merge-btn {
+  display: block;
+  text-align: center;
+  background: linear-gradient(135deg, #db4a8e, #c0397a);
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  width: 100%;
+  text-decoration: none;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.edit-merge-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(219, 74, 142, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .billing-container {
+      padding: 1rem;
+  }
+  
+  .search-bar-billing-price {
+      flex-direction: column;
+      gap: 0.75rem;
+  }
+  
+  .name-input, .id-input, .mileage-input {
+      min-width: 100%;
+  }
+  
+  .customer-cards {
+      grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .customer-header {
+      flex-wrap: wrap;
+  }
+  
+  .status {
+      margin-left: 0;
+      width: 100%;
+      text-align: center;
+      margin-top: 0.5rem;
+  }
 }

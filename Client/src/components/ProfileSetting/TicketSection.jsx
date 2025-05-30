@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import api from "../../config/api";
 import PopNoti from "../PopNoti";
+import "../styles/TicketSection.css";
 
 function TicketSection({ onBackSBTNSelect }) {
   const [issue, setIssue] = useState("");

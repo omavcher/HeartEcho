@@ -99,12 +99,26 @@ exports.googleLogin = async (req, res) => {
 
     // Check if user exists
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "User not found. Please sign up first." });
-
-    // Generate JWT token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-
-    res.json({ token, user });
+    
+    if (user) {
+      // User exists - proceed with login
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+      return res.json({ 
+        token, 
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          user_type: user.user_type,
+        }
+      });
+    } else {
+      // User doesn't exist - return null to indicate new user
+      return res.json({ 
+        user: null,
+        message: "New user, please complete registration"
+      });
+    }
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
@@ -184,7 +198,7 @@ exports.PutAIFrindData = async (req, res) => {
           "persona": "Charming, fun-loving, slightly teasing",
           "setting": "A rooftop party with city lights in the background"
         },
-        "initial_message": "Hey handsome! 😉 What’s the most fun thing you've done this week?",
+        "initial_message": "Hey handsome! 😉 What's the most fun thing you've done this week?",
         "avatar_img": "https://res.cloudinary.com/dx6rjowfb/image/upload/v1741006635/Females/l1epmmaa2qdqdvyzu4ao.jpg"
       }
     ]

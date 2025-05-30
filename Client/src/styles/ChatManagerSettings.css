@@ -1,244 +1,229 @@
-/* Futuristic Dark Black Theme */
+/* Pure Black Cyberpunk Theme */
 .je9c-dashboard {
-    width: 100%;
-    height: 20vh ;
-    background: #000000; /* Pure black */
-    padding: 30px;
-    font-family: "Roboto", sans-serif;
-    color: #ffffff; /* White primary color */
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
+  width: 100%;
+  min-height: 100vh;
+  background: #000000;
+  padding: 2rem;
+  font-family: 'Inter', 'Roboto', sans-serif;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Loading and Error States */
+.je9c-loading, .je9c-error {
+  color: #ffffff;
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  background: #0a0a0a;
+  border-radius: 0.5rem;
+  border: 1px solid #2a2a2a;
+}
+
+/* Card Styles */
+.je9c-card {
+  background: #0a0a0a;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #2a2a2a;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.je9c-card:hover {
+  border-color: #db4a8e;
+  box-shadow: 0 4px 12px rgba(219, 74, 142, 0.2);
+  transform: translateY(-2px);
+}
+
+.je9c-card-heading {
+  font-size: 1.25rem;
+  color: #db4a8e;
+  margin: 0 0 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Overview Section */
+.je9c-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Info Grid */
+.je9c-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.je9c-info-label {
+  font-size: 0.9rem;
+  color: #a0a0a0;
+  font-weight: 400;
+}
+
+.je9c-info-value {
+  font-size: 0.95rem;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.je9c-accent {
+  color: #db4a8e;
+  font-weight: 600;
+}
+
+/* Progress Bar */
+.je9c-progress-bar {
+  height: 0.5rem;
+  background: #1a1a1a;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.je9c-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #db4a8e, #ff6b9d);
+  border-radius: 0.25rem;
+  transition: width 0.8s ease-out;
+}
+
+/* Stats Section */
+.je9c-stats {
+  display: flex;
+  justify-content: center;
+}
+
+.je9c-stats-info {
+  width: 100%;
+  max-width: 500px;
+}
+
+.je9c-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.je9c-stat-item {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  background: #0f0f0f;
+  border-radius: 0.5rem;
+  border: 1px solid #2a2a2a;
+}
+
+.je9c-stat-value {
+  font-size: 1.75rem;
+  color: #db4a8e;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.je9c-stat-label {
+  font-size: 0.85rem;
+  color: #a0a0a0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Buttons */
+.je9c-action-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 200px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.je9c-upgrade {
+  background: linear-gradient(135deg, #db4a8e, #c0397a);
+  color: #ffffff;
+  margin-top: 1rem;
+  box-shadow: 0 2px 8px rgba(219, 74, 142, 0.3);
+}
+
+.je9c-upgrade:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(219, 74, 142, 0.4);
+}
+
+.je9c-support {
+  background: #1a1a1a;
+  color: #ffffff;
+  border: 1px solid #2a2a2a;
+}
+
+.je9c-support:hover {
+  background: #2a2a2a;
+  border-color: #db4a8e;
+}
+
+/* Footer */
+.je9c-dashboard-footer {
+  text-align: center;
+  padding: 1rem 0;
+  margin-top: auto;
+}
+
+/* Text Elements */
+.je9c-plan-type {
+  font-size: 0.95rem;
+  color: #a0a0a0;
+  margin: 0 0 0.5rem;
+}
+
+.je9c-plan-type span {
+  color: #db4a8e;
+  font-weight: 600;
+}
+
+.je9c-quota-text {
+  font-size: 0.95rem;
+  color: #ffffff;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .je9c-dashboard {
+      padding: 1.5rem;
   }
   
-  /* Header */
-  .je9c-dashboard-header {
-    text-align: center;
-    padding: 25px;
-    background: #0f0f0f; /* Slightly lighter black */
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
-  }
-  
-  .je9c-dashboard-title {
-    font-size: 2.5rem;
-    color: #db4a8e; /* Pink secondary color */
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-weight: 700;
-  }
-  
-  .je9c-dashboard-subtitle {
-    font-size: 1.1rem;
-    color: #ffffff;
-    margin: 10px 0 0;
-    opacity: 0.7;
-  }
-  
-  /* Overview Section */
   .je9c-overview {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-  }
-  
-  .je9c-card {
-    background: #0f0f0f;
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8);
-    border: 2px solid #db4a8e;
-    transition: all 0.3s ease;
-  }
-  
-  .je9c-card:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 25px rgba(219, 74, 142, 0.4);
-  }
-  
-  .je9c-card-heading {
-    font-size: 1.5rem;
-    color: #db4a8e;
-    margin: 0 0 20px;
-    font-weight: 600;
-  }
-  
-  /* Trial Info */
-  .je9c-info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-  }
-  
-  .je9c-info-label {
-    font-size: 1rem;
-    color: #ffffff;
-    opacity: 0.8;
-  }
-  
-  .je9c-info-value {
-    font-size: 1rem;
-    color: #ffffff;
-    font-weight: 500;
-  }
-  
-  .je9c-accent {
-    color: #db4a8e;
-    font-weight: 700;
-  }
-  
-  /* Quota Info */
-  .je9c-plan-type {
-    font-size: 1.1rem;
-    margin: 0 0 15px;
-  }
-  
-  .je9c-plan-type span {
-    color: #db4a8e;
-    font-weight: 600;
-  }
-  
-  .je9c-progress-bar {
-    height: 18px;
-    background: #222222;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid #db4a8e;
-    margin: 15px 0;
-  }
-  
-  .je9c-progress {
-    height: 100%;
-    background: linear-gradient(45deg, #db4a8e, #ff8aba);
-    border-radius: 12px;
-    transition: width 0.8s ease;
-  }
-  
-  .je9c-quota-text {
-    font-size: 1rem;
-    color: #ffffff;
-    text-align: center;
-  }
-  
-  /* Stats Section */
-  .je9c-stats {
-    display: flex;
-    justify-content: center;
-  }
-  
-  .je9c-stats-info {
-    width: 100%;
-    max-width: 500px;
+      grid-template-columns: 1fr;
   }
   
   .je9c-stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    text-align: center;
+      grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .je9c-dashboard {
+      padding: 1rem;
+      gap: 1rem;
   }
   
-  .je9c-stat-item {
-    display: flex;
-    flex-direction: column;
+  .je9c-card {
+      padding: 1.25rem;
   }
   
-  .je9c-stat-value {
-    font-size: 1.8rem;
-    color: #db4a8e;
-    font-weight: 700;
-  }
-  
-  .je9c-stat-label {
-    font-size: 1rem;
-    color: #ffffff;
-    opacity: 0.8;
-  }
-  
-  /* Buttons */
   .je9c-action-btn {
-    padding: 12px 30px;
-    border: none;
-    border-radius: 12px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    width: 100%;
-    max-width: 200px;
+      max-width: 100%;
   }
-  
-  .je9c-upgrade {
-    background: #db4a8e;
-    color: #ffffff;
-    margin-top: 20px;
-  }
-  
-  .je9c-upgrade:hover {
-    background: #c0397a;
-    transform: scale(1.1);
-    box-shadow: 0 5px 15px rgba(219, 74, 142, 0.6);
-  }
-  
-  .je9c-support {
-    background: #222222;
-    color: #ffffff;
-  }
-  
-  .je9c-support:hover {
-    background: #333333;
-    transform: scale(1.1);
-    box-shadow: 0 5px 15px rgba(219, 74, 142, 0.4);
-  }
-  
-  /* Footer */
-  .je9c-dashboard-footer {
-    text-align: center;
-    padding: 20px 0;
-  }
-  
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .je9c-overview {
-      grid-template-columns: 1fr;
-    }
-  
-    .je9c-dashboard-title {
-      font-size: 2rem;
-    }
-  
-    .je9c-card-heading {
-      font-size: 1.4rem;
-    }
-  
-    .je9c-stats-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .je9c-dashboard {
-      padding: 20px;
-    }
-  
-    .je9c-dashboard-header {
-      padding: 15px;
-    }
-  
-    .je9c-dashboard-title {
-      font-size: 1.7rem;
-    }
-  
-    .je9c-card {
-      padding: 20px;
-    }
-  
-    .je9c-action-btn {
-      padding: 10px 20px;
-      font-size: 1rem;
-    }
-  
-    .je9c-info-grid {
-      grid-template-columns: 1fr;
-    }
-  }
+}

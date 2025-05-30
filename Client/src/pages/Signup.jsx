@@ -8,11 +8,16 @@ import PopNoti from '../components/PopNoti';
 import api from '../config/api';
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; // Import for navigation
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 
 function Signup() {
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
     const [step, setStep] = useState(1);
     const [isOtpVerified, setIsOtpVerified] = useState(false);
+    const [isGoogleSignup, setIsGoogleSignup] = useState(false);
+    const [googleUserData, setGoogleUserData] = useState(null);
+    const [currentStep, setCurrentStep] = useState(1);
 
     const [formData, setFormData] = useState({
     fullName: "",
@@ -299,29 +304,36 @@ const uploadToCloudinary = async (file) => {
       }
     
       try {
-        const res = await axios.post(`${api.Url}/auth/register`, formData);
+        let res;
+        if (isGoogleSignup) {
+          // For Google signup, we already have email and name
+          res = await axios.post(`${api.Url}/auth/register`, {
+            ...formData,
+            email: googleUserData.email,
+            fullName: googleUserData.name,
+            profilePicture: googleUserData.picture,
+            password: Math.random().toString(36).slice(-8) // Generate random password for Google users
+          });
+        } else {
+          // Regular signup
+          res = await axios.post(`${api.Url}/auth/register`, formData);
+        }
         
         localStorage.setItem("user", JSON.stringify(res.data.user));
-          localStorage.setItem("token", res.data.token);
+        localStorage.setItem("token", res.data.token);
 
-          if (ip && coordinates) {
-            await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform }, {
-              headers: { Authorization: `Bearer ${res.data.token}` },
-            });
-          }
-
-            const resdetai = await axios.post(`${api.Url}/user/login-details`, {
-            ip,coordinates,platform
-          }, {
+        if (ip && coordinates) {
+          await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform }, {
             headers: { Authorization: `Bearer ${res.data.token}` },
           });
-        
+        }
+
         setNotification({ show: true, message: "Signup successful!", type: "success" });
     
         navigate("/");
     
       } catch (err) {
-        setNotification({ show: true, message: "Signup failed!", type: "error" });
+        setNotification({ show: true, message: err.response?.data?.message || "Signup failed!", type: "error" });
       }
       
       setIsSignup(false);
@@ -359,8 +371,223 @@ const uploadToCloudinary = async (file) => {
       setIsVerifyingOtp(false); // Stop loading state
     };
     
-    
-    
+    const handleGoogleSuccess = async (response) => {
+      try {
+        const userData = jwtDecode(response.credential);
+        
+        // Check if user exists
+        const checkUser = await axios.post(`${api.Url}/auth/google-login`, { email: userData.email });
+        
+        if (checkUser.data.user) {
+          // User exists - proceed with login
+          localStorage.setItem("token", checkUser.data.token);
+          localStorage.setItem("user", JSON.stringify(checkUser.data.user));
+          setNotification({ show: true, message: "Login successful!", type: "success" });
+          navigate('/');
+        } else {
+          // New user - start Google signup flow
+          setIsGoogleSignup(true);
+          setGoogleUserData(userData);
+          setFormData(prev => ({
+            ...prev,
+            email: userData.email,
+            fullName: userData.name,
+            profilePicture: userData.picture
+          }));
+          setCurrentStep(2); // Start from step 2 since we have email and name
+          setNotification({ show: true, message: "Please complete your profile!", type: "info" });
+        }
+      } catch (error) {
+        setNotification({ show: true, message: "Google authentication failed!", type: "error" });
+      }
+    };
+
+    const handleGoogleFailure = (error) => {
+      console.error("Google Signup Failed:", error);
+      setNotification({ show: true, message: "Google Signup Failed!", type: "error" });
+    };
+
+    const handleGoogleSignupSubmit = async () => {
+      if (!validateGoogleSignupData()) {
+        return;
+      }
+
+      setIsSignup(true);
+      try {
+        const res = await axios.post(`${api.Url}/auth/register`, {
+          ...formData,
+          email: googleUserData.email,
+          fullName: googleUserData.name,
+          profilePicture: googleUserData.picture,
+          password: Math.random().toString(36).slice(-8) // Generate random password for Google users
+        });
+
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        localStorage.setItem("token", res.data.token);
+
+        if (ip && coordinates) {
+          await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform }, {
+            headers: { Authorization: `Bearer ${res.data.token}` },
+          });
+        }
+
+        setNotification({ show: true, message: "Signup successful!", type: "success" });
+        navigate("/");
+      } catch (err) {
+        setNotification({ show: true, message: err.response?.data?.message || "Signup failed!", type: "error" });
+      }
+      setIsSignup(false);
+    };
+
+    const validateGoogleSignupData = () => {
+      if (!formData.phone) {
+        setNotification({ show: true, message: "Please enter your phone number!", type: "error" });
+        return false;
+      }
+      if (!formData.gender) {
+        setNotification({ show: true, message: "Please select your gender!", type: "error" });
+        return false;
+      }
+      if (!formData.age) {
+        setNotification({ show: true, message: "Please enter your age!", type: "error" });
+        return false;
+      }
+      if (formData.selectedInterests.length === 0) {
+        setNotification({ show: true, message: "Please select at least one interest!", type: "error" });
+        return false;
+      }
+      if (!formData.termsAccepted) {
+        setNotification({ show: true, message: "Please accept the terms and conditions!", type: "error" });
+        return false;
+      }
+      return true;
+    };
+
+    const renderGoogleSignupStep = () => {
+      switch (currentStep) {
+        case 1:
+          return (
+            <div>
+              <h2>Basic Information</h2>
+              <div className='inputs-sign'>
+                <input type="text" value={formData.fullName} disabled />
+                <input type="email" value={formData.email} disabled />
+                <div className='phone-input-container'>
+                  <PhoneInput
+                    international
+                    defaultCountry="IN"
+                    placeholder="Enter phone number"
+                    value={formData.phone}
+                    onChange={(value) => {
+                      setFormData({ ...formData, phone: value });
+                      // Clear any previous phone validation error
+                      if (notification.message.includes("phone")) {
+                        setNotification({ show: false, message: "", type: "" });
+                      }
+                    }}
+                    error={formData.phone ? undefined : "Phone number is required"}
+                  />
+                  {!formData.phone && (
+                    <span className="error-message">Please enter your phone number</span>
+                  )}
+                </div>
+              </div>
+              <div className='sign-up-page-cons2'>
+                <button 
+                  onClick={() => {
+                    if (!formData.phone) {
+                      setNotification({ 
+                        show: true, 
+                        message: "Please enter your phone number!", 
+                        type: "error" 
+                      });
+                      return;
+                    }
+                    setCurrentStep(2);
+                  }}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          );
+
+        case 2:
+          return (
+            <div>
+              <h2>Personal Information</h2>
+              <div className='inputs-sign'>
+                <input
+                  type='number'
+                  name='age'
+                  placeholder='Age'
+                  value={formData.age}
+                  onChange={handleChange}
+                />
+                <select name='gender' value={formData.gender} onChange={handleChange}>
+                  <option value=''>Select Gender</option>
+                  <option value='male'>Male</option>
+                  <option value='female'>Female</option>
+                  <option value='other'>Other</option>
+                </select>
+              </div>
+              <div className='sign-up-page-cons2'>
+                <button onClick={() => setCurrentStep(1)}>Back</button>
+                <button onClick={() => setCurrentStep(3)}>Next</button>
+              </div>
+            </div>
+          );
+
+        case 3:
+          return (
+            <div>
+              <h2>Interests & Preferences</h2>
+              <div className='inputs-sign'>
+                <h4 className='sign-fdwf4'>Interests: <p>You can choose several options</p></h4>
+                <div className='singip-instrwe'>
+                  <div className='emojis-dign'>
+                    {options.interests.map(({ id, label, img }) => (
+                      <div
+                        key={id}
+                        className={`crete-3-box3s ${formData.selectedInterests.includes(id) ? 'selected-creat' : ''}`}
+                        onClick={() => handleInterestSelect(id)}
+                      >
+                        <img src={img} alt={label} />
+                        <h3>{label}</h3>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <label>
+                  <input
+                    type="checkbox"
+                    name="termsAccepted"
+                    onChange={handleChange}
+                    required
+                  /> Agree to Terms & Conditions
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    name="subscribeNews"
+                    onChange={handleChange}
+                  /> Subscribe to News & Updates
+                </label>
+              </div>
+              <div className='sign-up-page-cons2'>
+                <button onClick={() => setCurrentStep(2)}>Back</button>
+                <button onClick={handleGoogleSignupSubmit}>
+                  {isSignup ? <span className="loader-signin"></span> : "Complete Signup"}
+                </button>
+              </div>
+            </div>
+          );
+
+        default:
+          return null;
+      }
+    };
+
   return (
     <div className='signup-container'>
       <PopNoti
@@ -411,212 +638,227 @@ const uploadToCloudinary = async (file) => {
            
 
         <div className='signup-box'>
-          {step === 1 && (
-          <div>
-            <h2>Basic Information</h2>
+          {isGoogleSignup ? (
+            renderGoogleSignupStep()
+          ) : (
+            <>
+              {step === 1 && (
+                <div>
+                  <h2>Basic Information</h2>
 
-            <div className='inputs-sign'>
-            <input type="text" name="fullName" placeholder="Full Name" onChange={handleChange} />
+                  <div className='inputs-sign'>
+                  <input type="text" name="fullName" placeholder="Full Name" onChange={handleChange} />
 
-        <div className='email-opt-sen-signpa'>
+              <div className='email-opt-sen-signpa'>
+              <input
+        type="email"
+        name="email"
+        value={formData.email}
+        onChange={handleChange}
+        disabled={isOtpVerified} // ✅ Disable if verified
+      />
+      <button 
+        className="otp-btn-singr" 
+        onClick={sendOtp} 
+        disabled={isSendingOtp || otpSent}
+      >
+        {isSendingOtp ? <span className="loader-signin"></span> : "Send"}
+      </button>
+              </div>
+
+              {otpSent && (
+                <>
+      {!isOtpVerified && (
+        <button className='sitmer-se3' onClick={sendOtp} disabled={otpSent && timer > 0}>
+          {otpSent && timer > 0 ? `Resend OTP in ${timer}s` : "Resend OTP"}
+        </button>
+      )}
+                <div className="otp-container">
+                  {otp.map((digit, index) => (
+                    <input
+                      key={index}
+                      ref={(el) => (inputRefs.current[index] = el)}
+                      type="text"
+                      maxLength="1"
+                      className="otp-input"
+                      value={digit}
+                      onChange={(e) => handleChangeOtp(index, e)}
+                      onKeyDown={(e) => handleKeyDown(index, e)}
+                    />
+                  ))}
+                </div>
+                <button 
+          className="otp-btn-singr" 
+          onClick={verifyOtp} 
+          disabled={isVerifyingOtp}
+        >
+          {isVerifyingOtp ? <span className="loader-signin"></span> : "Verify OTP"}
+        </button>                </>
+              )}
+
+
+
+              <PhoneInput
+                 defaultCountry="IN"
+                 placeholder="Enter phone number"
+                 value={formData.phone}
+                 onChange={(value) => setFormData({ ...formData, phone: value })}
+               />
+              </div>
+              <div className='sign-up-page-cons2'>
+              <button onClick={nextStep}>Next</button>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div>
+              <h2>Security & Authentication</h2>
+
+              <div className='inputs-sign'>
+
+              <div className='password-input'>
         <input
-  type="email"
-  name="email"
-  value={formData.email}
-  onChange={handleChange}
-  disabled={isOtpVerified} // ✅ Disable if verified
-/>
-<button 
-  className="otp-btn-singr" 
-  onClick={sendOtp} 
-  disabled={isSendingOtp || otpSent}
->
-  {isSendingOtp ? <span className="loader-signin"></span> : "Send"}
-</button>
-        </div>
-
-        {otpSent && (
-          <>
-{!isOtpVerified && (
-  <button className='sitmer-se3' onClick={sendOtp} disabled={otpSent && timer > 0}>
-    {otpSent && timer > 0 ? `Resend OTP in ${timer}s` : "Resend OTP"}
-  </button>
-)}
-            <div className="otp-container">
-              {otp.map((digit, index) => (
-                <input
-                  key={index}
-                  ref={(el) => (inputRefs.current[index] = el)}
-                  type="text"
-                  maxLength="1"
-                  className="otp-input"
-                  value={digit}
-                  onChange={(e) => handleChangeOtp(index, e)}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                />
-              ))}
-            </div>
-            <button 
-  className="otp-btn-singr" 
-  onClick={verifyOtp} 
-  disabled={isVerifyingOtp}
->
-  {isVerifyingOtp ? <span className="loader-signin"></span> : "Verify OTP"}
-</button>          </>
-        )}
-
-
-
-            <PhoneInput
-               defaultCountry="IN"
-               placeholder="Enter phone number"
-               value={formData.phone}
-               onChange={(value) => setFormData({ ...formData, phone: value })}
-             />
-            </div>
-            <div className='sign-up-page-cons2'>
-            <button onClick={nextStep}>Next</button>
-            </div>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div>
-            <h2>Security & Authentication</h2>
-
-            <div className='inputs-sign'>
-
-            <div className='password-input'>
-  <input
-    type={showPassword ? "text" : "password"}
-    name="password"
-    placeholder="Password"
-    onChange={handleChange}
-  />
-  <span className='eye-icon' onClick={() => setShowPassword(!showPassword)}>
-    {showPassword ? <FaEyeSlash /> : <FaEye />}
-  </span>
-</div>
-
-<div className='password-input'>
-  <input
-    type={showConfirmPassword ? "text" : "password"}
-    name="confirmPassword"
-    placeholder="Confirm Password"
-    onChange={handleChange}
-  />
-  <span className='eye-icon' onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-  </span>
-</div>
-
-            <label>
-              <input type="checkbox" name="twoFA" onChange={handleChange} /> Enable 2FA
-            </label>
-
-            </div>
-
-<div className='sign-up-page-cons2'>
-            <button onClick={prevStep}>Back</button>
-            <button onClick={nextStep}>Next</button>
-            </div>
-
-          </div>
-        )}
-
-{step === 3 && (
-  <div>
-    <h2>Personalization & Preferences</h2>
-
-    <div className='inputs-sign'>
-    <div className="upload-container">
-  {isUploading ? (
-    <div className="loader-signin"></div>
-  ) : (
-    formData.profilePicture ? (
-      <img src={formData.profilePicture} alt="Profile" />
-    ) : (
-      <p>Upload Image</p>
-    )
-  )}
-  <input type="file" onChange={handleProfilePictureChange} style={{ position: "absolute", opacity: 0, width: "100%", height: "100%" }} />
-</div>
-
-
-      
-      <input
-          type='number'
-          name='age'
-          placeholder='Age'
-          value={formData.age}
+          type={showPassword ? "text" : "password"}
+          name="password"
+          placeholder="Password"
           onChange={handleChange}
         />
+        <span className='eye-icon' onClick={() => setShowPassword(!showPassword)}>
+          {showPassword ? <FaEyeSlash /> : <FaEye />}
+        </span>
+      </div>
 
-      <label>Select Gender</label>
-      <select name='gender' value={formData.gender} onChange={handleChange}>
-          <option value=''>Select Gender</option>
-          <option value='male'>Male</option>
-          <option value='female'>Female</option>
-          <option value='other'>Other</option>
-        </select>
+      <div className='password-input'>
+        <input
+          type={showConfirmPassword ? "text" : "password"}
+          name="confirmPassword"
+          placeholder="Confirm Password"
+          onChange={handleChange}
+        />
+        <span className='eye-icon' onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+          {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+        </span>
+      </div>
 
-    </div>
-    <div className='sign-up-page-cons2'>
-    <button onClick={prevStep}>Back</button>
-    <button onClick={nextStep}>Next</button>
-    </div>
-  </div>
-)}
+              <label>
+                <input type="checkbox" name="twoFA" onChange={handleChange} /> Enable 2FA
+              </label>
 
-        {step === 4 && (
-          <div>
-            <h2>Additional Information</h2>
-            <div className='inputs-sign'>
+              </div>
 
-<h4 className='sign-fdwf4'>Interests : <p>You can choose several options</p> </h4>
-   <div className='singip-instrwe'>
-            <div className='emojis-dign'>
-            {options.interests.map(({ id, label, img }) => (
-    <div key={id} className={`crete-3-box3s ${formData.selectedInterests.includes(id) ? 'selected-creat' : ''}`} onClick={() => handleInterestSelect(id)}>
-        <img src={img} alt={label} />
-        <h3>{label}</h3>
-    </div>
-))}
-                               </div>
-</div>
-            <input type="text" name="referralCode" placeholder="Referral Code" onChange={handleChange} />
-            <label>
-              <input type="checkbox" name="termsAccepted" onChange={handleChange} required /> Agree to Terms & Conditions
-            </label>
-            <label>
-              <input type="checkbox" name="subscribeNews" onChange={handleChange} /> Subscribe to News & Updates
-            </label>
-            </div>  
-            <div className='sign-up-page-cons2'>
-            <button 
-  className="otp-btn-singr" 
-  onClick={handleSubmit} 
->
-  {isSignup ? <span className="loader-signin"></span> : "Signup"}
-</button>
-
+      <div className='sign-up-page-cons2'>
+              <button onClick={prevStep}>Back</button>
+              <button onClick={nextStep}>Next</button>
+              </div>
 
             </div>
-          </div>
+          )}
+
+  {step === 3 && (
+    <div>
+      <h2>Personalization & Preferences</h2>
+
+      <div className='inputs-sign'>
+      <div className="upload-container">
+    {isUploading ? (
+      <div className="loader-signin"></div>
+    ) : (
+      formData.profilePicture ? (
+        <img src={formData.profilePicture} alt="Profile" />
+      ) : (
+        <p>Upload Image</p>
+      )
+    )}
+    <input type="file" onChange={handleProfilePictureChange} style={{ position: "absolute", opacity: 0, width: "100%", height: "100%" }} />
+  </div>
+
+
+    
+    <input
+        type='number'
+        name='age'
+        placeholder='Age'
+        value={formData.age}
+        onChange={handleChange}
+      />
+
+    <label>Select Gender</label>
+    <select name='gender' value={formData.gender} onChange={handleChange}>
+        <option value=''>Select Gender</option>
+        <option value='male'>Male</option>
+        <option value='female'>Female</option>
+        <option value='other'>Other</option>
+      </select>
+
+  </div>
+  <div className='sign-up-page-cons2'>
+  <button onClick={prevStep}>Back</button>
+  <button onClick={nextStep}>Next</button>
+  </div>
+</div>
+)}
+
+          {step === 4 && (
+            <div>
+              <h2>Additional Information</h2>
+              <div className='inputs-sign'>
+
+  <h4 className='sign-fdwf4'>Interests : <p>You can choose several options</p> </h4>
+     <div className='singip-instrwe'>
+              <div className='emojis-dign'>
+              {options.interests.map(({ id, label, img }) => (
+        <div key={id} className={`crete-3-box3s ${formData.selectedInterests.includes(id) ? 'selected-creat' : ''}`} onClick={() => handleInterestSelect(id)}>
+            <img src={img} alt={label} />
+            <h3>{label}</h3>
+        </div>
+      ))}
+                               </div>
+  </div>
+              <input type="text" name="referralCode" placeholder="Referral Code" onChange={handleChange} />
+              <label>
+                <input type="checkbox" name="termsAccepted" onChange={handleChange} required /> Agree to Terms & Conditions
+              </label>
+              <label>
+                <input type="checkbox" name="subscribeNews" onChange={handleChange} /> Subscribe to News & Updates
+              </label>
+              </div>  
+              <div className='sign-up-page-cons2'>
+              <button 
+        className="otp-btn-singr" 
+        onClick={handleSubmit} 
+      >
+        {isSignup ? <span className="loader-signin"></span> : "Signup"}
+      </button>
+
+
+              </div>
+            </div>
+          )}
+          </>
         )}
         </div>
-<div className='last-sinin-con'>
-  <div className='last-hearder-sini'>
-    <span className='last-ssx-con-line'></span>
-    <h3>Or Signup with</h3>
-    <span className='last-ssx-con-line'></span>
-  </div>
-  
-<h2 className='have-h2dx'>Do you have an account? <Link to='/login' style={{textDecoration:'none'}}> <span>Login Now</span></Link> </h2>
-</div>
-      </div>     
+  <div className='last-sinin-con'>
+    <div className='last-hearder-sini'>
+      <span className='last-ssx-con-line'></span>
+      <h3>Or Signup with</h3>
+      <span className='last-ssx-con-line'></span>
     </div>
-  );
-}
+    
+  <div className='authO2-container3d'>
+    <GoogleLogin
+      onSuccess={handleGoogleSuccess}
+      onError={handleGoogleFailure}
+      theme="filled_black"
+      size="large"
+    />
+  </div>
+
+  <h2 className='have-h2dx'>Do you have an account? <Link to='/login' style={{textDecoration:'none'}}> <span>Login Now</span></Link> </h2>
+  </div>
+        </div>     
+      </div>
+    );
+  }
 
 export default Signup;

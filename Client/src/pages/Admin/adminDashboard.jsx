@@ -15,6 +15,8 @@ import {
   Legend,
   LineChart,
   Line,
+  AreaChart,
+  Area,
 } from "recharts";
 import {
   FaUsers,
@@ -22,6 +24,11 @@ import {
   FaEnvelope,
   FaUserCheck,
   FaBell,
+  FaChartLine,
+  FaChartPie,
+  FaChartBar,
+  FaRobot,
+  FaTicketAlt,
 } from "react-icons/fa";
 import { IoMdRefresh } from "react-icons/io";
 import api from "../../config/api";
@@ -55,6 +62,27 @@ const AdminDashboard = () => {
   const maxRetries = 3;
 
   const token = localStorage.getItem("token") || "";
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="custom-tooltip" style={{
+          backgroundColor: 'rgba(30, 30, 30, 0.9)',
+          padding: '10px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '8px'
+        }}>
+          <p style={{ margin: '0 0 5px 0', color: '#e0e0e0' }}>{label}</p>
+          {payload.map((entry, index) => (
+            <p key={index} style={{ margin: '0', color: entry.color }}>
+              {entry.name}: {entry.value}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
 
   // Fetch stats data
   const fetchDashboardData = useCallback(async () => {
@@ -217,9 +245,9 @@ const AdminDashboard = () => {
             <IoMdRefresh /> Refresh Data
           </button>
           <select className="dash-time-period-select" value={timePeriod} onChange={handleTimePeriodChange}>
-            <option value="day">Day</option>
-            <option value="week">Week</option>
-            <option value="month">Month</option>
+            <option value="day">Last 24 Hours</option>
+            <option value="week">Last 7 Days</option>
+            <option value="month">Last 30 Days</option>
           </select>
           <button className="dash-notifications-button">
             <FaBell />
@@ -234,6 +262,7 @@ const AdminDashboard = () => {
           <div className="dash-stat-content">
             <h3>Total Users</h3>
             <p>{statsData.totalUsers}</p>
+            <small>Active: {statsData.activeUsers}</small>
           </div>
         </div>
         <div className="dash-stat-card">
@@ -241,6 +270,7 @@ const AdminDashboard = () => {
           <div className="dash-stat-content">
             <h3>Active Users</h3>
             <p>{statsData.activeUsers}</p>
+            <small>{((statsData.activeUsers / statsData.totalUsers) * 100).toFixed(1)}% of total</small>
           </div>
         </div>
         <div className="dash-stat-card">
@@ -248,6 +278,7 @@ const AdminDashboard = () => {
           <div className="dash-stat-content">
             <h3>Messages Sent</h3>
             <p>{statsData.messagesSent}</p>
+            <small>Avg: {(statsData.messagesSent / statsData.activeUsers).toFixed(1)} per user</small>
           </div>
         </div>
         <div className="dash-stat-card">
@@ -255,13 +286,14 @@ const AdminDashboard = () => {
           <div className="dash-stat-content">
             <h3>Total Revenue</h3>
             <p>₹{statsData.totalRevenue}</p>
+            <small>Avg: ₹{(statsData.totalRevenue / statsData.totalUsers).toFixed(2)} per user</small>
           </div>
         </div>
       </div>
 
       <div className="dash-charts-grid">
         <div className="dash-chart-card">
-          <h3>Users Breakdown</h3>
+          <h3><FaChartPie /> User Distribution</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -278,78 +310,69 @@ const AdminDashboard = () => {
                   <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                 ))}
               </Pie>
-              <Tooltip contentStyle={{ background: "#2d2d2d", border: "none", color: "#e0e0e0" }} />
+              <Tooltip content={<CustomTooltip />} />
             </PieChart>
           </ResponsiveContainer>
         </div>
 
         <div className="dash-chart-card">
-          <h3>Payments</h3>
+          <h3><FaChartLine /> Revenue Trend</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={graphData.paymentsData}>
+            <AreaChart data={graphData.revenueTrend}>
               <CartesianGrid strokeDasharray="3 3" stroke="#333" />
               <XAxis dataKey="date" stroke="#e0e0e0" />
               <YAxis stroke="#e0e0e0" />
-              <Tooltip contentStyle={{ background: "#2d2d2d", border: "none", color: "#e0e0e0" }} />
-              <Legend wrapperStyle={{ color: "#e0e0e0" }} />
-              <Bar dataKey="value" fill="#cf4185" barSize={30} />
-            </BarChart>
+              <Tooltip content={<CustomTooltip />} />
+              <Area
+                type="monotone"
+                dataKey="revenue"
+                stroke="#cf4185"
+                fill="#cf4185"
+                fillOpacity={0.3}
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
 
         <div className="dash-chart-card">
-          <h3>Message Quota Usage</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={graphData.messageQuotaData}
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                dataKey="value"
-                label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                startAngle={90}
-                endAngle={-270}
-              >
-                {graphData.messageQuotaData.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
-                ))}
-              </Pie>
-              <Tooltip contentStyle={{ background: "#2d2d2d", border: "none", color: "#e0e0e0" }} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="dash-chart-card">
-          <h3>Revenue Trend</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={graphData.revenueTrend}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-              <XAxis dataKey="date" stroke="#e0e0e0" />
-              <YAxis stroke="#e0e0e0" />
-              <Tooltip contentStyle={{ background: "#2d2d2d", border: "none", color: "#e0e0e0" }} />
-              <Legend wrapperStyle={{ color: "#e0e0e0" }} />
-              <Line type="monotone" dataKey="revenue" stroke="#ffcc00" strokeWidth={3} dot={{ r: 6 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="dash-chart-card">
-          <h3>User Engagement</h3>
+          <h3><FaChartBar /> User Engagement</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={graphData.userEngagement}>
               <CartesianGrid strokeDasharray="3 3" stroke="#333" />
               <XAxis dataKey="name" stroke="#e0e0e0" />
               <YAxis stroke="#e0e0e0" />
-              <Tooltip contentStyle={{ background: "#2d2d2d", border: "none", color: "#e0e0e0" }} />
-              <Legend wrapperStyle={{ color: "#e0e0e0" }} />
-              <Bar dataKey="messages" fill="#4a90e2" barSize={20} />
-              <Bar dataKey="payments" fill="#00c49f" barSize={20} />
-              <Bar dataKey="logins" fill="#ffcc00" barSize={20} />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend wrapperStyle={{ color: '#e0e0e0' }} />
+              <Bar dataKey="messages" fill="#4a90e2" name="Messages" />
+              <Bar dataKey="payments" fill="#00c49f" name="Payments" />
+              <Bar dataKey="logins" fill="#ffcc00" name="Logins" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="dash-chart-card">
+          <h3><FaRobot /> AI Friend Usage</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={graphData.messageQuotaData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+              <XAxis dataKey="name" stroke="#e0e0e0" />
+              <YAxis stroke="#e0e0e0" />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar dataKey="value" fill="#ff4b5c" name="Messages" />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
+
+      {loading && <div className="dash-loading">Loading dashboard data...</div>}
+      {error && retryCount >= maxRetries && (
+        <div className="dash-error">
+          <p>Error: {error}</p>
+          <button className="dash-retry-button" onClick={() => { fetchDashboardData(); fetchGraphsData(); }}>
+            Retry
+          </button>
+        </div>
+      )}
     </div>
   );
 };
