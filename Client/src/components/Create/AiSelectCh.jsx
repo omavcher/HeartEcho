@@ -77,11 +77,6 @@ function AiSelectCh({ onClose ,onSelect ,aigender}) {
 
 
 
-
-
-
-
-
   const handleSelect = (type, value) => {
     if (type === "ethnicity") setEthnicity(value);
     else if (type === "eyeColor") setEyeColor(value);
@@ -89,41 +84,27 @@ function AiSelectCh({ onClose ,onSelect ,aigender}) {
     else if (type === "bodyType") {
       setBodyType(value);
   
-      // Format ethnicity folder name (lowercase + underscores)
       const formattedEthnicity = ethnicity.replace(/\s+/g, "_").toLowerCase();
+
   
-      // Generate a random image number from 1 to 4
-      const randomImageNumber = Math.floor(Math.random() * 12) + 1;
+      // Generate a random image number from 1 to 12
+      const randomImageNumber = Math.floor(Math.random() * 4) + 1;
   
-      // Construct final image path using the formatted ethnicity
-      const finalImage = `/models_images_female/Final/${formattedEthnicity}/${randomImageNumber}.jpg`;
+      // Construct final image path using gender and formatted ethnicity
+      const genderFolder = aigender === "female" ? "models_images_female" : "models_images_male";
+      const finalImage = `/${genderFolder}/Final/${formattedEthnicity}/${randomImageNumber}.jpg`;
   
-      console.log("Character Created:", {
-        ethnicity,
-        eyeColor,
-        hairStyle,
-        bodyType: value,
-        finalImage, // Log the selected image path
-      });
-  
+
       if (finalImage) {
         onSelect(finalImage);
         setNotification({ show: true, message: "Character Selected Successfully!", type: "success" });
   
         // Delay closing for 1.5 seconds to let the notification appear
-        setTimeout(() => {
           onClose();
-        },0);
       }
     }
   };
   
-  
-  
-  
-  
-
-
 
 
 
@@ -210,3 +191,4 @@ function AiSelectCh({ onClose ,onSelect ,aigender}) {
 }
 
 export default AiSelectCh;
+

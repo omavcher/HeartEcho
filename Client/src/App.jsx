@@ -44,27 +44,27 @@ function App() {
       setIsMobile(window.innerWidth < 1024);
     };
 
-    // const disableRightClick = (e) => e.preventDefault();
-    // const disableKeyShortcuts = (e) => {
-    //   if (
-    //     e.key === "F12" || 
-    //     (e.ctrlKey && e.shiftKey && ["I", "J"].includes(e.key)) ||
-    //     (e.ctrlKey && ["S", "U"].includes(e.key))
-    //   ) {
-    //     e.preventDefault();
-    //   }
-    // };
+     const disableRightClick = (e) => e.preventDefault();
+     const disableKeyShortcuts = (e) => {
+       if (
+         e.key === "F12" || 
+         (e.ctrlKey && e.shiftKey && ["I", "J"].includes(e.key)) ||
+         (e.ctrlKey && ["S", "U"].includes(e.key))
+       ) {
+         e.preventDefault();
+       }
+     }
 
-    // // Disable right-click
-    // document.addEventListener("contextmenu", disableRightClick);
+   
+     document.addEventListener("contextmenu", disableRightClick);
 
-    // // Disable keyboard shortcuts
-    // document.addEventListener("keydown", disableKeyShortcuts);
+   
+     document.addEventListener("keydown", disableKeyShortcuts);
 
-    // // Disable image dragging
-    // document.querySelectorAll("img").forEach((img) => {
-    //   img.setAttribute("draggable", "false");
-    // });
+  
+     document.querySelectorAll("img").forEach((img) => {
+       img.setAttribute("draggable", "false");
+     });
 
     return () => {
       document.removeEventListener("contextmenu", disableRightClick);
@@ -81,7 +81,8 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/discover" element={<Discover />} />
             <Route path="/about" element={<About />} />
-            <Route path="/signup" element={<Signup />} />
+    
+        <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/terms" element={<Terms />} />
         <Route path="/refund" element={<Refund />} />

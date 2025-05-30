@@ -16,7 +16,7 @@ function HomeAiModels() {
     axios
       .get(`${api.Url}/user/get-pre-ai`)
       .then((response) => {
-        console.log("Fetched Data:", response.data.data);
+        
         setAiModels(response.data.data);
         setLoading(false);
       })

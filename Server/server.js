@@ -7,11 +7,11 @@ dotenv.config();
 connectDB();
 
 const app = express();
-app.use(express.json({ limit: "10mb" })); 
+app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 app.use(cors({
-  origin: '*',  // Allow frontend URL or all origins for testing
+  origin: 'https://www.heartecho.in',  
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true // Allow cookies and authentication headers
@@ -22,8 +22,7 @@ app.use(express.json());
 
 // Default API Route
 app.get("/api", (req, res) => {
-  res.json({
-    success: true,
+  res.json({      success: true,
     message: "Welcome to the HeartEcho 💘💝 API! 🚀",
     version: "1.0.0",
   });
