@@ -24,7 +24,7 @@ app.use(express.json());
 app.get("/api", (req, res) => {
   res.json({      success: true,
     message: "Welcome to the HeartEcho 💘💝 API! 🚀",
-    version: "1.0.0",
+    version: "1.5.7",
   });
 });
 
