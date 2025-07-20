@@ -1,4 +1,3 @@
-import React from 'react';
 import '../styles/Policy.css';
 import Footer from '../components/Footer';
 
@@ -21,7 +20,7 @@ function Terms() {
             Younger users may access friendship companions with parental consent.
           </li>
           <li>
-            <strong>Emotional Responsibility:</strong> While our AI offers support, it doesn't replace 
+            <strong>Emotional Responsibility:</strong> While our AI offers support, it doesn&apos;t replace 
             professional help for serious mental health needs.
           </li>
         </ul>
@@ -29,7 +28,7 @@ function Terms() {
         <h2>Your Account, Your Space</h2>
         <ul>
           <li>
-            <strong>Secure Your Heartspace:</strong> As a solo founder, I've designed simple but powerful 
+            <strong>Secure Your Heartspace:</strong> As a solo founder, I&apos;ve designed simple but powerful 
             account controls - please use strong passwords and enable 2FA.
           </li>
           <li>
@@ -64,8 +63,8 @@ function Terms() {
 
         <div className="founder-note">
           <p>
-            "These terms aren't just legal requirements - they're my promise to protect the emotional 
-            sanctuary we're building together at EchoHeart."
+            &quot;These terms aren&apos;t just legal requirements - they&apos;re my promise to protect the emotional 
+            sanctuary we&apos;re building together at EchoHeart.&quot;
           </p>
           <p className="signature">— Om Avcher, Founder</p>
         </div>
