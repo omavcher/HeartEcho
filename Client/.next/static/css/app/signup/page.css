@@ -390,6 +390,9 @@
 
 .authO2-container3d {
   margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .have-h2dx {
