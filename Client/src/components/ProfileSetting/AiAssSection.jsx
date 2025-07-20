@@ -1,7 +1,5 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
 import HomeCosAi from '../HomeCosAi.jsx';
 
 function AiAssSection({ onBackSBTNSelect }) {

@@ -1,12 +1,26 @@
 import { blogPosts } from '../../../data/blogPosts';
 import Head from 'next/head';
 import Link from 'next/link';
-import '../blog.css'
+import '../blog.css';
 import Footer from '../../../components/Footer';
+import PropTypes from 'prop-types';
+import NotFound from '../../not-found'
+// Helper function to find a post by slug
+const getPostBySlug = (slug) => {
+  return blogPosts.find(post => post.slug === slug);
+};
 
+// Handle metadata safely
 export async function generateMetadata({ params }) {
-  const post = blogPosts.find(post => post.slug === params.slug);
-  
+  const post = getPostBySlug(params.slug);
+
+  if (!post) {
+    return {
+      title: "Post Not Found | HeartEcho",
+      description: "The requested blog post could not be found.",
+    };
+  }
+
   return {
     title: `${post.title} | HeartEcho`,
     description: post.excerpt,
@@ -28,17 +42,12 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default function BlogPost({ params }) {
-  const post = blogPosts.find(post => post.slug === params.slug);
-
-  if (!post) {
-    return <div>Post not found</div>;
-  }
-
+// BlogPostContent component (only renders if post exists)
+function BlogPostContent({ post }) {
   return (
     <>
       <Head>
-        <link rel="canonical" href={`https://yourdomain.com/blog/${post.slug}`} />
+        <link rel="canonical" href={`https://heartecho.in/blog/${post.slug}`} />
         <meta name="robots" content="index, follow" />
       </Head>
 
@@ -51,7 +60,13 @@ export default function BlogPost({ params }) {
             <h1>{post.title}</h1>
             <div className="post-meta">
               <span className="author">By {post.author}</span>
-              <span className="date">{new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              <span className="date">
+                {new Date(post.date).toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </span>
               <span className="read-time">{post.readTime}</span>
             </div>
           </header>
@@ -72,7 +87,9 @@ export default function BlogPost({ params }) {
           <footer className="post-footer">
             <div className="tags">
               <span>Tagged: </span>
-              <a href={`/blog/category/${post.category.toLowerCase().replace(/\s+/g, '-')}`}>{post.category}</a>
+              <a href={`/blog/category/${post.category.toLowerCase().replace(/\s+/g, '-')}`}>
+                {post.category}
+              </a>
             </div>
           </footer>
         </article>
@@ -95,7 +112,30 @@ export default function BlogPost({ params }) {
           </div>
         </aside>
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 }
+
+BlogPostContent.propTypes = {
+  post: PropTypes.object.isRequired,
+};
+
+// Main BlogPost component (handles missing posts)
+export default function BlogPost({ params }) {
+  const post = getPostBySlug(params.slug);
+
+  if (!post) {
+    return (
+      <NotFound/>
+    );
+  }
+
+  return <BlogPostContent post={post} />;
+}
+
+BlogPost.propTypes = {
+  params: PropTypes.shape({
+    slug: PropTypes.string.isRequired,
+  }).isRequired,
+};

@@ -1,7 +1,6 @@
 'use client';
 
-import React from 'react';
-import PricingCard from '../PricingCard';
+
 import BillingPrice from '../BillingPrice';
 
 function SubScribeSection({ onBackSBTNSelect }) {

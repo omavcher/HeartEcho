@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import Skeleton from "react-loading-skeleton";
 import '../styles/AIFriends.css';

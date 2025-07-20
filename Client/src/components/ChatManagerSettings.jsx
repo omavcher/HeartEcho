@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "../styles/ChatManagerSettings.css";
 import api from "../config/api";
 import axios from "axios";
@@ -67,7 +67,6 @@ function ChatManagerSettings() {
 
   // Determine if the user is a subscriber
   const isSubscriber = messageQuota === 999;
-  const quotaText = isSubscriber ? "∞" : `${messageQuota} / 20 Messages`;
   const progressWidth = isSubscriber ? "100%" : `${(messageQuota / 20) * 100}%`;
   const activeDays = isSubscriber ? "Active Subscription" : 7 - daysLeft;
 

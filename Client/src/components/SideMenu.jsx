@@ -1,5 +1,4 @@
 'use client'; // Mark as Client Component since we use next/link
-import React from 'react'
 import Link from 'next/link' // Changed from react-router-dom to next/link
 import Image from 'next/image' // Using Next.js optimized Image component
 import '../styles/SideMenu.css'

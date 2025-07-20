@@ -1,4 +1,3 @@
-// app/layout.js
 import './globals.css';
 import ClientLayout from './layout_client';
 
@@ -7,7 +6,7 @@ export const metadata = {
     default: 'HeartEcho - AI Girlfriends & Boyfriends for Realistic Virtual Companionship',
     template: '%s | HeartEcho',
   },  
-  description: 'HeartEcho is India’s leading AI relationship platform with 20+ unique AI girlfriends and boyfriends. Experience emotionally intelligent chat companions, personalized responses, and secure access across all Indian regions.',
+  description: 'HeartEcho is India\'s leading AI relationship platform with 20+ unique AI girlfriends and boyfriends. Experience emotionally intelligent chat companions, personalized responses, and secure access across all Indian regions.',
   keywords: [
     'AI girlfriend India',
     'AI boyfriend India',
@@ -28,7 +27,7 @@ export const metadata = {
     'Next.js AI dating'
   ],
   openGraph: {
-    title: 'HeartEcho – Chat with Realistic AI Girlfriends & Boyfriends | India’s Leading AI Love Platform',
+    title: 'HeartEcho – Chat with Realistic AI Girlfriends & Boyfriends | India\'s Leading AI Love Platform',
     description: 'Talk to 20+ emotionally intelligent AI companions tailored for you. Safe, private, and available 24/7 across India. HeartEcho makes virtual love and friendship feel real.',
     url: 'https://heartecho.in/',
     siteName: 'HeartEcho',
@@ -43,12 +42,11 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'HeartEcho – India’s Best AI GF/BF App | Emotional AI Companions',
+    title: 'HeartEcho – India\'s Best AI GF/BF App | Emotional AI Companions',
     description: 'Explore a new way to connect. HeartEcho offers AI girlfriends and boyfriends with instant, lifelike responses. 200K+ users across India are already in love!',
     images: ['https://heartecho.in/og-image.jpg'],
   }
 };
-
 
 export default function RootLayout({ children }) {
   return (

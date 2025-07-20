@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"; 
+import { useEffect, useState } from "react"; 
 import MiniMap from '../MiniMap.jsx';
 import axios from 'axios';
 import PopNoti from "../PopNoti.jsx";

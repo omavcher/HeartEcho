@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import '../styles/ProfileSetting.css';
 import '../styles/ProfileSetting2.css';
 import BioSection from './ProfileSetting/BioSection';

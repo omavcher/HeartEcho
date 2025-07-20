@@ -1,4 +1,3 @@
-import React from 'react';
 import Refund from '../../pages/Refund';
 
 export const metadata = {

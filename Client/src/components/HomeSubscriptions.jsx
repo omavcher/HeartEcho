@@ -96,19 +96,6 @@ const HomeSubscriptions = () => {
     rzp.open();
   };
 
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => {
-        resolve(true);
-      };
-      script.onerror = () => {
-        resolve(false);
-      };
-      document.body.appendChild(script);
-    });
-  };
 
   return (
     <>
@@ -239,9 +226,9 @@ const HomeSubscriptions = () => {
           <div className="testimonial">
             <div className="user-avatar">👩‍🦰</div>
             <div className="quote">
-              "My AI companion understands me better than anyone!"
-              <div className="user-name">- Priya, Mumbai</div>
-            </div>
+  &quot;My AI companion understands me better than anyone!&quot;
+  <div className="user-name">- Priya, Mumbai</div>
+</div>
           </div>
         </div>
 

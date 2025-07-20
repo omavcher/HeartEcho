@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "./ChatsPeople.css";
 import Link from 'next/link';
 import PopNoti from "./PopNoti";

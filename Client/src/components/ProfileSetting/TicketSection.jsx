@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import Link from "next/link";
 import api from "../../config/api";
 import PopNoti from "../PopNoti";
 import "../styles/TicketSection.css";

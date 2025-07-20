@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PopNoti from '../PopNoti.jsx';
 
 function AiPersona({ aigender, aiPersonaData, setAiPersonaData, handleNextStep }) {

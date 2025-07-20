@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from "axios";
 import api from "../config/api";
 import { useRouter, useSearchParams } from 'next/navigation';

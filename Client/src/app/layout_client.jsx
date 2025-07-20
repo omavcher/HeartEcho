@@ -1,8 +1,8 @@
-// app/layout.client.js
 'use client';
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import PropTypes from 'prop-types';
 import SideMenu from "../components/SideMenu";
 import MobileMenu from "../components/MobileMenu";
 import './globals.css';
@@ -12,15 +12,13 @@ export default function ClientLayout({ children }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const handleResize = () => {
-        setIsMobile(window.innerWidth < 1024);
-      };
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
 
-      handleResize();
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-    }
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
@@ -33,3 +31,7 @@ export default function ClientLayout({ children }) {
     </div>
   );
 }
+
+ClientLayout.propTypes = {
+  children: PropTypes.node.isRequired,
+};

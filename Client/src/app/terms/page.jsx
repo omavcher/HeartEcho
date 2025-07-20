@@ -1,4 +1,3 @@
-import React from 'react'
 import Terms from '../../pages/Terms'
 
 export const metadata = {

@@ -1,5 +1,4 @@
 'use client'; // Required for client-side interactivity
-import React from 'react';
 import { useRouter } from 'next/navigation'; // Changed from react-router-dom
 import Image from 'next/image'; // Using Next.js optimized Image component
 import '../styles/HomeCosAi.css';

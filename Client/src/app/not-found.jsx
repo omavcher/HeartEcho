@@ -1,9 +1,8 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import '../styles/NotFound.css'
+import '../styles/NotFound.css';
 
 function NotFound() {
   const router = useRouter();
@@ -20,7 +19,7 @@ function NotFound() {
           <h1 className="ej3n-simple-title">404</h1>
           <h2 className="ej3n-simple-subtitle">Page Not Found</h2>
           <p className="ej3n-simple-text">
-            The page you're looking for might have been removed, had its name changed,
+            The page you&apos;re looking for might have been removed, had its name changed,
             or is temporarily unavailable.
           </p>
           
