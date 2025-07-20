@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import axios from "axios";
 import api from "../config/api";
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -8,7 +8,7 @@ import PopNoti from './PopNoti';
 import Script from 'next/script';
 import './Subscriptions.css';
 
-const Subscriptions = () => {
+function SubscriptionContent() {
   const [showQuotaMessage, setShowQuotaMessage] = useState(false);
   const [userData, setUserData] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
@@ -127,7 +127,7 @@ const Subscriptions = () => {
         prefill: {
           name: userData?.name || 'Your Name',
           email: userData?.email || 'user@example.com',
-          contact: userData?.phone_number || '9999999999'
+          contact: userData?.phone_number ? userData.phone_number.replace(/\s/g, '') : '9999999999' // Remove spaces for E.164 format
         },
         theme: { color: '#ce4085' }
       };
@@ -295,6 +295,12 @@ const Subscriptions = () => {
       </section>
     </>
   );
-};
+}
 
-export default Subscriptions;
+export default function Subscriptions() {
+  return (
+    <Suspense fallback={<div className="seh3d3-loading">Loading subscription plans...</div>}>
+      <SubscriptionContent />
+    </Suspense>
+  );
+}
