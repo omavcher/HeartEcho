@@ -53,8 +53,8 @@ function Footer() {
           © {new Date().getFullYear()} HeartEcho AI. All rights reserved.
         </p>
         <div className="social-links">
-          {/* <Link href="#" className="social-icon">Twitter</Link>
-          <Link href="#" className="social-icon">Instagram</Link>
+          <Link href="/sitemap.xml" className="social-icon">Sitemap</Link>
+          {/* <Link href="#" className="social-icon">Instagram</Link>
           <Link href="#" className="social-icon">Discord</Link> */}
         </div>
       </div>
