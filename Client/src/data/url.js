@@ -1,3 +1,3 @@
 // data/url.js
-const url ='http://localhost:3000';
+const url ='https://www.heartecho.in';
 export default url;
