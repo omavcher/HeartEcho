@@ -1,3 +1,0 @@
-Commit #16
-Notes on dynamic_programming
-Generated at 2025-07-20 10:49:48.745313
