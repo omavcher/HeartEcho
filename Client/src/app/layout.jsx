@@ -23,9 +23,7 @@ export const metadata = {
     'AI love platform',
     'AI relationship India',
     'AI companion for loneliness',
-    'HeartEcho app',
-    'Next.js AI dating'
-  ],
+    'HeartEcho app'  ],
   openGraph: {
     title: 'HeartEcho – Chat with Realistic AI Girlfriends & Boyfriends | India\'s Leading AI Love Platform',
     description: 'Talk to 20+ emotionally intelligent AI companions tailored for you. Safe, private, and available 24/7 across India. HeartEcho makes virtual love and friendship feel real.',
