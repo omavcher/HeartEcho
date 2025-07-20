@@ -23,7 +23,7 @@ function Login() {
   const [platform, setPlatform] = useState(typeof window !== 'undefined' ? navigator.platform : '');
   const [locationUser, setLocationUser] = useState(null);
 
-  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  const googleClientId = "273920667679-85i343d6q2eibbc7e597ougsflo7u6c0.apps.googleusercontent.com";
 
   useEffect(() => {
     if (typeof window !== 'undefined') {

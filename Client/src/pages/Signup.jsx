@@ -63,7 +63,7 @@ function Signup() {
     ]
   };
 
-  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  const googleClientId = "273920667679-85i343d6q2eibbc7e597ougsflo7u6c0.apps.googleusercontent.com";
 
   const uploadToCloudinary = async (file) => {
     const formData = new FormData();

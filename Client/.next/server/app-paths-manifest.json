@@ -1,6 +1,5 @@
 {
-  "/sitemap.xml/route": "app/sitemap.xml/route.js",
   "/signup/page": "app/signup/page.js",
-  "/login/page": "app/login/page.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/login/page": "app/login/page.js"
 }
