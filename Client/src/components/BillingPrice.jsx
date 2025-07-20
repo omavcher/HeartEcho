@@ -1,9 +1,11 @@
+'use client';
+
 import React, { useEffect, useState } from "react";
 import "../styles/BillingPrice.css";
 import axios from "axios";
 import api from "../config/api";
 import PopNoti from "../components/PopNoti";
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 const BillingPrice = () => {
   const [notification, setNotification] = useState({
@@ -17,8 +19,12 @@ const BillingPrice = () => {
     transactionId: "",
     amount: "",
   });
+  const [token, setToken] = useState(null);
 
-  const token = localStorage.getItem("token");
+  useEffect(() => {
+    // Client-side only code
+    setToken(typeof window !== 'undefined' ? localStorage.getItem("token") : null);
+  }, []);
 
   useEffect(() => {
     const getUserData = async () => {
@@ -104,7 +110,7 @@ const BillingPrice = () => {
         <div className="customer-card active">
           <div className="customer-header">
             <img
-              src={paymentData?.profilePicture || "default-profile.png"}
+              src={paymentData?.profilePicture || "/default-profile.png"}
               alt={paymentData?.name || "User"}
               className="profile-img"
             />
@@ -160,7 +166,7 @@ const BillingPrice = () => {
             )}
           </div>
 
-          <Link to='/subscribe' className="edit-merge-btn">
+          <Link href='/subscribe' className="edit-merge-btn">
             {paymentData?.nextSubscriptionDate ? "Pay Now" : "Subscribe"}
           </Link>
         </div>

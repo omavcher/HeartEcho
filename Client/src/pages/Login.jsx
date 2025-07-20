@@ -1,39 +1,45 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import '../styles/Signup.css';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import PopNoti from '../components/PopNoti';
 import api from '../config/api';
 import axios from 'axios';
 
 function Login() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
   const [ip, setIp] = useState(null);
   const [coordinates, setCoordinates] = useState(null);
-  const [platform, setPlatform] = useState(navigator.platform);
-const [locationUser , setLocationUser] = useState(null);
-  useEffect(() => {
-    fetch("https://api.ipify.org?format=json")
-      .then((response) => response.json())
-      .then((data) => setIp(data.ip))
-      .catch((error) => console.error("Error fetching IP:", error));
-  }, []);
+  const [platform, setPlatform] = useState(typeof window !== 'undefined' ? navigator.platform : '');
+  const [locationUser, setLocationUser] = useState(null);
+
+  // Replace with your actual Google Client ID
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "your-google-client-id";
 
   useEffect(() => {
-    fetch("http://ip-api.com/json")
-      .then((response) => response.json())
-      .then((data) => {
-        setCoordinates({ lat: data.lat, lon: data.lon });
-        setLocationUser(data.regionName); // ✅ Corrected
-      })
-      .catch((error) => console.error("Error fetching location:", error));
+    if (typeof window !== 'undefined') {
+      fetch("https://api.ipify.org?format=json")
+        .then((response) => response.json())
+        .then((data) => setIp(data.ip))
+        .catch((error) => console.error("Error fetching IP:", error));
+
+      fetch("http://ip-api.com/json")
+        .then((response) => response.json())
+        .then((data) => {
+          setCoordinates({ lat: data.lat, lon: data.lon });
+          setLocationUser(data.regionName);
+        })
+        .catch((error) => console.error("Error fetching location:", error));
+    }
   }, []);
 
   const handleChange = (e) => {
@@ -62,14 +68,13 @@ const [locationUser , setLocationUser] = useState(null);
       localStorage.setItem("user", JSON.stringify(user));
 
       if (ip && coordinates) {
-        await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform , locationUser}, {
+        await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform, locationUser }, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
 
       setNotification({ show: true, message: "Login successful!", type: "success" });
-
-      setTimeout(() => navigate('/'), 1500);
+      setTimeout(() => router.push('/'), 1500);
     } catch (error) {
       setNotification({ show: true, message: error.response?.data?.msg || "Login failed", type: "error" });
     }
@@ -87,13 +92,13 @@ const [locationUser , setLocationUser] = useState(null);
         localStorage.setItem("token", res.data.token);
 
         if (ip && coordinates) {
-          await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform , locationUser }, {
+          await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform, locationUser }, {
             headers: { Authorization: `Bearer ${res.data.token}` },
           });
         }
 
         setNotification({ show: true, message: "Google Login Successful!", type: "success" });
-        setTimeout(() => navigate('/'), 1500);
+        setTimeout(() => router.push('/'), 1500);
       }
     } catch (error) {
       setNotification({ show: true, message: error.response?.data?.message || "Login Failed", type: "error" });
@@ -121,7 +126,7 @@ const [locationUser , setLocationUser] = useState(null);
           <img src='/heartechor.png' alt='HeartEcho' style={{ width: '4rem' }} />
           <h2>HeartEcho</h2>
         </span>
-        <p className='signup-footerse' style={{ position: 'absolute', bottom: '20%',textAlign:'start' }}>
+        <p className='signup-footerse' style={{ position: 'absolute', bottom: '20%', textAlign: 'start' }}>
           © {new Date().getFullYear()} HeartEcho AI <br /> omawcharbusiness123@gmail.com
         </p>
       </div>
@@ -140,13 +145,14 @@ const [locationUser , setLocationUser] = useState(null);
                 name="password"
                 placeholder="Password"
                 onChange={handleChange}
+                required
               />
               <span className='eye-icon' onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
 
-            <button type="submit" className="otp-btn-singr">
+            <button type="submit" className="otp-btn-singr" disabled={isLogin}>
               {isLogin ? <span className="loader"></span> : "Login"}
             </button>
           </form>
@@ -159,16 +165,18 @@ const [locationUser , setLocationUser] = useState(null);
             </div>
 
             <div className='authO2-container3d'>
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleFailure}
-                theme="filled_black"
-                size="large"
-              />
+              <GoogleOAuthProvider clientId={googleClientId}>
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleFailure}
+                  theme="filled_black"
+                  size="large"
+                />
+              </GoogleOAuthProvider>
             </div>
 
             <h2 className='have-h2dx'>
-              Don’t have an account? <Link to='/signup' style={{ textDecoration: 'none' }}> <span>Register Now</span></Link>
+              Don't have an account? <Link href='/signup' style={{ textDecoration: 'none' }}> <span>Register Now</span></Link>
             </h2>
           </div>
         </div>

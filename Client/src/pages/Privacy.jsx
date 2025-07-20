@@ -1,5 +1,6 @@
 import React from 'react';
 import '../styles/Policy.css';
+
 function Privacy() {
   return (
     <div className="policy-container">
@@ -26,11 +27,10 @@ function Privacy() {
       <h2>Your Rights</h2>
       <ul>
         <li>You may request access, correction, or deletion of your data by contacting us at <a href="mailto:omawcharbusiness123@gmail.com">omawcharbusiness123@gmail.com</a>.</li>
-        <li>We’ll process your request within 7 working days.</li>
+        <li>We'll process your request within 7 working days.</li>
       </ul>
 
-      <p>We’re committed to transparency. If you have questions about how we handle your data, feel free to reach out!</p>
-
+      <p>We're committed to transparency. If you have questions about how we handle your data, feel free to reach out!</p>
     </div>
   );
 }

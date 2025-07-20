@@ -1,12 +1,14 @@
+'use client'; // Required for client-side interactivity
 import React from 'react';
-import { useNavigate } from 'react-router-dom'; 
-import '../styles/Home.css';
+import { useRouter } from 'next/navigation'; // Changed from react-router-dom
+import Image from 'next/image'; // Using Next.js optimized Image component
+import '../styles/HomeCosAi.css';
 
 function HomeCosAi() {
-    const navigate = useNavigate(); 
+    const router = useRouter(); // Replaces useNavigate
 
     const handleCreateClick = () => {
-        navigate('/create');  // Navigate to the Create page
+        router.push('/create'); // Next.js navigation method
     };
 
     return (
@@ -19,10 +21,11 @@ function HomeCosAi() {
                 </p> 
                 <button onClick={handleCreateClick}>Create</button>  
             </div>
-            <img 
+            <Image 
                 src='/models_images_female/home_poster.png' 
                 alt='home_poster' 
-                className='homecos-ai-rde3-img'
+                width={5000} // Add appropriate width
+                height={500} // Add appropriate height
             />
         </div>
     );

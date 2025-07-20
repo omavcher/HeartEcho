@@ -1,21 +1,28 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import '../styles/Subscriptions.css';
 import PopNoti from './PopNoti';
 import axios from "axios";
 import api from "../config/api";
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const Subscriptions = () => {
   const [showQuotaMessage, setShowQuotaMessage] = useState(false);
   const [userData, setUserData] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
-  const token = localStorage.getItem("token"); 
+  const [token, setToken] = useState(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('re') === 'quotaover') {
+    // Client-side only code
+    setToken(typeof window !== 'undefined' ? localStorage.getItem("token") : null);
+    
+    if (searchParams.get('re') === 'quotaover') {
       setShowQuotaMessage(true);
     }
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     const getUserData = async () => {
@@ -31,7 +38,6 @@ const Subscriptions = () => {
   
         if (res.data) {
           setUserData(res.data);
-          console.log(res.data.phone_number)
         } 
       } catch (error) {
         setNotification({ show: true, message: "Error fetching user", type: "error" });
@@ -45,13 +51,13 @@ const Subscriptions = () => {
 
   const handlePayment = async (amount, plan) => {
     if (!token) {
-      window.location.href = '/login';
+      router.push('/login');
       return;
     }
   
     const options = {
-      key: 'rzp_live_YHUPR56Ky9qPxC', 
-      amount: amount * 100, 
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || 'rzp_live_YHUPR56Ky9qPxC',
+      amount: amount * 100,
       currency: 'INR',
       name: 'HeartEcho',
       description: `${plan} Subscription`,
@@ -67,16 +73,24 @@ const Subscriptions = () => {
             headers: { Authorization: `Bearer ${token}` },
           });
   
-const storedUser = JSON.parse(localStorage.getItem("user"));
-if (storedUser) {
-  storedUser.user_type = "subscriber";
-  localStorage.setItem("user", JSON.stringify(storedUser));
-}
-setNotification({ show: true, message: "Payment Successful! You are now a Premium Member 🎉", type: "success" });
+          const storedUser = JSON.parse(localStorage.getItem("user"));
+          if (storedUser) {
+            storedUser.user_type = "subscriber";
+            localStorage.setItem("user", JSON.stringify(storedUser));
+          }
+          setNotification({ 
+            show: true, 
+            message: "Payment Successful! You are now a Premium Member 🎉", 
+            type: "success" 
+          });
 
-          window.location.href = '/thank-you'; 
+          router.push('/thank-you');
         } catch (error) {
-          setNotification({ show: true, message: "Payment successful, but there was an issue saving the details.", type: "error" });
+          setNotification({ 
+            show: true, 
+            message: "Payment successful, but there was an issue saving the details.", 
+            type: "error" 
+          });
         }
       },
       prefill: {
@@ -90,7 +104,6 @@ setNotification({ show: true, message: "Payment Successful! You are now a Premiu
     const rzp = new window.Razorpay(options);
     rzp.open();
   };
-  
 
   return (
     <div className="subscriptions-container">
@@ -113,7 +126,6 @@ setNotification({ show: true, message: "Payment Successful! You are now a Premiu
         )}
       </div>
 
-
       <div className="plans">
         <div className="plan free">
           <h3>Free Trial</h3>
@@ -135,7 +147,12 @@ setNotification({ show: true, message: "Payment Successful! You are now a Premiu
             <li>Exclusive features</li>
             <li>Priority response</li>
           </ul>
-          <button className="subscribe-button premium-button" onClick={() => handlePayment(40, 'Monthly')}>Subscribe Now</button>
+          <button 
+            className="subscribe-button premium-button" 
+            onClick={() => handlePayment(40, 'Monthly')}
+          >
+            Subscribe Now
+          </button>
         </div>
 
         <div className="plan ultimate">
@@ -150,11 +167,14 @@ setNotification({ show: true, message: "Payment Successful! You are now a Premiu
             <li>Priority response</li>
             <li>Advanced customization</li>
           </ul>
-          <button className="subscribe-button ultimate-button" onClick={() => handlePayment(400, 'Yearly')}>Get Started</button>
+          <button 
+            className="subscribe-button ultimate-button" 
+            onClick={() => handlePayment(400, 'Yearly')}
+          >
+            Get Started
+          </button>
         </div>
       </div>
-
-
     </div>
   );
 };

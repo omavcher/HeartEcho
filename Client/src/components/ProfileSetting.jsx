@@ -1,6 +1,8 @@
+'use client';
+
 import React from 'react';
 import '../styles/ProfileSetting.css';
-import '../styles/ProfileSetting2.css'
+import '../styles/ProfileSetting2.css';
 import BioSection from './ProfileSetting/BioSection';
 import AiAssSection from './ProfileSetting/AiAssSection';
 import ChatMaSection from './ProfileSetting/ChatMaSection';
@@ -12,33 +14,33 @@ import LiveChatSection from './ProfileSetting/LiveChatSection';
 import FaqSection from './ProfileSetting/FaqSection';
 import TicketSection from './ProfileSetting/TicketSection';
 
-function ProfileSetting({ selectedSettingId , onBackSBTNSelect}) {
+function ProfileSetting({ selectedSettingId, onBackSBTNSelect }) {
   const renderContent = () => {
     switch (selectedSettingId) {
       case 1:
-        return <BioSection onBackSBTNSelect={onBackSBTNSelect}/>;
+        return <BioSection onBackSBTNSelect={onBackSBTNSelect} />;
       case 2:
-        return <BioSection onBackSBTNSelect={onBackSBTNSelect}/>;
+        return <BioSection onBackSBTNSelect={onBackSBTNSelect} />;
       case 3:
-        return <AiAssSection onBackSBTNSelect={onBackSBTNSelect}/>;
+        return <AiAssSection onBackSBTNSelect={onBackSBTNSelect} />;
       case 4:
-        return <ChatMaSection onBackSBTNSelect={onBackSBTNSelect}/>;
-      case 5: 
-        return <AiAssSection onBackSBTNSelect={onBackSBTNSelect}/> ;
+        return <ChatMaSection onBackSBTNSelect={onBackSBTNSelect} />;
+      case 5:
+        return <AiAssSection onBackSBTNSelect={onBackSBTNSelect} />;
       case 6:
         return <SubScribeSection onBackSBTNSelect={onBackSBTNSelect} />;
       case 7:
-        return <Eable2FSection onBackSBTNSelect={onBackSBTNSelect}/>;
+        return <Eable2FSection onBackSBTNSelect={onBackSBTNSelect} />;
       case 8:
-        return <DeleteAcSection onBackSBTNSelect={onBackSBTNSelect}/>;
+        return <DeleteAcSection onBackSBTNSelect={onBackSBTNSelect} />;
       case 9:
-        return <SecuqureSection onBackSBTNSelect={onBackSBTNSelect}/>;
+        return <SecuqureSection onBackSBTNSelect={onBackSBTNSelect} />;
       case 10:
-        return <LiveChatSection onBackSBTNSelect={onBackSBTNSelect}/>;
+        return <LiveChatSection onBackSBTNSelect={onBackSBTNSelect} />;
       case 11:
-        return <FaqSection onBackSBTNSelect={onBackSBTNSelect}/>;
+        return <FaqSection onBackSBTNSelect={onBackSBTNSelect} />;
       case 12:
-        return <TicketSection onBackSBTNSelect={onBackSBTNSelect}/>;
+        return <TicketSection onBackSBTNSelect={onBackSBTNSelect} />;
       default:
         return <div>Select a setting to view details.</div>;
     }

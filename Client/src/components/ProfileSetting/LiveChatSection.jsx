@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { Link } from 'react-router-dom'
+'use client';
+
+import React, { useState } from "react";
+import Link from 'next/link';
 import "../styles/LiveChatSecion.css";
 
-function LiveChatSection({onBackSBTNSelect}) {
+function LiveChatSection({ onBackSBTNSelect }) {
   const [chatStarted, setChatStarted] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -16,22 +18,27 @@ function LiveChatSection({onBackSBTNSelect}) {
     setIsTyping(true);
 
     setTimeout(() => {
-      setMessages((prev) => [...prev, { sender: "bot", text: "Thank you for your message. A support agent will assist you shortly.", timestamp: new Date() }]);
+      setMessages((prev) => [...prev, { 
+        sender: "bot", 
+        text: "Thank you for your message. A support agent will assist you shortly.", 
+        timestamp: new Date() 
+      }]);
       setIsTyping(false);
     }, 1500);
   };
 
   return (
     <>
-    <header className='profile-setting-header3'>
-     <h2>Live Chat</h2>
-     <button onClick={() => onBackSBTNSelect(true)}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4.99989 10.0001L4.99976 19L6.99976 19L6.99986 12.0001L17.1717 12L13.222 15.9498L14.6362 17.364L21.0001 11L14.6362 4.63605L13.222 6.05026L17.1717 10L4.99989 10.0001Z"></path></svg></button>
-    </header>
+      <header className='profile-setting-header3'>
+        <h2>Live Chat</h2>
+        <button onClick={() => onBackSBTNSelect(true)}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4.99989 10.0001L4.99976 19L6.99976 19L6.99986 12.0001L17.1717 12L13.222 15.9498L14.6362 17.364L21.0001 11L14.6362 4.63605L13.222 6.05026L17.1717 10L4.99989 10.0001Z"></path>
+          </svg>
+        </button>
+      </header>
 
-
-
-
-    {!chatStarted ? (
+      {!chatStarted ? (
         <div className="pre-chat-form-live-cht">
           <h3>Start a Chat</h3>
           <select>
@@ -40,7 +47,12 @@ function LiveChatSection({onBackSBTNSelect}) {
             <option>Technical Support</option>
             <option>Account Issues</option>
           </select>
-          <button className="startchat-live-chtd" onClick={() => setChatStarted(true)}>Start Chat</button>
+          <button 
+            className="startchat-live-chtd" 
+            onClick={() => setChatStarted(true)}
+          >
+            Start Chat
+          </button>
         </div>
       ) : (
         <div className="chat-window-form-live-cht">
@@ -59,20 +71,20 @@ function LiveChatSection({onBackSBTNSelect}) {
               placeholder="Type your message..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
             />
             <button onClick={handleSendMessage}>Send</button>
           </div>
-          <button className="end-chat-live-chtd" onClick={() => setChatStarted(false)}>End Chat</button>
+          <button 
+            className="end-chat-live-chtd" 
+            onClick={() => setChatStarted(false)}
+          >
+            End Chat
+          </button>
         </div>
       )}
-
-
-
-
-
-
- </>
-  )
+    </>
+  );
 }
 
-export default LiveChatSection
+export default LiveChatSection;

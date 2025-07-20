@@ -1,6 +1,8 @@
+'use client';
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import api from "../../config/api";
 import PopNoti from "../PopNoti";
 import "../styles/TicketSection.css";
@@ -8,16 +10,23 @@ import "../styles/TicketSection.css";
 function TicketSection({ onBackSBTNSelect }) {
   const [issue, setIssue] = useState("");
   const [tickets, setTickets] = useState([]);
-  const [isLoading, setIsLoading] = useState(true); // For skeleton loader
-  const [isSubmitting, setIsSubmitting] = useState(false); // For submit button
-  const token = localStorage.getItem("token");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [token, setToken] = useState(null);
   const [notification, setNotification] = useState({
     show: false,
     message: "",
     type: "",
   });
-  // Fetch tickets from backend
+
   useEffect(() => {
+    // Client-side only code
+    setToken(typeof window !== 'undefined' ? localStorage.getItem("token") : null);
+  }, []);
+
+  useEffect(() => {
+    if (!token) return;
+    
     axios
       .get(`${api.Url}/user/get-tickets`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -33,15 +42,14 @@ function TicketSection({ onBackSBTNSelect }) {
         });
         setTickets([]);
       })
-      .finally(() => setIsLoading(false)); // Stop loading after fetching
-  }, []);
+      .finally(() => setIsLoading(false));
+  }, [token]);
 
-  // Submit new ticket
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!issue.trim()) return;
 
-    setIsSubmitting(true); // Show "Submitting..." state
+    setIsSubmitting(true);
 
     const newTicket = {
       issue: issue.trim(),
@@ -68,17 +76,18 @@ function TicketSection({ onBackSBTNSelect }) {
         type: "error",
       });
     } finally {
-      setIsSubmitting(false); // Hide "Submitting..." after request
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <><PopNoti
-    message={notification.message}
-    type={notification.type}
-    isVisible={notification.show}
-    onClose={() => setNotification({ ...notification, show: false })}
-  />
+    <>
+      <PopNoti
+        message={notification.message}
+        type={notification.type}
+        isVisible={notification.show}
+        onClose={() => setNotification({ ...notification, show: false })}
+      />
       <header className="profile-setting-header3">
         <h2>Submit a Ticket</h2>
         <button onClick={() => onBackSBTNSelect(true)}>
@@ -91,7 +100,6 @@ function TicketSection({ onBackSBTNSelect }) {
       <div className="ticket-container">
         <h2>Previous Tickets</h2>
 
-        {/* Skeleton Loaders */}
         {isLoading ? (
           <div className="ticket-skeleton-container">
             {[...Array(3)].map((_, index) => (
@@ -124,7 +132,6 @@ function TicketSection({ onBackSBTNSelect }) {
           <p className="no-tickets">No previous tickets found.</p>
         )}
 
-        {/* Submit New Ticket */}
         <form onSubmit={handleSubmit} className="ticket-form-ticket-sectd">
           <label className="label">Describe your issue:</label>
           <textarea
@@ -138,7 +145,6 @@ function TicketSection({ onBackSBTNSelect }) {
 
           <button style={{marginTop:'1rem'}} type="submit" className="otp-btn-singr" disabled={isSubmitting}>
             {isSubmitting ? <span className="loader-signin"></span> : "Submit"}
-
           </button>
         </form>
       </div>

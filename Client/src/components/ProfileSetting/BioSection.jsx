@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from "react";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
@@ -11,7 +13,7 @@ function BioSection({ onBackSBTNSelect }) {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
-  const token = localStorage.getItem("token");
+  const [token, setToken] = useState(null);
 
   const [notification, setNotification] = useState({
     show: false,
@@ -33,6 +35,11 @@ function BioSection({ onBackSBTNSelect }) {
       { id: "nature", label: "Nature", img: "/emojis/nature.png" },
     ],
   };
+
+  useEffect(() => {
+    // Client-side only code
+    setToken(typeof window !== 'undefined' ? localStorage.getItem("token") : null);
+  }, []);
 
   useEffect(() => {
     const getUserData = async () => {
@@ -114,12 +121,12 @@ function BioSection({ onBackSBTNSelect }) {
   return (
     <>
       <header className="profile-setting-header3">
-      <PopNoti
-  message={notification.message}
-  type={notification.type}
-  isVisible={notification.show}
-  onClose={() => setNotification({ ...notification, show: false })}
-/>
+        <PopNoti
+          message={notification.message}
+          type={notification.type}
+          isVisible={notification.show}
+          onClose={() => setNotification({ ...notification, show: false })}
+        />
         <h2>My Account</h2>
         <button onClick={() => onBackSBTNSelect(true)}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -221,12 +228,9 @@ function BioSection({ onBackSBTNSelect }) {
             <button style={{marginTop:'1rem'}} className="otp-btn-singr" onClick={handleUpdateProfile} disabled={updating}>
               {updating ? <span className="loader-signin"></span> : "Update Profile"}
             </button>
-
           </>
         )}
       </div>
-
-      {notification.show && <PopNoti message={notification.message} type={notification.type} />}
     </>
   );
 }

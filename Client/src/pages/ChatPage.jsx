@@ -1,44 +1,39 @@
-import React, { useState, useEffect } from "react"; 
-import '../styles/ChatPage.css'
+'use client';
+
+import React, { useState, useEffect } from "react";
+import '../styles/ChatPage.css';
 import ChatsPeople from "../components/ChatsPeople";
 import ChatBox from "../components/ChatBox";
-import { useLocation } from "react-router-dom";
+import { useSearchParams } from "next/navigation";
 
 function ChatPage() {
-    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
     const [chatBackBTN, setChatBackBTN] = useState(false);
-    const location = useLocation();
-    const queryParams = new URLSearchParams(location.search);
-    const aiChatId = queryParams.get("chatId"); // Get AI Chat ID from URL
+    const searchParams = useSearchParams();
+    const aiChatId = searchParams.get("chatId"); // Get AI Chat ID from URL
 
-    const [selectedChatId, setSelectedChatId] = useState(aiChatId || null); // Default select AI Chat ID
-    const [refreshChats, setRefreshChats] = useState(false); // 🔹 Refresh state
-
-
-
+    const [selectedChatId, setSelectedChatId] = useState(aiChatId || null);
+    const [refreshChats, setRefreshChats] = useState(false);
 
     useEffect(() => {
-        const searchParams = new URLSearchParams(location.search);
-        const chatId = searchParams.get("chatId");
-      
-        if (location.pathname === "/chatbox" && chatId) {
-          setChatBackBTN(true);
-        } else {
-          setChatBackBTN(false);
-        }
-      }, [location]);
+        // Handle window resize
+        const handleResize = () => {
+            setWindowWidth(window.innerWidth);
+        };
 
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         if (aiChatId) {
             setSelectedChatId(aiChatId); // Open AI Chat automatically
+            setChatBackBTN(true);
+        } else {
+            setChatBackBTN(false);
         }
     }, [aiChatId]);
 
-
-
-
-    // ✅ Define the missing function
     const handleChatBackBTN = () => {
         setChatBackBTN(prev => !prev);
     };
@@ -55,7 +50,11 @@ function ChatPage() {
                 ${chatBackBTN === false ? '' : 'show-message-main-send-minidxxdex'}
                 ${windowWidth > 550 && chatBackBTN === true ? 'big-smid3' : ''}
             `}>
-                <ChatsPeople onBackBTNSelect={handleChatBackBTN} onChatSelect={handleChatSelection} refreshTrigger={refreshChats} />
+                <ChatsPeople 
+                    onBackBTNSelect={handleChatBackBTN} 
+                    onChatSelect={handleChatSelection} 
+                    refreshTrigger={refreshChats} 
+                />
             </div>
 
             <div className={`main-chat-container-c6 
@@ -65,7 +64,11 @@ function ChatPage() {
                 ${windowWidth > 550 && chatBackBTN === true ? 'big-srgsdf' : ''}
             `}>
                 {selectedChatId ? (
-                    <ChatBox onBackBTNSelect={handleChatBackBTN} chatId={selectedChatId} onSendMessage={() => setRefreshChats(prev => !prev)}/>
+                    <ChatBox 
+                        onBackBTNSelect={handleChatBackBTN} 
+                        chatId={selectedChatId} 
+                        onSendMessage={() => setRefreshChats(prev => !prev)}
+                    />
                 ) : (
                     <div className="main-start-char-cone0">
                         <i className="ri-chat-thread-line"></i>

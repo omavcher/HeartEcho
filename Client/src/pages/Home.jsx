@@ -1,4 +1,6 @@
-import React, { useEffect } from "react";
+'use client';
+
+import Image from "next/image";
 import "../styles/Home.css";
 import HomeAiModels from "../components/HomeAiModels";
 import StepsHome from "../components/StepsHome";
@@ -7,60 +9,84 @@ import HomeCosAi from "../components/HomeCosAi";
 import Footer from "../components/Footer";
 import HomeSubscriptions from "../components/HomeSubscriptions";
 
-function Home() {
-  useEffect(() => {
-    document.title = "HeartEcho – The Future of Personalized AI Conversations";
+export default function Home() {
 
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute(
-        "content",
-        "HeartEcho brings AI chatbots to life with cutting-edge pre-trained models, personalized AI assistants, and an intuitive chat experience."
-      );
-    }
-  }, []);
 
   return (
-    <div className="home-container">
-      <div className="home-hero-section">
-        <div className="hero-text">
-          <p>welcome to <span>HeartEcho</span></p>
-          <h1 className="home-hero-title">
-            Your Ai <img className="home-ismx3" src="/heartechor.png" alt="HeartEcho"/>, Your Rules <br></br> Build, Chat, Personalize
-          </h1>
-          <h2 className="home-hero-subtitle">
-            HeartEcho revolutionizes conversations with pre-trained AI models
-            and custom chatbots tailored just for you.
-          </h2>
-        </div>
+    <>
+      <div className="home-container">
+        {/* Hero Section */}
+        <section className="home-hero-section">
+          <div className="hero-content">
+            <div className="hero-text">
+              <p className="welcome-text">Welcome to <span>HeartEcho</span></p>
+              <h1 className="home-hero-title">
+                Your AI <Image 
+                  className="heart-icon" 
+                  src="/heartechor.png" 
+                  alt="HeartEcho"
+                  width={48}
+                  height={48}
+                  priority
+                /> Companion, Your Rules
+              </h1>
+              <h2 className="home-hero-subtitle">
+                Experience emotional connection with AI companions tailored to your personality and needs.
+              </h2>
+              <div className="hero-cta">
+                <button className="primary-cta">Start Chatting</button>
+                <button className="secondary-cta">Meet Our AI</button>
+              </div>
+            </div>
+            <div className="hero-image">
+              <Image 
+                src="/hero-illustration.png" 
+                alt="AI Companion Illustration"
+                width={500}
+                height={500}
+                priority
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Rest of your components remain the same */}
+        <section className="ai-models-section-container">
+          <div className="section-header">
+            <h2>Choose Your Perfect Companion</h2>
+            <p>Select from our diverse range of AI personalities</p>
+          </div>
+          <HomeAiModels />
+        </section>
+
+        <section className="customization-section">
+          <HomeCosAi />
+        </section>
+
+        <section className="subscription-section">
+          <HomeSubscriptions />
+        </section>
+
+        <section className="steps-section">
+          <div className="section-header">
+            <h2>How HeartEcho Works</h2>
+            <p>Start your journey in just a few simple steps</p>
+          </div>
+          <StepsHome />
+        </section>
+
+        <section className="faq-section">
+          <div className="section-header">
+            <h2>Frequently Asked Questions</h2>
+            <p>Everything you need to know about HeartEcho</p>
+          </div>
+          <HomeFAQ />
+        </section>
+
+        <footer className="footer">
+          <Footer />
+        </footer>
       </div>
-
-      <div className="ai-models-section-container">
-          <HomeAiModels/>
-       </div>
-
-       <div className="home-custeomize-ai-section">
-      <HomeCosAi/>
-    </div>
-
-    <div className="home-seteps-showcase">
-      <HomeSubscriptions/>
-    </div>
-
-   <div className="home-seteps-showcase">
-      <StepsHome/>
-    </div>
-
-<div className="home-faq-section">
-<HomeFAQ/>
-  </div>
-
-<div className="footer-decds">
-<Footer/>
-
-</div>
-    </div>
+    </>
   );
 }
-
-export default Home;

@@ -39,38 +39,7 @@ function App() {
     }
   }, []);
   
-  // useEffect(() => {
-  //   const handleResize = () => {
-  //     setIsMobile(window.innerWidth < 1024);
-  //   };
 
-  //    const disableRightClick = (e) => e.preventDefault();
-  //    const disableKeyShortcuts = (e) => {
-  //      if (
-  //        e.key === "F12" || 
-  //        (e.ctrlKey && e.shiftKey && ["I", "J"].includes(e.key)) ||
-  //        (e.ctrlKey && ["S", "U"].includes(e.key))
-  //      ) {
-  //        e.preventDefault();
-  //      }
-  //    }
-
-   
-  //    document.addEventListener("contextmenu", disableRightClick);
-
-   
-  //    document.addEventListener("keydown", disableKeyShortcuts);
-
-  
-  //    document.querySelectorAll("img").forEach((img) => {
-  //      img.setAttribute("draggable", "false");
-  //    });
-
-  //   return () => {
-  //     document.removeEventListener("contextmenu", disableRightClick);
-  //     document.removeEventListener("keydown", disableKeyShortcuts);
-  //   };
-  // }, []);
 
   return (
     <>

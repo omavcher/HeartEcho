@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from "react";
 import "../styles/ChatManagerSettings.css";
 import api from "../config/api";
@@ -12,8 +14,12 @@ function ChatManagerSettings() {
     message: "",
     type: "",
   });
+  const [token, setToken] = useState(null);
 
-  const token = localStorage.getItem("token");
+  useEffect(() => {
+    // Client-side only code
+    setToken(typeof window !== 'undefined' ? localStorage.getItem("token") : null);
+  }, []);
 
   useEffect(() => {
     const getUserData = async () => {
@@ -107,10 +113,10 @@ function ChatManagerSettings() {
             ></div>
           </div>
           <p className="je9c-quota-text">
-  {messageQuota === 999 
-    ? "You are a Premium Member! Enjoy Unlimited Chatting 🎉" 
-    : `${messageQuota} / 20 Messages`}
-</p>
+            {messageQuota === 999 
+              ? "You are a Premium Member! Enjoy Unlimited Chatting 🎉" 
+              : `${messageQuota} / 20 Messages`}
+          </p>
         </div>
       </section>
 
