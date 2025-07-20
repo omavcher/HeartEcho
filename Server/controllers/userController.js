@@ -566,9 +566,9 @@ exports.paymentSave = async (req, res) => {
       expiryDate = new Date(existingUser.subscriptionExpiry); // Use existing expiry if it's in the future
     }
 
-    if (rupees === 40) {
+    if (rupees === 29) {
       expiryDate.setMonth(expiryDate.getMonth() + 1); // Increase 1 month
-    } else if (rupees === 400) {
+    } else if (rupees === 399) {
       expiryDate.setFullYear(expiryDate.getFullYear() + 1); // Increase 1 year
     }
 

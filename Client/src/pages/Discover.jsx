@@ -5,9 +5,11 @@ import '../styles/Discover.css'
 import Link from 'next/link' // Changed from react-router-dom to next/link
 import HomeCosAi from '../components/HomeCosAi'
 import AIFriends from "../components/AIFriends";
+import Footer from "../components/Footer";
 
 function Discover() {
   return (
+    <>
     <div className='friends-main-conatiner'>
        <header>
          <h1>Discover</h1>
@@ -24,6 +26,8 @@ function Discover() {
           <AIFriends/>
        </div>
     </div>
+     <Footer/>
+    </>
   )
 }
 

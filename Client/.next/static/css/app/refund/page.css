@@ -1,0 +1,522 @@
+/*!*******************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./src/styles/Footer.css ***!
+  \*******************************************************************************************************************************************************************************************************************************************************************/
+/* Footer Container */
+.footer-container {
+    background: linear-gradient(135deg, #0f0b13 0%, #1a0e1a 100%);
+    color: white;
+    padding: 3rem 2rem 1.5rem;
+    border-top: 1px solid rgba(206, 64, 133, 0.3);
+  }
+  
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3rem;
+    justify-content: space-between;
+  }
+  
+  /* Brand Section */
+  .brand-section {
+    flex: 1 1;
+    min-width: 250px;
+  }
+  
+  .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  .logo {
+    transition: transform 0.3s ease;
+  }
+  
+  .logo:hover {
+    transform: scale(1.1);
+  }
+  
+  .logo-text {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  .logo-text span {
+    color: #ce4085;
+    font-weight: 700;
+  }
+  
+  .tagline {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+  
+  .company-info {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.6;
+  }
+  
+  /* Links Section */
+  .links-section {
+    flex: 2 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: space-between;
+  }
+  
+  .links-column {
+    min-width: 120px;
+    margin-bottom: 1rem;
+  }
+  
+  .links-heading {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    color: #fff;
+    position: relative;
+    padding-bottom: 0.5rem;
+  }
+  
+  .links-heading::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 40px;
+    height: 2px;
+    background: #ce4085;
+  }
+  
+  .footer-link {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.75rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  
+  .footer-link:hover {
+    color: #ce4085;
+    transform: translateX(5px);
+  }
+  
+  /* Footer Bottom */
+  .footer-bottom {
+    max-width: 1200px;
+    margin: 3rem auto 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .copyright {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+  }
+  
+  .social-links {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .social-icon {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  .social-icon:hover {
+    color: #ce4085;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .footer-content {
+      flex-direction: column;
+      gap: 2rem;
+    }
+    
+    .links-section {
+      gap: 1.5rem;
+    }
+    
+    .footer-bottom {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .footer-container {
+      padding: 2rem 1.5rem;
+    }
+    
+    .links-column {
+      min-width: 100px;
+    }
+    
+    .logo-text {
+      font-size: 1.3rem;
+    }
+    
+    .tagline {
+      font-size: 0.85rem;
+    }
+  }
+/*!**********************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./src/styles/HomeCosAi.css ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************/
+.homecos-ai-rde3 {
+    width: 90%;
+    height: 12rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    border-radius: 16px;
+    margin: 1.5rem auto;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Image background layered */
+  .homecos-ai-rde3 img,
+  .homecos-ai-rde3-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+    border-radius: 16px;
+  }
+  
+  /* Gradient overlay to enhance text readability */
+  .homecos-ai-rde3::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.2));
+    z-index: 1;
+  }
+  
+  /* Text section */
+  .homecos-ai-rde3-text {
+    position: relative;
+    z-index: 2;
+    padding: 1.5rem;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 60%;
+  }
+  
+  .homecos-ai-rde3-text h1 {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    font-size: 1.75rem;
+    margin: 0;
+    line-height: 1.2;
+  }
+  
+  .homecos-ai-rde3-text p {
+    font-family: "Nunito", sans-serif;
+    font-size: 1rem;
+    line-height: 1.4;
+    margin: 0;
+  }
+  
+  .homecos-ai-rde3-text button {
+    font-family: "Nunito", sans-serif;
+    font-weight: 600;
+    background-color: #cf4185;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 0.5rem;
+  }
+  
+  .homecos-ai-rde3-text button:hover {
+    background-color: #b5376f;
+    transform: translateY(-2px);
+  }
+  
+  @media screen and (max-width: 768px) {
+    .homecos-ai-rde3 {
+      height: auto;
+      flex-direction: column;
+      padding-bottom: 1rem;
+    }
+  
+    .homecos-ai-rde3-text {
+      max-width: 100%;
+      padding: 1rem;
+      text-align: center;
+      align-items: center;
+    }
+  
+    .homecos-ai-rde3-text h1 {
+      font-size: 1.4rem;
+    }
+  
+    .homecos-ai-rde3-text p,
+    .homecos-ai-rde3-text button {
+      font-size: 0.9rem;
+    }
+  
+    .homecos-ai-rde3::before {
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent);
+    }
+  }
+  
+/*!*******************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./src/styles/Policy.css ***!
+  \*******************************************************************************************************************************************************************************************************************************************************************/
+/* EchoHeart Contact Page Styles */
+.policy-container {
+  color: #ffffff;
+  min-height: 100vh;
+  padding: 60px 20px;
+  font-family: 'Inter', 'Arial', sans-serif;
+  line-height: 1.8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: left;
+  margin-bottom: 5rem;
+  background-color: #000000;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.policy-container h1 {
+  color: #ff6ba6;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+  padding-bottom: 10px;
+  max-width: 800px;
+  background: linear-gradient(90deg, #cf4185, #ff6ba6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.contact-heart {
+  font-size: 3rem;
+  margin: 1.5rem 0;
+  animation: pulse 2s infinite;
+}
+
+.policy-container h2 {
+  color: #cf4185;
+  font-size: 1.7rem;
+  font-weight: 600;
+  margin-top: 40px;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.policy-container h2::after {
+  content: '';
+  position: absolute;
+  width: 50px;
+  height: 3px;
+  background: linear-gradient(90deg, #cf4185, transparent);
+  bottom: -5px;
+  left: 0;
+}
+
+.policy-container p {
+  max-width: 800px;
+  font-size: 1.1rem;
+  margin: 15px 0;
+  color: #e0e0e0;
+}
+
+.policy-container ul {
+  max-width: 800px;
+  padding-left: 25px;
+  list-style-type: none;
+}
+
+.policy-container li {
+  margin: 12px 0;
+  font-size: 1.1rem;
+  position: relative;
+  color: #e0e0e0;
+  padding-left: 25px;
+}
+
+.policy-container li::before {
+  content: '❤️';
+  position: absolute;
+  left: 0;
+  opacity: 0.7;
+}
+
+.policy-container a {
+  color: #ff6ba6;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.policy-container a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.founder-note {
+  background: rgba(207, 65, 133, 0.1);
+  border-left: 3px solid #cf4185;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  max-width: 800px;
+  border-radius: 0 8px 8px 0;
+}
+
+.signature {
+  text-align: right;
+  font-style: italic;
+  color: #cf4185;
+  margin-top: 1rem !important;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .policy-container {
+    padding: 40px 15px;
+  }
+
+  .policy-container h1 {
+    font-size: 2rem;
+  }
+
+  .policy-container h2 {
+    font-size: 1.5rem;
+  }
+
+  .policy-container p,
+  .policy-container li {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .policy-container {
+    padding: 30px 10px;
+  }
+
+  .policy-container h1 {
+    font-size: 1.8rem;
+  }
+
+  .policy-container h2 {
+    font-size: 1.3rem;
+  }
+
+  .policy-container li {
+    padding-left: 20px;
+  }
+  
+  .policy-container li::before {
+    left: -5px;
+  }
+}
+
+
+.intro-text {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 2rem;
+}
+
+.privacy-heart {
+  font-size: 3rem;
+  text-align: center;
+  margin: 2rem 0;
+  animation: heartbeat 1.5s infinite;
+}
+
+.policy-container li strong {
+  color: #ff6ba6;
+  font-weight: 600;
+}
+
+@keyframes heartbeat {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.1); }
+  50% { transform: scale(1); }
+  75% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Founder note - reuse from contact page styles */
+.founder-note {
+  background: rgba(207, 65, 133, 0.1);
+  border-left: 3px solid #cf4185;
+  padding: 1.5rem;
+  margin: 3rem 0 1rem;
+  max-width: 800px;
+  border-radius: 0 8px 8px 0;
+}
+
+.signature {
+  text-align: right;
+  font-style: italic;
+  color: #cf4185;
+  margin-top: 1rem !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .intro-text {
+    font-size: 1.1rem;
+    padding: 0 1rem;
+  }
+  
+  .privacy-heart {
+    font-size: 2.5rem;
+    margin: 1.5rem 0;
+  }
+}

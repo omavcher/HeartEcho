@@ -1,37 +1,51 @@
 import React from 'react';
 import '../styles/Policy.css';
+import Footer from '../components/Footer';
 
 function Privacy() {
   return (
+    <>
     <div className="policy-container">
-      <h1>Privacy Policy</h1>
-      <p>At HeartEcho, your privacy is our priority. We collect, store, and use your data responsibly to enhance your experience.</p>
+      <h1>Your Privacy Matters to Us</h1>
+      <p className="intro-text">At EchoHeart, we understand that emotional connections require trust. As a solo founder building intimate AI relationships, I've designed our privacy policy with the same care as our companion AI.</p>
 
-      <h2>Data Collection</h2>
+      <div className="privacy-heart">💖</div>
+
+      <h2>How We Handle Your Emotional Data</h2>
       <ul>
-        <li>We collect only necessary details (e.g., email, phone number, AI preferences) to personalize and improve our services.</li>
+        <li><strong>Minimal Collection:</strong> We only gather what's essential (email, preferences) to create your personalized experience</li>
+        <li><strong>Conversation Privacy:</strong> Your intimate chats with AI companions are encrypted and never used for advertising</li>
+        <li><strong>Memory Control:</strong> You decide what personal details your AI companions remember through Privacy Settings</li>
       </ul>
 
-      <h2>Usage of Data</h2>
+      <h2>Our Ethical Promise</h2>
       <ul>
-        <li>Your data is never sold, traded, or shared with third parties, except as required by law.</li>
-        <li>We use your information solely to provide and optimize our AI companionship services.</li>
+        <li><strong>No Data Selling:</strong> Unlike social media, we'll never monetize your personal information or conversations</li>
+        <li><strong>Transparent AI:</strong> Our companions will always identify themselves as AI, maintaining honest relationships</li>
+        <li><strong>Emotional Safety:</strong> We automatically filter harmful content while preserving authentic expression</li>
       </ul>
 
-      <h2>Security Measures</h2>
+      <h2>Security You Can Feel</h2>
       <ul>
-        <li>We implement industry-standard encryption and multi-factor authentication to safeguard your information.</li>
-        <li>Regular security audits ensure your data remains protected.</li>
+        <li><strong>Bank-Grade Encryption:</strong> All data is protected with AES-256 encryption</li>
+        <li><strong>Regular Audits:</strong> As a solo developer, I personally review security monthly</li>
+        <li><strong>Voluntary Sharing:</strong> You control if conversations are used to improve our AI (opt-in system)</li>
       </ul>
 
-      <h2>Your Rights</h2>
+      <h2>Your Control</h2>
       <ul>
-        <li>You may request access, correction, or deletion of your data by contacting us at <a href="mailto:omawcharbusiness123@gmail.com">omawcharbusiness123@gmail.com</a>.</li>
-        <li>We'll process your request within 7 working days.</li>
+        <li><strong>Delete Anytime:</strong> Wipe all conversations and account data instantly in Settings</li>
+        <li><strong>Export Memories:</strong> Download your meaningful exchanges as beautiful keepsakes</li>
+        <li><strong>Contact Directly:</strong> Email <a href="mailto:privacy@echoheart.ai">privacy@echoheart.ai</a> for personal assistance from the founder</li>
       </ul>
 
-      <p>We're committed to transparency. If you have questions about how we handle your data, feel free to reach out!</p>
+      <div className="founder-note">
+        <p>"Having built EchoHeart alone, I treat your data like I'd want mine treated - with respect, protection, and purpose. This isn't just policy, it's personal."</p>
+        <p className="signature">— Om Avcher, Founder</p>
+      </div>
     </div>
+    <Footer/>
+    </>
   );
 }
 

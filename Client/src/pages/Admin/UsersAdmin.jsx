@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
-import "./UsersAdmin.css"; // Import local CSS
+'use client'; // Required for client-side features
+
+import { useState, useEffect } from "react";
+import "./UsersAdmin.css";
 import {
   FaUser,
   FaTrash,
@@ -9,8 +11,8 @@ import {
   FaFilter,
   FaChartBar,
   FaChartPie,
+  FaChartLine,
 } from "react-icons/fa";
-import { FaChartLine } from "react-icons/fa";
 import {
   BarChart,
   Bar,
@@ -36,7 +38,15 @@ const UsersAdmin = () => {
   const [filterType, setFilterType] = useState("all");
   const [filterGender, setFilterGender] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 5; // Adjustable number of users per page
+  const usersPerPage = 5;
+
+  // Server-safe token access
+  const getToken = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem("token") || "";
+    }
+    return "";
+  };
 
   useEffect(() => {
     fetchUsers();
@@ -45,8 +55,9 @@ const UsersAdmin = () => {
 
   const fetchUsers = async () => {
     try {
+      const token = getToken();
       const response = await axios.get(`${api.Url}/admin/user-dataw`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(response.data.userData);
     } catch (error) {
@@ -56,8 +67,9 @@ const UsersAdmin = () => {
 
   const fetchUserStats = async () => {
     try {
+      const token = getToken();
       const response = await axios.get(`${api.Url}/admin/users-administr`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setUserStats(response.data.data);
     } catch (error) {
@@ -89,7 +101,7 @@ const UsersAdmin = () => {
     : [];
 
   const messageQuotaData = users
-    .filter((user) => user.user_type === "free") // Only include free users
+    .filter((user) => user.user_type === "free")
     .map((user) => ({
       name: user.name,
       value: user.messageQuota,
@@ -243,8 +255,7 @@ const UsersAdmin = () => {
                   <p>Joined: {new Date(user.joinedAt).toLocaleDateString()}</p>
                   <p>Messages Quota: {user.messageQuota}</p>
                   <p>2FA: {user.twofactor ? "Enabled" : "Disabled"}</p>
-                  <p>Interests: {user.selectedInterests.join(", ")}</p>
-                  {/* Removed Edit, Delete, and Upgrade buttons */}
+                  <p>Interests: {user.selectedInterests?.join(", ") || "None"}</p>
                 </div>
               </div>
             ))}

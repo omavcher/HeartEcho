@@ -1,112 +1,149 @@
-/* Base Styles */
+/* Mobile-Optimized CSS with Pure Black Theme */
 .subscription-container {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 1rem;
   color: #fff;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #000000;
+}
+
+/* Limited Offer Banner */
+.limited-offer-banner {
+  background: linear-gradient(90deg, #ce4085, #9d2c66);
+  padding: 0.6rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.offer-tag {
+  background: #000;
+  color: #fff;
+  padding: 0.2rem 0.8rem;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.countdown-timer {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 600;
+}
+
+.timer-digit {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  min-width: 24px;
+  display: inline-block;
+  text-align: center;
+  font-size: 0.9rem;
 }
 
 .subscription-hero {
   text-align: center;
-  margin-bottom: 3rem;
-  padding: 0 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .subscription-title {
-  font-size: 2.5rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  margin-bottom: 1rem;
-  background: linear-gradient(90deg, #ff6b8b, #ff8e53);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: fadeIn 1s ease;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.heart-pulse {
+  animation: pulse 1.5s infinite;
 }
 
 .subscription-subtitle {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: rgba(255, 255, 255, 0.8);
-  max-width: 700px;
-  margin: 0 auto 2rem;
-  line-height: 1.6;
+  margin: 0 auto 1.5rem;
 }
 
 /* Quota Message */
 .quota-message {
-  background: linear-gradient(135deg, #ff4d4d, #d12280);
+  background: linear-gradient(135deg, #ce4085, #9d2c66);
   color: white;
-  padding: 1rem;
+  padding: 0.8rem;
   border-radius: 8px;
-  max-width: 600px;
-  margin: 1rem auto 0;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  animation: pulse 2s infinite;
+  font-size: 0.9rem;
+  max-width: 100%;
 }
 
-.quota-message i {
-  font-size: 1.2rem;
-}
-
-/* Plans Grid */
+/* Plans Grid - Mobile First */
 .plans-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1.5rem 0;
 }
 
 .plan-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 2rem;
+  background: #111111;
+  border-radius: 10px;
+  padding: 1.2rem;
   position: relative;
-  transition: all 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-}
-
-.plan-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(208, 64, 132, 0.3);
-  border-color: rgba(208, 64, 132, 0.5);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .plan-header {
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .plan-card h3 {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+  margin-bottom: 0.3rem;
   color: white;
 }
 
 .price-container {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  gap: 0.3rem;
 }
 
 .price {
-  font-size: 2.5rem;
+  font-size: 1.8rem;
   font-weight: 700;
 }
 
 .duration {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.2rem;
 }
 
-.savings {
-  color: #4cd964;
-  font-size: 0.9rem;
+.original-price {
+  text-decoration: line-through;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8rem;
+  width: 100%;
+}
+
+.discount-tag {
+  background: #ce4085;
+  color: white;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
   font-weight: 600;
 }
 
@@ -114,52 +151,42 @@
 .popular-badge,
 .value-badge {
   position: absolute;
-  top: -12px;
-  right: 20px;
-  background: linear-gradient(135deg, #ff6b8b, #ff8e53);
+  top: -10px;
+  right: 10px;
+  background: linear-gradient(135deg, #ce4085, #e74c9a);
   color: white;
-  padding: 0.3rem 1rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
   font-weight: 600;
-  animation: bounce 2s infinite;
-}
-
-.value-badge {
-  background: linear-gradient(135deg, #5ac8fa, #007aff);
 }
 
 /* Features List */
 .features-list {
   list-style: none;
   padding: 0;
-  margin: 1.5rem 0;
+  margin: 1rem 0;
 }
 
 .features-list li {
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.6rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   color: rgba(255, 255, 255, 0.8);
-}
-
-.icon-check {
-  color: #4cd964;
-  font-size: 1.1rem;
+  font-size: 0.85rem;
 }
 
 /* Buttons */
 .plan-button {
   width: 100%;
-  padding: 1rem;
+  padding: 0.8rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 1rem;
+  margin-top: 0.8rem;
 }
 
 .free-button {
@@ -167,116 +194,103 @@
   color: white;
 }
 
-.free-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
 .premium-button {
-  background: linear-gradient(135deg, #ff6b8b, #d12280);
+  background: linear-gradient(135deg, #ce4085, #9d2c66);
   color: white;
-}
-
-.premium-button:hover {
-  background: linear-gradient(135deg, #d12280, #ff6b8b);
-  box-shadow: 0 5px 15px rgba(209, 34, 128, 0.4);
 }
 
 .ultimate-button {
-  background: linear-gradient(135deg, #5ac8fa, #007aff);
+  background: linear-gradient(135deg, #9d2c66, #7a2250);
   color: white;
-}
-
-.ultimate-button:hover {
-  background: linear-gradient(135deg, #007aff, #5ac8fa);
-  box-shadow: 0 5px 15px rgba(0, 122, 255, 0.4);
 }
 
 .plan-button:disabled {
   opacity: 0.7;
-  cursor: not-allowed;
+}
+
+/* Testimonial Section */
+.testimonial-section {
+  margin: 1.5rem 0;
+}
+
+.testimonial {
+  background: #111111;
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-avatar {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.quote {
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+}
+
+.user-name {
+  margin-top: 0.3rem;
+  font-weight: 600;
+  color: #fff;
+  font-style: normal;
+  font-size: 0.8rem;
 }
 
 /* Footer */
 .subscription-footer {
   text-align: center;
-  margin-top: 3rem;
+  margin-top: 1.5rem;
 }
 
 .guarantee-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  background: rgba(76, 217, 100, 0.1);
+  gap: 0.3rem;
+  background: rgba(0, 80, 0, 0.2);
   color: #4cd964;
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.8rem;
   border-radius: 20px;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-}
-
-.footer-note {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.9rem;
-  max-width: 600px;
-  margin: 0 auto;
+  font-size: 0.8rem;
 }
 
 /* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 @keyframes pulse {
   0% { transform: scale(1); }
-  50% { transform: scale(1.02); }
+  50% { transform: scale(1.05); }
   100% { transform: scale(1); }
 }
 
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-10px); }
-  60% { transform: translateY(-5px); }
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .subscription-title {
-    font-size: 2.2rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .plans-grid {
-    grid-template-columns: 1fr;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  
-  .subscription-title {
-    font-size: 2rem;
-  }
-  
-  .subscription-subtitle {
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
+/* Tablet and Desktop Responsive */
+@media (min-width: 768px) {
   .subscription-container {
-    padding: 1.5rem 0.5rem;
+    padding: 1.5rem;
   }
-  
-  .subscription-title {
-    font-size: 1.8rem;
+
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
   }
-  
+
   .plan-card {
     padding: 1.5rem;
   }
-  
-  .price {
-    font-size: 2rem;
+}
+
+/* Large Desktop */
+@media (min-width: 1024px) {
+  .subscription-container {
+    max-width: 1200px;
+    padding: 2rem;
+  }
+
+  .plans-grid {
+    gap: 1.5rem;
   }
 }

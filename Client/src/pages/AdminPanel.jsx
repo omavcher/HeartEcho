@@ -1,14 +1,23 @@
-import React, { useState } from "react";
-import { Routes, Route, NavLink, Navigate } from "react-router-dom";
+'use client'; // Required for client-side interactivity
+
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { FaUsers, FaRobot, FaExclamationCircle, FaChartBar, FaBars } from "react-icons/fa";
 import "./AdminPanel.css";
-import AdminDashboard from "./Admin/AdminDashboard"; // ✅ Fix: Capitalized import
+import AdminDashboard from "./Admin/AdminDashboard";
 import UsersAdmin from "./Admin/UsersAdmin";
 import AIFriendsAdmin from "./Admin/AIFriendsAdmin";
 import ComplaintsAdmin from "./Admin/ComplaintsAdmin";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Helper function to determine if a link is active
+  const isActive = (path) => {
+    return pathname === path;
+  };
 
   return (
     <nav className="navbar">
@@ -17,18 +26,34 @@ const Navbar = () => {
         <FaBars />
       </div>
       <div className={`nav-links ${menuOpen ? "open" : ""}`}>
-        <NavLink to="/admin/dashboard" className="nav-item" onClick={() => setMenuOpen(false)}>
+        <Link 
+          href="/admin/dashboard" 
+          className={`nav-item ${isActive('/admin/dashboard') ? 'active' : ''}`} 
+          onClick={() => setMenuOpen(false)}
+        >
           <FaChartBar /> Dashboard
-        </NavLink>
-        <NavLink to="/admin/users" className="nav-item" onClick={() => setMenuOpen(false)}>
+        </Link>
+        <Link 
+          href="/admin/users" 
+          className={`nav-item ${isActive('/admin/users') ? 'active' : ''}`} 
+          onClick={() => setMenuOpen(false)}
+        >
           <FaUsers /> Users
-        </NavLink>
-        <NavLink to="/admin/ai-friends" className="nav-item" onClick={() => setMenuOpen(false)}>
+        </Link>
+        <Link 
+          href="/admin/ai-friends" 
+          className={`nav-item ${isActive('/admin/ai-friends') ? 'active' : ''}`} 
+          onClick={() => setMenuOpen(false)}
+        >
           <FaRobot /> AI Friends
-        </NavLink>
-        <NavLink to="/admin/complaints" className="nav-item" onClick={() => setMenuOpen(false)}>
+        </Link>
+        <Link 
+          href="/admin/complaints" 
+          className={`nav-item ${isActive('/admin/complaints') ? 'active' : ''}`} 
+          onClick={() => setMenuOpen(false)}
+        >
           <FaExclamationCircle /> Complaints
-        </NavLink>
+        </Link>
       </div>
     </nav>
   );
@@ -59,16 +84,29 @@ const Complaints = () => (
 );
 
 const AdminPanel = () => {
+  const router = useRouter();
+  
+  // In Next.js, you might want to handle redirection differently
+  // This could also be done with middleware or in layout files
+  if (typeof window !== 'undefined' && window.location.pathname === '/admin') {
+    router.push('/admin/dashboard');
+  }
+
+  // Get current path to render the correct component
+  const pathname = usePathname();
+  
+  const renderContent = () => {
+    if (pathname === '/admin/dashboard') return <Dashboard />;
+    if (pathname === '/admin/users') return <Users />;
+    if (pathname === '/admin/ai-friends') return <AIFriends />;
+    if (pathname === '/admin/complaints') return <Complaints />;
+    return <Dashboard />; // default
+  };
+
   return (
     <div className="admin-container">
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Navigate to="/admin/dashboard" />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/users" element={<Users />} />
-        <Route path="/ai-friends" element={<AIFriends />} />
-        <Route path="/complaints" element={<Complaints />} />
-      </Routes>
+      {renderContent()}
     </div>
   );
 };

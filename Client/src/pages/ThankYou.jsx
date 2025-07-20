@@ -1,28 +1,39 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate from react-router-dom
+// components/ThankYou.tsx
+'use client';
+
+import { useRouter } from 'next/navigation';
 import '../styles/ThankYou.css';
 
 const ThankYou = () => {
-  const navigate = useNavigate(); // Initialize the navigate function
+  const router = useRouter();
 
   const handleContinue = () => {
-    navigate('/'); // Redirect to the home page
+    router.push('/');
   };
 
   return (
-    <div className="zle-thankyou-container">
-      <div className="zle-content-thsnkus">
-        <h1 className="zle-logo-thsnkus">HeartEcho</h1>
-        <h2 className="zle-title-thsnkus">Thank You for Subscribing!</h2>
-        <p className="zle-message-thsnkus">
-          Your payment was successful. Enjoy unlimited AI companionship and exclusive features with your new plan!
-        </p>
-        <button className="zle-continue-button-thsnkus" onClick={handleContinue}>
-          Continue to HeartEcho
-        </button>
+    <div className="sxse3f-container">
+      <div className="sxse3f-background"></div>
+      <div className="sxse3f-content">
+        <div className="sxse3f-card">
+          <div className="sxse3f-checkmark-circle">
+            <svg className="sxse3f-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+              <circle className="sxse3f-checkmark-circle-bg" cx="26" cy="26" r="25" fill="none"/>
+              <path className="sxse3f-checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+          </div>
+          <h1 className="sxse3f-logo">HeartEcho</h1>
+          <h2 className="sxse3f-title">Thank You for Subscribing!</h2>
+          <p className="sxse3f-message">
+            Your payment was successful. Enjoy unlimited AI companionship and exclusive features with your new plan!
+          </p>
+          <button className="sxse3f-continue-button" onClick={handleContinue}>
+            Continue to HeartEcho
+          </button>
+        </div>
       </div>
-      <div className="zle-footer-note-thsnkus">
-        <p>Need help? Contact us at omawcharbusiness123@gmail.com</p>
+      <div className="sxse3f-footer-note">
+        <p>Need help? Contact us at <a href="mailto:omawcharbusiness123@gmail.com">omawcharbusiness123@gmail.com</a></p>
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import PopNoti from '../components/PopNoti';
 import api from '../config/api';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie'; // Make sure this is imported
 
 function ProfileLists({ handleSettindSelection, onBackSBTNSelect }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -124,10 +125,18 @@ function ProfileLists({ handleSettindSelection, onBackSBTNSelect }) {
     }
   };
 
+
   const handleLogout = () => {
+    // Clear localStorage
     localStorage.clear();
+  
+    // Remove the auth cookie
+    Cookies.remove('token');
+  
+    // Redirect to login
     router.push("/login");
   };
+  
 
   return (
     <>

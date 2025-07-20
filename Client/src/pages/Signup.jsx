@@ -12,6 +12,7 @@ import axios from "axios";
 import { useRouter } from 'next/navigation';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
+import Cookies from 'js-cookie';
 
 function Signup() {
   const router = useRouter();
@@ -281,6 +282,7 @@ function Signup() {
       
       localStorage.setItem("user", JSON.stringify(res.data.user));
       localStorage.setItem("token", res.data.token);
+      Cookies.set("token", res.data.token, { expires: 7 });
 
       if (ip && coordinates) {
         await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform }, {
@@ -335,6 +337,7 @@ function Signup() {
       
       if (checkUser.data.user) {
         localStorage.setItem("token", checkUser.data.token);
+        Cookies.set("token", checkUser.data.token, { expires: 7 });
         localStorage.setItem("user", JSON.stringify(checkUser.data.user));
         setNotification({ show: true, message: "Login successful!", type: "success" });
         router.push('/');
@@ -377,6 +380,7 @@ function Signup() {
 
       localStorage.setItem("user", JSON.stringify(res.data.user));
       localStorage.setItem("token", res.data.token);
+      Cookies.set("token", res.data.token, { expires: 7 });
 
       if (ip && coordinates) {
         await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform }, {

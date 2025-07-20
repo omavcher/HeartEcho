@@ -6,17 +6,17 @@ import Link from 'next/link';
 import PopNoti from "./PopNoti";
 import axios from "axios";
 import api from "../config/api";
+import { FaCrown } from "react-icons/fa";
+import { CiSearch } from "react-icons/ci";
 
 const ChatsPeople = ({ onChatSelect, onBackBTNSelect, refreshTrigger }) => {
   const [chats, setChats] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
-  
-  // Next.js compatible way to access localStorage
+  const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    // This ensures we only access localStorage on the client side
     setToken(typeof window !== 'undefined' ? localStorage.getItem("token") : null);
   }, []);
 
@@ -24,6 +24,7 @@ const ChatsPeople = ({ onChatSelect, onBackBTNSelect, refreshTrigger }) => {
     const getUserFriendsToChat = async () => {
       try {
         if (!token) return;
+        setIsLoading(true);
 
         const res = await axios.get(`${api.Url}/user/chat-friends`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -33,7 +34,9 @@ const ChatsPeople = ({ onChatSelect, onBackBTNSelect, refreshTrigger }) => {
         setChats(chatData);
       } catch (error) {
         setNotification({ show: true, message: "Error fetching chats.", type: "error" });
-        setChats([]); // Ensure chats is always an array
+        setChats([]);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -46,8 +49,26 @@ const ChatsPeople = ({ onChatSelect, onBackBTNSelect, refreshTrigger }) => {
     ? chats.filter(chat => chat.name.toLowerCase().includes(searchTerm.toLowerCase()))
     : chats;
 
+  const formatTime = (timestamp) => {
+    if (!timestamp) return "No messages";
+    
+    const now = new Date();
+    const messageDate = new Date(timestamp);
+    const diffDays = Math.floor((now - messageDate) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (diffDays === 1) {
+      return 'Yesterday';
+    } else if (diffDays < 7) {
+      return messageDate.toLocaleDateString([], { weekday: 'short' });
+    } else {
+      return messageDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    }
+  };
+
   return (
-    <div className="chats-container">
+    <div className="chats-people-container">
       <PopNoti
         message={notification.message}
         type={notification.type}
@@ -55,26 +76,42 @@ const ChatsPeople = ({ onChatSelect, onBackBTNSelect, refreshTrigger }) => {
         onClose={() => setNotification({ ...notification, show: false })}
       />
 
-      <header>
-        <h1>Chats</h1>
-        <Link href='/subscribe' className='subscribe-btn-x'>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M2.80577 5.20006L7.00505 7.99958L11.1913 2.13881C11.5123 1.6894 12.1369 1.58531 12.5863 1.90631C12.6761 1.97045 12.7546 2.04901 12.8188 2.13881L17.0051 7.99958L21.2043 5.20006C21.6639 4.89371 22.2847 5.01788 22.5911 5.47741C22.7228 5.67503 22.7799 5.91308 22.7522 6.14895L21.109 20.1164C21.0497 20.62 20.6229 20.9996 20.1158 20.9996H3.8943C3.38722 20.9996 2.9604 20.62 2.90115 20.1164L1.25792 6.14895C1.19339 5.60045 1.58573 5.10349 2.13423 5.03896C2.37011 5.01121 2.60816 5.06832 2.80577 5.20006ZM12.0051 14.9996C13.1096 14.9996 14.0051 14.1042 14.0051 12.9996C14.0051 11.895 13.1096 10.9996 12.0051 10.9996C10.9005 10.9996 10.0051 11.895 10.0051 12.9996C10.0051 14.1042 10.9005 14.9996 12.0051 14.9996Z"></path>
-          </svg> Subscribe
-        </Link>
+      <header className="chats-headerx">
+        <div className="header-content">
+          <h1>Conversations</h1>
+          <Link href='/subscribe' className='premium-btn'>
+            <FaCrown className="crown-icon" />
+            <span>Go Premium</span>
+          </Link>
+        </div>
       </header>
 
-      <div className="search-box-chates-pahe">
-        <input
-          type="text"
-          placeholder="Search or start messages"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      <div className="search-container">
+        <div className="search-input-wrapper">
+          <CiSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search conversations..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
       </div>
 
-      <div className="chats-list">
-        {filteredChats.length > 0 ? (
+      <div className="chats-list-container">
+        {isLoading ? (
+          <div className="loading-skeleton">
+            {[...Array(5)].map((_, index) => (
+              <div key={index} className="chat-item-skeleton">
+                <div className="avatar-skeleton"></div>
+                <div className="content-skeleton">
+                  <div className="name-skeleton"></div>
+                  <div className="message-skeleton"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredChats.length > 0 ? (
           filteredChats.map((chat) => (
             <div
               key={chat._id}
@@ -84,40 +121,42 @@ const ChatsPeople = ({ onChatSelect, onBackBTNSelect, refreshTrigger }) => {
                 onBackBTNSelect(false);
               }}
             >
-              <img src={chat.avatar} alt={chat.name} />
-              <div className="chat-details">
-                <div className="chat-peop-header">
-                  <h4>{chat.name}</h4>
+              <div className="avatar-container">
+                <img 
+                  src={chat.avatar || "/default-avatar.png"} 
+                  alt={chat.name} 
+                  className="user-avatar"
+                />
+                {chat.isOnline && <span className="online-badge"></span>}
+              </div>
+              
+              <div className="chat-content">
+                <div className="chat-headercc">
+                  <h3 className="user-name">{chat.name}</h3>
+                  <span className="message-time">{formatTime(chat.lastMessageTime)}</span>
                 </div>
-                <div className="chat-message">
-                  <p>
+                
+                <div className="message-preview">
+                  <p className="message-text">
                     {chat.lastMessage
-                      ? chat.lastMessage.split(" ").slice(0, 4).join(" ") + 
-                        (chat.lastMessage.split(" ").length > 5 ? "..." : "")
-                      : "No messages yet."}
+                      ? chat.lastMessage.split(" ").slice(0, 8).join(" ") + 
+                        (chat.lastMessage.split(" ").length > 8 ? "..." : "")
+                      : "Start a conversation"}
                   </p>
-                  {chat.unreadCount > 0 && <span className="unread-count">{chat.unreadCount}</span>}
-                  <p style={{textAlign:'end'}}>
-                    {chat.lastMessageTime ? (
-                      <>
-                        {new Date(chat.lastMessageTime).toLocaleDateString()} <br />
-                        {new Date(chat.lastMessageTime).toLocaleTimeString([], { 
-                          hour: "2-digit", 
-                          minute: "2-digit", 
-                          second: "2-digit", 
-                          hour12: true 
-                        })}
-                      </>
-                    ) : (
-                      "No messages yet"
-                    )}
-                  </p>
+                  
+                  {chat.unreadCount > 0 && (
+                    <span className="unread-badge">{chat.unreadCount}</span>
+                  )}
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <p className="no-chats-message">No chats found.</p>
+          <div className="empty-state">
+            <div className="empty-icon">💬</div>
+            <h3>No conversations found</h3>
+            <p>{searchTerm ? "Try a different search" : "Start a new conversation"}</p>
+          </div>
         )}
       </div>
     </div>

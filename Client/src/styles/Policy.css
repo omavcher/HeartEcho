@@ -1,127 +1,218 @@
-/* Modern and Stylish CSS for Refund Page */
+/* EchoHeart Contact Page Styles */
 .policy-container {
-    color: #ffffff; /* White primary text */
-    min-height: 100vh;
-    padding: 60px 20px;
-    font-family: 'Inter', 'Arial', sans-serif; /* Modern font (use Google Fonts if available) */
-    line-height: 1.8;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: left;
-    margin-bottom: 5rem;
+  color: #ffffff;
+  min-height: 100vh;
+  padding: 60px 20px;
+  font-family: 'Inter', 'Arial', sans-serif;
+  line-height: 1.8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: left;
+  margin-bottom: 5rem;
+  background-color: #000000;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.policy-container h1 {
+  color: #ff6ba6;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+  padding-bottom: 10px;
+  max-width: 800px;
+  background: linear-gradient(90deg, #cf4185, #ff6ba6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.contact-heart {
+  font-size: 3rem;
+  margin: 1.5rem 0;
+  animation: pulse 2s infinite;
+}
+
+.policy-container h2 {
+  color: #cf4185;
+  font-size: 1.7rem;
+  font-weight: 600;
+  margin-top: 40px;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.policy-container h2::after {
+  content: '';
+  position: absolute;
+  width: 50px;
+  height: 3px;
+  background: linear-gradient(90deg, #cf4185, transparent);
+  bottom: -5px;
+  left: 0;
+}
+
+.policy-container p {
+  max-width: 800px;
+  font-size: 1.1rem;
+  margin: 15px 0;
+  color: #e0e0e0;
+}
+
+.policy-container ul {
+  max-width: 800px;
+  padding-left: 25px;
+  list-style-type: none;
+}
+
+.policy-container li {
+  margin: 12px 0;
+  font-size: 1.1rem;
+  position: relative;
+  color: #e0e0e0;
+  padding-left: 25px;
+}
+
+.policy-container li::before {
+  content: '❤️';
+  position: absolute;
+  left: 0;
+  opacity: 0.7;
+}
+
+.policy-container a {
+  color: #ff6ba6;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.policy-container a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.founder-note {
+  background: rgba(207, 65, 133, 0.1);
+  border-left: 3px solid #cf4185;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  max-width: 800px;
+  border-radius: 0 8px 8px 0;
+}
+
+.signature {
+  text-align: right;
+  font-style: italic;
+  color: #cf4185;
+  margin-top: 1rem !important;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .policy-container {
+    padding: 40px 15px;
   }
-  
+
   .policy-container h1 {
-    color: #ffffff; /* White for main heading */
-    font-size: 2.5rem;
-    font-weight: 600;
-    margin-bottom: 30px;
-    text-align: center;
-    border-bottom: 2px solid #D04084; /* Subtle secondary color underline */
-    padding-bottom: 10px;
-    max-width: 800px;
+    font-size: 2rem;
   }
-  
+
   .policy-container h2 {
-    color: #D04084; /* Secondary color for subheadings */
-    font-size: 1.7rem;
-    font-weight: 500;
-    margin-top: 40px;
-    margin-bottom: 15px;
-    position: relative;
+    font-size: 1.5rem;
   }
-  
-  .policy-container h2::after {
-    content: '';
-    position: absolute;
-    width: 50px;
-    height: 1px;
-    background: #D04084;
-    bottom: -5px;
-    left: 0;
-  }
-  
-  .policy-container p {
-    max-width: 800px;
-    font-size: 1.1rem;
-    margin: 15px 0;
-    color: #e0e0e0; /* Slightly softer white for body text */
-  }
-  
-  .policy-container ul {
-    max-width: 800px;
-    padding-left: 25px;
-    list-style-type: none; /* Remove default bullets */
-  }
-  
+
+  .policy-container p,
   .policy-container li {
-    margin: 12px 0;
-    font-size: 1.1rem;
-    position: relative;
-    color: #e0e0e0;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .policy-container {
+    padding: 30px 10px;
+  }
+
+  .policy-container h1 {
+    font-size: 1.8rem;
+  }
+
+  .policy-container h2 {
+    font-size: 1.3rem;
+  }
+
+  .policy-container li {
+    padding-left: 20px;
   }
   
   .policy-container li::before {
-    content: '—'; /* Custom dash for list items */
-    color: #D04084;
-    position: absolute;
-    left: -20px;
+    left: -5px;
   }
-  
-  .policy-container a {
-    color: #D04084; /* Secondary color for links */
-    text-decoration: none;
-    transition: color 0.3s ease;
-  }
-  
-  .policy-container a:hover {
-    color: #ff66a3; /* Lighter shade of secondary color on hover */
-    text-decoration: underline;
-  }
-  
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .policy-container {
-      padding: 40px 15px;
-    }
-  
-    .policy-container h1 {
-      font-size: 2rem;
-    }
-  
-    .policy-container h2 {
-      font-size: 1.5rem;
-    }
-  
-    .policy-container p,
-    .policy-container li {
-      font-size: 1rem;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .policy-container {
-      padding: 30px 10px;
-    }
-  
-    .policy-container h1 {
-      font-size: 1.8rem;
-    }
-  
-    .policy-container h2 {
-      font-size: 1.3rem;
-    }
-  
-    .policy-container p,
-    .policy-container li {
-      font-size: 0.9rem;
-    }
-  
-    .policy-container h2::after {
-      width: 30px; /* Shorter underline on mobile */
-    }
-  }
+}
 
 
+.intro-text {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 2rem;
+}
+
+.privacy-heart {
+  font-size: 3rem;
+  text-align: center;
+  margin: 2rem 0;
+  animation: heartbeat 1.5s infinite;
+}
+
+.policy-container li strong {
+  color: #ff6ba6;
+  font-weight: 600;
+}
+
+@keyframes heartbeat {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.1); }
+  50% { transform: scale(1); }
+  75% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Founder note - reuse from contact page styles */
+.founder-note {
+  background: rgba(207, 65, 133, 0.1);
+  border-left: 3px solid #cf4185;
+  padding: 1.5rem;
+  margin: 3rem 0 1rem;
+  max-width: 800px;
+  border-radius: 0 8px 8px 0;
+}
+
+.signature {
+  text-align: right;
+  font-style: italic;
+  color: #cf4185;
+  margin-top: 1rem !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .intro-text {
+    font-size: 1.1rem;
+    padding: 0 1rem;
+  }
   
+  .privacy-heart {
+    font-size: 2.5rem;
+    margin: 1.5rem 0;
+  }
+}

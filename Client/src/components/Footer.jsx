@@ -1,49 +1,66 @@
-'use client'; // Required for client-side features
+'use client';
 import React from 'react';
-import Link from 'next/link'; // Changed from react-router-dom
-import Image from 'next/image'; // Using Next.js optimized Image component
+import Link from 'next/link';
+import Image from 'next/image';
 import '../styles/Footer.css';
 
 function Footer() {
   return (
-    <>
-      <div className='footer-main-container'>
-        <div className='leftc-footter-contex'>
-          <div className='leftr-logo'>
+    <footer className="footer-container">
+      <div className="footer-content">
+        <div className="brand-section">
+          <div className="logo-container">
             <Image 
               src='/heartechor.png' 
               alt='HeartEcho AI Logo'
-              width={40} // Add appropriate width
-              height={40} // Add appropriate height
+              width={48}
+              height={48}
+              className="logo"
             />
-            Heart<span>Echo</span>
+            <h2 className="logo-text">Heart<span>Echo</span></h2>
+          </div>
+          <p className="tagline">Your personalized AI companion experience</p>
+          
+          <div className="company-info">
+            <p>Om Avcher Corp, Jalgaon Jamod</p>
+            <p>Maharashtra, India</p>
+          </div>
+        </div>
+
+        <div className="links-section">
+          <div className="links-column">
+            <h3 className="links-heading">Legal</h3>
+            <Link href="/privacy" className="footer-link">Privacy Policy</Link>
+            <Link href="/terms" className="footer-link">Terms of Service</Link>
+            <Link href="/refund" className="footer-link">Refund Policy</Link>
           </div>
 
-          <h6>Create Your Own AI Girlfriend – Smart, Personalized & Engaging</h6>
-          <p>Secure & Private AI Conversations powered by advanced AI technology.</p>
-          <p>Om Avcher Corp, Jalgaon Jamod, Maharashtra, India</p>
-        </div>
+          <div className="links-column">
+            <h3 className="links-heading">Company</h3>
+            <Link href="/about" className="footer-link">About Us</Link>
+            <Link href="/contact" className="footer-link">Contact</Link>
+          </div>
 
-        <div className='right-footer-nlings'>
-          <span> 
-            <Link className='footer-nav-sw' href='/refund'>Refund</Link>
-            <Link className='footer-nav-sw' href='/privacy'>Privacy</Link>
-          </span>
-
-          <span> 
-            <Link className='footer-nav-sw' href='/terms'>Terms of use</Link>
-            <Link className='footer-nav-sw' href='/contact'>Contact us</Link>
-          </span>
-
-          <span> 
-            <Link className='footer-nav-sw' href='/products'>Products</Link>
-            <Link className='footer-nav-sw' href='/shipping'>Shipping</Link>
-          </span>
+          <div className="links-column">
+            <h3 className="links-heading">Resources</h3>
+            <Link href="/faq" className="footer-link">FAQs</Link>
+            <Link href="/blog" className="footer-link">Blog</Link>
+          </div>
         </div>
       </div>
-      <h6 className='rights-h6'>© {new Date().getFullYear()} HeartEcho AI. All Rights Reserved.</h6>
-    </>
-  )
+
+      <div className="footer-bottom">
+        <p className="copyright">
+          © {new Date().getFullYear()} HeartEcho AI. All rights reserved.
+        </p>
+        <div className="social-links">
+          {/* <Link href="#" className="social-icon">Twitter</Link>
+          <Link href="#" className="social-icon">Instagram</Link>
+          <Link href="#" className="social-icon">Discord</Link> */}
+        </div>
+      </div>
+    </footer>
+  );
 }
 
 export default Footer;

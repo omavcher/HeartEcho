@@ -10,6 +10,7 @@ import Link from 'next/link';
 import PopNoti from '../components/PopNoti';
 import api from '../config/api';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 function Login() {
   const router = useRouter();
@@ -22,8 +23,7 @@ function Login() {
   const [platform, setPlatform] = useState(typeof window !== 'undefined' ? navigator.platform : '');
   const [locationUser, setLocationUser] = useState(null);
 
-  // Replace with your actual Google Client ID
-  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "your-google-client-id";
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -49,7 +49,7 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!formData.email.includes("@")) {
       setNotification({ show: true, message: "Enter a valid email!", type: "error" });
       return;
@@ -58,21 +58,22 @@ function Login() {
       setNotification({ show: true, message: "Password must be at least 8 characters!", type: "error" });
       return;
     }
-
+  
     setIsLogin(true);
     try {
       const res = await axios.post(`${api.Url}/auth/login`, formData);
       const { token, user } = res.data;
-
-      localStorage.setItem("token", token);
+  
+      Cookies.set("token", token, { expires: 7 });
       localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
 
       if (ip && coordinates) {
         await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform, locationUser }, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
-
+  
       setNotification({ show: true, message: "Login successful!", type: "success" });
       setTimeout(() => router.push('/'), 1500);
     } catch (error) {
@@ -84,11 +85,12 @@ function Login() {
   const handleGoogleSuccess = async (response) => {
     setIsLogin(true);
     const userData = jwtDecode(response.credential);
-
+  
     try {
       const res = await axios.post(`${api.Url}/auth/google-login`, { email: userData.email });
-
+  
       if (res.data.token) {
+        Cookies.set("token", res.data.token, { expires: 7 });
         localStorage.setItem("token", res.data.token);
 
         if (ip && coordinates) {
@@ -96,7 +98,7 @@ function Login() {
             headers: { Authorization: `Bearer ${res.data.token}` },
           });
         }
-
+  
         setNotification({ show: true, message: "Google Login Successful!", type: "success" });
         setTimeout(() => router.push('/'), 1500);
       }
@@ -112,7 +114,7 @@ function Login() {
   };
 
   return (
-    <div className="signup-container" style={{ alignItems: 'start' }}>
+    <div className="signup-container">
       <PopNoti
         message={notification.message}
         type={notification.type}
@@ -120,26 +122,48 @@ function Login() {
         onClose={() => setNotification({ ...notification, show: false })}
       />
 
-      <div className="signup-left" style={{ padding: "0", overflow: 'visible', backgroundColor: 'black' }}>
-        <video src="/videos/bg2.mp4" muted autoPlay loop playsInline></video>
-        <span className='sideup-top-sanp' style={{ position: 'absolute', top: '10%' }}>
-          <img src='/heartechor.png' alt='HeartEcho' style={{ width: '4rem' }} />
-          <h2>HeartEcho</h2>
-        </span>
-        <p className='signup-footerse' style={{ position: 'absolute', bottom: '20%', textAlign: 'start' }}>
-          © {new Date().getFullYear()} HeartEcho AI <br /> omawcharbusiness123@gmail.com
-        </p>
+      <div className="signup-left">
+        <div className="signup-sidebar">
+          <span className="sideup-top-sanp">
+            <img src="/heartechor.png" alt="HeartEcho" />
+            <h2>HeartEcho</h2>
+          </span>
+
+          <div className="steps-singe">
+            <div className="step completed">
+              <span className="circle-signa3">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"></path>
+                </svg>
+              </span>
+              <div className="step-text">
+                <h3>Welcome Back</h3>
+                <p>Sign in to access your account and continue your journey</p>
+              </div>
+            </div>
+          </div>
+
+          <p className="signup-footerse">
+            © {new Date().getFullYear()} HeartEcho AI <br /> omawcharbusiness123@gmail.com
+          </p>
+        </div>
       </div>
 
-      <div className="signup-right" style={{ padding: '0.9rem' }}>
-        <div className='signup-box'>
+      <div className="signup-right">
+        <div className="signup-box">
           <h2>Login</h2>
-          <form className='inputs-sign' style={{ marginTop: '0' }} onSubmit={handleSubmit}>
-            <div className='password-input'>
-              <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
+          <form className="inputs-sign" onSubmit={handleSubmit}>
+            <div className="password-input">
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                onChange={handleChange}
+                required
+              />
             </div>
 
-            <div className='password-input' style={{ marginTop: '0', marginBottom: '0.5rem', gap: '0.5rem' }}>
+            <div className="password-input">
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
@@ -147,24 +171,26 @@ function Login() {
                 onChange={handleChange}
                 required
               />
-              <span className='eye-icon' onClick={() => setShowPassword(!showPassword)}>
+              <span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
 
-            <button type="submit" className="otp-btn-singr" disabled={isLogin}>
-              {isLogin ? <span className="loader"></span> : "Login"}
-            </button>
+            <div className="sign-up-page-cons2">
+              <button type="submit" className="otp-btn-singr" disabled={isLogin}>
+                {isLogin ? <span className="loader-signin"></span> : "Login"}
+              </button>
+            </div>
           </form>
 
-          <div className='last-sinin-con'>
-            <div className='last-hearder-sini'>
-              <span className='last-ssx-con-line'></span>
-              <h3 style={{ fontSize: '0.7rem', marginTop: '1rem' }}>Or Login with</h3>
-              <span className='last-ssx-con-line'></span>
+          <div className="last-sinin-con">
+            <div className="last-hearder-sini">
+              <span className="last-ssx-con-line"></span>
+              <h3>Or Login with</h3>
+              <span className="last-ssx-con-line"></span>
             </div>
 
-            <div className='authO2-container3d'>
+            <div className="authO2-container3d">
               <GoogleOAuthProvider clientId={googleClientId}>
                 <GoogleLogin
                   onSuccess={handleGoogleSuccess}
@@ -175,8 +201,11 @@ function Login() {
               </GoogleOAuthProvider>
             </div>
 
-            <h2 className='have-h2dx'>
-              Don't have an account? <Link href='/signup' style={{ textDecoration: 'none' }}> <span>Register Now</span></Link>
+            <h2 className="have-h2dx">
+              Don't have an account?{" "}
+              <Link href="/signup" style={{ textDecoration: "none" }}>
+                <span>Register Now</span>
+              </Link>
             </h2>
           </div>
         </div>

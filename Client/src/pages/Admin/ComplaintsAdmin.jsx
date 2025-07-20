@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+'use client'; // Required for client-side features
+
+import { useState, useEffect } from "react";
 import "./ComplaintsAdmin.css";
 import { FaTicketAlt, FaTrash, FaEdit, FaSearch, FaFilter, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import api from "../../config/api";
@@ -12,14 +14,23 @@ const ComplaintsAdmin = () => {
   const [editTicket, setEditTicket] = useState(null);
   const ticketsPerPage = 3;
 
+  // Server-safe token access
+  const getToken = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem("token") || "";
+    }
+    return "";
+  };
+
   useEffect(() => {
     fetchTickets();
   }, []);
 
   const fetchTickets = async () => {
     try {
+      const token = getToken();
       const response = await axios.get(`${api.Url}/admin/tickets`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setTickets(response.data.data);
     } catch (error) {
@@ -45,8 +56,9 @@ const ComplaintsAdmin = () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this complaint?");
     if (confirmDelete) {
       try {
+        const token = getToken();
         await axios.delete(`${api.Url}/admin/tickets/${id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
         setTickets(tickets.filter((ticket) => ticket._id !== id));
         alert("Complaint deleted successfully!");
@@ -64,11 +76,12 @@ const ComplaintsAdmin = () => {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
+      const token = getToken();
       const response = await axios.put(
         `${api.Url}/admin/tickets/${editTicket._id}`,
         editTicket,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       setTickets(tickets.map((t) =>
@@ -92,11 +105,12 @@ const ComplaintsAdmin = () => {
     };
 
     try {
+      const token = getToken();
       const response = await axios.put(
         `${api.Url}/admin/tickets/${ticket._id}`,
         updateData,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       setTickets(tickets.map((t) =>
@@ -138,73 +152,82 @@ const ComplaintsAdmin = () => {
 
       <div className="cmp-content-grid">
         <div className="cmp-tickets-section">
-          <div className="cmp-tickets-grid">
-            {currentTickets.map((ticket) => (
-              <div key={ticket._id} className="cmp-ticket-card">
-                <div className="cmp-ticket-content">
-                  <h3>{ticket.issue}</h3>
-                  <p>
-                    User: {ticket.user && typeof ticket.user === "object" ? ticket.user.name : ticket.user || "Unknown"} 
-                    ({ticket.user && typeof ticket.user === "object" ? ticket.user.email : "N/A"})
-                  </p>
-                  <p>Date: {new Date(ticket.date).toLocaleString()}</p>
-                  <p>
-                    Status:
-                    <span className={`cmp-status ${ticket.status.toLowerCase()}`}>
-                      {ticket.status}
-                    </span>
-                  </p>
-                  <div className="cmp-ticket-actions">
-                    <button
-                      className="cmp-action-button cmp-edit"
-                      onClick={() => handleEdit(ticket)}
-                    >
-                      <FaEdit /> Edit
-                    </button>
-                    <button
-                      className="cmp-action-button cmp-delete"
-                      onClick={() => handleDelete(ticket._id)}
-                    >
-                      <FaTrash /> Delete
-                    </button>
-                    <button
-                      className="cmp-action-button cmp-toggle"
-                      onClick={() => handleToggleStatus(ticket)}
-                    >
-                      {ticket.status === "Pending" ? <FaCheckCircle /> : <FaTimesCircle />}
-                      {ticket.status === "Pending" ? " Resolve" : " Unresolve"}
-                    </button>
+          {filteredTickets.length === 0 ? (
+            <div className="cmp-no-tickets">
+              <FaTicketAlt className="cmp-no-tickets-icon" />
+              <p>No complaints found matching your criteria</p>
+            </div>
+          ) : (
+            <>
+              <div className="cmp-tickets-grid">
+                {currentTickets.map((ticket) => (
+                  <div key={ticket._id} className="cmp-ticket-card">
+                    <div className="cmp-ticket-content">
+                      <h3>{ticket.issue}</h3>
+                      <p>
+                        User: {ticket.user && typeof ticket.user === "object" ? ticket.user.name : ticket.user || "Unknown"} 
+                        ({ticket.user && typeof ticket.user === "object" ? ticket.user.email : "N/A"})
+                      </p>
+                      <p>Date: {new Date(ticket.date).toLocaleString()}</p>
+                      <p>
+                        Status:
+                        <span className={`cmp-status ${ticket.status.toLowerCase()}`}>
+                          {ticket.status}
+                        </span>
+                      </p>
+                      <div className="cmp-ticket-actions">
+                        <button
+                          className="cmp-action-button cmp-edit"
+                          onClick={() => handleEdit(ticket)}
+                        >
+                          <FaEdit /> Edit
+                        </button>
+                        <button
+                          className="cmp-action-button cmp-delete"
+                          onClick={() => handleDelete(ticket._id)}
+                        >
+                          <FaTrash /> Delete
+                        </button>
+                        <button
+                          className="cmp-action-button cmp-toggle"
+                          onClick={() => handleToggleStatus(ticket)}
+                        >
+                          {ticket.status === "Pending" ? <FaCheckCircle /> : <FaTimesCircle />}
+                          {ticket.status === "Pending" ? " Resolve" : " Unresolve"}
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          <div className="cmp-pagination">
-            <button
-              className="cmp-pagination-button"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <button
-                key={i + 1}
-                className={`cmp-pagination-button ${currentPage === i + 1 ? "cmp-active" : ""}`}
-                onClick={() => setCurrentPage(i + 1)}
-              >
-                {i + 1}
-              </button>
-            ))}
-            <button
-              className="cmp-pagination-button"
-              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </button>
-          </div>
+              <div className="cmp-pagination">
+                <button
+                  className="cmp-pagination-button"
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i + 1}
+                    className={`cmp-pagination-button ${currentPage === i + 1 ? "cmp-active" : ""}`}
+                    onClick={() => setCurrentPage(i + 1)}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  className="cmp-pagination-button"
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -214,10 +237,11 @@ const ComplaintsAdmin = () => {
             <h3>Edit Complaint: {editTicket.issue}</h3>
             <form onSubmit={handleEditSubmit}>
               <label>Issue:</label>
-              <input
-                type="text"
+              <textarea
                 value={editTicket.issue}
                 onChange={(e) => setEditTicket({ ...editTicket, issue: e.target.value })}
+                rows="3"
+                required
               />
               <label>User ID:</label>
               <input
@@ -229,12 +253,13 @@ const ComplaintsAdmin = () => {
               <select
                 value={editTicket.status}
                 onChange={(e) => setEditTicket({ ...editTicket, status: e.target.value })}
+                required
               >
                 <option value="Pending">Pending</option>
                 <option value="Resolved">Resolved</option>
               </select>
-              <div>
-                <button type="submit" className="cmp-action-button cmp-save">Save</button>
+              <div className="cmp-modal-buttons">
+                <button type="submit" className="cmp-action-button cmp-save">Save Changes</button>
                 <button
                   type="button"
                   className="cmp-action-button cmp-cancel"

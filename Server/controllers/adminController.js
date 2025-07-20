@@ -11,81 +11,63 @@ const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");
 
 
 exports.dashboardData = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const { timePeriod } = req.body;
-        
-        let startDate;
-        if (timePeriod === 'week') {
-            startDate = moment().subtract(7, 'days').startOf('day').toDate();
-        } else if (timePeriod === 'month') {
-            startDate = moment().subtract(30, 'days').startOf('day').toDate();
-        } else {
-            startDate = moment().subtract(1, 'day').startOf('day').toDate(); // Default to last day's data
-        }
+  try {
+      const userId = req.user.id;
 
-        // Fetch user registrations in the given time period
-        const usersData = await User.countDocuments({ joinedAt: { $gte: startDate } });
-        console.log("Users Registered:", usersData);
+      // Total users ever registered
+      const usersData = await User.countDocuments();
 
-        // Fetch total revenue in the given time period
-        const paymentsData = await Payment.aggregate([
-            { $match: { date: { $gte: startDate } } },
-            { $group: { _id: null, totalRevenue: { $sum: "$rupees" } } }
-        ]);
-        const totalRevenue = paymentsData.length > 0 ? paymentsData[0].totalRevenue : 0;
-        console.log("Total Revenue:", totalRevenue);
+      // Total revenue ever
+      const paymentsData = await Payment.aggregate([
+          { $group: { _id: null, totalRevenue: { $sum: "$rupees" } } }
+      ]);
+      const totalRevenue = paymentsData.length > 0 ? paymentsData[0].totalRevenue : 0;
 
-        // Fetch total number of messages sent by users
-        const messageQuotaData = await Chat.aggregate([
-            { $unwind: "$messages" },
-            { $match: { "messages.senderModel": "User" } },
-            { $group: { _id: "$messages.sender", totalMessages: { $sum: 1 } } },
-            { $sort: { totalMessages: -1 } }
-        ]);
-        const totalMessages = messageQuotaData.length > 0 ? messageQuotaData[0].totalMessages : 0;
-        console.log("Total Messages Sent:", totalMessages);
+      // Total messages sent by all users
+      const messageQuotaData = await Chat.aggregate([
+          { $unwind: "$messages" },
+          { $match: { "messages.senderModel": "User" } },
+          { $group: { _id: "$messages.sender", totalMessages: { $sum: 1 } } },
+          { $sort: { totalMessages: -1 } }
+      ]);
+      const totalMessages = messageQuotaData.reduce((sum, u) => sum + u.totalMessages, 0);
 
-        // Fetch unique active users within the time period
-        const activeUsersData = await LoginDetail.aggregate([
-            { $match: { time: { $gte: startDate } } },
-            { $group: { _id: "$user" } },
-            { $count: "totalActiveUsers" }
-        ]);
-        const totalActiveUsers = activeUsersData.length > 0 ? activeUsersData[0].totalActiveUsers : 0;
-        console.log("Active Users:", totalActiveUsers);
+      // Total unique active users (all time)
+      const activeUsersData = await LoginDetail.aggregate([
+          { $group: { _id: "$user" } },
+          { $count: "totalActiveUsers" }
+      ]);
+      const totalActiveUsers = activeUsersData.length > 0 ? activeUsersData[0].totalActiveUsers : 0;
 
-        // Fetch revenue trend over time
-        const revenueTrend = await Payment.aggregate([
-            { $match: { date: { $gte: startDate } } },
-            { 
-                $group: { 
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } }, 
-                    revenue: { $sum: "$rupees" } 
-                } 
-            },
-            { $sort: { _id: 1 } }
-        ]);
-        console.log("Revenue Trend:", revenueTrend);
+      // Revenue trend over time (lifetime daily trend)
+      const revenueTrend = await Payment.aggregate([
+          { 
+              $group: { 
+                  _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } }, 
+                  revenue: { $sum: "$rupees" } 
+              } 
+          },
+          { $sort: { _id: 1 } }
+      ]);
 
-        // Fetch latest AI Friends created within the time period
-        const notifications = await AIFriend.find({ createdAt: { $gte: startDate } }).limit(10);
-        console.log("AI Friends Created:", notifications.length);
+      // Latest 10 AI friends created (lifetime)
+      const notifications = await AIFriend.find().sort({ createdAt: -1 }).limit(10);
 
-        return res.status(200).json({
-            usersData,
-            paymentsData: totalRevenue,
-            messageQuotaData: totalMessages,
-            activeUsers: totalActiveUsers,
-            revenueTrend,
-            notifications
-        });
+      return res.status(200).json({
+          usersData,
+          paymentsData: totalRevenue,
+          messageQuotaData: totalMessages,
+          activeUsers: totalActiveUsers,
+          revenueTrend,
+          notifications
+      });
 
-    } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-        return res.status(500).json({ error: "Internal server error" });
-    }
+  } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      return res.status(500).json({ error: "Internal server error" });
+  }
 };
+
 
 
 

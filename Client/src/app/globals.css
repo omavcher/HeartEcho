@@ -1,0 +1,131 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+html,body{
+  background-color: black;
+}
+::selection {
+  background: #ce4085;
+  color: black; 
+  
+}
+
+input {
+  border: 0;
+  outline: none; /* Removes default focus outline */
+}
+
+input:active,
+input:focus {
+  border: 0;
+  outline: none;
+}
+
+input[type="text"], textarea {
+border: 0;
+}
+
+/*
+ font-family: "Poppins", serif;
+font-family: "Montserrat", serif;
+font-family: "Nunito", serif;
+font-family: "Inter", serif;
+ */
+
+.main-container-d{
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+}
+
+.mainx-swdeer{
+  width: 95%;
+}
+
+
+@media screen and (max-width: 868px){
+  .mainx-swdeer{
+    width: 100%;
+  }
+  
+
+}
+/* Works for WebKit-based browsers (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 6px; /* Thin scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #222; /* Darker track */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #444; /* Scrollbar thumb */
+  border-radius: 10px; /* Rounded edges */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #666; /* Slightly lighter on hover */
+}
+
+
+.faq-list{
+margin-bottom: 6rem;
+}
+
+.subscribe-btn-x {
+  background: linear-gradient(135deg, #FFD700, #DAA520, #B8860B);
+  color: black;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  font-family: "Nunito", serif;
+  font-weight: bold;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  position: relative;
+  box-shadow: 0px 3px 7px rgba(255, 215, 0, 0.4); /* Golden glow */
+}
+
+/* Add 3D Reflection Effect */
+.subscribe-btn-x::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, rgba(0, 0, 0, 0) 70%);
+  opacity: 0.3;
+  border-radius: 8px;
+}
+
+/* Hover Effect */
+.subscribe-btn-x:hover {
+  background: linear-gradient(135deg, #FFEA00, #FFC107, #B8860B);
+  box-shadow: 0px 6px 15px rgba(255, 215, 0, 0.7); /* Stronger glow */
+  transform: scale(1.05);
+}
+
+.subscribe-btn-x svg{
+ width: 1.2rem;
+
+}
+
+.customization-section{
+  background-color: black !important ;
+}
+.ai-models-container{
+  background-color: black !important ;
+}

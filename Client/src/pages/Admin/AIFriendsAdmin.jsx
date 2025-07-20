@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
-import "./AIFriendsAdmin.css"; // Import local CSS
+'use client'; // Required for client-side features
+
+import { useState, useEffect } from "react";
+import "./AIFriendsAdmin.css";
 import { FaRobot, FaTrash, FaEdit, FaSearch, FaPlus } from "react-icons/fa";
 import api from '../../config/api';
 import axios from "axios";
@@ -12,14 +14,23 @@ const AIFriendsAdmin = () => {
   const [showAddSection, setShowAddSection] = useState(false);
   const [jsonInput, setJsonInput] = useState("");
 
+  // Server-safe token access
+  const getToken = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem("token") || "";
+    }
+    return "";
+  };
+
   useEffect(() => {
     fetchAIFriends();
   }, []);
 
   const fetchAIFriends = async () => {
     try {
+      const token = getToken();
       const response = await axios.get(`${api.Url}/admin/aiuser-data`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setAIFriends(response.data.aiusers);
       console.log(`fetchAIFriends response ${JSON.stringify(response.data.aiusers)}`);
@@ -46,8 +57,9 @@ const AIFriendsAdmin = () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this AI Friend?");
     if (confirmDelete) {
       try {
+        const token = getToken();
         await axios.delete(`${api.Url}/admin/aiuser-data/${id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
         setAIFriends(aiFriends.filter((friend) => friend._id !== id));
         alert("AI Friend deleted successfully!");
@@ -67,11 +79,12 @@ const AIFriendsAdmin = () => {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
+      const token = getToken();
       const response = await axios.put(
         `${api.Url}/admin/aiuser-data/${editFriend._id}`,
         editFriend,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       setAIFriends(aiFriends.map((f) =>
@@ -88,12 +101,13 @@ const AIFriendsAdmin = () => {
   // Handle Add Multiple AI Friends
   const handleAddMultiple = async () => {
     try {
+      const token = getToken();
       const parsedData = JSON.parse(jsonInput);
       const response = await axios.post(
-        `${api.Url}/admin/put-alldata/multipel`, // Update this to match your actual endpoint
+        `${api.Url}/admin/put-alldata/multipel`,
         parsedData,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       setAIFriends([...aiFriends, ...response.data.data]);
@@ -180,16 +194,23 @@ const AIFriendsAdmin = () => {
             {filteredAIFriends.length > 0 ? (
               filteredAIFriends.map((friend) => (
                 <div key={friend._id} className="fif-friend-card">
-                  <img src={friend.avatar_img} alt={friend.name} className="fif-friend-avatar" />
+                  <img 
+                    src={friend.avatar_img} 
+                    alt={friend.name} 
+                    className="fif-friend-avatar" 
+                    onError={(e) => {
+                      e.target.src = '/default-avatar.png'; // Fallback image
+                    }}
+                  />
                   <div className="fif-friend-content">
                     <h3>{friend.name}</h3>
                     <p>Relationship: {friend.relationship}</p>
                     <p>Age: {friend.age}</p>
-                    <p>Interests: {friend.interests.join(", ")}</p>
+                    <p>Interests: {friend.interests?.join(", ") || "None specified"}</p>
                     <p>Description: {friend.description}</p>
                     <p>Initial Message: {friend.initial_message}</p>
-                    <p>Persona: {friend.settings.persona}</p>
-                    <p>Setting: {friend.settings.setting}</p>
+                    <p>Persona: {friend.settings?.persona || "Not specified"}</p>
+                    <p>Setting: {friend.settings?.setting || "Not specified"}</p>
                     <div className="fif-friend-actions">
                       <button
                         className="fif-action-button fif-edit"
@@ -225,61 +246,86 @@ const AIFriendsAdmin = () => {
                 type="text"
                 value={editFriend.name}
                 onChange={(e) => setEditFriend({ ...editFriend, name: e.target.value })}
+                required
               />
               <label>Gender:</label>
-              <input
-                type="text"
+              <select
                 value={editFriend.gender}
                 onChange={(e) => setEditFriend({ ...editFriend, gender: e.target.value })}
-              />
+                required
+              >
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
               <label>Relationship:</label>
               <input
                 type="text"
                 value={editFriend.relationship}
                 onChange={(e) => setEditFriend({ ...editFriend, relationship: e.target.value })}
+                required
               />
               <label>Age:</label>
               <input
                 type="number"
                 value={editFriend.age}
                 onChange={(e) => setEditFriend({ ...editFriend, age: e.target.value })}
+                min="18"
+                required
               />
               <label>Interests (comma-separated):</label>
               <input
                 type="text"
-                value={editFriend.interests.join(", ")}
-                onChange={(e) => setEditFriend({ ...editFriend, interests: e.target.value.split(", ") })}
+                value={editFriend.interests?.join(", ") || ""}
+                onChange={(e) => setEditFriend({ 
+                  ...editFriend, 
+                  interests: e.target.value.split(",").map(item => item.trim()) 
+                })}
               />
               <label>Description:</label>
               <textarea
                 value={editFriend.description}
                 onChange={(e) => setEditFriend({ ...editFriend, description: e.target.value })}
+                required
               />
               <label>Initial Message:</label>
               <input
                 type="text"
                 value={editFriend.initial_message}
                 onChange={(e) => setEditFriend({ ...editFriend, initial_message: e.target.value })}
+                required
               />
               <label>Persona:</label>
               <input
                 type="text"
-                value={editFriend.settings.persona}
-                onChange={(e) => setEditFriend({ ...editFriend, settings: { ...editFriend.settings, persona: e.target.value } })}
+                value={editFriend.settings?.persona || ""}
+                onChange={(e) => setEditFriend({ 
+                  ...editFriend, 
+                  settings: { 
+                    ...editFriend.settings, 
+                    persona: e.target.value 
+                  } 
+                })}
               />
               <label>Setting:</label>
               <input
                 type="text"
-                value={editFriend.settings.setting}
-                onChange={(e) => setEditFriend({ ...editFriend, settings: { ...editFriend.settings, setting: e.target.value } })}
+                value={editFriend.settings?.setting || ""}
+                onChange={(e) => setEditFriend({ 
+                  ...editFriend, 
+                  settings: { 
+                    ...editFriend.settings, 
+                    setting: e.target.value 
+                  } 
+                })}
               />
               <label>Avatar URL:</label>
               <input
                 type="text"
                 value={editFriend.avatar_img}
                 onChange={(e) => setEditFriend({ ...editFriend, avatar_img: e.target.value })}
+                required
               />
-              <div>
+              <div className="fif-modal-buttons">
                 <button type="submit" className="fif-action-button fif-save">Save</button>
                 <button
                   type="button"

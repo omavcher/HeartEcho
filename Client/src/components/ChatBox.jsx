@@ -6,13 +6,14 @@ import axios from "axios";
 import api from "../config/api";
 import PopNoti from "./PopNoti";
 import { useRouter } from "next/navigation";
+import { FiArrowLeft, FiCopy, FiTrash2, FiX, FiMoreVertical, FiSend } from "react-icons/fi";
 
 const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
   const [messages, setMessages] = useState([]);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [userProfile, setUserProfile] = useState({});
   const [newMessage, setNewMessage] = useState("");
-  const [showOverlay, setShowOverlay] = useState(false); 
+  const [showOverlay, setShowOverlay] = useState(false);
   const overlayRef = useRef(null);
   const [token, setToken] = useState(null);
   const chatContainerRef = useRef(null);
@@ -21,9 +22,9 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
   const menuRef = useRef(null);
   const router = useRouter();
   const [hoveredMessage, setHoveredMessage] = useState(null);
+  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
-    // Client-side only code
     setToken(typeof window !== 'undefined' ? localStorage.getItem("token") : null);
   }, []);
 
@@ -46,20 +47,12 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
   }, [chatId, token]);
 
   useEffect(() => {
-    lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
+    scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (overlayRef.current && !overlayRef.current.contains(event.target)) {
-        setShowOverlay(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  const scrollToBottom = () => {
+    lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const fetchChatData = async () => {
     try {
@@ -100,6 +93,7 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
 
     setMessages((prevMessages) => [...prevMessages, tempMsg]);
     setNewMessage("");
+    setIsTyping(true);
 
     try {
       const response = await axios.post(
@@ -113,12 +107,14 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
       );
 
       onSendMessage();
+      setIsTyping(false);
       setMessages((prevMessages) => [
         ...prevMessages.filter((msg) => !msg.isLoading),
         ...newMessages,
       ]);
     } catch (error) {
       console.error("Error sending message:", error);
+      setIsTyping(false);
       setNotification({ show: true, message: "Failed to get a response. Try again.", type: "error" });
 
       if (error.response && error.response.status === 403) {
@@ -151,8 +147,10 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMessages(messages.filter((msg) => msg._id !== messageId));
+      setNotification({ show: true, message: "Message deleted", type: "success" });
     } catch (error) {
       console.error("Error deleting message:", error);
+      setNotification({ show: true, message: "Failed to delete message", type: "error" });
     }
   };
 
@@ -164,6 +162,11 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
       .catch(err => console.error("Error copying text: ", err));
   };
 
+  const formatTime = (timeString) => {
+    const date = new Date(timeString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   return (
     <div className="chat-box-container">
       <PopNoti
@@ -172,49 +175,60 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
         isVisible={notification.show}
         onClose={() => setNotification({ ...notification, show: false })}
       />
+      
       <div className="chat-header">
-        <button className="back-btn-chat33" onClick={() => onBackBTNSelect(true)}>BACK</button>
-        <img 
-          src={userProfile?.avatar_img || "/default-avatar.png"} 
-          alt={userProfile?.name || "User"} 
-          className="user-avatar" 
-          onClick={() => setShowOverlay(true)}
-        />
-        <div className="chat-header-details" onClick={() => setShowOverlay(true)}>
-          <h4>{userProfile?.name || "Unknown"}</h4>
-          <p>Last seen: {userProfile?.lastSeen || "a moment ago"}</p>
+        <button className="back-btn" onClick={() => onBackBTNSelect(true)}>
+          <FiArrowLeft size={20} />
+        </button>
+        <div className="user-info" onClick={() => setShowOverlay(true)}>
+          <img 
+            src={userProfile?.avatar_img || "/default-avatar.png"} 
+            alt={userProfile?.name || "User"} 
+            className="user-avatar" 
+          />
+          <div className="user-details">
+            <h3>{userProfile?.name || "Unknown"}</h3>
+            <p>{isTyping ? "Typing..." : "Online"}</p>
+          </div>
         </div>
       </div>
 
       {showOverlay && (
-        <div className="overlay-container-chat-box" ref={overlayRef}>
-          <div className="overlay-content-header-chat-box">
-            <h1>{userProfile?.name}</h1>
-            <button style={{cursor:'pointer'}} onClick={() => setShowOverlay(false)}>Close</button>
+        <div className="profile-overlay" ref={overlayRef}>
+          <div className="overlay-header">
+            <button className="close-btn" onClick={() => setShowOverlay(false)}>
+              <FiX size={24} />
+            </button>
           </div>
-          <div className="over-conatiner-boc-chat4">
-            <div className="overlay-conatiner-chat-left">
+          <div className="overlay-content">
+            <div className="profile-image-container">
               <img 
                 src={userProfile?.avatar_img || "/default-avatar.png"} 
                 alt={userProfile?.name || "User"} 
+                className="profile-image"
               />
             </div>
-            <div className="overlay-container-chat-right">
-              <div className="user-info-card">
-                <p className="user-age"><strong>Age:</strong> {userProfile?.age || "N/A"}</p>
-                <p className="user-description">
-                  <strong>Description:</strong> {userProfile?.description || "No description provided"}
-                </p>
-                <p className="user-relationship">
-                  <strong>Relationship:</strong> {userProfile?.relationship || "Not specified"}
-                </p>
-                <p className="user-interests">
-                  <strong>Interests:</strong> {
-                    Array.isArray(userProfile?.interests)
-                      ? userProfile.interests.join(", ")
-                      : userProfile?.interests?.replace(/([a-z])([A-Z])/g, '$1 $2') || "Not specified"
-                  }
-                </p>
+            <div className="profile-details">
+              <h2>{userProfile?.name || "Unknown"}</h2>
+              <div className="detail-item">
+                <span className="detail-label">Age:</span>
+                <span className="detail-value">{userProfile?.age || "N/A"}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Personality:</span>
+                <span className="detail-value">{userProfile?.relationship || "Not specified"}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Interests:</span>
+                <span className="detail-value">
+                  {Array.isArray(userProfile?.interests)
+                    ? userProfile.interests.join(", ")
+                    : userProfile?.interests?.replace(/([a-z])([A-Z])/g, '$1 $2') || "Not specified"}
+                </span>
+              </div>
+              <div className="detail-item full-width">
+                <span className="detail-label">About:</span>
+                <p className="detail-value">{userProfile?.description || "No description provided"}</p>
               </div>
             </div>
           </div>
@@ -223,7 +237,9 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
 
       <div className="chat-messages" ref={chatContainerRef}>
         {messages.length === 0 ? (
-          <p className="no-messages97n"></p>
+          <div className="empty-state">
+            <p>Start a conversation with {userProfile?.name || "your AI companion"}</p>
+          </div>
         ) : (
           messages.map((msg, index) => (
             <div 
@@ -233,41 +249,56 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
               onMouseEnter={() => setHoveredMessage(msg._id)}
               onMouseLeave={() => setHoveredMessage(null)}
             >
-              <p>{msg.text}</p>
-              <span className="message-time">
-                {new Date(msg.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </span>
-    
+              <div className="message-content">
+                <p>{msg.text}</p>
+                <span className="message-time">{formatTime(msg.time)}</span>
+              </div>
+              
               {hoveredMessage === msg._id && (
-                <span className="message-options" onClick={() => setSelectedMessage(msg._id)}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
-                    <path stroke="currentColor" d="M13.5 5.5 8 11 2.5 5.5"/>
-                  </svg>
-                </span>
+                <button 
+                  className="message-options-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedMessage(msg._id);
+                  }}
+                >
+                  <FiMoreVertical size={16} />
+                </button>
               )}
-    
+              
               {selectedMessage === msg._id && (
-                <div className="delete-menu" ref={menuRef}>
-                  <button className="btn-detle-x3" onClick={() => handleDeleteMessage(msg._id)}>Delete</button>
-                  <button className="btn-copy-x3" onClick={() => handleCopyMessage(msg.text)}>Copy</button>
-                  <button className="btn-closes-x3" onClick={() => setSelectedMessage(null)}>Cancel</button>
+                <div className="message-menu" ref={menuRef}>
+                  <button onClick={() => handleCopyMessage(msg.text)}>
+                    <FiCopy size={14} /> Copy
+                  </button>
+                  <button onClick={() => handleDeleteMessage(msg._id)}>
+                    <FiTrash2 size={14} /> Delete
+                  </button>
                 </div>
               )}
             </div>
           ))          
         )}
-        <div ref={lastMessageRef}/>
+        <div ref={lastMessageRef} />
       </div>
 
-      <div className="chat-input">
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-          placeholder="Type a message..."
-        />
-        <button onClick={handleSendMessage} disabled={!newMessage.trim()}>Send</button>
+      <div className="chat-input-container">
+        <div className="input-wrapper">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+            placeholder="Type a message..."
+          />
+          <button 
+            onClick={handleSendMessage} 
+            disabled={!newMessage.trim()}
+            className="send-btn"
+          >
+            <FiSend size={18} />
+          </button>
+        </div>
       </div>
     </div>
   );
