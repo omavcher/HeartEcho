@@ -75,7 +75,6 @@ const AdminDashboard = () => {
   };
 
   const processDashboardData = (data) => {
-    // Total users should come from userEngagement array length
     const totalUsers = data.userEngagement?.length || 0;
     
     // Active users from the API response
