@@ -1,22 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import '../styles/ChatPage.css';
 import ChatsPeople from "../components/ChatsPeople";
 import ChatBox from "../components/ChatBox";
 import { useSearchParams } from "next/navigation";
 
-function ChatPage() {
+function ChatPageContent() {
     const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
     const [chatBackBTN, setChatBackBTN] = useState(false);
     const searchParams = useSearchParams();
-    const aiChatId = searchParams.get("chatId"); // Get AI Chat ID from URL
+    const aiChatId = searchParams.get("chatId");
 
     const [selectedChatId, setSelectedChatId] = useState(aiChatId || null);
     const [refreshChats, setRefreshChats] = useState(false);
 
     useEffect(() => {
-        // Handle window resize
         const handleResize = () => {
             setWindowWidth(window.innerWidth);
         };
@@ -27,7 +26,7 @@ function ChatPage() {
 
     useEffect(() => {
         if (aiChatId) {
-            setSelectedChatId(aiChatId); // Open AI Chat automatically
+            setSelectedChatId(aiChatId);
             setChatBackBTN(true);
         } else {
             setChatBackBTN(false);
@@ -40,7 +39,7 @@ function ChatPage() {
 
     const handleChatSelection = (chatId) => {
         setSelectedChatId(chatId);
-        setChatBackBTN(false); // Hide back button when selecting a new chat
+        setChatBackBTN(false);
     };
 
     return (
@@ -81,4 +80,10 @@ function ChatPage() {
     );
 }
 
-export default ChatPage;
+export default function ChatPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ChatPageContent />
+        </Suspense>
+    );
+}
