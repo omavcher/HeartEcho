@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
+const axios = require('axios');
 
 dotenv.config();
 connectDB();
@@ -19,6 +20,26 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true // Allow cookies and authentication headers
 }));
+
+
+
+// Website reload configuration
+const url = 'https://heartecho.onrender.com';
+const interval = 90000;
+
+function reloadWebsite() {
+  axios
+    .get(url)
+    .then((response) => {
+      console.log("website reloaded");
+    })
+    .catch((error) => {
+      console.error(`Error: ${error.message}`);
+    });
+}
+
+setInterval(reloadWebsite, interval);
+
 
 
 app.use(express.json());
