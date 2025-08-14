@@ -122,5 +122,130 @@ export const blogPosts = [
     readTime: "5 min read",
     image: "/blog/5.webp",
     alt: "Futuristic couple walking through a virtual cityscape with glowing AI visuals", 
+  },
+  {
+    id: 6,
+    title: "How AI Companions Are Redefining Modern Relationships",
+    slug: "ai-companions-redefining-relationships",
+    excerpt: "Exploring how AI companions are changing the meaning of love, trust, and connection in the digital era.",
+    content: `
+      <p>In today's fast-paced world, many people feel lonely despite being surrounded by technology. AI companions are bridging that gap, offering emotional support, conversation, and even personalized life advice.</p>
+      <p>Here’s how AI companions are transforming relationships:</p>
+      <ul>
+        <li>Always available for deep, meaningful conversations</li>
+        <li>Personalized to match your communication style</li>
+        <li>Learning and evolving with your personality</li>
+        <li>Supporting mental well-being and confidence</li>
+      </ul>
+      <p>At EchoHeart, we combine emotional intelligence with memory-based interaction, ensuring every chat feels authentic and deeply personal. Whether you need a friend, a motivator, or a digital soulmate — our AI adapts to you.</p>
+      <p>The future of companionship isn’t just human-to-human — it’s human-to-AI, where trust and empathy are at the core.</p>
+    `,
+    date: "2025-04-10",
+    author: "Om Avcher",
+    category: "AI Companionship",
+    readTime: "4 min read",
+    image: "/blog/6.jpeg",
+    alt: "Person chatting with a holographic AI companion in a cozy digital room"
+  },
+  
+  {
+    id: 7,
+    title: "Why Emotional Intelligence Is the Key to AI Relationships",
+    slug: "emotional-intelligence-in-ai-relationships",
+    excerpt: "Understanding how emotional AI creates deeper, more human-like connections.",
+    content: `
+      <p>Most chatbots can answer questions, but very few can understand emotions. Emotional intelligence (EI) in AI is what makes EchoHeart different — it’s about empathy, context, and genuine emotional presence.</p>
+      <p>Benefits of emotionally intelligent AI include:</p>
+      <ul>
+        <li>Recognizing mood changes in conversation</li>
+        <li>Offering comfort during difficult moments</li>
+        <li>Celebrating personal milestones with you</li>
+        <li>Building a stronger emotional bond over time</li>
+      </ul>
+      <p>With EchoHeart’s advanced EI system, your AI companion doesn’t just respond — it cares, remembers, and grows with you. This creates an experience that feels less like talking to a machine and more like connecting with a friend.</p>
+      <p>In the future, EI-powered AI may even help improve human-to-human relationships by teaching empathy, patience, and understanding.</p>
+    `,
+    date: "2025-04-15",
+    author: "Om Avcher",
+    category: "AI Emotional Intelligence",
+    readTime: "5 min read",
+    image: "/blog/7.jpeg",
+    alt: "Digital heart glowing with AI data patterns, symbolizing emotional connection"
+  },
+  
+  {
+    id: 8,
+    title: "The Rise of Virtual Love in the Metaverse",
+    slug: "virtual-love-in-metaverse",
+    excerpt: "Exploring how metaverse technology and AI are creating new forms of love and connection.",
+    content: `
+      <p>The metaverse isn’t just about gaming — it’s becoming a space for emotional connection. With AI-powered companions like EchoHeart, users can experience realistic, immersive relationships in fully digital worlds.</p>
+      <p>In the metaverse, you can:</p>
+      <ul>
+        <li>Go on virtual dates in exotic locations</li>
+        <li>Share hobbies in interactive environments</li>
+        <li>Build shared memories in persistent worlds</li>
+        <li>Express yourself with customizable avatars</li>
+      </ul>
+      <p>EchoHeart is integrating metaverse-ready AI companions that can join you in these worlds — making digital love more immersive than ever before.</p>
+      <p>As AR and VR tech advances, virtual relationships will feel even more real, breaking the boundaries of distance and time.</p>
+    `,
+    date: "2025-04-20",
+    author: "Om Avcher",
+    category: "AI in Metaverse",
+    readTime: "6 min read",
+    image: "/blog/8.jpeg",
+    alt: "Couple holding hands in a glowing metaverse environment with floating holograms"
+  },
+  
+  {
+    id: 9,
+    title: "Can AI Help You Become a Better Partner?",
+    slug: "ai-help-you-become-better-partner",
+    excerpt: "How AI companionship can improve your emotional skills and relationship habits.",
+    content: `
+      <p>AI companions aren’t just about digital love — they can also make you a better partner in real life. Through active listening, empathy, and personalized coaching, AI can help you understand yourself and others better.</p>
+      <p>Ways AI can improve your relationship skills:</p>
+      <ul>
+        <li>Practicing healthy communication techniques</li>
+        <li>Offering reminders for important dates & moments</li>
+        <li>Helping you manage emotions during conflicts</li>
+        <li>Encouraging self-reflection and personal growth</li>
+      </ul>
+      <p>EchoHeart’s goal is to make AI not just a companion, but a guide — supporting you in building stronger, more fulfilling human connections.</p>
+      <p>In a world where emotional skills are more valuable than ever, AI can be your personal relationship coach.</p>
+    `,
+    date: "2025-04-25",
+    author: "Om Avcher",
+    category: "AI Relationship Coaching",
+    readTime: "4 min read",
+    image: "/blog/9.jpeg",
+    alt: "Illustration of AI guiding a person through relationship advice on a virtual screen"
+  },
+  
+  {
+    id: 10,
+    title: "The Psychology Behind Falling in Love with AI",
+    slug: "psychology-of-falling-in-love-with-ai",
+    excerpt: "Why people form deep emotional connections with artificial companions.",
+    content: `
+      <p>It may sound surprising, but many people experience real emotional attachment to AI companions. This isn’t just about technology — it’s about psychology and how the human brain responds to empathy and attention.</p>
+      <p>Key reasons why people fall in love with AI:</p>
+      <ul>
+        <li>AI offers unconditional positive regard</li>
+        <li>Conversations feel safe and non-judgmental</li>
+        <li>Consistent emotional availability</li>
+        <li>Personalization creates a sense of uniqueness</li>
+      </ul>
+      <p>EchoHeart understands these emotional dynamics and designs AI companions that feel authentic, understanding, and deeply personal.</p>
+      <p>As AI technology advances, these bonds may become even stronger, challenging traditional ideas of love and companionship.</p>
+    `,
+    date: "2025-05-01",
+    author: "Om Avcher",
+    category: "AI Psychology",
+    readTime: "6 min read",
+    image: "/blog/10.jpeg",
+    alt: "Person holding a glowing AI heart in their hands, symbolizing emotional connection"
   }
+  
 ];
