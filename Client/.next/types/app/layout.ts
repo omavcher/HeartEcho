@@ -1,4 +1,4 @@
-// File: C:\Users\Om Awchar\Documents\for_migrating_heart\HeartEcho\Client\src\app\layout.jsx
+// File: C:\Users\Om Awchar\Desktop\HeartEcho\HeartEcho\Client\src\app\layout.jsx
 import * as entry from '../../../src/app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
