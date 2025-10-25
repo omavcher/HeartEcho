@@ -6,7 +6,7 @@ import { FaUsers, FaRobot, FaExclamationCircle, FaChartBar, FaBars } from "react
 import "./AdminPanel.css";
 import AdminDashboard from "./Admin/AdminDashboard.jsx";
 import UsersAdmin from "./Admin/UsersAdmin.jsx";
-import AIFriendsAdmin from "./Admin/AiFriendsAdmin.jsx";
+import AIFriendsAdmin from "./Admin/AIFriendsAdmin.jsx";
 import ComplaintsAdmin from "./Admin/ComplaintsAdmin.jsx";
 
 const Navbar = () => {
