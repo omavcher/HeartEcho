@@ -37,7 +37,7 @@ function HomeFAQ() {
         <h2 className="faq-title">Frequently Asked Questions</h2>
         <p className="faq-subtitle">Find quick answers to common questions about HeartEcho AI</p>
         
-        <div className="faq-listxx">
+        <div className="faq-list">
           {faqs.map((faq, index) => (
             <div 
               key={index} 
@@ -47,16 +47,24 @@ function HomeFAQ() {
               <div className="faq-question-container">
                 <h3 className="faq-question">{faq.question}</h3>
                 <span className={`faq-icon ${activeIndex === index ? 'active' : ''}`}>
-                  <svg width="16" height="10" viewBox="0 0 16 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L8 8L15 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path 
+                      d="M5 7.5L10 12.5L15 7.5" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </span>
               </div>
               
-              <div className={`faq-answer ${activeIndex === index ? 'active' : ''}`}>
-                {faq.answer.split('\n').map((line, i) => (
-                  <p key={i}>{line}</p>
-                ))}
+              <div className="faq-answer-container">
+                <div className={`faq-answer ${activeIndex === index ? 'active' : ''}`}>
+                  {faq.answer.split('\n').map((line, i) => (
+                    <p key={i}>{line}</p>
+                  ))}
+                </div>
               </div>
             </div>
           ))}

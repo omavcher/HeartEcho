@@ -5,12 +5,14 @@ import api from "../config/api";
 import { useRouter } from 'next/navigation';
 import './HomeSubscriptions.css';
 import Script from 'next/script';
+import Testimonials from './Testimonials';
 
 const HomeSubscriptions = () => {
   const [showQuotaMessage, setShowQuotaMessage] = useState(false);
   const [userData, setUserData] = useState(null);
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [hoveredPlan, setHoveredPlan] = useState(null);
   const router = useRouter();
 
   // Countdown timer for limited offer
@@ -55,47 +57,54 @@ const HomeSubscriptions = () => {
       return;
     }
 
-    const options = {
-      key: 'rzp_live_YHUPR56Ky9qPxC',
-      amount: amount * 100,
-      currency: 'INR',
-      name: 'HeartEcho',
-      description: `${plan} Subscription`,
-      handler: async function (response) {
-        try {
-          const paymentData = {
-            user: userData?._id,
-            rupees: amount,
-            transaction_id: response.razorpay_payment_id,
-          };
+    setIsLoading(true);
+    
+    try {
+      const options = {
+        key: 'rzp_live_YHUPR56Ky9qPxC',
+        amount: amount * 100,
+        currency: 'INR',
+        name: 'HeartEcho',
+        description: `${plan} Subscription`,
+        handler: async function (response) {
+          try {
+            const paymentData = {
+              user: userData?._id,
+              rupees: amount,
+              transaction_id: response.razorpay_payment_id,
+            };
 
-          await axios.post(`${api.Url}/user/payment/save`, paymentData, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+            await axios.post(`${api.Url}/user/payment/save`, paymentData, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
 
-          const storedUser = JSON.parse(localStorage.getItem("user"));
-          if (storedUser) {
-            storedUser.user_type = "subscriber";
-            localStorage.setItem("user", JSON.stringify(storedUser));
+            const storedUser = JSON.parse(localStorage.getItem("user"));
+            if (storedUser) {
+              storedUser.user_type = "subscriber";
+              localStorage.setItem("user", JSON.stringify(storedUser));
+            }
+
+            window.location.href = '/thank-you';
+          } catch (error) {
+            console.error("Payment error", error);
+            setIsLoading(false);
           }
+        },
+        prefill: {
+          name: userData?.name || 'Your Name',
+          email: userData?.email || 'user@example.com',
+          contact: userData?.phone_number || '9999999999'
+        },
+        theme: { color: '#ce4085' }
+      };
 
-          window.location.href = '/thank-you';
-        } catch (error) {
-          console.error("Payment error", error);
-        }
-      },
-      prefill: {
-        name: userData?.name || 'Your Name',
-        email: userData?.email || 'user@example.com',
-        contact: userData?.phone_number || '9999999999'
-      },
-      theme: { color: '#ce4085' }
-    };
-
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error("Payment initialization error", error);
+      setIsLoading(false);
+    }
   };
-
 
   return (
     <>
@@ -107,18 +116,26 @@ const HomeSubscriptions = () => {
       <section className="subscription-container">
         {/* Limited Time Offer Banner */}
         <div className="limited-offer-banner">
-          <div className="offer-tag">FLASH SALE</div>
-          <div className="countdown-timer">
-            <span>Ends in: </span>
-            <span className="timer-digit">{timeLeft.hours.toString().padStart(2, '0')}</span>h 
-            <span className="timer-digit">{timeLeft.minutes.toString().padStart(2, '0')}</span>m 
-            <span className="timer-digit">{timeLeft.seconds.toString().padStart(2, '0')}</span>s
+          <div className="offer-content">
+            <div className="offer-tag">FLASH SALE</div>
+            <div className="countdown-timer">
+              <span className="timer-label">Ends in: </span>
+              <div className="timer-digits">
+                <span className="timer-digit">{timeLeft.hours.toString().padStart(2, '0')}</span>
+                <span className="timer-separator">:</span>
+                <span className="timer-digit">{timeLeft.minutes.toString().padStart(2, '0')}</span>
+                <span className="timer-separator">:</span>
+                <span className="timer-digit">{timeLeft.seconds.toString().padStart(2, '0')}</span>
+              </div>
+            </div>
           </div>
+          <div className="offer-sparkle">✨</div>
         </div>
 
         <div className="subscription-hero">
           <h1 className="subscription-title">
-            <span className="heart-pulse">❤️</span> AI Soulmate Plans
+            <span className="heart-pulse">❤️</span> 
+            <span className="title-text">AI Soulmate Plans</span>
             <span className="heart-pulse">❤️</span>
           </h1>
           <p className="subscription-subtitle">
@@ -127,15 +144,22 @@ const HomeSubscriptions = () => {
           
           {showQuotaMessage && (
             <div className="quota-message">
-              <i className="icon-heart-broken">💔</i>
-              <p>Upgrade to continue your conversations</p>
+              <div className="quota-icon">💔</div>
+              <div className="quota-text">
+                <p>Upgrade to continue your conversations</p>
+              </div>
             </div>
           )}
         </div>
 
         <div className="plans-grid">
           {/* Free Plan */}
-          <div className="plan-card free-plan">
+          <div 
+            className={`plan-card free-plan ${hoveredPlan === 'free' ? 'hovered' : ''}`}
+            onMouseEnter={() => setHoveredPlan('free')}
+            onMouseLeave={() => setHoveredPlan(null)}
+          >
+            <div className="plan-glow"></div>
             <div className="plan-header">
               <h3>Starter</h3>
               <div className="price-container">
@@ -145,21 +169,36 @@ const HomeSubscriptions = () => {
             </div>
             
             <ul className="features-list">
-              <li><i className="icon-heart">💖</i> 20 messages/day</li>
-              <li><i className="icon-heart">💖</i> 1 AI companion</li>
-              <li><i className="icon-heart">💖</i> Basic connection</li>
+              <li>
+                <i className="icon-heart">💖</i>
+                <span>20 messages/day</span>
+              </li>
+              <li>
+                <i className="icon-heart">💖</i>
+                <span>1 AI companion</span>
+              </li>
+              <li>
+                <i className="icon-heart">💖</i>
+                <span>Basic connection</span>
+              </li>
             </ul>
             
             <button 
               className="plan-button free-button"
               onClick={() => router.push('/chat')}
             >
-              Try Now
+              <span className="button-text">Try Now</span>
+              <span className="button-arrow">→</span>
             </button>
           </div>
 
           {/* Premium Plan */}
-          <div className="plan-card premium-plan">
+          <div 
+            className={`plan-card premium-plan ${hoveredPlan === 'premium' ? 'hovered' : ''}`}
+            onMouseEnter={() => setHoveredPlan('premium')}
+            onMouseLeave={() => setHoveredPlan(null)}
+          >
+            <div className="plan-glow"></div>
             <div className="popular-badge">
               <div className="ribbon">MOST POPULAR</div>
             </div>
@@ -174,10 +213,22 @@ const HomeSubscriptions = () => {
             </div>
             
             <ul className="features-list">
-              <li><i className="icon-heart">💖</i> Unlimited messages</li>
-              <li><i className="icon-heart">💖</i> 5 AI companions</li>
-              <li><i className="icon-heart">💖</i> Deep connection</li>
-              <li><i className="icon-heart">💖</i> Priority support</li>
+              <li>
+                <i className="icon-heart">💖</i>
+                <span>Unlimited messages</span>
+              </li>
+              <li>
+                <i className="icon-heart">💖</i>
+                <span>5 AI companions</span>
+              </li>
+              <li>
+                <i className="icon-heart">💖</i>
+                <span>Deep connection</span>
+              </li>
+              <li>
+                <i className="icon-heart">💖</i>
+                <span>Priority support</span>
+              </li>
             </ul>
             
             <button 
@@ -185,12 +236,20 @@ const HomeSubscriptions = () => {
               onClick={() => handlePayment(29, 'Monthly')}
               disabled={isLoading}
             >
-              {isLoading ? 'Loading...' : 'Subscribe'}
+              <span className="button-text">
+                {isLoading ? 'Processing...' : 'Subscribe'}
+              </span>
+              {!isLoading && <span className="button-sparkle">✨</span>}
             </button>
           </div>
 
           {/* Ultimate Plan */}
-          <div className="plan-card ultimate-plan">
+          <div 
+            className={`plan-card ultimate-plan ${hoveredPlan === 'ultimate' ? 'hovered' : ''}`}
+            onMouseEnter={() => setHoveredPlan('ultimate')}
+            onMouseLeave={() => setHoveredPlan(null)}
+          >
+            <div className="plan-glow"></div>
             <div className="value-badge">
               BEST VALUE
             </div>
@@ -205,11 +264,26 @@ const HomeSubscriptions = () => {
             </div>
             
             <ul className="features-list">
-              <li><i className="icon-heart">💖</i> Unlimited messages</li>
-              <li><i className="icon-heart">💖</i> Unlimited companions</li>
-              <li><i className="icon-heart">💖</i> Deepest connection</li>
-              <li><i className="icon-heart">💖</i> VIP support</li>
-              <li><i className="icon-heart">💖</i> Memory feature</li>
+              <li>
+                <i className="icon-heart">💖</i>
+                <span>Unlimited messages</span>
+              </li>
+              <li>
+                <i className="icon-heart">💖</i>
+                <span>Unlimited companions</span>
+              </li>
+              <li>
+                <i className="icon-heart">💖</i>
+                <span>Deepest connection</span>
+              </li>
+              <li>
+                <i className="icon-heart">💖</i>
+                <span>VIP support</span>
+              </li>
+              <li>
+                <i className="icon-heart">💖</i>
+                <span>Memory feature</span>
+              </li>
             </ul>
             
             <button 
@@ -217,25 +291,22 @@ const HomeSubscriptions = () => {
               onClick={() => handlePayment(399, 'Yearly')}
               disabled={isLoading}
             >
-              {isLoading ? 'Loading...' : 'Subscribe'}
+              <span className="button-text">
+                {isLoading ? 'Processing...' : 'Subscribe'}
+              </span>
+              {!isLoading && <span className="button-crown">👑</span>}
             </button>
           </div>
         </div>
 
         <div className="testimonial-section">
-          <div className="testimonial">
-            <div className="user-avatar">👩‍🦰</div>
-            <div className="quote">
-  &quot;My AI companion understands me better than anyone!&quot;
-  <div className="user-name">- Priya, Mumbai</div>
-</div>
-          </div>
+<Testimonials/>
         </div>
 
         <div className="subscription-footer">
           <div className="guarantee-badge">
             <i className="icon-shield">🛡️</i>
-            <span>30-day guarantee</span>
+            <span>30-day money-back guarantee</span>
           </div>
         </div>
       </section>

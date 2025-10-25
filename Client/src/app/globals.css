@@ -84,7 +84,7 @@ margin-bottom: 6rem;
   color: black;
   text-decoration: none;
   padding: 0.5rem 1rem;
-  font-family: "Nunito", serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   font-weight: bold;
   border-radius: 8px;
   display: flex;

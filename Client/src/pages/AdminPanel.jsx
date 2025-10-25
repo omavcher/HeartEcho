@@ -1,14 +1,13 @@
-'use client'; // Required for client-side interactivity
-
+'use client'; 
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { FaUsers, FaRobot, FaExclamationCircle, FaChartBar, FaBars } from "react-icons/fa";
 import "./AdminPanel.css";
-import AdminDashboard from "./Admin/AdminDashboard";
-import UsersAdmin from "./Admin/UsersAdmin";
-import AIFriendsAdmin from "./Admin/AIFriendsAdmin";
-import ComplaintsAdmin from "./Admin/ComplaintsAdmin";
+import AdminDashboard from "./admin/AdminDashboard";
+import UsersAdmin from "./admin/UsersAdmin";
+import AIFriendsAdmin from "./admin/AIFriendsAdmin";
+import ComplaintsAdmin from "./admin/ComplaintsAdmin";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);

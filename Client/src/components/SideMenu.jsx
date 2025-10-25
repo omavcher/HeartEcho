@@ -1,57 +1,106 @@
-'use client'; // Mark as Client Component since we use next/link
-import Link from 'next/link' // Changed from react-router-dom to next/link
-import Image from 'next/image' // Using Next.js optimized Image component
-import '../styles/SideMenu.css'
+'use client';
+import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import '../styles/SideMenu.css';
 
 function SideMenu() {
+  const pathname = usePathname();
+  const [isHovered, setIsHovered] = useState(false);
+  const [activeLink, setActiveLink] = useState(pathname);
+
+  const menuItems = [
+    {
+      href: '/',
+      label: 'Home',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      )
+    },
+    {
+      href: '/discover',
+      label: 'Discover',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/>
+        </svg>
+      )
+    },
+    {
+      href: '/chatbox',
+      label: 'Chat',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+      )
+    },
+    {
+      href: '/profile',
+      label: 'Profile',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      )
+    }
+  ];
+
   return (
-    <div className='side-menu-container'>
-      <Image 
-        src='/heartechor.png' 
-        alt='HeartEcho Logo' 
-        className='side-menu-logo'
-        width={100} // Add appropriate width
-        height={80} // Add appropriate height
-        priority // Optional: if this image is above the fold
-      />
-
-      <div className='side-menu-links'>
-        <span>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5" />
-          </svg>
-        </span>
-
-        <Link className='side-men-cdf4' href='/'>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
-            <path stroke="currentColor" d="M1.5 14.5v-8l6.5-5 6.5 5v8h-13Z"/>
-            <path stroke="currentColor" d="M6.5 14.5v-5h3v5"/>
-          </svg>
-        </Link>
+    <div 
+      className={`side-menu-container ${isHovered ? 'expanded' : ''}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Logo Section */}
+      <div className="logo-section">
+        <div className="logo-wrapper">
+          <Image 
+            src='/heartechor.png' 
+            alt='HeartEcho Logo' 
+            className='side-menu-logo'
+            width={80}
+            height={64}
+            priority
+          />
+        </div>
         
-        <Link className='side-men-cdf4' href='/discover'>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M11 1V2H7C5.34315 2 4 3.34315 4 5V8C4 10.7614 6.23858 13 9 13H15C17.7614 13 20 10.7614 20 8V5C20 3.34315 18.6569 2 17 2H13V1H11ZM6 5C6 4.44772 6.44772 4 7 4H17C17.5523 4 18 4.44772 18 5V8C18 9.65685 16.6569 11 15 11H9C7.34315 11 6 9.65685 6 8V5ZM9.5 9C10.3284 9 11 8.32843 11 7.5C11 6.67157 10.3284 6 9.5 6C8.67157 6 8 6.67157 8 7.5C8 8.32843 8.67157 9 9.5 9ZM14.5 9C15.3284 9 16 8.32843 16 7.5C16 6.67157 15.3284 6 14.5 6C13.6716 6 13 6.67157 13 7.5C13 8.32843 13.6716 9 14.5 9ZM6 22C6 18.6863 8.68629 16 12 16C15.3137 16 18 18.6863 18 22H20C20 17.5817 16.4183 14 12 14C7.58172 14 4 17.5817 4 22H6Z"/>
-          </svg>
-        </Link>
-        
-        <Link className='side-men-cdf4' href='/chatbox'>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
-            <path stroke="currentColor" d="M1.5 10.5v-9h10v7h-8l-2 2Z"/>
-            <path stroke="currentColor" d="M11.5 5.5h3v9l-2-2h-8v-4"/>
-          </svg>
-        </Link>
-        
-        <Link className='side-men-cdf4' href='/profile'>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
-            <path stroke="currentColor" d="M8 9.5H5.232a3 3 0 0 0-2.873 2.138L1.5 14.5H9"/>
-            <circle cx="8" cy="4.5" r="3" stroke="currentColor"/>
-            <path fill="currentColor" d="m11.5 7.5 1.131 2.869L15.5 11.5l-2.869 1.131L11.5 15.5l-1.131-2.869L7.5 11.5l2.869-1.131L11.5 7.5Z"/>
-          </svg>
-        </Link>
       </div>
+
+      {/* Navigation Links */}
+      <nav className="side-menu-nav">
+        <div className="nav-items">
+          {menuItems.map((item, index) => (
+            <Link 
+              key={item.href}
+              className={`nav-link ${activeLink === item.href ? 'active' : ''}`}
+              href={item.href}
+              onClick={() => setActiveLink(item.href)}
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <div className="link-content">
+                <div className="icon-wrapper">
+                  {item.icon}
+                  <div className="active-dot"></div>
+                </div>
+                <span className="link-label">{item.label}</span>
+              </div>
+              <div className="link-highlight"></div>
+            </Link>
+          ))}
+        </div>
+      </nav>
+
+      {/* Background Glow Effect */}
+      <div className="menu-glow"></div>
     </div>
-  )
+  );
 }
 
-export default SideMenu
+export default SideMenu;
