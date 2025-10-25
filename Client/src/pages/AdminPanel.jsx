@@ -4,10 +4,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { FaUsers, FaRobot, FaExclamationCircle, FaChartBar, FaBars } from "react-icons/fa";
 import "./AdminPanel.css";
-import AdminDashboard from "./Admin/AdminDashboard";
-import UsersAdmin from "./Admin/UsersAdmin";
-import AIFriendsAdmin from "./Admin/AiFriendsAdmin";
-import ComplaintsAdmin from "./Admin/ComplaintsAdmin";
+import AdminDashboard from "./Admin/AdminDashboard.jsx";
+import UsersAdmin from "./Admin/UsersAdmin.jsx";
+import AIFriendsAdmin from "./Admin/AiFriendsAdmin.jsx";
+import ComplaintsAdmin from "./Admin/ComplaintsAdmin.jsx";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
