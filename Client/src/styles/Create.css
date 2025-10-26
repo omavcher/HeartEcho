@@ -1,5 +1,4 @@
 .crete-1-box3s.selected-creat {
-
     background-color: #dc4788 !important;
 }
 .crete-2-box3s.selected-creat {
@@ -25,6 +24,8 @@
     display: flex;
     overflow: hidden;
     position: relative;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+
 }
 .create-conatiner-imagesection-load4{
     width: 40%;

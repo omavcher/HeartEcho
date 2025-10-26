@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Skeleton from "react-loading-skeleton";
@@ -14,7 +14,9 @@ function HomeAiModels() {
   const [aiModels, setAiModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const router = useRouter();
+  const containerRef = useRef(null);
 
   useEffect(() => {
     const fetchAiModels = async () => {
@@ -32,6 +34,18 @@ function HomeAiModels() {
     fetchAiModels();
   }, []);
 
+  const handleTabChange = (tab) => {
+    if (tab === activeTab || isTransitioning) return;
+    
+    setIsTransitioning(true);
+    setActiveTab(tab);
+    
+    // Smooth transition delay
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 400);
+  };
+
   const getRandomModels = (models, count) => {
     return [...models]
       .sort(() => Math.random() - 0.5)
@@ -42,15 +56,16 @@ function HomeAiModels() {
     aiModels.filter((model) =>
       activeTab === "girls" ? model.gender === "female" : model.gender === "male"
     ),
-    10
+    12
   );
 
   const handleModelClick = (modelId) => {
+    // Add ripple effect
     router.push(`/chatbox?chatId=${modelId}`);
   };
 
   return (
-    <section className="ai-models-container">
+    <section className="ai-models-container" ref={containerRef}>
       <div className="section-header">
         <h2 className="section-title">Meet Your Perfect AI Companion</h2>
         <p className="section-subtitle">Discover personalities that match your preferences</p>
@@ -58,7 +73,7 @@ function HomeAiModels() {
         <div className="gender-toggle" data-active={activeTab}>
           <button
             className={`toggle-option ${activeTab === "girls" ? "active" : ""}`}
-            onClick={() => setActiveTab("girls")}
+            onClick={() => handleTabChange("girls")}
             aria-label="Show female AI companions"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -68,7 +83,7 @@ function HomeAiModels() {
           </button>
           <button
             className={`toggle-option ${activeTab === "boys" ? "active" : ""}`}
-            onClick={() => setActiveTab("boys")}
+            onClick={() => handleTabChange("boys")}
             aria-label="Show male AI companions"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -79,102 +94,107 @@ function HomeAiModels() {
         </div>
       </div>
 
-      {loading ? (
-        <div className="models-grid">
-          {[...Array(10)].map((_, index) => (
-            <div className="model-card skeleton" key={index}>
-              <div className="skeleton-image-container">
-                <Skeleton height="100%" containerClassName="skeleton-image" />
-              </div>
-              <div className="model-info">
-                <Skeleton width={80} height={24} />
-                <Skeleton height={20} width="70%" />
-                <Skeleton height={16} count={2} width="90%" />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : error ? (
-        <div className="error-message">
-          <Image 
-            src="/error-icon.svg" 
-            alt="Error"
-            width={80}
-            height={80}
-            className="error-icon"
-          />
-          <p>{error}</p>
-          <button onClick={() => window.location.reload()} className="retry-button">
-            Try Again
-          </button>
-        </div>
-      ) : filteredModels.length === 0 ? (
-        <div className="empty-state">
-          <Image 
-            src="/no-models.svg" 
-            alt="No models found"
-            width={200}
-            height={200}
-            className="empty-icon"
-          />
-          <p>No AI companions found in this category</p>
-          <button onClick={() => window.location.reload()} className="refresh-button">
-            Refresh
-          </button>
-        </div>
-      ) : (
-        <div className="models-grid">
-          {filteredModels.map((model, index) => (
-            <div 
-              className="model-card" 
-              key={model._id}
-              onClick={() => handleModelClick(model._id)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && handleModelClick(model._id)}
-              style={{ animationDelay: `${index * 0.05}s` }}
-            >
-              <div className="model-image-container">
-                <Image 
-                  src={model.avatar_img} 
-                  alt={model.name}
-                  width={180}
-                  height={320}
-                  className="model-image"
-                  priority={index < 4}
-                />
-                <div className="model-overlay">
-                  <span className="model-age">{model.age}</span>
-                  <span className="model-gender">
-                    {model.gender === 'female' ? '♀' : '♂'}
-                  </span>
+      <div className={`models-content ${isTransitioning ? 'transitioning' : ''}`}>
+        {loading ? (
+          <div className="models-grid">
+            {[...Array(10)].map((_, index) => (
+              <div className="model-card skeleton" key={index}>
+                <div className="skeleton-image-container">
+                  <Skeleton height="100%" containerClassName="skeleton-image" />
                 </div>
-                <div className="model-badge">
-                  {index < 3 && (
-                    <span className={`popular-tag ${index === 0 ? 'top-choice' : ''}`}>
-                      {index === 0 ? '🌟 Top Choice' : '⭐ Popular'}
+                <div className="model-info">
+                  <Skeleton width={80} height={24} />
+                  <Skeleton height={20} width="70%" />
+                  <Skeleton height={16} count={2} width="90%" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="error-message">
+            <Image 
+              src="/error-icon.svg" 
+              alt="Error"
+              width={80}
+              height={80}
+              className="error-icon"
+            />
+            <p>{error}</p>
+            <button onClick={() => window.location.reload()} className="retry-button">
+              Try Again
+            </button>
+          </div>
+        ) : filteredModels.length === 0 ? (
+          <div className="empty-state">
+            <Image 
+              src="/no-models.svg" 
+              alt="No models found"
+              width={200}
+              height={200}
+              className="empty-icon"
+            />
+            <p>No AI companions found in this category</p>
+            <button onClick={() => window.location.reload()} className="refresh-button">
+              Refresh
+            </button>
+          </div>
+        ) : (
+          <div className="models-grid">
+            {filteredModels.map((model, index) => (
+              <div 
+                className="model-card" 
+                key={model._id}
+                onClick={() => handleModelClick(model._id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleModelClick(model._id)}
+                style={{ 
+                  animationDelay: `${index * 0.03}s`,
+                  transitionDelay: `${index * 0.02}s`
+                }}
+              >
+                <div className="model-image-container">
+                  <Image 
+                    src={model.avatar_img} 
+                    alt={model.name}
+                    width={180}
+                    height={320}
+                    className="model-image"
+                    priority={index < 4}
+                  />
+                  <div className="model-overlay">
+                    <span className="model-age">{model.age}</span>
+                    <span className="model-gender">
+                      {model.gender === 'female' ? '♀' : '♂'}
                     </span>
-                  )}
+                  </div>
+                  <div className="model-badge">
+                    {index < 3 && (
+                      <span className={`popular-tag ${index === 0 ? 'top-choice' : ''}`}>
+                        {index === 0 ? '🌟 Top Choice' : '⭐ Popular'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="model-info">
+                  <h3 className="model-name">{model.name}</h3>
+                  <div className="model-traits">
+                    {model.personality?.split(',').slice(0, 3).map((trait, i) => (
+                      <span key={i} className="trait-badge">{trait.trim()}</span>
+                    ))}
+                  </div>
+                  <p className="model-description">
+                    {model.description.split(" ").slice(0, 12).join(" ")}...
+                  </p>
+                  <button className="chat-button">
+                    Start Chatting
+                  </button>
                 </div>
               </div>
-              <div className="model-info">
-                <h3 className="model-name">{model.name}</h3>
-                <div className="model-traits">
-                  {model.personality?.split(',').slice(0, 3).map((trait, i) => (
-                    <span key={i} className="trait-badge">{trait.trim()}</span>
-                  ))}
-                </div>
-                <p className="model-description">
-                  {model.description.split(" ").slice(0, 12).join(" ")}...
-                </p>
-                <button className="chat-button">
-                  Start Chatting →
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </section>
   );
 }
