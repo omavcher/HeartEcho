@@ -23,6 +23,16 @@ export const metadata = {
     'AI love platform',
     'AI relationship India',
     'AI companion for loneliness',
+    'Om Avcher',
+    'Om Avcher Corp',
+    'Om Avcher Corp Jalgaon Jamod',
+    'Om Avcher Corp Jalgaon Jamod Maharashtra',
+    'Om Avcher Corp Jalgaon Jamod Maharashtra India',
+    'Om Avcher Corp Jalgaon Jamod Maharashtra India HeartEcho',
+    'Om Avcher Corp Jalgaon Jamod Maharashtra India HeartEcho app',
+    'Om Avcher Corp Jalgaon Jamod Maharashtra India HeartEcho app HeartEcho',
+    'Om Avcher Corp Jalgaon Jamod Maharashtra India HeartEcho app HeartEcho HeartEcho',
+    'Om Avcher Corp Jalgaon Jamod Maharashtra India HeartEcho app HeartEcho HeartEcho HeartEcho',
     'HeartEcho app'  ],
   openGraph: {
     title: 'HeartEcho – Chat with Realistic AI Girlfriends & Boyfriends | India\'s Leading AI Love Platform',
@@ -49,6 +59,13 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <script 
+          async 
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8343501385468147"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body>
         <ClientLayout>{children}</ClientLayout>
       </body>
