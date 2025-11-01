@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const User = require("..//models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -10,8 +9,21 @@ const Chat = require("../models/Chat");
 const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
+/**
+ * ✅ AI Response Generator (Single Definition)
+ */
+async function generateAIResponse(prompt) {
+  try {
+    const result = await model.generateContent(prompt);
+    console.log("AI Response generated successfully");
+    return result.response?.text() || "Arey yaar, abhi thoda busy hoon. Baad me baat karein? 😅";
+  } catch (error) {
+    console.error("Error generating AI response:", error);
+    return "Bhai, lagta hai server thoda tantrum maar raha hai. Try kar phir se!";
+  }
+}
 
 exports.createAiFriend = async (req, res) => {
   try {
@@ -59,7 +71,6 @@ exports.createAiFriend = async (req, res) => {
   }
 };
 
-
 exports.AiFriendResponse = async (req, res) => {
   try {
     const { text } = req.body;
@@ -77,27 +88,26 @@ exports.AiFriendResponse = async (req, res) => {
 
     // Fetch user info and validate user_type
     const userInfo = await User.findById(userId);
-if (!userInfo) {
-  return res.status(404).json({ message: "User not found." });
-}
+    if (!userInfo) {
+      return res.status(404).json({ message: "User not found." });
+    }
 
-// ✅ Reset message quota if a new day has started
-userInfo.resetMessageQuota();
+    // ✅ Reset message quota if a new day has started
+    userInfo.resetMessageQuota();
 
-// ✅ Save the reset changes (if any)
-await userInfo.save();
+    // ✅ Save the reset changes (if any)
+    await userInfo.save();
 
-// Check user type and message quota
-if (userInfo.user_type === "free") {
-  if (userInfo.messageQuota <= 0) {
-    return res.status(403).json({ message: "⚠️ Message limit reached! Upgrade for unlimited chats." });
-  }
+    // Check user type and message quota
+    if (userInfo.user_type === "free") {
+      if (userInfo.messageQuota <= 0) {
+        return res.status(403).json({ message: "⚠️ Message limit reached! Upgrade for unlimited chats." });
+      }
 
-  // Deduct 1 message from the quota
-  userInfo.messageQuota -= 1;
-  await userInfo.save();
-}
-
+      // Deduct 1 message from the quota
+      userInfo.messageQuota -= 1;
+      await userInfo.save();
+    }
 
     if (!userInfo.ai_friends.includes(chatId)) {
       userInfo.ai_friends.push(chatId);
@@ -110,7 +120,7 @@ if (userInfo.user_type === "free") {
 
     if (!AiInfo) {
       AiInfo = await PrebuiltAIFriend.findById(chatId);
-      senderModel = "PrebuiltAIFriend"; // If found in PrebuiltAIFriend, set correct model
+      senderModel = "PrebuiltAIFriend";
     }
 
     if (!AiInfo) {
@@ -235,13 +245,12 @@ if (userInfo.user_type === "free") {
         `;
     }
 
-
     const aiResponse = await generateAIResponse(prompt);
 
     // AI message structure with correct senderModel
     const aiMessage = {
       sender: AiInfo._id,
-      senderModel: senderModel, // Will be "AIFriend" or "PrebuiltAIFriend"
+      senderModel: senderModel,
       text: aiResponse,
       time: new Date(),
     };
@@ -255,26 +264,6 @@ if (userInfo.user_type === "free") {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
-
-
-/**
- * ✅ AI Response Generator (No Changes Needed)
- */
-async function generateAIResponse(prompt) {
-  try {
-    const result = await model.generateContent(prompt);
-    return result.response?.text() || "Arey yaar, abhi thoda busy hoon. Baad me baat karein? 😅";
-  } catch (error) {
-    console.error("Error generating AI response:", error);
-    return "Bhai, lagta hai server thoda tantrum maar raha hai. Try kar phir se!";
-  }
-}
-
-
-
-
-
 
 exports.AiFriendDetails = async (req, res) => {
   try {
@@ -303,5 +292,3 @@ exports.AiFriendDetails = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
-
