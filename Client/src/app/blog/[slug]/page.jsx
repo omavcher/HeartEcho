@@ -24,7 +24,7 @@ export async function generateMetadata({ params }) {
   return {
     title: `${post.title} | HeartEcho`,
     description: post.excerpt,
-    keywords: `${post.category}, AI companions, ${post.title}`,
+    keywords: `${post.category}, Om Avchar, HeartEcho , Blog, AI companions, ${post.title}`,
     openGraph: {
       title: `${post.title} | HeartEcho`,
       description: post.excerpt,
@@ -87,9 +87,7 @@ function BlogPostContent({ post }) {
           <footer className="post-footer">
             <div className="tags">
               <span>Tagged: </span>
-              <a href={`/blog/category/${post.category.toLowerCase().replace(/\s+/g, '-')}`}>
                 {post.category}
-              </a>
             </div>
           </footer>
         </article>

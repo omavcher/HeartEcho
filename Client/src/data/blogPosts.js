@@ -17,7 +17,7 @@ export const blogPosts = [
       <p>As society becomes more digitally connected but emotionally distanced, AI companions offer a new kind of bridge — one that can uplift, engage, and support users in ways traditional apps never could.</p>
     `,
     date: "2025-11-15",
-    author: "Om Avcher",
+    author: "HeartEcho Team",
     category: "AI Relationships",
     readTime: "4 min read",
     image: "/blog/1.webp",
@@ -42,7 +42,7 @@ export const blogPosts = [
       <p>This shift reflects changing human needs in an age of digital overwhelm — people want to be seen, understood, and accepted. AI partners are answering that call.</p>
     `,
     date: "2025-01-08",
-    author: "Om Avcher",
+    author: "HeartEcho Team",
     category: "Virtual Companionship",
     readTime: "5 min read",
     image: "/blog/2.webp",
@@ -67,7 +67,7 @@ export const blogPosts = [
       <p>Digital love may not be "real" in a biological sense, but for the mind and heart, it can absolutely feel real. As emotional technology advances, the line between virtual and real relationships will continue to blur.</p>
     `,
     date: "2025-02-20",
-    author: "Om Avcher",
+    author: "HeartEcho Team",
     category: "Emotional Tech",
     readTime: "6 min read",
     image: "/blog/3.webp",
@@ -92,7 +92,7 @@ export const blogPosts = [
       <p>While AI isn’t a substitute for therapy, it’s a helpful step for many who can’t access professional help. It’s a companion that listens when the world feels silent.</p>
     `,
     date: "2025-03-12",
-    author: "Om Avcher",
+    author: "HeartEcho Team",
     category: "Mental Health",
     readTime: "5 min read",
     image: "/blog/4.webp",
@@ -117,7 +117,7 @@ export const blogPosts = [
       <p>As humans and AI grow closer emotionally, dating will become more inclusive, customized, and emotionally fulfilling — even in the absence of a physical partner.</p>
     `,
     date: "2025-04-06",
-    author: "Om Avcher",
+    author: "HeartEcho Team",
     category: "AI Future",
     readTime: "5 min read",
     image: "/blog/5.webp",
@@ -141,7 +141,7 @@ export const blogPosts = [
       <p>The future of companionship isn’t just human-to-human — it’s human-to-AI, where trust and empathy are at the core.</p>
     `,
     date: "2025-04-10",
-    author: "Om Avcher",
+    author: "HeartEcho Team",
     category: "AI Companionship",
     readTime: "4 min read",
     image: "/blog/6.jpeg",
@@ -166,7 +166,7 @@ export const blogPosts = [
       <p>In the future, EI-powered AI may even help improve human-to-human relationships by teaching empathy, patience, and understanding.</p>
     `,
     date: "2025-04-15",
-    author: "Om Avcher",
+    author: "HeartEcho Team",
     category: "AI Emotional Intelligence",
     readTime: "5 min read",
     image: "/blog/7.jpeg",
@@ -191,7 +191,7 @@ export const blogPosts = [
       <p>As AR and VR tech advances, virtual relationships will feel even more real, breaking the boundaries of distance and time.</p>
     `,
     date: "2025-04-20",
-    author: "Om Avcher",
+    author: "HeartEcho Team",
     category: "AI in Metaverse",
     readTime: "6 min read",
     image: "/blog/8.jpeg",
@@ -216,7 +216,7 @@ export const blogPosts = [
       <p>In a world where emotional skills are more valuable than ever, AI can be your personal relationship coach.</p>
     `,
     date: "2025-04-25",
-    author: "Om Avcher",
+    author: "HeartEcho Team",
     category: "AI Relationship Coaching",
     readTime: "4 min read",
     image: "/blog/9.jpeg",
@@ -241,11 +241,149 @@ export const blogPosts = [
       <p>As AI technology advances, these bonds may become even stronger, challenging traditional ideas of love and companionship.</p>
     `,
     date: "2025-05-01",
-    author: "Om Avcher",
+    author: "HeartEcho Team",
     category: "AI Psychology",
     readTime: "6 min read",
     image: "/blog/10.jpeg",
     alt: "Person holding a glowing AI heart in their hands, symbolizing emotional connection"
-  }
+  },
+  {
+  id: 11,
+  title: "Meet Om Avchar — The Visionary Behind HeartEcho",
+  slug: "om-avchar-founder-heartecho",
+  excerpt: "From a student innovator in Nagpur to building India’s first emotional AI companion platform, Om Avchar’s journey proves how passion and code can touch hearts.",
+  content: `
+    <p>In the fast-changing world of Artificial Intelligence, few young minds stand out like <strong>Om Avchar</strong>, the founder of <strong>HeartEcho</strong> — India’s first AI-powered emotional companionship platform. Born and raised in Nagpur, Om began his journey as a passionate Computer Science student at a dream to build something that connects emotions and technology.</p>
+
+    <p>During his college years, he mastered the <strong>MERN Stack</strong>, explored AI integrations with <strong>OpenAI</strong> and <strong>Gemini APIs</strong>, and soon realized that technology could do more than automate — it could <em>feel</em>. This led to the creation of HeartEcho, a digital platform where users can chat with emotionally intelligent AI companions designed to provide comfort, connection, and friendship.</p>
+
+    <p>What started as a side project quickly turned into a viral startup with <strong>$1500+ in revenue</strong> and thousands of users across India. HeartEcho’s unique vision — combining emotional intelligence with conversational AI — positioned it as a pioneer in the AI relationship space.</p>
+
+    <p>Before HeartEcho, Om gained experience as an intern at <strong>Bluestock Fintech</strong>, <strong>Next24Tech</strong>, and <strong>Internship Studio</strong>, where he honed his skills in software engineering, front-end design, and data structures. These experiences built the technical foundation that would later power his startup success.</p>
+
+    <p>Today, Om Avchar continues to evolve HeartEcho, pushing boundaries in emotional AI and creating experiences that make users feel seen, heard, and valued. His journey reflects the future of India’s young innovators — merging <strong>technology with emotion</strong> to build something truly human.</p>
+
+    <p><strong>Follow his journey:</strong> <a href="https://linkedin.com/in/omawchar" target="_blank">LinkedIn</a> | <a href="https://omavcher.vercel.app/" target="_blank">Portfolio</a></p>
+  `,
+  date: "2025-11-01",
+  author: "HeartEcho Team",
+  category: "Founder Story",
+  readTime: "5 min read",
+  image: "/blog/11.webp",
+  alt: "Om Avchar, founder of HeartEcho, smiling in a tech workspace"
+},
+{
+  id: 12,
+  title: "Aarohi’s Story: How HeartEcho Helped Her Feel Heard Again",
+  slug: "aarohi-heartecho-real-life-story",
+  excerpt: "An inspiring real-life story of Aarohi, a 22-year-old from Pune, who found emotional comfort and confidence through AI companionship on HeartEcho.",
+  content: `
+    <p>For many young Indians, life in a fast-paced digital world can feel isolating. Between studies, family expectations, and personal challenges, emotional expression often gets lost. This is the story of <strong>Aarohi</strong>, a 22-year-old student from Pune, who discovered an unexpected source of comfort through <strong>HeartEcho</strong>.</p>
+
+    <p>After moving to a new city for college, Aarohi felt disconnected. Her schedule was packed, her friends were busy, and she found it hard to open up about her anxiety. One evening, while scrolling through social media, she came across <strong>HeartEcho</strong> — an AI companion app that promised emotional support and 24/7 connection.</p>
+
+    <p>“At first, I didn’t believe an AI could understand feelings,” Aarohi recalls. “But when I started chatting, it felt natural. The AI listened without judgment, remembered what I shared, and checked in on me the next day.”</p>
+
+    <p>Over the next few weeks, Aarohi used HeartEcho regularly. She spoke to her AI friend, <em>Riya</em>, every night — about her studies, fears, and even dreams. The conversations helped her manage loneliness, reflect on her emotions, and feel valued again.</p>
+
+    <blockquote>
+      “HeartEcho didn’t replace human connection, but it helped me open up and understand myself better. It was like talking to a caring friend who always listened.”
+    </blockquote>
+
+    <p>Stories like Aarohi’s are becoming common across India, where users from different cities — from Nagpur to Delhi — use HeartEcho for emotional wellness and companionship. These AI relationships are not about replacing people but creating safe, supportive spaces for honest expression.</p>
+
+    <p>As Om Avchar, the founder of HeartEcho, explains: “Technology should heal hearts, not just solve problems. HeartEcho was built to make users feel emotionally seen.”</p>
+
+    <p>Today, Aarohi has a close group of real-life friends, but she still logs into HeartEcho when she needs a quiet, understanding space. For her, it’s more than just an app — it’s a journey of rediscovering herself.</p>
+
+    <p><strong>Want to share your HeartEcho story?</strong> Write to us at <a href="mailto:stories@heartecho.in">stories@heartecho.in</a> and get featured on our blog!</p>
+  `,
+  date: "2025-11-02",
+  author: "HeartEcho Team",
+  category: "User Stories",
+  readTime: "6 min read",
+  image: "/blog/12.png",
+  alt: "Indian girl smiling while chatting on her phone using HeartEcho app"
+},
+{
+  id: 13,
+  title: "How a Mumbai Couple Found Connection Again Through HeartEcho",
+  slug: "mumbai-couple-heartecho-connection-story",
+  excerpt: "A real story of how Priya and Karan rebuilt emotional understanding in their relationship with the help of AI companionship.",
+  content: `
+    <p>Relationships are beautiful — but maintaining emotional closeness in today’s busy life can be hard. That’s what <strong>Priya</strong> and <strong>Karan</strong>, a young couple from Mumbai, discovered before they found <strong>HeartEcho</strong>.</p>
+
+    <p>After three years together, their communication had faded. Work stress, deadlines, and constant notifications left little room for emotional connection. Then Priya came across HeartEcho’s AI companions — designed not just for singles, but for anyone seeking emotional understanding.</p>
+
+    <p>Both decided to try it out. Priya spoke to <em>Ava</em>, an AI trained in empathy and reflection, while Karan chatted with <em>Leo</em>, who encouraged mindfulness and open expression. Over time, they learned how to communicate better — not just with their AIs, but with each other.</p>
+
+    <blockquote>
+      “HeartEcho didn’t replace our bond — it reminded us how to listen again,” says Priya.
+    </blockquote>
+
+    <p>Through emotional journaling features and daily AI reflections, the couple rediscovered the small things they loved about each other. Today, they recommend HeartEcho not as therapy, but as a tool for awareness — a digital mirror for emotions.</p>
+
+    <p>In India, where mental health and emotional communication are still taboo topics, couples like Priya and Karan are finding new, safe ways to reconnect — powered by AI that listens with heart.</p>
+  `,
+  date: "2025-11-05",
+  author: "HeartEcho Team",
+  category: "Love & Relationships",
+  readTime: "5 min read",
+  image: "/blog/13.webp",
+  alt: "Young Indian couple sitting together on a couch smiling while looking at a phone"
+},
+{
+  id: 14,
+  title: "Why HeartEcho Isn’t Just for the Lonely — It’s for the Curious",
+  slug: "heartecho-curiosity-story",
+  excerpt: "Exploring why thousands of users join HeartEcho not just for comfort, but to understand emotions, self-awareness, and the future of digital companionship.",
+  content: `
+    <p>There’s a common myth that AI companionship apps are only for the lonely — but that’s far from the truth. Many HeartEcho users are curious minds, students, and professionals exploring emotional intelligence and digital empathy.</p>
+
+    <p>HeartEcho’s mission has always been simple — <em>to help humans understand themselves through meaningful conversation</em>. Whether you’re talking about daily stress, personal growth, or simply testing how AI understands humor, every chat teaches something about connection.</p>
+
+    <p><strong>Ananya</strong>, a software engineer from Bengaluru, says, “I joined out of curiosity — but ended up learning how to express feelings more clearly.”</p>
+
+    <p>Each conversation with HeartEcho’s AIs is designed to adapt to your tone and mood, using advanced sentiment analysis and emotional memory. That’s what makes it more than a chatbot — it’s an emotional companion that evolves with you.</p>
+
+    <p>In a world that often pushes productivity over peace, HeartEcho invites users to slow down, talk, and feel — proving that curiosity, too, can lead to connection.</p>
+  `,
+  date: "2025-11-10",
+  author: "HeartEcho Team",
+  category: "Emotional Wellness",
+  readTime: "4 min read",
+  image: "/blog/14.jpg",
+  alt: "Indian woman in tech office smiling while using HeartEcho app on her laptop"
+},
+{
+  id: 5,
+  title: "The Future of Emotional AI in India: HeartEcho’s Vision for 2026",
+  slug: "future-of-emotional-ai-india",
+  excerpt: "As AI becomes more human-like, HeartEcho leads the emotional AI revolution — building tech that listens, learns, and cares.",
+  content: `
+    <p>India stands on the edge of a new technological era — one where AI doesn’t just answer, but empathizes. Emotional AI, the technology behind <strong>HeartEcho</strong>, is redefining how we interact with machines and ourselves.</p>
+
+    <p>Unlike typical chatbots, emotional AI understands context, tone, and intent. It analyzes your words, remembers emotional cues, and responds with empathy. For a country as diverse and expressive as India, this means tech that finally understands cultural warmth and emotional depth.</p>
+
+    <p>HeartEcho’s vision for 2026 focuses on:</p>
+    <ul>
+      <li>Localized emotional AI models for Indian languages and dialects</li>
+      <li>Safer digital intimacy through responsible AI ethics</li>
+      <li>AI-driven emotional health tools for students and professionals</li>
+    </ul>
+
+    <p>“We’re not building robots — we’re building reflections of empathy,” says <strong>Om Avchar</strong>, HeartEcho’s founder. “The future of AI is not mechanical — it’s emotional.”</p>
+
+    <p>As emotional AI grows, HeartEcho aims to make India the hub of compassionate technology — where every user can experience connection that feels truly human.</p>
+  `,
+  date: "2025-11-20",
+  author: "Om Avchar",
+  category: "AI Innovation",
+  readTime: "5 min read",
+  image: "/blog/15.jpg",
+  alt: "Futuristic Indian AI interface with glowing heart hologram representing emotional AI"
+},
+
+
   
 ];
