@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const User = require("../models/User");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const { createCanvas, loadImage, registerFont } = require('canvas');
+const { createCanvas, loadImage } = require('canvas');
 const path = require('path');
 const fs = require('fs');
 const cloudinary = require('cloudinary').v2;
@@ -41,11 +41,11 @@ const a4Backgrounds = [
 
 // Handwriting font configurations
 const handwritingFonts = [
-  { name: 'Pacifico', family: '"Pacifico", cursive', size: 22 },
-  { name: 'Kalam', family: '"Kalam", cursive', size: 20 },
-  { name: 'Caveat', family: '"Caveat", cursive', size: 24 },
-  { name: 'Shadows Into Light', family: '"Shadows Into Light", cursive', size: 22 },
-  { name: 'Indie Flower', family: '"Indie Flower", cursive', size: 21 }
+  { name: 'Pacifico', family: 'cursive', size: 22 },
+  { name: 'Kalam', family: 'cursive', size: 20 },
+  { name: 'Caveat', family: 'cursive', size: 24 },
+  { name: 'Shadows Into Light', family: 'cursive', size: 22 },
+  { name: 'Indie Flower', family: 'cursive', size: 21 }
 ];
 
 // Base64 encoded stamp images array
