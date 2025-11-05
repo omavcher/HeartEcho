@@ -102,6 +102,15 @@ function Login() {
         setNotification({ show: true, message: "Google Login Successful!", type: "success" });
         setTimeout(() => router.push('/'), 1500);
       }
+
+      if (res.data.user === null && res.data.message === "New user, please complete registration") {
+        setNotification({ show: true, message: res.data.message, type: "info" });
+        setTimeout(() => router.push('/signup'), 1000);
+      }
+      else {
+        setNotification({ show: true, message: "Login Failed", type: "error" });
+        setTimeout(() => router.push('/login'), 1000);
+      }
     } catch (error) {
       setNotification({ show: true, message: error.response?.data?.message || "Login Failed", type: "error" });
     }
