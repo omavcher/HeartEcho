@@ -14,7 +14,7 @@ const authMiddleware = (req, res, next) => {
     req.user = decoded; // Attach decoded user info to request object
     next();
   } catch (error) {
-    res.status(401).json({ msg: "Invalid or expired token" });
+    res.status(401).json({msg: "Invalid or expired token" });
   }
 };
 

@@ -5,7 +5,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 const router = express.Router();
 
 router.post("/send", authMiddleware, controller.generateLetterResponse);
-router.get("/ai-friends/90s-era", authMiddleware, controller.getPredefinedAIFriends);
+router.get("/ai-friends/90s-era", controller.getPredefinedAIFriends);
 router.get("/received", authMiddleware, controller.getAllLetters);
 
 module.exports = router;
