@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const User = require("../models/User");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const nodeHtmlToImage = require('node-html-to-image');
+const { createCanvas, loadImage, registerFont } = require('canvas');
 const path = require('path');
 const fs = require('fs');
 const cloudinary = require('cloudinary').v2;
@@ -30,37 +30,22 @@ if (process.env.GEMINI_API_KEY) {
   console.log("No Gemini API key found, using fallback mode");
 }
 
-// A4 size letter backgrounds
+// A4 size letter backgrounds (SVG data URLs)
 const a4Backgrounds = [
-  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjEwIiBoZWlnaHQ9IjI5NyIgdmlld0JveD0iMCAwIDIxMCAyOTciIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMTAiIGhlaWdodD0iMjk3IiBmaWxsPSIjRkZGRkZGIi8+CjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjE5MCIgaGVpZ2h0PSIyNzciIGZpbGw9IiNGQUZBRkEiIHN0cm9rZT0iI0U4RDhDNyIgc3Ryb2tlLXdpZHRoPSIxIi8+CjxyZWN0IHg9IjIwIiB5PSIyMCIgd2lkdGg9IjE3MCIgaGVpZ2h0PSIyNTciIGZpbGw9IiNGNUY1RjUiIG9wYWNpdHk9IjAuNSIvPgo8L3N2Zz4K',
-  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjEwIiBoZWlnaHQ9IjI5NyIgdmlld0JveD0iMCAwIDIxMCAyOTciIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMTAiIGhlaWdodD0iMjk3IiBmaWxsPSIjRkZGRkZGIi8+CjxwYXRoIGQ9Ik0wIDI1IEgyMTBNMCA1MCBIMjEwTTAgNzUgSDIxME0wIDEwMCBIMjEwTTAgMTI1IEgyMTBNMCAxNTAgSDIxME0wIDE3NSBIMjEwTTAgMjAwIEgyMTBNMCAyMjUgSDIxME0wIDI1MCBIMjEwTTAgMjc1IEgyMTAiIHN0cm9rZT0iI0U4RDhDNyIgc3Ryb2tlLXdpZHRoPSIwLjUiLz4KPC9zdmc+',
-  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjEwIiBoZWlnaHQ9IjI5NyIgdmlld0JveD0iMCAwIDIxMCAyOTciIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMTAiIGhlaWdodD0iMjk3IiBmaWxsPSIjRkZGRkZGIi8+CjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjE5MCIgaGVpZ2h0PSIyNzciIGZpbGw9IiNGREZCRjIiIHN0cm9rZT0iI0Q5Q0E5MCIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxyZWN0IHg9IjIwIiB5PSIyMCIgd2lkdGg9IjE3MCIgaGVpZ2h0PSIyNTciIGZpbGw9InVybCgjcGF0dGVybikiIG9wYWNpdHk9IjAuMSIvPgo8ZGVmcz4KPHBhdHRlcm4gaWQ9InBhdHRlcm4iIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+CiAgPHBhdGggZD0iTTAgNDAgTDQwIDAiIHN0cm9rZT0iI0Q5Q0E5MCIgc3Ryb2tlLXdpZHRoPSIwLjUiLz4KPC9wYXR0ZXJuPgo8L2RlZnM+Cjwvc3ZnPg==',
-  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjEwIiBoZWlnaHQ9IjI5NyIgdmlld0JveD0iMCAwIDIxMCAyOTciIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMTAiIGhlaWdodD0iMjk3IiBmaWxsPSIjRkZGRkZGIi8+CjxyZWN0IHg9IjE1IiB5PSIxNSIgd2lkdGg9IjE4MCIgaGVpZ2h0PSIyNjciIGZpbGw9IiNGNEY0RUAiIHN0cm9rZT0iI0JEQzREMSIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxyZWN0IHg9IjI1IiB5PSIyNSIgd2lkdGg9IjE2MCIgaGVpZ2h0PSIyNDciIGZpbGw9IiNGMUYxRjciLz4KPC9zdmc+',
-  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjEwIiBoZWlnaHQ9IjI5NyIgdmlld0JveD0iMCAwIDIxMCAyOTciIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMTAiIGhlaWdodD0iMjk3IiBmaWxsPSIjRkZGRkZGIi8+CjxyZWN0IHg9IjUiIHk9IjUiIHdpZHRoPSIyMDAiIGhlaWdodD0iMjg3IiBmaWxsPSIjRkRGN0YxIiBzdHJva2U9IiVFQkQzRTciIHN0cm9rZS13aWR0aD0iMSIvPgo8cmVjdCB4PSIxNSIgeT0iMTUiIHdpZHRoPSIxODAiIGhlaWdodD0iMjY3IiBmaWxsPSIjRjVGMEZGIi8+Cjwvc3ZnPg=='
+  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzk0IiBoZWlnaHQ9IjExMjMiIHZpZXdCb3g9IjAgMCA3OTQgMTEyMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijc5NCIgaGVpZ2h0PSIxMTIzIiBmaWxsPSIjRkZGRkZGIi8+CjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9Ijc3NCIgaGVpZ2h0PSIxMTAzIiBmaWxsPSIjRkFGQUZBIiBzdHJva2U9IiNFOEQ4QzciIHN0cm9rZS13aWR0aD0iMSIvPgo8cmVjdCB4PSIyMCIgeT0iMjAiIHdpZHRoPSI3NTQiIGhlaWdodD0iMTA4MyIgZmlsbD0iI0Y1RjVGNSIgb3BhY2l0eT0iMC41Ii8+Cjwvc3ZnPgo=',
+  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzk0IiBoZWlnaHQ9IjExMjMiIHZpZXdCb3g9IjAgMCA3OTQgMTEyMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijc5NCIgaGVpZ2h0PSIxMTIzIiBmaWxsPSIjRkZGRkZGIi8+CjxwYXRoIGQ9Ik0wIDI1IEg3OTRNMCA1MCBINzk0TTAgNzUgSDc5NE0wIDEwMCBINzk0TTAgMTI1IEg3OTRNMCAxNTAgSDc5NE0wIDE3NSBINzk0TTAgMjAwIEg3OTRNMCAyMjUgSDc5NE0wIDI1MCBINzk0TTAgMjc1IEg3OTRNMCAzMDAgSDc5NE0wIDMyNSBINzk0TTAgMzUwIEg3OTRNMCAzNzUgSDc5NE0wIDQwMCBINzk0TTAgNDI1IEg3OTRNMCA0NTAgSDc5NE0wIDQ3NSBINzk0TTAgNTAwIEg3OTRNMCA1MjUgSDc5NE0wIDU1MCBINzk0TTAgNTc1IEg3OTRNMCA2MDAgSDc5NE0wIDYyNSBINzk0TTAgNjUwIEg3OTRNMCA2NzUgSDc5NE0wIDcwMCBINzk0TTAgNzI1IEg3OTRNMCA3NTAgSDc5NE0wIDc3NSBINzk0TTAgODAwIEg3OTRNMCA4MjUgSDc5NE0wIDg1MCBINzk0TTAgODc1IEg3OTRNMCA5MDAgSDc5NE0wIDkyNSBINzk0TTAgOTUwIEg3OTRNMCA5NzUgSDc5NE0wIDEwMDAgSDc5NE0wIDEwMjUgSDc5NE0wIDEwNTAgSDc5NE0wIDEwNzUgSDc5NE0wIDExMDAgSDc5NCIgc3Ryb2tlPSIjRThEOEM3IiBzdHJva2Utd2lkdGg9IjAuNSIvPgo8L3N2Zz4K',
+  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzk0IiBoZWlnaHQ9IjExMjMiIHZpZXdCb3g9IjAgMCA3OTQgMTEyMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijc5NCIgaGVpZ2h0PSIxMTIzIiBmaWxsPSIjRkZGRkZGIi8+CjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9Ijc3NCIgaGVpZ2h0PSIxMTAzIiBmaWxsPSIjRkRGQkYyIiBzdHJva2U9IiNEOUNBOTAiIHN0cm9rZS13aWR0aD0iMiIvPgo8cmVjdCB4PSIyMCIgeT0iMjAiIHdpZHRoPSI3NTQiIGhlaWdodD0iMTA4MyIgZmlsbD0idXJsKCNwYXR0ZXJuKSIgb3BhY2l0eT0iMC4xIi8+CjxkZWZzPgo8cGF0dGVybiBpZD0icGF0dGVybiIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIj4KICA8cGF0aCBkPSJNMCA0MCBMNDAgMCIgc3Ryb2tlPSIjRDlDQTkwIiBzdHJva2Utd2lkdGg9IjAuNSIvPgo8L3BhdHRlcm4+CjwvZGVmcz4KPC9zdmc+Cg==',
+  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzk0IiBoZWlnaHQ9IjExMjMiIHZpZXdCb3g9IjAgMCA3OTQgMTEyMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijc5NCIgaGVpZ2h0PSIxMTIzIiBmaWxsPSIjRkZGRkZGIi8+CjxyZWN0IHg9IjE1IiB5PSIxNSIgd2lkdGg9Ijc2NCIgaGVpZ2h0PSIxMDkzIiBmaWxsPSIjRjRGNEVBIiBzdHJva2U9IiNCRUM0RDEiIHN0cm9rZS13aWR0aD0iMiIvPgo8cmVjdCB4PSIyNSIgeT0iMjUiIHdpZHRoPSI3NDQiIGhlaWdodD0iMTA3MyIgZmlsbD0iI0YxRjFGNyIvPgo8L3N2Zz4K',
+  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzk0IiBoZWlnaHQ9IjExMjMiIHZpZXdCb3g9IjAgMCA3OTQgMTEyMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijc5NCIgaGVpZ2h0PSIxMTIzIiBmaWxsPSIjRkZGRkZGIi8+CjxyZWN0IHg9IjUiIHk9IjUiIHdpZHRoPSI3ODQiIGhlaWdodD0iMTEzIiBmaWxsPSIjRkRGN0YxIiBzdHJva2U9IiNFQkQzRTciIHN0cm9rZS13aWR0aD0iMSIvPgo8cmVjdCB4PSIxNSIgeT0iMTUiIHdpZHRoPSI3NjQiIGhlaWdodD0iMTA5MyIgZmlsbD0iI0Y1RjBGRiIvPgo8L3N2Zz4K'
 ];
 
-// Google Fonts handwriting styles
+// Handwriting font configurations
 const handwritingFonts = [
-  {
-    url: 'https://fonts.googleapis.com/css2?family=Pacifico&display=swap',
-    family: '"Pacifico", cursive'
-  },
-  {
-    url: 'https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap',
-    family: '"Kalam", cursive'
-  },
-  {
-    url: 'https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap',
-    family: '"Caveat", cursive'
-  },
-  {
-    url: 'https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap',
-    family: '"Shadows Into Light", cursive'
-  },
-  {
-    url: 'https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap',
-    family: '"Indie Flower", cursive'
-  }
+  { name: 'Pacifico', family: '"Pacifico", cursive', size: 22 },
+  { name: 'Kalam', family: '"Kalam", cursive', size: 20 },
+  { name: 'Caveat', family: '"Caveat", cursive', size: 24 },
+  { name: 'Shadows Into Light', family: '"Shadows Into Light", cursive', size: 22 },
+  { name: 'Indie Flower', family: '"Indie Flower", cursive', size: 21 }
 ];
 
 // Base64 encoded stamp images array
@@ -161,155 +146,188 @@ function generateStampPositions(stampCount = 1) {
 }
 
 /**
- * Generate HTML letter with AI Friend's specific handwriting
+ * Wrap text to fit within canvas width
  */
-function generateLetterHTML(letterContent, backgroundData, aiFriend, stampImages) {
-  // Use AI friend's preferred font
-  const fontIndex = aiFriend.handwriting_style?.font_index || 0;
-  const selectedFont = handwritingFonts[fontIndex % handwritingFonts.length];
-  
-  const writingColor = aiFriend.handwriting_style?.writing_color || "#2c1810";
-  
-  const stampPositions = generateStampPositions(stampImages.length);
-  
-  const stampElements = stampPositions.map((pos, index) => {
-    const stampImage = stampImages[index % stampImages.length];
-    const stampSize = 70 + Math.random() * 20;
+function wrapText(ctx, text, maxWidth) {
+  const words = text.split(' ');
+  const lines = [];
+  let currentLine = words[0];
+
+  for (let i = 1; i < words.length; i++) {
+    const word = words[i];
+    const width = ctx.measureText(currentLine + " " + word).width;
+    if (width < maxWidth) {
+      currentLine += " " + word;
+    } else {
+      lines.push(currentLine);
+      currentLine = word;
+    }
+  }
+  lines.push(currentLine);
+  return lines;
+}
+
+/**
+ * Generate letter image using Canvas
+ */
+async function generateLetterImage(letterContent, backgroundData, aiFriend, stampImages) {
+  // Create canvas
+  const canvas = createCanvas(794, 1123); // A4 size at 96 DPI
+  const ctx = canvas.getContext('2d');
+
+  try {
+    // Load and draw background
+    const background = await loadImage(backgroundData);
+    ctx.drawImage(background, 0, 0, 794, 1123);
+
+    // Draw letter container with shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+    ctx.shadowBlur = 20;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 4;
     
-    return `
-      <div class="stamp" style="
-        position: absolute;
-        left: ${pos.x}px; 
-        top: ${pos.y}px; 
-        transform: rotate(${pos.rotation}deg);
-        width: ${stampSize}px;
-        height: ${stampSize}px;
-        background-image: url('${stampImage}');
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
-        z-index: 2;
-        filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
-        opacity: 0.85;
-      "></div>
-    `;
-  }).join('');
+    // Letter content area
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+    ctx.fillRect(60, 80, 674, 923);
+    
+    // Border
+    ctx.strokeStyle = '#e8d8c3';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(60, 80, 674, 923);
+    
+    // Reset shadow
+    ctx.shadowColor = 'transparent';
 
-  const currentDate = new Date().toLocaleDateString('en-IN', { 
-    day: 'numeric', 
-    month: 'long', 
-    year: 'numeric' 
-  });
+    // Use AI friend's preferred font
+    const fontIndex = aiFriend.handwriting_style?.font_index || 0;
+    const selectedFont = handwritingFonts[fontIndex % handwritingFonts.length];
+    const writingColor = aiFriend.handwriting_style?.writing_color || "#2c1810";
+    
+    // Set font and text properties
+    ctx.fillStyle = writingColor;
+    ctx.font = `${selectedFont.size}px ${selectedFont.family}`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
 
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <title>Handwritten Letter from ${aiFriend.name}</title>
-      <link href="${selectedFont.url}" rel="stylesheet">
-      <style>
-        @import url('${selectedFont.url}');
+    // Draw letter content with word wrapping
+    const maxWidth = 614; // 674 - 60 padding
+    const lineHeight = selectedFont.size * 1.6;
+    let y = 140;
+    
+    const paragraphs = letterContent.split('\n');
+    
+    for (const paragraph of paragraphs) {
+      if (paragraph.trim() === '') {
+        y += lineHeight * 0.5; // Add space between paragraphs
+        continue;
+      }
+      
+      const lines = wrapText(ctx, paragraph, maxWidth);
+      
+      for (const line of lines) {
+        if (y > 900) break; // Don't overflow content area
         
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
+        // Add slight randomness to make it look handwritten
+        const randomOffsetX = Math.random() * 2 - 1;
+        const randomOffsetY = Math.random() * 2 - 1;
         
-        body {
-          margin: 0;
-          padding: 0;
-          width: 794px;
-          height: 1123px;
-          background-image: url('${backgroundData}');
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-          font-family: ${selectedFont.family};
-          display: flex;
-          flex-direction: column;
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .letter-container {
-          width: 100%;
-          height: 100%;
-          padding: 80px 60px 60px 60px;
-          display: flex;
-          flex-direction: column;
-          position: relative;
-        }
-        
-        .letter-content {
-          flex: 1;
-          line-height: 2.2;
-          font-size: 24px;
-          color: ${writingColor};
-          text-align: justify;
-          white-space: pre-line;
-          background: rgba(255, 255, 255, 0.92);
-          padding: 40px;
-          border-radius: 8px;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-          border: 1px solid #e8d8c3;
-          overflow: hidden;
-          z-index: 1;
-        }
-        
-        .signature {
-          margin-top: 40px;
-          text-align: right;
-          font-size: 26px;
-          font-weight: bold;
-          color: ${writingColor};
-          padding-right: 30px;
-          font-style: italic;
-        }
-        
-        .date {
-          position: absolute;
-          top: 50px;
-          right: 90px;
-          font-size: 18px;
-          color: #5d4037;
-          background: rgba(255, 255, 255, 0.95);
-          padding: 8px 12px;
-          border-radius: 6px;
-          border: 1px solid #d7ccc8;
-          z-index: 2;
-        }
-        
-        .heart {
-          color: #e91e63;
-          font-size: 24px;
-          margin-left: 8px;
-        }
-        
-        .content-text {
-          font-size: 22px;
-          line-height: 2.0;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="letter-container">
-        ${stampElements}
-        <div class="date">${currentDate}</div>
-        <div class="letter-content">
-          <div class="content-text">
-            ${letterContent.replace(/\n/g, '<br>')}
-          </div>
-          <div class="signature">
-            With love,<br>
-            ${aiFriend.name} <span class="heart">💝</span>
-          </div>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
+        ctx.fillText(line, 90 + randomOffsetX, y + randomOffsetY);
+        y += lineHeight;
+      }
+      
+      y += lineHeight * 0.3; // Space between paragraphs
+    }
+
+    // Draw signature
+    ctx.font = `bold ${selectedFont.size + 4}px ${selectedFont.family}`;
+    ctx.textAlign = 'right';
+    ctx.fillText('With love,', 650, 950);
+    ctx.fillText(`${aiFriend.name} 💝`, 650, 950 + lineHeight);
+
+    // Draw date
+    const currentDate = new Date().toLocaleDateString('en-IN', { 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    });
+    
+    ctx.font = '18px Arial';
+    ctx.fillStyle = '#5d4037';
+    ctx.textAlign = 'right';
+    ctx.fillText(currentDate, 700, 100);
+
+    // Draw stamps
+    const stampPositions = generateStampPositions(stampImages.length);
+    
+    for (let i = 0; i < stampPositions.length; i++) {
+      const pos = stampPositions[i];
+      const stampImage = await loadImage(stampImages[i % stampImages.length]);
+      const stampSize = 70 + Math.random() * 20;
+      
+      ctx.save();
+      ctx.translate(pos.x, pos.y);
+      ctx.rotate(pos.rotation * Math.PI / 180);
+      
+      // Add stamp shadow
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
+      
+      ctx.drawImage(stampImage, -stampSize/2, -stampSize/2, stampSize, stampSize);
+      
+      ctx.restore();
+    }
+
+    console.log("✅ Canvas image generated successfully");
+    return canvas.toBuffer('image/png');
+
+  } catch (error) {
+    console.error("❌ Error generating canvas image:", error);
+    
+    // Fallback: Create a simple image
+    return generateFallbackImage(letterContent, aiFriend);
+  }
+}
+
+/**
+ * Generate fallback image if canvas fails
+ */
+async function generateFallbackImage(letterContent, aiFriend) {
+  const canvas = createCanvas(794, 1123);
+  const ctx = canvas.getContext('2d');
+  
+  // Simple background
+  ctx.fillStyle = '#fafafa';
+  ctx.fillRect(0, 0, 794, 1123);
+  
+  // Border
+  ctx.strokeStyle = '#e8d8c3';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(50, 50, 694, 1023);
+  
+  // Text content
+  ctx.fillStyle = '#2c1810';
+  ctx.font = '20px Arial';
+  ctx.textAlign = 'left';
+  
+  const lines = letterContent.split('\n').slice(0, 20); // Limit lines
+  let y = 100;
+  
+  for (const line of lines) {
+    if (line.trim()) {
+      ctx.fillText(line.substring(0, 80), 80, y); // Limit line length
+      y += 30;
+    }
+  }
+  
+  // Signature
+  ctx.font = 'bold 24px Arial';
+  ctx.textAlign = 'right';
+  ctx.fillText('With love,', 700, 1000);
+  ctx.fillText(aiFriend.name, 700, 1030);
+  
+  return canvas.toBuffer('image/png');
 }
 
 /**
@@ -475,21 +493,10 @@ Make it personal, emotional, and filled with 90s Indian flavor.
     const randomBgIndex = Math.floor(Math.random() * a4Backgrounds.length);
     const backgroundData = a4Backgrounds[randomBgIndex];
 
-    // Generate HTML content using AI friend's handwriting style
-    const htmlContent = generateLetterHTML(aiLetterContent, backgroundData, aiFriend, stampImages);
+    console.log("🖼️ Generating image with Canvas...");
 
-    console.log("🖼️ Generating image from HTML...");
-
-    // Generate image buffer without Puppeteer
-    const imageBuffer = await nodeHtmlToImage({
-      html: htmlContent,
-      type: 'png',
-      quality: 100,
-      transparent: false,
-      encoding: 'buffer',
-      content: { html: htmlContent },
-      waitUntil: 'networkidle0'
-    });
+    // Generate image buffer using Canvas
+    const imageBuffer = await generateLetterImage(aiLetterContent, backgroundData, aiFriend, stampImages);
 
     console.log("✅ Image generated successfully, uploading to Cloudinary...");
 
