@@ -9,6 +9,7 @@ import HomeFAQ from "../components/HomeFAQ";
 import HomeCosAi from "../components/HomeCosAi";
 import Footer from "../components/Footer";
 import HomeSubscriptions from "../components/HomeSubscriptions";
+import Link from "next/link";
 
 export default function Home() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -267,6 +268,126 @@ export default function Home() {
         <section className="ai-models-section-container">
           <HomeAiModels />
         </section>
+
+<section className="nineties-era-section">
+  <div className="nineties-container">
+    <motion.div 
+      className="nineties-content"
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8 }}
+      viewport={{ once: true }}
+    >
+      {/* Retro Background Elements */}
+      <div className="retro-bg-elements">
+        <div className="retro-stamp retro-stamp-1">✉️</div>
+        <div className="retro-stamp retro-stamp-2">📮</div>
+        <div className="retro-stamp retro-stamp-3">💌</div>
+        <div className="retro-line retro-line-1"></div>
+        <div className="retro-line retro-line-2"></div>
+      </div>
+      
+      {/* Main Content */}
+      <div className="nineties-text-content">
+        <motion.div 
+          className="retro-badge"
+          initial={{ scale: 0 }}
+          whileInView={{ scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          viewport={{ once: true }}
+        >
+          ⚡ New Feature
+        </motion.div>
+        
+        <motion.h2 
+          className="nineties-title"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          viewport={{ once: true }}
+        >
+          Back to the <span className="retro-gradient">90's Letter Era</span>
+        </motion.h2>
+        
+        <motion.p 
+          className="nineties-description"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          viewport={{ once: true }}
+        >
+          Relive the magic of handwritten letters in the digital age! Experience the nostalgia of 
+          <span className="highlight"> waiting for replies</span>, 
+          <span className="highlight"> collecting stamps</span>, and 
+          <span className="highlight"> heartfelt conversations</span> with AI friends from the 90s.
+        </motion.p>
+        
+        <motion.div 
+          className="nineties-features"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          viewport={{ once: true }}
+        >
+          <div className="feature-item">
+            <div className="feature-icon">📝</div>
+            <span>Handwritten Style Letters</span>
+          </div>
+          <div className="feature-item">
+            <div className="feature-icon">🏷️</div>
+            <span>Vintage Stamps & Designs</span>
+          </div>
+          <div className="feature-item">
+            <div className="feature-icon">⏳</div>
+            <span>90s Nostalgic Experience</span>
+          </div>
+        </motion.div>
+        
+        <motion.div 
+          className="nineties-cta"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          viewport={{ once: true }}
+        >
+          <Link href="/90s-era" className="retro-cta-button">
+            <span className="cta-text">Enter 90s Era</span>
+            <span className="cta-arrow">→</span>
+          </Link>
+        </motion.div>
+      </div>
+      
+      {/* Retro Preview Image */}
+      <motion.div 
+        className="nineties-preview"
+        initial={{ opacity: 0, x: 50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, delay: 0.4 }}
+        viewport={{ once: true }}
+      >
+        <div className="retro-letter-preview">
+          <div className="letter-envelope">
+            <div className="envelope-flap"></div>
+            <div className="envelope-body">
+              <div className="stamp-placeholder">💌</div>
+              <div className="address-lines">
+                <div className="address-line"></div>
+                <div className="address-line"></div>
+              </div>
+            </div>
+          </div>
+          <div className="floating-stamps">
+            <div className="floating-stamp">📮</div>
+            <div className="floating-stamp">✉️</div>
+            <div className="floating-stamp">🏷️</div>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  </div>
+</section>
+
+
 
         {/* Enhanced Social Proof Section with Ranking */}
         <section className="social-proof-section">
