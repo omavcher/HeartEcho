@@ -6,8 +6,9 @@ import Image from 'next/image';
 import './90s-era.css';
 import apiConfig from '../../config/api';
 import PopNoti from '../../components/PopNoti';
-
+import { useRouter } from 'next/navigation';
 export default function NinetySEraPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('friends');
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -117,7 +118,6 @@ export default function NinetySEraPage() {
         }));
         
         setAiFriends(transformedFriends);
-        showNotification(`${transformedFriends.length} AI friends loaded!`, 'success');
       } else {
         showNotification(data.message || 'Failed to load friends', 'error');
         // Fallback to sample data
@@ -158,22 +158,6 @@ export default function NinetySEraPage() {
         );
         
         setReceivedLetters(allLetters);
-        
-        if (allLetters.length === 0) {
-          showNotification('No letters found in your postbox', 'info');
-        } else {
-          showNotification(`Found ${allLetters.length} letters from ${data.aiFriends.length} AI friends!`, 'success');
-        }
-      } else if (status === 404) {
-        setLettersByAI([]);
-        setReceivedLetters([]);
-        setTotalLetters(0);
-        showNotification('No letters found yet', 'info');
-      } else {
-        showNotification(data.message || 'Failed to load letters', 'warning');
-        setLettersByAI([]);
-        setReceivedLetters([]);
-        setTotalLetters(0);
       }
     } catch (error) {
       console.error('Error fetching letters:', error);
@@ -220,13 +204,18 @@ export default function NinetySEraPage() {
         setLetterContent('');
         setSelectedFriend(null);
         setActiveTab('postbox');
-        
-        // Refresh letters after sending
-        setTimeout(() => {
+                setTimeout(() => {
           fetchReceivedLetters();
         }, 1000);
-      } else {
-        showNotification(data.message || 'Failed to send letter', 'error');
+      }
+      else if (data.msg === 'Please login to continue') {
+        showNotification(data.msg, 'error');
+        setTimeout(() => {
+          router.push('/login');
+        }, 500);
+      }
+      else {
+        showNotification(data.msg || 'Failed to send letter', 'error');
       }
     } catch (error) {
       console.error('Error sending letter:', error);

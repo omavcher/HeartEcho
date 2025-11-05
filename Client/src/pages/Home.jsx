@@ -10,12 +10,30 @@ import HomeCosAi from "../components/HomeCosAi";
 import Footer from "../components/Footer";
 import HomeSubscriptions from "../components/HomeSubscriptions";
 import Link from "next/link";
+import api from "../config/api";
+import axios from "axios";
 
 export default function Home() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-
+  const [serverStatus, setServerStatus] = useState(null);
   // Define your image array - replace these with your actual image paths
+
+
+
+
+  useEffect(() => {
+    const fetchServerStatus = async () => {
+      console.log("fetching server status");
+      const response = await axios.get(`${api.Url}/server-status`);
+      setServerStatus(response.data.message);
+    };
+    fetchServerStatus();
+  }, []);
+
+
+
+
   const heroImages = [
     {
       src: "/hero-girl-illustration.avif",
@@ -162,14 +180,27 @@ export default function Home() {
               </motion.h2>
               
               <motion.div 
-                className="hero-cta"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-              >
-                <button className="primary-cta">Start Chatting</button>
-                <button className="secondary-cta">Meet Our AI</button>
-              </motion.div>
+  className="hero-cta"
+  initial={{ opacity: 0, y: 30 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.6, delay: 0.5 }}
+>
+  {serverStatus === "Server is running" ? (
+    <>
+      <a href="/90s-era" className="retro-love-btn">
+      Enter 90s Era
+    </a>
+    </>
+  ) : (
+    <div className="maintenance-message">
+      <div className="status-indicator">
+        <div className="blinking-dot"></div>
+        <span>Maintenance Running</span>
+      </div>
+      <p className="try-later-text">Please try again later</p>
+    </div>
+  )}
+</motion.div>
               
               <motion.div 
                 className="achievement-badge"
@@ -265,9 +296,15 @@ export default function Home() {
           </div>
         </section>
 
+
+
+    {serverStatus === "Server is running" && (
         <section className="ai-models-section-container">
           <HomeAiModels />
         </section>
+        )}
+
+
 
 <section className="nineties-era-section">
   <div className="nineties-container">

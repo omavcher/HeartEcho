@@ -2008,3 +2008,268 @@ body {
     transform: none;
   }
 }
+
+
+
+
+
+
+
+/* Maintenance Message Styles - Clean iOS Glass */
+.maintenance-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  max-width: 280px;
+  margin: 0 auto;
+  box-shadow: 
+    0 4px 24px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle background gradient */
+.maintenance-message::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  pointer-events: none;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.95rem;
+  z-index: 1;
+}
+
+/* Red blinking dot only */
+.blinking-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #ff3b30;
+  border-radius: 50%;
+  animation: blink 1.2s infinite;
+  position: relative;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    background-color: #ff3b30;
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.8);
+    background-color: #ff3b30;
+  }
+}
+
+/* Simple pulse effect */
+.blinking-dot::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: #ff3b30;
+  border-radius: 50%;
+  animation: pulse 1.2s infinite;
+  opacity: 0.4;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.4;
+  }
+  70% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.try-later-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  text-align: center;
+  margin: 0;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
+/* Show on hover */
+.maintenance-message:hover .try-later-text {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Smooth hover effect */
+.maintenance-message:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+  transition: all 0.3s ease;
+}
+
+/* Responsive design */
+@media screen and (max-width: 768px) {
+  .maintenance-message {
+    padding: 1.25rem;
+    max-width: 260px;
+    backdrop-filter: blur(30px);
+  }
+  
+  .status-indicator {
+    font-size: 0.9rem;
+  }
+}
+
+
+
+
+/* Nude Romantic Love Theme Button */
+.retro-love-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.9rem 2rem;
+  background: linear-gradient(135deg, #f8e9e9, #f5d6d6, #f8e9e9);
+  border: 1.5px solid #e8c4c4;
+  border-radius: 18px;
+  color: #a67f7f;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  box-shadow: 
+    0 3px 12px rgba(166, 127, 127, 0.15),
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 1px rgba(166, 127, 127, 0.1);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  overflow: hidden;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  letter-spacing: 0.5px;
+}
+
+/* Subtle heart icon */
+.retro-love-btn::before {
+  content: '💝';
+  font-size: 1.2rem;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+/* Soft overlay */
+.retro-love-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transition: left 0.6s ease;
+}
+
+.retro-love-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #f5e1e1, #f0d1d1, #f5e1e1);
+  border-color: #d8b6b6;
+  color: #8c6b6b;
+  box-shadow: 
+    0 6px 20px rgba(166, 127, 127, 0.2),
+    inset 0 1px 3px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 2px rgba(166, 127, 127, 0.15);
+}
+
+.retro-love-btn:hover::before {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+.retro-love-btn:hover::after {
+  left: 100%;
+}
+
+.retro-love-btn:active {
+  transform: translateY(0);
+  background: linear-gradient(135deg, #f0d1d1, #ebc6c6, #f0d1d1);
+  box-shadow: 
+    0 2px 8px rgba(166, 127, 127, 0.15),
+    inset 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+/* Subtle floating hearts animation on hover */
+.retro-love-btn:hover .floating-heart {
+  position: absolute;
+  font-size: 0.8rem;
+  animation: floatUp 1.5s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.8);
+  }
+}
+
+/* Soft focus glow */
+.retro-love-btn:focus {
+  outline: none;
+  box-shadow: 
+    0 0 0 3px rgba(166, 127, 127, 0.2),
+    0 3px 12px rgba(166, 127, 127, 0.15);
+}
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+  .retro-love-btn {
+    padding: 0.8rem 1.8rem;
+    font-size: 0.95rem;
+    border-radius: 16px;
+  }
+}

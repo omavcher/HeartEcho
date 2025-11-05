@@ -49,11 +49,19 @@ app.use(express.json());
 app.get("/api", (req, res) => {
   res.json({      success: true,
     message: "Welcome to the HeartEcho 💘💝 API! 🚀",
-    version: "1.5.7",
+    version: "2.0.0",
   });
 });
 
 // Routes
+
+app.get("/api/v1/api/server-status", (req, res) => {
+  res.json({
+    success: true,
+    message: "Server is running",
+  });
+});
+
 app.use("/api/v1/api/auth", require("./routes/authRoutes"));
 app.use("/api/v1/api/user", require("./routes/userRoutes"));
 app.use("/api/v1/api/ai", require("./routes/aiRoutes"));

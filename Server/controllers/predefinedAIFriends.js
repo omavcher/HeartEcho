@@ -142,7 +142,7 @@ exports.predefinedAIFriends = [
     initial_message:
       "Pata hai, aaj fir se wo purani train wali yaad aa gayi... tumhare bina adhoori lagti hai ☕",
     avatar_img:
-      "https://res.cloudinary.com/dx6rjowfb/image/upload/v1741006634/Females/yz4rbnjsnckvv2q7rzny.jpg",
+      "https://res.cloudinary.com/di627j3ol/image/upload/v1762366279/hero-illustration-2_s1lmjd.avif",
     handwriting_style: {
       font_index: 4,
       writing_color: "#6d4c41",
