@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const User = require("../models/User");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas, loadImage, registerFont } = require('canvas');
 const path = require('path');
 const fs = require('fs');
 const cloudinary = require('cloudinary').v2;
@@ -168,7 +168,7 @@ function wrapText(ctx, text, maxWidth) {
 }
 
 /**
- * Generate letter image using Canvas
+ * Generate letter image using Canvas ONLY - NO PUPPETEER
  */
 async function generateLetterImage(letterContent, backgroundData, aiFriend, stampImages) {
   // Create canvas
@@ -495,7 +495,7 @@ Make it personal, emotional, and filled with 90s Indian flavor.
 
     console.log("🖼️ Generating image with Canvas...");
 
-    // Generate image buffer using Canvas
+    // Generate image buffer using Canvas ONLY - NO HTML TO IMAGE CONVERSION
     const imageBuffer = await generateLetterImage(aiLetterContent, backgroundData, aiFriend, stampImages);
 
     console.log("✅ Image generated successfully, uploading to Cloudinary...");
