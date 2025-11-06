@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const User = require("../models/User");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const { createCanvas, loadImage, registerFont } = require('canvas');
 const path = require('path');
 const fs = require('fs');
 const cloudinary = require('cloudinary').v2;
@@ -36,7 +35,7 @@ const a4Backgrounds = [
   'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzk0IiBoZWlnaHQ9IjExMjMiIHZpZXdCb3g9IjAgMCA3OTQgMTEyMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijc5NCIgaGVpZ2h0PSIxMTIzIiBmaWxsPSIjRkZGRkZGIi8+CjxwYXRoIGQ9Ik0wIDI1IEg3OTRNMCA1MCBINzk0TTAgNzUgSDc5NE0wIDEwMCBINzk0TTAgMTI1IEg3OTRNMCAxNTAgSDc5NE0wIDE3NSBINzk0TTAgMjAwIEg3OTRNMCAyMjUgSDc5NE0wIDI1MCBINzk0TTAgMjc1IEg3OTRNMCAzMDAgSDc5NE0wIDMyNSBINzk0TTAgMzUwIEg3OTRNMCAzNzUgSDc5NE0wIDQwMCBINzk0TTAgNDI1IEg3OTRNMCA0NTAgSDc5NE0wIDQ3NSBINzk0TTAgNTAwIEg3OTRNMCA1MjUgSDc5NE0wIDU1MCBINzk0TTAgNTc1IEg3OTRNMCA2MDAgSDc5NE0wIDYyNSBINzk0TTAgNjUwIEg3OTRNMCA2NzUgSDc5NE0wIDcwMCBINzk0TTAgNzI1IEg3OTRNMCA3NTAgSDc5NE0wIDc3NSBINzk0TTAgODAwIEg3OTRNMCA4MjUgSDc5NE0wIDg1MCBINzk0TTAgODc1IEg3OTRNMCA5MDAgSDc5NE0wIDkyNSBINzk0TTAgOTUwIEg3OTRNMCA5NzUgSDc5NE0wIDEwMDAgSDc5NE0wIDEwMjUgSDc5NE0wIDEwNTAgSDc5NE0wIDEwNzUgSDc5NE0wIDExMDAgSDc5NCIgc3Ryb2tlPSIjRThEOEM3IiBzdHJva2Utd2lkdGg9IjAuNSIvPgo8L3N2Zz4K',
   'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzk0IiBoZWlnaHQ9IjExMjMiIHZpZXdCb3g9IjAgMCA3OTQgMTEyMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijc5NCIgaGVpZ2h0PSIxMTIzIiBmaWxsPSIjRkZGRkZGIi8+CjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9Ijc3NCIgaGVpZ2h0PSIxMTAzIiBmaWxsPSIjRkRGQkYyIiBzdHJva2U9IiNEOUNBOTAiIHN0cm9rZS13aWR0aD0iMiIvPgo8cmVjdCB4PSIyMCIgeT0iMjAiIHdpZHRoPSI3NTQiIGhlaWdodD0iMTA4MyIgZmlsbD0idXJsKCNwYXR0ZXJuKSIgb3BhY2l0eT0iMC4xIi8+CjxkZWZzPgo8cGF0dGVybiBpZD0icGF0dGVybiIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIj4KICA8cGF0aCBkPSJNMCA0MCBMNDAgMCIgc3Ryb2tlPSIjRDlDQTkwIiBzdHJva2Utd2lkdGg9IjAuNSIvPgo8L3BhdHRlcm4+CjwvZGVmcz4KPC9zdmc+Cg==',
   'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzk0IiBoZWlnaHQ9IjExMjMiIHZpZXdCb3g9IjAgMCA3OTQgMTEyMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijc5NCIgaGVpZ2h0PSIxMTIzIiBmaWxsPSIjRkZGRkZGIi8+CjxyZWN0IHg9IjE1IiB5PSIxNSIgd2lkdGg9Ijc2NCIgaGVpZ2h0PSIxMDkzIiBmaWxsPSIjRjRGNEVBIiBzdHJva2U9IiNCRUM0RDEiIHN0cm9rZS13aWR0aD0iMiIvPgo8cmVjdCB4PSIyNSIgeT0iMjUiIHdpZHRoPSI3NDQiIGhlaWdodD0iMTA3MyIgZmlsbD0iI0YxRjFGNyIvPgo8L3N2Zz4K',
-  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzk0IiBoZWlnaHQ9IjExMjMiIHZpZXdCb3g9IjAgMCA3OTQgMTEyMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijc5NCIgaGVpZ2h0PSIxMTIzIiBmaWxsPSIjRkZGRkZGIi8+CjxyZWN0IHg9IjUiIHk9IjUiIHdpZHRoPSI3ODQiIGhlaWdodD0iMTEzIiBmaWxsPSIjRkRGN0YxIiBzdHJva2U9IiNFQkQzRTciIHN0cm9rZS13aWR0aD0iMSIvPgo8cmVjdCB4PSIxNSIgeT0iMTUiIHdpZHRoPSI3NjQiIGhlaWdodD0iMTA5MyIgZmlsbD0iI0Y1RjBGRiIvPgo8L3N2Zz4K'
+  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzk0IiBoZWlnaHQ9IjExMjMiIHZpZXdCb3g9IjAgMCA3OTQgMTEyMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijc5NCIgaGVpZ2h0PSIxMTIzIiBmaWxsPSIjRkZGRkZGIi8+CjxyZWN0IHg9IjUiIHk9IjUiIHdpZHRoPSI3ODQiIGhlaWdodD0iMTEzIiBmaWxsPSIjRkRGN0YxIiBzdHJva2U9IiVFQkQzRTciIHN0cm9rZS13aWR0aD0iMSIvPgo8cmVjdCB4PSIxNSIgeT0iMTUiIHdpZHRoPSI3NjQiIGhlaWdodD0iMTA5MyIgZmlsbD0iI0Y1RjBGRiIvPgo8L3N2Zz4K'
 ];
 
 // Handwriting font configurations
@@ -146,17 +145,18 @@ function generateStampPositions(stampCount = 1) {
 }
 
 /**
- * Wrap text to fit within canvas width
+ * Wrap text to fit within SVG width
  */
-function wrapText(ctx, text, maxWidth) {
+function wrapText(text, maxWidth, fontSize) {
   const words = text.split(' ');
   const lines = [];
   let currentLine = words[0];
+  const avgCharWidth = fontSize * 0.6; // Approximate character width
 
   for (let i = 1; i < words.length; i++) {
     const word = words[i];
-    const width = ctx.measureText(currentLine + " " + word).width;
-    if (width < maxWidth) {
+    const lineWidth = (currentLine.length + word.length + 1) * avgCharWidth;
+    if (lineWidth < maxWidth) {
       currentLine += " " + word;
     } else {
       lines.push(currentLine);
@@ -168,166 +168,139 @@ function wrapText(ctx, text, maxWidth) {
 }
 
 /**
- * Generate letter image using Canvas ONLY - NO PUPPETEER
+ * Generate SVG letter (Pure JavaScript - No Dependencies)
  */
-async function generateLetterImage(letterContent, backgroundData, aiFriend, stampImages) {
-  // Create canvas
-  const canvas = createCanvas(794, 1123); // A4 size at 96 DPI
-  const ctx = canvas.getContext('2d');
+function generateSVGLetter(letterContent, backgroundData, aiFriend, stampImages) {
+  const fontIndex = aiFriend.handwriting_style?.font_index || 0;
+  const selectedFont = handwritingFonts[fontIndex % handwritingFonts.length];
+  const writingColor = aiFriend.handwriting_style?.writing_color || "#2c1810";
+  
+  const currentDate = new Date().toLocaleDateString('en-IN', { 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric' 
+  });
 
-  try {
-    // Load and draw background
-    const background = await loadImage(backgroundData);
-    ctx.drawImage(background, 0, 0, 794, 1123);
+  // Generate stamps
+  const stampPositions = generateStampPositions(stampImages.length);
+  const stampElements = stampPositions.map((pos, index) => {
+    const stampImage = stampImages[index % stampImages.length];
+    const stampSize = 70 + Math.random() * 20;
+    return `
+      <g transform="translate(${pos.x}, ${pos.y}) rotate(${pos.rotation})">
+        <image href="${stampImage}" x="-${stampSize/2}" y="-${stampSize/2}" width="${stampSize}" height="${stampSize}" opacity="0.85"/>
+      </g>
+    `;
+  }).join('');
 
-    // Draw letter container with shadow
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
-    ctx.shadowBlur = 20;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 4;
-    
-    // Letter content area
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
-    ctx.fillRect(60, 80, 674, 923);
-    
-    // Border
-    ctx.strokeStyle = '#e8d8c3';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(60, 80, 674, 923);
-    
-    // Reset shadow
-    ctx.shadowColor = 'transparent';
+  // Process letter content with line wrapping
+  const paragraphs = letterContent.split('\n');
+  let textContent = '';
+  let currentY = 140;
+  const lineHeight = selectedFont.size * 1.6;
+  const maxWidth = 614;
 
-    // Use AI friend's preferred font
-    const fontIndex = aiFriend.handwriting_style?.font_index || 0;
-    const selectedFont = handwritingFonts[fontIndex % handwritingFonts.length];
-    const writingColor = aiFriend.handwriting_style?.writing_color || "#2c1810";
-    
-    // Set font and text properties
-    ctx.fillStyle = writingColor;
-    ctx.font = `${selectedFont.size}px ${selectedFont.family}`;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-
-    // Draw letter content with word wrapping
-    const maxWidth = 614; // 674 - 60 padding
-    const lineHeight = selectedFont.size * 1.6;
-    let y = 140;
-    
-    const paragraphs = letterContent.split('\n');
-    
-    for (const paragraph of paragraphs) {
-      if (paragraph.trim() === '') {
-        y += lineHeight * 0.5; // Add space between paragraphs
-        continue;
-      }
-      
-      const lines = wrapText(ctx, paragraph, maxWidth);
-      
-      for (const line of lines) {
-        if (y > 900) break; // Don't overflow content area
-        
-        // Add slight randomness to make it look handwritten
-        const randomOffsetX = Math.random() * 2 - 1;
-        const randomOffsetY = Math.random() * 2 - 1;
-        
-        ctx.fillText(line, 90 + randomOffsetX, y + randomOffsetY);
-        y += lineHeight;
-      }
-      
-      y += lineHeight * 0.3; // Space between paragraphs
+  for (const paragraph of paragraphs) {
+    if (paragraph.trim() === '') {
+      currentY += lineHeight * 0.5;
+      continue;
     }
-
-    // Draw signature
-    ctx.font = `bold ${selectedFont.size + 4}px ${selectedFont.family}`;
-    ctx.textAlign = 'right';
-    ctx.fillText('With love,', 650, 950);
-    ctx.fillText(`${aiFriend.name} 💝`, 650, 950 + lineHeight);
-
-    // Draw date
-    const currentDate = new Date().toLocaleDateString('en-IN', { 
-      day: 'numeric', 
-      month: 'long', 
-      year: 'numeric' 
-    });
     
-    ctx.font = '18px Arial';
-    ctx.fillStyle = '#5d4037';
-    ctx.textAlign = 'right';
-    ctx.fillText(currentDate, 700, 100);
-
-    // Draw stamps
-    const stampPositions = generateStampPositions(stampImages.length);
+    const lines = wrapText(paragraph, maxWidth, selectedFont.size);
     
-    for (let i = 0; i < stampPositions.length; i++) {
-      const pos = stampPositions[i];
-      const stampImage = await loadImage(stampImages[i % stampImages.length]);
-      const stampSize = 70 + Math.random() * 20;
+    for (const line of lines) {
+      if (currentY > 900) break;
       
-      ctx.save();
-      ctx.translate(pos.x, pos.y);
-      ctx.rotate(pos.rotation * Math.PI / 180);
+      // Add slight randomness to make it look handwritten
+      const randomOffsetX = (Math.random() * 4 - 2).toFixed(1);
+      const randomOffsetY = (Math.random() * 4 - 2).toFixed(1);
       
-      // Add stamp shadow
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-      ctx.shadowBlur = 4;
-      ctx.shadowOffsetX = 2;
-      ctx.shadowOffsetY = 2;
-      
-      ctx.drawImage(stampImage, -stampSize/2, -stampSize/2, stampSize, stampSize);
-      
-      ctx.restore();
+      textContent += `
+        <text x="${90 + parseFloat(randomOffsetX)}" y="${currentY + parseFloat(randomOffsetY)}" 
+              font-family="${selectedFont.family}" font-size="${selectedFont.size}" 
+              fill="${writingColor}" text-anchor="start">
+          ${line.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+        </text>
+      `;
+      currentY += lineHeight;
     }
-
-    console.log("✅ Canvas image generated successfully");
-    return canvas.toBuffer('image/png');
-
-  } catch (error) {
-    console.error("❌ Error generating canvas image:", error);
     
-    // Fallback: Create a simple image
-    return generateFallbackImage(letterContent, aiFriend);
+    currentY += lineHeight * 0.3;
   }
+
+  const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="794" height="1123" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#fafafa"/>
+  
+  <!-- Paper Texture -->
+  <rect x="20" y="20" width="754" height="1083" fill="#f5f5f5" stroke="#e8d8c7" stroke-width="1"/>
+  
+  <!-- Letter Content Area with Shadow -->
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="4" dy="4" stdDeviation="8" flood-color="rgba(0,0,0,0.15)"/>
+    </filter>
+  </defs>
+  
+  <rect x="60" y="80" width="674" height="923" fill="rgba(255,255,255,0.95)" stroke="#e8d8c3" stroke-width="1" filter="url(#shadow)"/>
+  
+  <!-- Stamps -->
+  ${stampElements}
+  
+  <!-- Date -->
+  <text x="700" y="100" text-anchor="end" font-family="Arial" font-size="18" fill="#5d4037">
+    ${currentDate}
+  </text>
+  
+  <!-- Letter Text Content -->
+  ${textContent}
+  
+  <!-- Signature -->
+  <text x="650" y="950" text-anchor="end" font-family="${selectedFont.family}" font-size="${selectedFont.size + 4}" font-weight="bold" fill="${writingColor}">
+    <tspan x="650" dy="0">With love,</tspan>
+    <tspan x="650" dy="35">${aiFriend.name} 💝</tspan>
+  </text>
+</svg>`;
+
+  return svgContent;
 }
 
 /**
- * Generate fallback image if canvas fails
+ * Generate letter image using SVG only
  */
-async function generateFallbackImage(letterContent, aiFriend) {
-  const canvas = createCanvas(794, 1123);
-  const ctx = canvas.getContext('2d');
-  
-  // Simple background
-  ctx.fillStyle = '#fafafa';
-  ctx.fillRect(0, 0, 794, 1123);
-  
-  // Border
-  ctx.strokeStyle = '#e8d8c3';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(50, 50, 694, 1023);
-  
-  // Text content
-  ctx.fillStyle = '#2c1810';
-  ctx.font = '20px Arial';
-  ctx.textAlign = 'left';
-  
-  const lines = letterContent.split('\n').slice(0, 20); // Limit lines
-  let y = 100;
-  
-  for (const line of lines) {
-    if (line.trim()) {
-      ctx.fillText(line.substring(0, 80), 80, y); // Limit line length
-      y += 30;
-    }
+async function generateLetterImage(letterContent, backgroundData, aiFriend, stampImages) {
+  try {
+    console.log("🖼️ Generating SVG letter...");
+    
+    // Generate SVG
+    const svgContent = generateSVGLetter(letterContent, backgroundData, aiFriend, stampImages);
+    
+    console.log("✅ SVG image generated successfully");
+    return Buffer.from(svgContent);
+
+  } catch (error) {
+    console.error("❌ Error generating SVG image:", error);
+    
+    // Fallback: Simple SVG
+    console.log("🔄 Using SVG fallback...");
+    const simpleSVG = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="794" height="1123" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#fafafa"/>
+  <rect x="50" y="50" width="694" height="1023" fill="white" stroke="#e8d8c3" stroke-width="2"/>
+  <text x="100" y="100" font-family="Arial" font-size="20" fill="#2c1810">
+    ${letterContent.split('\n').slice(0, 15).map((line, i) => 
+      `<tspan x="100" dy="${i === 0 ? 0 : 30}">${line.substring(0, 80)}</tspan>`
+    ).join('')}
+  </text>
+  <text x="700" y="1000" text-anchor="end" font-family="Arial" font-size="24" font-weight="bold" fill="#2c1810">
+    <tspan x="700" dy="0">With love,</tspan>
+    <tspan x="700" dy="30">${aiFriend.name}</tspan>
+  </text>
+</svg>`;
+    
+    return Buffer.from(simpleSVG);
   }
-  
-  // Signature
-  ctx.font = 'bold 24px Arial';
-  ctx.textAlign = 'right';
-  ctx.fillText('With love,', 700, 1000);
-  ctx.fillText(aiFriend.name, 700, 1030);
-  
-  return canvas.toBuffer('image/png');
 }
 
 /**
@@ -493,9 +466,9 @@ Make it personal, emotional, and filled with 90s Indian flavor.
     const randomBgIndex = Math.floor(Math.random() * a4Backgrounds.length);
     const backgroundData = a4Backgrounds[randomBgIndex];
 
-    console.log("🖼️ Generating image with Canvas...");
+    console.log("🖼️ Generating image with pure SVG...");
 
-    // Generate image buffer using Canvas ONLY - NO HTML TO IMAGE CONVERSION
+    // Generate image buffer using pure SVG
     const imageBuffer = await generateLetterImage(aiLetterContent, backgroundData, aiFriend, stampImages);
 
     console.log("✅ Image generated successfully, uploading to Cloudinary...");
