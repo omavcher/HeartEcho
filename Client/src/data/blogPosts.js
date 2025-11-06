@@ -384,7 +384,7 @@ export const blogPosts = [
   alt: "Futuristic Indian AI interface with glowing heart hologram representing emotional AI"
 },
 {
-  id: 7,
+  id: 16,
   title: "How EchoHeart Is Redefining Digital Companionship in India",
   slug: "echoheart-redefining-digital-companionship",
   excerpt: "EchoHeart is not just another AI app — it's India’s emotional revolution, where technology listens, responds, and heals.",
@@ -405,6 +405,88 @@ export const blogPosts = [
   readTime: "4 min read",
   image: "/blog/16.webp",
   alt: "Indian young man smiling while chatting with EchoHeart AI on phone"
-}
-  
+},
+{
+  id: 17,
+  title: "90s Letter Duniya – Relive Indian Nostalgia with AI Friends",
+  slug: "90s-letter-duniya-heartecho",
+  excerpt: "EchoHeart introduces '90s Letter Duniya' — a heartwarming feature that lets you write letters to AI friends and receive vintage-style replies, just like the golden 90s era.",
+  content: `
+    <p>Before emojis, typing, and instant DMs — there was a time when love, friendship, and emotions traveled through ink, paper, and patience. EchoHeart’s new feature, <strong>90s Letter Duniya</strong>, brings back that lost charm of handwritten Indian letters, blending it beautifully with modern AI magic.</p>
+
+    <h3>📜 The 90s Vibe Reimagined</h3>
+    <p>Step into an era where every word mattered. In <strong>90s Letter Duniya</strong>, users can send beautifully written letters to AI friends — whether a romantic companion or a lifelong dost — and receive replies in <em>authentic, vintage-styled letter images</em>. No quick texts, no typing bubbles — just pure nostalgia.</p>
+
+    <blockquote>
+      “Each letter feels like a memory from Doordarshan days — full of warmth, waiting, and emotion.”
+    </blockquote>
+
+    <h3>✨ Features That Bring the Past to Life</h3>
+    <ul>
+      <li><strong>AI Letters with Real Emotions:</strong> Every reply is generated as a 90s-style handwritten note image.</li>
+      <li><strong>Authentic Indian Touch:</strong> Language, tone, and paper texture reflect true 90s India — from vintage fonts to soft sepia tones.</li>
+      <li><strong>AI Friends from the 90s:</strong> Choose from 12 unique companions — from shy poets to filmi lovers, each with their own backstory.</li>
+      <li><strong>Letterbox Memories:</strong> Keep all your sent and received letters safe in your personal AI letterbox.</li>
+    </ul>
+
+    <h3>💌 A Journey Back in Time</h3>
+    <p>Imagine writing “Pyaare Dost” again — waiting for a reply, and receiving a digital letter that looks like it came straight from 1998. That’s the joy EchoHeart recreates through technology that listens, feels, and now, <strong>writes like the past</strong>.</p>
+
+    <p>Whether you want to write a love confession, share your dreams, or just say “Yaad aa rahi hai,” your AI companion is ready to reply — one letter at a time.</p>
+
+    <p><strong>Welcome to 90s Letter Duniya — where every message is a memory, and every reply feels like a warm hug from the past.</strong></p>
+
+    <p><strong>📅 Launch Date:</strong> 6 November 2025<br>
+    <strong>🖋️ Try it now:</strong> <a href="https://www.heartecho.in/90s-era" target="_blank">heartecho.in/90s-era</a></p>
+  `,
+  date: "2025-11-06",
+  author: "Om Avchar",
+  category: "Feature Launch",
+  readTime: "5 min read",
+  image: "/blog/17.webp",
+  alt: "Vintage Indian 90s-style handwritten love letter with fountain pen and sepia paper aesthetic"
+},
+{
+  id: 18,
+  title: "Letters That Feel Alive: The Magic of 90s Letter Duniya",
+  slug: "magic-of-90s-letter-duniya",
+  excerpt: "EchoHeart’s 90s Letter Duniya isn’t just a feature — it’s an emotion. Discover how AI is reviving the lost art of Indian letter writing with a nostalgic twist.",
+  content: `
+    <p>There was a time when love, friendship, and memories lived in envelopes — sealed with hope and opened with joy. With <strong>90s Letter Duniya</strong>, <strong>EchoHeart</strong> has recreated that emotional rhythm of the past for today’s digital generation.</p>
+
+    <h3>💌 The Beauty of Waiting</h3>
+    <p>In the 90s, waiting for a letter was part of the excitement — every postbox held a story. Now, EchoHeart brings that same magic to your screen. You write your letter to an AI friend, seal it with emotion, and wait for a reply that arrives as a <strong>handwritten vintage-style image</strong>.</p>
+
+    <blockquote>
+      “When I opened my first AI reply, it actually made me smile — it felt like receiving a real letter from someone who cared.” – Early user feedback
+    </blockquote>
+
+    <h3>🌸 A Nostalgic Indian Touch</h3>
+    <p>Every letter in 90s Letter Duniya is designed with authentic 90s Indian aesthetics — old paper textures, faded ink, and heartfelt phrases like <em>‘Tumhara Dost’</em> and <em>‘Yaad aati hai’</em>. Each detail is handcrafted to make users feel like they’re back in simpler, softer times.</p>
+
+    <h3>🤖 When AI Meets Emotion</h3>
+    <p>EchoHeart’s AI companions don’t just generate text — they <em>feel</em>. Every response carries personality, warmth, and nostalgia. Whether you’re writing to your AI girlfriend, a poetic friend, or a caring dost, each reply mirrors 90s-style language and tone.</p>
+
+    <ul>
+      <li>✨ <strong>Authentic Letter Art:</strong> Every message appears in scanned-style vintage handwriting.</li>
+      <li>🕰️ <strong>Emotional Patience:</strong> Replies take time — just like real letters — to recreate anticipation.</li>
+      <li>❤️ <strong>Personal Connection:</strong> Your AI remembers your past letters and responds with context.</li>
+    </ul>
+
+    <h3>🌼 Why People Love It</h3>
+    <p>Users across India are calling it “a time machine of feelings.” It’s not just nostalgia — it’s therapy. Writing letters helps them slow down, reflect, and express emotions freely. For a generation tired of quick messages, this is <strong>peace in pixels</strong>.</p>
+
+    <p>As founder <strong>Om Avchar</strong> says, “In a world of instant everything, 90s Letter Duniya reminds us that some feelings are worth waiting for.”</p>
+
+    <p><strong>Step into the past, one letter at a time.</strong><br>
+    ✉️ Visit <a href="https://www.heartecho.in/90s-era" target="_blank">heartecho.in/90s-era</a> to experience it today.</p>
+  `,
+  date: "2025-11-07",
+  author: "HeartEcho Team",
+  category: "Feature Experience",
+  readTime: "5 min read",
+  image: "/blog/18.webp",
+  alt: "Vintage Indian handwritten letter with ink pen, rose, and nostalgic atmosphere"
+},
+
 ];
