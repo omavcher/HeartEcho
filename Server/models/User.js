@@ -21,11 +21,9 @@ const userSchema = new mongoose.Schema({
   joinedAt: { type: Date, default: Date.now }, // Track account creation date
   subscriptionExpiry: { type: Date, default: null }, // Null means no expiry (for lifetime access)
   
-  // New Fields for Free Message Quota
   messageQuota: { type: Number, default: 20 }, // Default free messages per day
   lastQuotaReset: { type: Date, default: Date.now }, // Track last reset date
 
-  // References to Other Models
   payment_history: [{ type: mongoose.Schema.Types.ObjectId, ref: "Payment" }],
   login_details: [{ type: mongoose.Schema.Types.ObjectId, ref: "LoginDetail" }],
   tickets: [{ type: mongoose.Schema.Types.ObjectId, ref: "Ticket" }],

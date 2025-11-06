@@ -7,6 +7,7 @@ export default function sitemap() {
   const staticRoutes = [
     '/',
     '/discover',
+    '/90s-era',
     '/chatbox',
     '/profile',
     '/privacy',

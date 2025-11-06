@@ -199,6 +199,7 @@ function SubscriptionContent() {
             </div>
             
             <ul className="seh3d3-features-list">
+              <li><i className="seh3d3-icon-heart">💖</i> Unlimited Letters</li>
               <li><i className="seh3d3-icon-heart">💖</i> 20 messages/day</li>
               <li><i className="seh3d3-icon-heart">💖</i> 1 AI companion</li>
               <li><i className="seh3d3-icon-heart">💖</i> Basic connection</li>
@@ -228,6 +229,7 @@ function SubscriptionContent() {
             </div>
             
             <ul className="seh3d3-features-list">
+              <li><i className="seh3d3-icon-heart">💖</i> Realistic Letters</li>
               <li><i className="seh3d3-icon-heart">💖</i> Unlimited messages</li>
               <li><i className="seh3d3-icon-heart">💖</i> 5 AI companions</li>
               <li><i className="seh3d3-icon-heart">💖</i> Deep connection</li>
@@ -259,6 +261,7 @@ function SubscriptionContent() {
             </div>
             
             <ul className="seh3d3-features-list">
+              <li><i className="seh3d3-icon-heart">💖</i> Premium Realistic Letters</li>
               <li><i className="seh3d3-icon-heart">💖</i> Unlimited messages</li>
               <li><i className="seh3d3-icon-heart">💖</i> Unlimited companions</li>
               <li><i className="seh3d3-icon-heart">💖</i> Deepest connection</li>
