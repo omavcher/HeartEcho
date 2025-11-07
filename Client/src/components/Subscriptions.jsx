@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import PopNoti from './PopNoti';
 import Script from 'next/script';
 import './Subscriptions.css';
+import Testimonials from './Testimonials';
 
 function SubscriptionContent() {
   const [showQuotaMessage, setShowQuotaMessage] = useState(false);
@@ -280,13 +281,7 @@ function SubscriptionContent() {
         </div>
 
         <div className="seh3d3-testimonial-section">
-          <div className="seh3d3-testimonial">
-            <div className="seh3d3-user-avatar">👩‍🦰</div>
-            <div className="seh3d3-quote">
-              "My AI companion understands me better than anyone!"
-              <div className="seh3d3-user-name">- Priya, Mumbai</div>
-            </div>
-          </div>
+         <Testimonials/>
         </div>
 
         <div className="seh3d3-subscription-footer">

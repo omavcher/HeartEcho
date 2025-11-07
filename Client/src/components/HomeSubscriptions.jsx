@@ -169,6 +169,10 @@ const HomeSubscriptions = () => {
             </div>
             
             <ul className="features-list">
+            <li>
+                <i className="icon-heart">💖</i>
+                <span>Unlimited Letters</span>
+              </li>
               <li>
                 <i className="icon-heart">💖</i>
                 <span>20 messages/day</span>
@@ -213,6 +217,10 @@ const HomeSubscriptions = () => {
             </div>
             
             <ul className="features-list">
+              <li>
+                <i className="icon-heart">💖</i>
+                <span>Realistic Letters</span>
+              </li>
               <li>
                 <i className="icon-heart">💖</i>
                 <span>Unlimited messages</span>
@@ -264,6 +272,10 @@ const HomeSubscriptions = () => {
             </div>
             
             <ul className="features-list">
+              <li>
+                <i className="icon-heart">💖</i>
+                <span>Premium Realistic Letters</span>
+              </li>
               <li>
                 <i className="icon-heart">💖</i>
                 <span>Unlimited messages</span>

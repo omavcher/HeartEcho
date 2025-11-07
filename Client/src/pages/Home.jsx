@@ -17,7 +17,6 @@ export default function Home() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const [serverStatus, setServerStatus] = useState(null);
-  // Define your image array - replace these with your actual image paths
 
 
 
