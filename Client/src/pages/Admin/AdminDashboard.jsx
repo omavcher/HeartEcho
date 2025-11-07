@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import "./AdminDashboard.css";
 import axios from "axios";
 import {
@@ -57,33 +57,35 @@ const AdminDashboard = () => {
     type: "error",
   });
 
-  const getToken = () => {
+  // Memoized colors for charts
+  const colors = useMemo(() => [
+    "#0071e3", "#7b61ff", "#00c49f", "#ff9500", "#ff3b30", "#5856d6",
+    "#af52de", "#ff2d55", "#32d74b", "#ffcc00"
+  ], []);
+
+  const getToken = useCallback(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem("token") || "";
     }
     return "";
-  };
+  }, []);
 
-  const safeCalculatePercentage = (numerator, denominator) => {
+  // Utility functions
+  const safeCalculatePercentage = useCallback((numerator, denominator) => {
     if (denominator <= 0) return 0;
     return (numerator / denominator) * 100;
-  };
+  }, []);
 
-  const safeCalculateAverage = (total, count) => {
+  const safeCalculateAverage = useCallback((total, count) => {
     if (count <= 0) return 0;
     return total / count;
-  };
+  }, []);
 
-  const processDashboardData = (data) => {
+  // Data processing
+  const processDashboardData = useCallback((data) => {
     const totalUsers = data.userEngagement?.length || 0;
-    
-    // Active users from the API response
     const activeUsers = data.activeUsers || 0;
-    
-    // Calculate total revenue from payments
     const totalRevenue = data.payments?.reduce((sum, payment) => sum + (payment.rupees || 0), 0) || 0;
-    
-    // Calculate total messages from messageQuota
     const totalMessages = data.messageQuota?.reduce((sum, quota) => sum + (quota.count || 0), 0) || 0;
 
     return {
@@ -92,25 +94,23 @@ const AdminDashboard = () => {
       totalRevenue,
       messagesSent: totalMessages,
     };
-  };
+  }, []);
 
-  const processGraphData = (data) => {
-    // Format role breakdown data
+  const processGraphData = useCallback((data) => {
     const subscribersCount = data.userEngagement?.filter(u => u.totalPayments > 0).length || 0;
     const freeUsersCount = (data.userEngagement?.length || 0) - subscribersCount;
+    
     const roleBreakdown = [
       { name: "Subscribers", value: subscribersCount },
       { name: "Free Users", value: freeUsersCount }
     ];
 
-    // Format payments data for chart
     const paymentsData = data.payments?.map(payment => ({
       name: `Payment ${payment._id?.slice(-4) || ''}`,
       value: payment.rupees || 0,
       date: payment.date ? new Date(payment.date).toLocaleDateString() : 'Unknown date'
     })) || [];
 
-    // Format message quota data
     const messageQuotaData = data.messageQuota
       ?.sort((a, b) => (b.count || 0) - (a.count || 0))
       .slice(0, 10)
@@ -120,13 +120,11 @@ const AdminDashboard = () => {
         user: quota.user?.name || "Unknown"
       })) || [];
 
-    // Format revenue trend
     const revenueTrend = data.revenueTrend?.map(item => ({
       date: item._id ? new Date(item._id).toLocaleDateString() : 'Unknown date',
       revenue: item.totalRevenue || 0
     })) || [];
 
-    // Format user engagement
     const userEngagement = data.userEngagement?.map(user => ({
       name: user.name || 'Unknown',
       messages: user.totalMessages || 0,
@@ -141,8 +139,9 @@ const AdminDashboard = () => {
       revenueTrend,
       userEngagement
     };
-  };
+  }, []);
 
+  // Data fetching
   const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
@@ -152,7 +151,10 @@ const AdminDashboard = () => {
       const response = await axios.post(
         `${api.Url}/admin/dashboard-data`,
         { timePeriod },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 10000
+        }
       );
 
       const dashboardData = processDashboardData(response.data);
@@ -168,36 +170,36 @@ const AdminDashboard = () => {
       });
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
-      setError(err.message);
+      const errorMessage = err.response?.data?.message || err.message || "Failed to load dashboard data";
+      setError(errorMessage);
       setNotification({
         show: true,
-        message: "Failed to load dashboard data",
+        message: errorMessage,
         type: "error",
       });
     } finally {
       setLoading(false);
     }
-  }, [timePeriod, refresh]);
+  }, [timePeriod, getToken, processDashboardData, processGraphData]);
 
+  // Effects
   useEffect(() => {
     fetchDashboardData();
+  }, [fetchDashboardData]);
 
-    const interval = setInterval(() => {
-      fetchDashboardData();
-    }, 30000);
-
+  useEffect(() => {
+    const interval = setInterval(fetchDashboardData, 30000);
     return () => clearInterval(interval);
   }, [fetchDashboardData]);
 
-  const colors = ["#cf4185", "#00c49f", "#4a90e2", "#ffcc00", "#ff4b5c", "#6ab0ff"];
-
+  // Custom Tooltip Component
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
         <div className="custom-tooltip">
           <p className="tooltip-label">{label}</p>
           {payload.map((entry, index) => (
-            <p key={`tooltip-item-${index}`} style={{ color: entry.color }}>
+            <p key={`tooltip-${index}`} style={{ color: entry.color }}>
               {entry.name}: {entry.value}
             </p>
           ))}
@@ -207,6 +209,7 @@ const AdminDashboard = () => {
     return null;
   };
 
+  // Event Handlers
   const handleRefresh = () => {
     setRefresh(prev => !prev);
   };
@@ -219,6 +222,7 @@ const AdminDashboard = () => {
     setNotification(prev => ({ ...prev, show: false }));
   };
 
+  // Loading and Error States
   if (loading) {
     return (
       <div className="dash-loading">
@@ -231,12 +235,14 @@ const AdminDashboard = () => {
   if (error) {
     return (
       <div className="dash-error">
-        <p>Error: {error}</p>
+        <div className="error-icon">⚠️</div>
+        <h3>Unable to Load Dashboard</h3>
+        <p>{error}</p>
         <button 
           className="dash-retry-button" 
           onClick={fetchDashboardData}
         >
-          Retry
+          Try Again
         </button>
       </div>
     );
@@ -252,15 +258,11 @@ const AdminDashboard = () => {
       />
 
       <div className="dash-header">
-        <h2 className="dash-title">Admin Dashboard</h2>
+        <div className="dash-header-content">
+          <h2 className="dash-title">Dashboard Overview</h2>
+          <p className="dash-subtitle">Real-time analytics and insights</p>
+        </div>
         <div className="dash-header-actions">
-          <button 
-            className="dash-refresh-button" 
-            onClick={handleRefresh}
-            disabled={loading}
-          >
-            <IoMdRefresh /> Refresh Data
-          </button>
           <select 
             className="dash-time-period-select" 
             value={timePeriod} 
@@ -271,87 +273,148 @@ const AdminDashboard = () => {
             <option value="week">Last 7 Days</option>
             <option value="month">Last 30 Days</option>
           </select>
+          <button 
+            className={`dash-refresh-button ${loading ? 'loading' : ''}`} 
+            onClick={handleRefresh}
+            disabled={loading}
+          >
+            <IoMdRefresh className={loading ? 'spinning' : ''} /> 
+            {loading ? 'Refreshing...' : 'Refresh Data'}
+          </button>
         </div>
       </div>
 
+      {/* Stats Grid */}
       <div className="dash-stats-grid">
         <div className="dash-stat-card">
-          <FaUsers className="dash-icon users" />
-          <div className="dash-stat-content">
+          <div className="stat-card-header">
+            <div className="stat-icon-wrapper users">
+              <FaUsers className="stat-icon" />
+            </div>
+            <div className="stat-trend positive">+12%</div>
+          </div>
+          <div className="stat-card-content">
             <h3>Total Users</h3>
-            <p>{statsData.totalUsers}</p>
-            <small>Active: {statsData.activeUsers}</small>
+            <p className="stat-value">{statsData.totalUsers.toLocaleString()}</p>
+            <div className="stat-meta">
+              <span className="stat-change">
+                {statsData.activeUsers} active users
+              </span>
+            </div>
           </div>
         </div>
+
         <div className="dash-stat-card">
-          <FaUserCheck className="dash-icon active-users" />
-          <div className="dash-stat-content">
+          <div className="stat-card-header">
+            <div className="stat-icon-wrapper active-users">
+              <FaUserCheck className="stat-icon" />
+            </div>
+            <div className="stat-trend positive">+8%</div>
+          </div>
+          <div className="stat-card-content">
             <h3>Active Users</h3>
-            <p>{statsData.activeUsers}</p>
-            <small>
-              {safeCalculatePercentage(statsData.activeUsers, statsData.totalUsers).toFixed(1)}% of total
-            </small>
+            <p className="stat-value">{statsData.activeUsers.toLocaleString()}</p>
+            <div className="stat-meta">
+              <span className="stat-change">
+                {safeCalculatePercentage(statsData.activeUsers, statsData.totalUsers).toFixed(1)}% of total
+              </span>
+            </div>
           </div>
         </div>
+
         <div className="dash-stat-card">
-          <FaEnvelope className="dash-icon messages" />
-          <div className="dash-stat-content">
+          <div className="stat-card-header">
+            <div className="stat-icon-wrapper messages">
+              <FaEnvelope className="stat-icon" />
+            </div>
+            <div className="stat-trend positive">+23%</div>
+          </div>
+          <div className="stat-card-content">
             <h3>Messages Sent</h3>
-            <p>{statsData.messagesSent}</p>
-            <small>
-              Avg: {safeCalculateAverage(statsData.messagesSent, statsData.activeUsers).toFixed(1)} per user
-            </small>
+            <p className="stat-value">{statsData.messagesSent.toLocaleString()}</p>
+            <div className="stat-meta">
+              <span className="stat-change">
+                Avg: {safeCalculateAverage(statsData.messagesSent, statsData.activeUsers).toFixed(1)} per user
+              </span>
+            </div>
           </div>
         </div>
+
         <div className="dash-stat-card">
-          <FaMoneyBillWave className="dash-icon revenue" />
-          <div className="dash-stat-content">
+          <div className="stat-card-header">
+            <div className="stat-icon-wrapper revenue">
+              <FaMoneyBillWave className="stat-icon" />
+            </div>
+            <div className="stat-trend positive">+15%</div>
+          </div>
+          <div className="stat-card-content">
             <h3>Total Revenue</h3>
-            <p>₹{statsData.totalRevenue.toLocaleString()}</p>
-            <small>
-              Avg: ₹{safeCalculateAverage(statsData.totalRevenue, statsData.totalUsers).toFixed(2)} per user
-            </small>
+            <p className="stat-value">₹{statsData.totalRevenue.toLocaleString()}</p>
+            <div className="stat-meta">
+              <span className="stat-change">
+                Avg: ₹{safeCalculateAverage(statsData.totalRevenue, statsData.totalUsers).toFixed(2)} per user
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
+      {/* Charts Grid */}
       <div className="dash-charts-grid">
         <div className="dash-chart-card">
-          <h3><FaChartPie /> User Distribution</h3>
+          <div className="chart-header">
+            <FaChartPie className="chart-icon" />
+            <h3>User Distribution</h3>
+          </div>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
                 data={graphData.roleBreakdown}
                 cx="50%"
                 cy="50%"
-                outerRadius={80}
+                outerRadius={100}
                 innerRadius={60}
-                paddingAngle={5}
+                paddingAngle={2}
                 dataKey="value"
-                label={({ name, percent }) => `${name}\n${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                 labelLine={false}
               >
                 {graphData.roleBreakdown.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={colors[index % colors.length]} 
+                    stroke="var(--card-bg)"
+                    strokeWidth={2}
+                  />
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
-              <Legend />
             </PieChart>
           </ResponsiveContainer>
         </div>
 
         <div className="dash-chart-card">
-          <h3><FaChartLine /> Revenue Trend</h3>
+          <div className="chart-header">
+            <FaChartLine className="chart-icon" />
+            <h3>Revenue Trend</h3>
+          </div>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={graphData.revenueTrend}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
+              <defs>
+                <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#0071e3" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#0071e3" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
               <XAxis 
                 dataKey="date" 
-                tick={{ fill: '#666' }}
+                tick={{ fill: 'var(--text-secondary)' }}
+                tickLine={{ stroke: 'var(--border-light)' }}
               />
               <YAxis 
-                tick={{ fill: '#666' }}
+                tick={{ fill: 'var(--text-secondary)' }}
+                tickLine={{ stroke: 'var(--border-light)' }}
                 tickFormatter={(value) => `₹${value}`}
               />
               <Tooltip 
@@ -361,25 +424,30 @@ const AdminDashboard = () => {
               <Area
                 type="monotone"
                 dataKey="revenue"
-                stroke="#4a90e2"
-                fill="#4a90e2"
-                fillOpacity={0.2}
+                stroke="#0071e3"
+                fill="url(#revenueGradient)"
+                strokeWidth={2}
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="dash-chart-card">
-          <h3><FaChartBar /> User Engagement</h3>
+        <div className="dash-chart-card full-width">
+          <div className="chart-header">
+            <FaChartBar className="chart-icon" />
+            <h3>User Engagement</h3>
+          </div>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={graphData.userEngagement}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
               <XAxis 
                 dataKey="name" 
-                tick={{ fill: '#666' }}
+                tick={{ fill: 'var(--text-secondary)' }}
+                tickLine={{ stroke: 'var(--border-light)' }}
               />
               <YAxis 
-                tick={{ fill: '#666' }}
+                tick={{ fill: 'var(--text-secondary)' }}
+                tickLine={{ stroke: 'var(--border-light)' }}
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
@@ -391,13 +459,13 @@ const AdminDashboard = () => {
               />
               <Bar 
                 dataKey="payments" 
-                fill="#8884d8" 
+                fill="#7b61ff" 
                 name="Payments" 
                 radius={[4, 4, 0, 0]}
               />
               <Bar 
                 dataKey="logins" 
-                fill="#ffcc00" 
+                fill="#ff9500" 
                 name="Logins" 
                 radius={[4, 4, 0, 0]}
               />
@@ -405,23 +473,28 @@ const AdminDashboard = () => {
           </ResponsiveContainer>
         </div>
 
-        <div className="dash-chart-card">
-          <h3><FaRobot /> Top AI Friends</h3>
+        <div className="dash-chart-card full-width">
+          <div className="chart-header">
+            <FaRobot className="chart-icon" />
+            <h3>Top AI Friends</h3>
+          </div>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart 
               data={graphData.messageQuotaData}
               layout="vertical"
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-light)" />
               <XAxis 
                 type="number" 
-                tick={{ fill: '#666' }}
+                tick={{ fill: 'var(--text-secondary)' }}
+                tickLine={{ stroke: 'var(--border-light)' }}
               />
               <YAxis 
                 dataKey="name" 
                 type="category" 
                 width={80}
-                tick={{ fill: '#666' }}
+                tick={{ fill: 'var(--text-secondary)' }}
+                tickLine={{ stroke: 'var(--border-light)' }}
               />
               <Tooltip 
                 content={<CustomTooltip />}
@@ -432,7 +505,7 @@ const AdminDashboard = () => {
               />
               <Bar 
                 dataKey="value" 
-                fill="#ff4b5c" 
+                fill="#ff3b30" 
                 name="Messages"
                 radius={[0, 4, 4, 0]}
               />
