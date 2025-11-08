@@ -72,7 +72,7 @@ exports.loginUser = async (req, res) => {
     if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
 
     // 3️⃣ Generate JWT Token
-    const token = jwt.sign({ id: user._id , email:user.email}, process.env.JWT_SECRET, { expiresIn: "1d" });
+    const token = jwt.sign({ id: user._id , email:user.email}, process.env.JWT_SECRET, { expiresIn: "7d" });
 
     // 4️⃣ Send response (excluding sensitive data)
     res.json({
@@ -102,7 +102,7 @@ exports.googleLogin = async (req, res) => {
     
     if (user) {
       // User exists - proceed with login
-      const token = jwt.sign({ id: user._id , email:user.email}, process.env.JWT_SECRET, { expiresIn: "1d" });
+      const token = jwt.sign({ id: user._id , email:user.email}, process.env.JWT_SECRET, { expiresIn: "7d" });
       return res.json({ 
         token, 
         user: {
