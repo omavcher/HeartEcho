@@ -108,11 +108,9 @@ function Login() {
         setTimeout(() => router.push('/signup'), 1000);
       }
       else {
-        setNotification({ show: true, message: "Login Failed", type: "error" });
         setTimeout(() => router.push('/login'), 1000);
       }
     } catch (error) {
-      setNotification({ show: true, message: error.response?.data?.message || "Login Failed", type: "error" });
     }
     setIsLogin(false);
   };
