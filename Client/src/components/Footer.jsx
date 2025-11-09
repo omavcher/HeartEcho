@@ -44,6 +44,7 @@ function Footer() {
             <h3 className="links-heading">Resources</h3>
             <Link href="/faq" className="footer-link">FAQs</Link>
             <Link href="/blog" className="footer-link">Blog</Link>
+            <Link href="/referral" className="footer-link">Referral <br></br> Program</Link>
           </div>
         </div>
       </div>

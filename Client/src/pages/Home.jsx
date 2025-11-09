@@ -12,6 +12,7 @@ import HomeSubscriptions from "../components/HomeSubscriptions";
 import Link from "next/link";
 import api from "../config/api";
 import axios from "axios";
+import HomeReferralSection from "../components/HomeReferralSection";
 
 export default function Home() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -425,6 +426,11 @@ export default function Home() {
 
 
 
+
+<HomeReferralSection/>
+
+
+
         {/* Enhanced Social Proof Section with Ranking */}
         <section className="social-proof-section">
           <div className="social-proof-content">
@@ -473,51 +479,7 @@ export default function Home() {
               </div>
             </motion.div>
             
-            <div className="milestone-cards">
-              <motion.div 
-                className="milestone-card"
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                viewport={{ once: true }}
-              >
-                <h3>200K+</h3>
-                <p>Happy Users</p>
-              </motion.div>
-              
-              <motion.div 
-                className="milestone-card"
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                viewport={{ once: true }}
-              >
-                <h3>5M+</h3>
-                <p>Daily Conversations</p>
-              </motion.div>
-              
-              <motion.div 
-                className="milestone-card"
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                viewport={{ once: true }}
-              >
-                <h3>95%</h3>
-                <p>Positive Feedback</p>
-              </motion.div>
-              
-              <motion.div 
-                className="milestone-card"
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <h3>24/7</h3>
-                <p>AI Companionship</p>
-              </motion.div>
-            </div>
+           
             
             <motion.p 
               className="community-text"
@@ -536,9 +498,17 @@ export default function Home() {
           <HomeCosAi />
         </section>
 
+
+
+
+
         <section className="subscription-section">
           <HomeSubscriptions />
         </section>
+         
+  
+
+
 
         <section className="steps-section">
           <div className="section-header">

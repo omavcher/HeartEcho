@@ -17,7 +17,10 @@ import {
   FaShare,
   FaUsers,
   FaCoins,
-  FaPercentage
+  FaPercentage,
+  FaDownload,
+  FaRupeeSign,
+  FaIdCard
 } from "react-icons/fa";
 import {
   BarChart,
@@ -39,13 +42,15 @@ import api from "../../config/api";
 
 const ReferralAdmin = () => {
   const [creators, setCreators] = useState([]);
-  const [referralStats, setReferralStats] = useState([]);
+  const [referralStats, setReferralStats] = useState({});
+  const [referralAnalytics, setReferralAnalytics] = useState({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editCreator, setEditCreator] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [analyticsPeriod, setAnalyticsPeriod] = useState("30d");
 
   // New creator form state
   const [newCreator, setNewCreator] = useState({
@@ -80,7 +85,13 @@ const ReferralAdmin = () => {
         headers: { Authorization: `Bearer ${token}` },
         timeout: 10000
       });
-      setCreators(response.data.creators || []);
+      
+      if (response.data.success) {
+        setCreators(response.data.creators || []);
+      } else {
+        console.error("Error fetching creators:", response.data.message);
+        setCreators([]);
+      }
     } catch (error) {
       console.error("Error fetching creators:", error);
       setCreators([]);
@@ -94,49 +105,92 @@ const ReferralAdmin = () => {
         headers: { Authorization: `Bearer ${token}` },
         timeout: 10000
       });
-      setReferralStats(response.data.stats || []);
+      
+      if (response.data.success) {
+        setReferralStats(response.data.stats || {});
+      } else {
+        console.error("Error fetching referral stats:", response.data.message);
+        setReferralStats({});
+      }
     } catch (error) {
       console.error("Error fetching referral stats:", error);
-      setReferralStats([]);
+      setReferralStats({});
+    }
+  }, [getToken]);
+
+  const fetchReferralAnalytics = useCallback(async (period = "30d") => {
+    try {
+      const token = getToken();
+      const response = await axios.get(`${api.Url}/admin/referral-analytics?period=${period}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 10000
+      });
+      
+      if (response.data.success) {
+        setReferralAnalytics(response.data.analytics || {});
+      } else {
+        console.error("Error fetching referral analytics:", response.data.message);
+        setReferralAnalytics({});
+      }
+    } catch (error) {
+      console.error("Error fetching referral analytics:", error);
+      setReferralAnalytics({});
     }
   }, [getToken]);
 
   const fetchAllData = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([fetchCreators(), fetchReferralStats()]);
+      await Promise.all([
+        fetchCreators(), 
+        fetchReferralStats(),
+        fetchReferralAnalytics(analyticsPeriod)
+      ]);
     } catch (error) {
       console.error("Error refreshing data:", error);
     } finally {
       setRefreshing(false);
       setLoading(false);
     }
-  }, [fetchCreators, fetchReferralStats]);
+  }, [fetchCreators, fetchReferralStats, fetchReferralAnalytics, analyticsPeriod]);
 
   useEffect(() => {
     fetchAllData();
   }, [fetchAllData]);
 
-  // Statistics
+  // Refresh analytics when period changes
+  useEffect(() => {
+    if (!loading) {
+      fetchReferralAnalytics(analyticsPeriod);
+    }
+  }, [analyticsPeriod, fetchReferralAnalytics, loading]);
+
+  // Statistics from backend data
   const stats = useMemo(() => {
-    const totalCreators = creators.length;
-    const activeCreators = creators.filter(creator => creator.isActive !== false).length;
-    const totalReferrals = creators.reduce((sum, creator) => sum + (creator.referralCount || 0), 0);
-    const totalEarnings = creators.reduce((sum, creator) => sum + (creator.totalEarnings || 0), 0);
-    const pendingEarnings = creators.reduce((sum, creator) => sum + (creator.pendingEarnings || 0), 0);
-
+    const backendStats = referralStats.summary || {};
+    
     return {
-      totalCreators,
-      activeCreators,
-      totalReferrals,
-      totalEarnings,
-      pendingEarnings,
-      conversionRate: totalCreators > 0 ? (totalReferrals / totalCreators).toFixed(1) : 0
+      totalCreators: backendStats.totalCreators || creators.length,
+      activeCreators: backendStats.activeCreators || creators.filter(creator => creator.isActive !== false).length,
+      totalReferrals: backendStats.totalReferrals || creators.reduce((sum, creator) => sum + (creator.referralCount || 0), 0),
+      totalEarnings: backendStats.totalEarnings || creators.reduce((sum, creator) => sum + (creator.totalEarnings || 0), 0),
+      pendingEarnings: backendStats.pendingEarnings || creators.reduce((sum, creator) => sum + (creator.pendingEarnings || 0), 0),
+      conversionRate: backendStats.totalCreators > 0 ? 
+        ((backendStats.totalReferrals || 0) / backendStats.totalCreators).toFixed(1) : 0
     };
-  }, [creators]);
+  }, [referralStats, creators]);
 
-  // Chart data
+  // Chart data from backend
   const platformDistributionData = useMemo(() => {
+    if (referralStats.platformStats && referralStats.platformStats.length > 0) {
+      return referralStats.platformStats.map((platform, index) => ({
+        name: platform._id.charAt(0).toUpperCase() + platform._id.slice(1),
+        value: platform.count,
+        color: colors[index % colors.length]
+      }));
+    }
+
+    // Fallback to client-side calculation
     const platformCounts = creators.reduce((acc, creator) => {
       const platform = creator.platform || 'unknown';
       acc[platform] = (acc[platform] || 0) + 1;
@@ -148,9 +202,19 @@ const ReferralAdmin = () => {
       value,
       color: colors[index % colors.length]
     }));
-  }, [creators, colors]);
+  }, [referralStats.platformStats, creators, colors]);
 
   const topPerformersData = useMemo(() => {
+    if (referralStats.topPerformers && referralStats.topPerformers.length > 0) {
+      return referralStats.topPerformers.map(creator => ({
+        name: creator.name,
+        referrals: creator.referralCount || 0,
+        earnings: creator.totalEarnings || 0,
+        referralId: creator.referralId
+      }));
+    }
+
+    // Fallback to client-side calculation
     return creators
       .filter(creator => creator.referralCount > 0)
       .sort((a, b) => (b.referralCount || 0) - (a.referralCount || 0))
@@ -158,12 +222,20 @@ const ReferralAdmin = () => {
       .map(creator => ({
         name: creator.name,
         referrals: creator.referralCount || 0,
-        earnings: creator.totalEarnings || 0
+        earnings: creator.totalEarnings || 0,
+        referralId: creator.referralId
       }));
-  }, [creators]);
+  }, [referralStats.topPerformers, creators]);
 
   const referralTrendData = useMemo(() => {
-    // Mock data for referral trends - replace with actual API data
+    if (referralAnalytics.referralTrend && referralAnalytics.referralTrend.length > 0) {
+      return referralAnalytics.referralTrend.map(item => ({
+        day: new Date(item._id).toLocaleDateString('en-US', { weekday: 'short' }),
+        referrals: item.count
+      }));
+    }
+
+    // Fallback to mock data
     return [
       { day: 'Mon', referrals: 12 },
       { day: 'Tue', referrals: 19 },
@@ -173,7 +245,7 @@ const ReferralAdmin = () => {
       { day: 'Sat', referrals: 18 },
       { day: 'Sun', referrals: 14 }
     ];
-  }, []);
+  }, [referralAnalytics.referralTrend]);
 
   // Filter creators
   const filteredCreators = useMemo(() => {
@@ -181,7 +253,8 @@ const ReferralAdmin = () => {
       const matchesSearch = 
         creator.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         creator.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        creator.platform?.toLowerCase().includes(searchTerm.toLowerCase());
+        creator.platform?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        creator.referralId?.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesStatus = filterStatus === "all" || 
         (filterStatus === "active" ? creator.isActive !== false : creator.isActive === false);
@@ -203,20 +276,26 @@ const ReferralAdmin = () => {
         }
       );
       
-      setCreators([...creators, response.data.creator]);
-      setShowCreateModal(false);
-      setNewCreator({
-        name: "",
-        platform: "instagram",
-        username: "",
-        commissionRate: 15,
-        email: "",
-        phone: "",
-        notes: ""
-      });
+      if (response.data.success) {
+        setCreators([...creators, response.data.creator]);
+        setShowCreateModal(false);
+        setNewCreator({
+          name: "",
+          platform: "instagram",
+          username: "",
+          commissionRate: 15,
+          email: "",
+          phone: "",
+          notes: ""
+        });
+        // Refresh stats after creating new creator
+        fetchReferralStats();
+      } else {
+        alert(response.data.message || "Failed to create creator.");
+      }
     } catch (error) {
       console.error("Error creating creator:", error);
-      alert("Failed to create creator.");
+      alert(error.response?.data?.message || "Failed to create creator.");
     }
   };
 
@@ -232,13 +311,19 @@ const ReferralAdmin = () => {
         }
       );
       
-      setCreators(creators.map(creator => 
-        creator._id === editCreator._id ? response.data.creator : creator
-      ));
-      setEditCreator(null);
+      if (response.data.success) {
+        setCreators(creators.map(creator => 
+          creator._id === editCreator._id ? response.data.creator : creator
+        ));
+        setEditCreator(null);
+        // Refresh stats after editing creator
+        fetchReferralStats();
+      } else {
+        alert(response.data.message || "Failed to update creator.");
+      }
     } catch (error) {
       console.error("Error updating creator:", error);
-      alert("Failed to update creator.");
+      alert(error.response?.data?.message || "Failed to update creator.");
     }
   };
 
@@ -247,13 +332,20 @@ const ReferralAdmin = () => {
     if (confirmDelete) {
       try {
         const token = getToken();
-        await axios.delete(`${api.Url}/admin/referral-creators/${id}`, {
+        const response = await axios.delete(`${api.Url}/admin/referral-creators/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setCreators(creators.filter(creator => creator._id !== id));
+        
+        if (response.data.success) {
+          setCreators(creators.filter(creator => creator._id !== id));
+          // Refresh stats after deleting creator
+          fetchReferralStats();
+        } else {
+          alert(response.data.message || "Failed to delete creator.");
+        }
       } catch (error) {
         console.error("Error deleting creator:", error);
-        alert("Failed to delete creator.");
+        alert(error.response?.data?.message || "Failed to delete creator.");
       }
     }
   };
@@ -262,7 +354,6 @@ const ReferralAdmin = () => {
     try {
       const token = getToken();
       const updateData = {
-        ...creator,
         isActive: !creator.isActive
       };
 
@@ -274,24 +365,54 @@ const ReferralAdmin = () => {
         }
       );
       
-      setCreators(creators.map(c => 
-        c._id === creator._id ? response.data.creator : c
-      ));
+      if (response.data.success) {
+        setCreators(creators.map(c => 
+          c._id === creator._id ? response.data.creator : c
+        ));
+        // Refresh stats after toggling status
+        fetchReferralStats();
+      } else {
+        alert(response.data.message || "Failed to update creator status.");
+      }
     } catch (error) {
       console.error("Error toggling creator status:", error);
-      alert("Failed to update creator status.");
+      alert(error.response?.data?.message || "Failed to update creator status.");
     }
   };
 
-  const copyReferralLink = (creatorId) => {
-    const referralLink = `${window.location.origin}/signup?ref=${creatorId}`;
+  const handleProcessPayout = async (creatorId, amount) => {
+    try {
+      const token = getToken();
+      const response = await axios.post(
+        `${api.Url}/admin/referral-payout`,
+        { creatorId, amount },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      if (response.data.success) {
+        alert("Payout processed successfully!");
+        // Refresh data after payout
+        fetchAllData();
+      } else {
+        alert(response.data.message || "Failed to process payout.");
+      }
+    } catch (error) {
+      console.error("Error processing payout:", error);
+      alert(error.response?.data?.message || "Failed to process payout.");
+    }
+  };
+
+  const copyReferralLink = (referralId) => {
+    const referralLink = `${window.location.origin}/signup?ref=${referralId}`;
     navigator.clipboard.writeText(referralLink)
       .then(() => alert('Referral link copied to clipboard!'))
       .catch(err => console.error('Failed to copy link:', err));
   };
 
   const shareReferralLink = (creator) => {
-    const referralLink = `${window.location.origin}/signup?ref=${creator._id}`;
+    const referralLink = `${window.location.origin}/signup?ref=${creator.referralId}`;
     const message = `Join using my referral link! You'll get special benefits and I'll earn a commission. Link: ${referralLink}`;
     
     if (navigator.share) {
@@ -307,15 +428,23 @@ const ReferralAdmin = () => {
     }
   };
 
+  const copyReferralId = (referralId) => {
+    navigator.clipboard.writeText(referralId)
+      .then(() => alert('Referral ID copied to clipboard!'))
+      .catch(err => console.error('Failed to copy referral ID:', err));
+  };
+
+
   const generateReferralReport = () => {
     const reportData = creators.map(creator => ({
       Name: creator.name,
       Platform: creator.platform,
       Username: creator.username,
+      'Referral ID': creator.referralId,
       'Referral Count': creator.referralCount || 0,
       'Total Earnings': creator.totalEarnings || 0,
       'Pending Earnings': creator.pendingEarnings || 0,
-      'Commission Rate': `₹ {creator.commissionRate}%`,
+      'Commission Rate': `${creator.commissionRate}%`,
       Status: creator.isActive ? 'Active' : 'Inactive',
       'Join Date': new Date(creator.createdAt).toLocaleDateString()
     }));
@@ -342,7 +471,8 @@ const ReferralAdmin = () => {
           <p className="tooltip-label">{label}</p>
           {payload.map((entry, index) => (
             <p key={`tooltip-${index}`} style={{ color: entry.color }}>
-              {entry.name}: {entry.name.includes('Earnings') ? `₹ ${entry.value}` : entry.value}
+              {entry.name}: {entry.name.includes('Earnings') || entry.name.includes('Revenue') ? 
+                `₹${entry.value}` : entry.value}
             </p>
           ))}
         </div>
@@ -378,7 +508,7 @@ const ReferralAdmin = () => {
             <FaSync /> {refreshing ? 'Refreshing...' : 'Refresh'}
           </button>
           <button className="ref-action-button ref-report" onClick={generateReferralReport}>
-            <FaChartLine /> Export Report
+            <FaDownload /> Export Report
           </button>
           <button
             className="ref-action-button ref-add"
@@ -413,12 +543,12 @@ const ReferralAdmin = () => {
         </div>
         <div className="ref-stat-card">
           <div className="stat-icon-wrapper earnings">
-            <FaMoneyBillWave className="stat-icon" />
+            <FaRupeeSign className="stat-icon" />
           </div>
           <div className="stat-content">
             <h3>Total Earnings</h3>
-            <p className="stat-value">₹ {stats.totalEarnings}</p>
-            <span className="stat-change">₹ {stats.pendingEarnings} pending</span>
+            <p className="stat-value">₹{stats.totalEarnings}</p>
+            <span className="stat-change">₹{stats.pendingEarnings} pending</span>
           </div>
         </div>
         <div className="ref-stat-card">
@@ -495,7 +625,19 @@ const ReferralAdmin = () => {
         <div className="ref-chart-card">
           <div className="chart-header">
             <FaChartLine className="chart-icon" />
-            <h3>Referral Trends</h3>
+            <h3>
+              Referral Trends
+              <select 
+                value={analyticsPeriod} 
+                onChange={(e) => setAnalyticsPeriod(e.target.value)}
+                className="analytics-period-select"
+              >
+                <option value="7d">7D</option>
+                <option value="30d">30D</option>
+                <option value="90d">90D</option>
+                <option value="1y">1Y</option>
+              </select>
+            </h3>
           </div>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={referralTrendData}>
@@ -523,13 +665,45 @@ const ReferralAdmin = () => {
         </div>
       </div>
 
+      {/* Recent Referrals Section */}
+      {referralStats.recentReferrals && referralStats.recentReferrals.length > 0 && (
+        <div className="ref-recent-section">
+          <div className="ref-section-header">
+            <h3>Recent Referrals</h3>
+            <span className="ref-results-count">
+              Latest user signups via referral links
+            </span>
+          </div>
+          <div className="ref-recent-grid">
+            {referralStats.recentReferrals.slice(0, 6).map((referral, index) => (
+              <div key={index} className="ref-recent-card">
+                <div className="ref-recent-avatar">
+                  {referral.name?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <div className="ref-recent-info">
+                  <h4>{referral.name || 'Unknown User'}</h4>
+                  <p>{referral.email}</p>
+                  <small>Joined {new Date(referral.createdAt).toLocaleDateString()}</small>
+                </div>
+                <div className="ref-recent-referrer">
+                  <span>Via: {referral.referredBy?.name || 'Unknown Creator'}</span>
+                  {referral.referredBy?.referralId && (
+                    <small>ID: {referral.referredBy.referralId}</small>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Filters Section */}
       <div className="ref-filters-section">
         <div className="ref-search-container">
           <FaSearch className="ref-search-icon" />
           <input
             type="text"
-            placeholder="Search creators by name, platform, or username..."
+            placeholder="Search creators by name, platform, username, or referral ID..."
             className="ref-search-input"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -583,10 +757,12 @@ const ReferralAdmin = () => {
                       {creator.platform} • @{creator.username}
                     </p>
                   </div>
-                  <div className="ref-creator-badge">
+                  <div className={`ref-creator-badge ${creator.isActive ? 'active' : 'inactive'}`}>
                     {creator.isActive ? 'Active' : 'Inactive'}
                   </div>
                 </div>
+
+              
 
                 <div className="ref-creator-stats">
                   <div className="ref-stat-item">
@@ -595,7 +771,7 @@ const ReferralAdmin = () => {
                   </div>
                   <div className="ref-stat-item">
                     <span className="stat-label">Earnings</span>
-                    <span className="stat-value">${creator.totalEarnings || 0}</span>
+                    <span className="stat-value">₹{creator.totalEarnings || 0}</span>
                   </div>
                   <div className="ref-stat-item">
                     <span className="stat-label">Commission</span>
@@ -603,17 +779,32 @@ const ReferralAdmin = () => {
                   </div>
                 </div>
 
+                {creator.pendingEarnings > 0 && (
+                  <div className="ref-payout-section">
+                    <div className="payout-info">
+                      <FaCoins className="payout-icon" />
+                      <span>₹{creator.pendingEarnings} pending payout</span>
+                    </div>
+                    <button
+                      className="ref-action-button ref-payout"
+                      onClick={() => handleProcessPayout(creator._id, creator.pendingEarnings)}
+                    >
+                      Process Payout
+                    </button>
+                  </div>
+                )}
+
                 <div className="ref-referral-link">
                   <div className="link-container">
                     <FaLink className="link-icon" />
                     <span className="link-text">
-                      {`${window.location.origin}/signup?ref=${creator._id}`}
+                      {`${window.location.origin}/signup?ref=${creator.referralId}`}
                     </span>
                   </div>
                   <div className="link-actions">
                     <button
                       className="ref-action-button ref-copy"
-                      onClick={() => copyReferralLink(creator._id)}
+                      onClick={() => copyReferralLink(creator.referralId)}
                     >
                       <FaCopy /> Copy
                     </button>
@@ -702,8 +893,11 @@ const ReferralAdmin = () => {
                     value={newCreator.username}
                     onChange={(e) => setNewCreator({ ...newCreator, username: e.target.value })}
                     required
-                    placeholder="Platform username"
+                    placeholder="Platform username (used for referral ID generation)"
                   />
+                  <small className="form-hint">
+                    Referral ID will be generated automatically from username (e.g., omawchar007 → omaw_4242_ar007)
+                  </small>
                 </div>
 
                 <div className="form-group">
@@ -816,6 +1010,9 @@ const ReferralAdmin = () => {
                     onChange={(e) => setEditCreator({ ...editCreator, username: e.target.value })}
                     required
                   />
+                  <small className="form-hint">
+                    Changing username will regenerate the referral ID
+                  </small>
                 </div>
 
                 <div className="form-group">
@@ -856,6 +1053,22 @@ const ReferralAdmin = () => {
                     rows="3"
                   />
                 </div>
+
+                {editCreator.referralId && (
+                  <div className="form-group full-width">
+                    <label>Current Referral ID</label>
+                    <div className="current-referral-id">
+                      <code>{editCreator.referralId}</code>
+                      <button
+                        type="button"
+                        className="ref-action-button ref-copy-id"
+                        onClick={() => copyReferralId(editCreator.referralId)}
+                      >
+                        <FaCopy /> Copy
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="ref-modal-actions">

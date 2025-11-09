@@ -9,19 +9,34 @@ import Link from 'next/link';
 import PopNoti from '../components/PopNoti';
 import api from '../config/api';
 import axios from "axios";
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import Cookies from 'js-cookie';
 
 function Signup() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
   const [step, setStep] = useState(1);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [isGoogleSignup, setIsGoogleSignup] = useState(false);
   const [googleUserData, setGoogleUserData] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
+
+  // Get referral code from URL or local storage
+  const getInitialReferralCode = () => {
+    // First check URL parameters
+    const urlRef = searchParams.get('ref');
+    if (urlRef) {
+      localStorage.setItem('referralCode', urlRef);
+      return urlRef;
+    }
+    
+    // Then check local storage
+    const storedRef = localStorage.getItem('referralCode');
+    return storedRef || "";
+  };
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -31,7 +46,7 @@ function Signup() {
     confirmPassword: "",
     twoFA: false,
     profilePicture: "",
-    referralCode: "",
+    referralCode: getInitialReferralCode(),
     termsAccepted: false,
     subscribeNews: false,
     age: "",
@@ -64,6 +79,37 @@ function Signup() {
   };
 
   const googleClientId = "273920667679-85i343d6q2eibbc7e597ougsflo7u6c0.apps.googleusercontent.com";
+
+  // Handle URL changes and update referral code
+  useEffect(() => {
+    const handleUrlChange = () => {
+      const urlRef = searchParams.get('ref');
+      if (urlRef) {
+        localStorage.setItem('referralCode', urlRef);
+        setFormData(prev => ({
+          ...prev,
+          referralCode: urlRef
+        }));
+      }
+    };
+
+    handleUrlChange();
+  }, [searchParams]);
+
+  // Listen for storage changes (when referral code is updated from other tabs)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'referralCode') {
+        setFormData(prev => ({
+          ...prev,
+          referralCode: e.newValue || ""
+        }));
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const uploadToCloudinary = async (file) => {
     const formData = new FormData();
@@ -284,6 +330,26 @@ function Signup() {
       localStorage.setItem("token", res.data.token);
       Cookies.set("token", res.data.token, { expires: 7 });
 
+      // Track referral if referral code exists
+      if (formData.referralCode) {
+        try {
+          await axios.post(`${api.Url}/admin/referral-track`, {
+            creatorId: formData.referralCode,
+            userId: res.data.user.id,
+            signupAmount: 0 // You can set this based on your business logic
+          }, {
+            headers: { Authorization: `Bearer ${res.data.token}` },
+          });
+          console.log("Referral tracked successfully");
+        } catch (referralError) {
+          console.error("Error tracking referral:", referralError);
+          // Don't block signup if referral tracking fails
+        }
+      }
+
+      // Clear referral code from local storage after successful signup
+      localStorage.removeItem('referralCode');
+
       if (ip && coordinates) {
         await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform }, {
           headers: { Authorization: `Bearer ${res.data.token}` },
@@ -381,6 +447,25 @@ function Signup() {
       localStorage.setItem("user", JSON.stringify(res.data.user));
       localStorage.setItem("token", res.data.token);
       Cookies.set("token", res.data.token, { expires: 7 });
+
+      // Track referral if referral code exists
+      if (formData.referralCode) {
+        try {
+          await axios.post(`${api.Url}/admin/referral-track`, {
+            creatorId: formData.referralCode,
+            userId: res.data.user.id,
+            signupAmount: 0
+          }, {
+            headers: { Authorization: `Bearer ${res.data.token}` },
+          });
+          console.log("Referral tracked successfully");
+        } catch (referralError) {
+          console.error("Error tracking referral:", referralError);
+        }
+      }
+
+      // Clear referral code from local storage after successful signup
+      localStorage.removeItem('referralCode');
 
       if (ip && coordinates) {
         await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform }, {
@@ -513,6 +598,20 @@ function Signup() {
                     </div>
                   ))}
                 </div>
+              </div>
+              <div className="referral-section">
+                <input 
+                  type="text" 
+                  name="referralCode" 
+                  placeholder="Referral Code" 
+                  value={formData.referralCode}
+                  onChange={handleChange}
+                />
+                {formData.referralCode && (
+                  <small className="referral-note">
+                    Using referral code from: {localStorage.getItem('referralSource') || 'direct link'}
+                  </small>
+                )}
               </div>
               <label>
                 <input
@@ -752,7 +851,20 @@ function Signup() {
                         ))}
                       </div>
                     </div>
-                    <input type="text" name="referralCode" placeholder="Referral Code" onChange={handleChange} />
+                    <div className="referral-section">
+                      <input 
+                        type="text" 
+                        name="referralCode" 
+                        placeholder="Referral Code" 
+                        value={formData.referralCode}
+                        onChange={handleChange}
+                      />
+                      {formData.referralCode && (
+                        <small className="referral-note">
+                          Using referral code from: {localStorage.getItem('referralSource') || 'direct link'}
+                        </small>
+                      )}
+                    </div>
                     <label>
                       <input type="checkbox" name="termsAccepted" onChange={handleChange} required /> Agree to Terms & Conditions
                     </label>

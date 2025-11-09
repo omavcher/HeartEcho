@@ -10,6 +10,8 @@ export default function sitemap() {
     '/90s-era',
     '/chatbox',
     '/profile',
+    '/referral',
+    '/referral/login',
     '/privacy',
     '/terms',
     '/refund',

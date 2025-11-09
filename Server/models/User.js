@@ -24,11 +24,28 @@ const userSchema = new mongoose.Schema({
   messageQuota: { type: Number, default: 20 }, // Default free messages per day
   lastQuotaReset: { type: Date, default: Date.now }, // Track last reset date
 
+  // Referral System Fields
+  referredBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ReferralCreator',
+    default: null
+  },
+  referralSignupDate: {
+    type: Date,
+    default: null
+  },
+  hasUsedReferral: {
+    type: Boolean,
+    default: false
+  },
+
   payment_history: [{ type: mongoose.Schema.Types.ObjectId, ref: "Payment" }],
   login_details: [{ type: mongoose.Schema.Types.ObjectId, ref: "LoginDetail" }],
   tickets: [{ type: mongoose.Schema.Types.ObjectId, ref: "Ticket" }],
   chats: [{ type: mongoose.Schema.Types.ObjectId, ref: "Chat" }],
   ai_friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "AIFriend" }]
+}, {
+  timestamps: true
 });
 
 // Method to reset message quota once per day (Only for free users)
@@ -48,7 +65,7 @@ userSchema.methods.resetMessageQuota = function () {
   }
 };
 
-// Method to check if a user’s subscription is valid
+// Method to check if a user's subscription is valid
 userSchema.methods.isSubscriptionActive = function () {
   if (!this.subscriptionExpiry) return false; // No expiry date set means no active subscription
   return new Date() <= this.subscriptionExpiry; // Check if the current date is before expiry

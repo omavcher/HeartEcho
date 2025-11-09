@@ -380,3 +380,169 @@
     background: #ffffff;
   }
 }
+
+
+
+/* Earn Now Button Section */
+.earn-now-section {
+  padding: 20px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: auto;
+}
+
+.earn-now-button {
+  position: relative;
+  width: 100%;
+  background: linear-gradient(135deg, #FFD700, #FFA500, #FF8C00);
+  border: none;
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: #000;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+  animation: goldPulse 2s ease-in-out infinite;
+}
+
+.earn-now-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(255, 215, 0, 0.5);
+  animation: none;
+}
+
+.earn-now-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 15px rgba(255, 215, 0, 0.4);
+}
+
+.earn-now-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.earn-now-button:hover .earn-now-icon {
+  transform: scale(1.2) rotate(15deg);
+}
+
+.earn-now-label {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.side-menu-container.expanded .earn-now-label {
+  opacity: 1;
+  transform: translateX(0);
+  transition-delay: 0.1s;
+}
+
+.earn-now-glow {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.8s ease;
+  pointer-events: none;
+}
+
+.earn-now-button:hover .earn-now-glow {
+  left: 100%;
+}
+
+/* Gold Pulse Animation */
+@keyframes goldPulse {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 6px 25px rgba(255, 215, 0, 0.5);
+    transform: scale(1.02);
+  }
+}
+
+/* Mobile Responsive for Earn Now Button */
+@media (max-width: 768px) {
+  .earn-now-section {
+    padding: 16px 8px;
+  }
+  
+  .earn-now-button {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  
+  .earn-now-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .earn-now-section {
+    padding: 12px 6px;
+  }
+  
+  .earn-now-button {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+  
+  .earn-now-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .earn-now-button {
+    animation: none;
+    transition: none;
+  }
+  
+  .earn-now-button:hover {
+    transform: none;
+  }
+  
+  .earn-now-glow,
+  .earn-now-icon,
+  .earn-now-label {
+    transition: none;
+  }
+  
+  .side-menu-container.expanded .earn-now-label {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .earn-now-button {
+    background: #FFD700;
+    border: 2px solid #000;
+    color: #000;
+  }
+  
+  .earn-now-section {
+    border-top: 2px solid #ffffff;
+  }
+}

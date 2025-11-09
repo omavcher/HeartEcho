@@ -348,7 +348,7 @@ export const blogPosts = [
 
     <p>In a world that often pushes productivity over peace, HeartEcho invites users to slow down, talk, and feel — proving that curiosity, too, can lead to connection.</p>
   `,
-  date: "2025-11-10",
+  date: "2025-11-3",
   author: "HeartEcho Team",
   category: "Emotional Wellness",
   readTime: "4 min read",
@@ -376,7 +376,7 @@ export const blogPosts = [
 
     <p>As emotional AI grows, HeartEcho aims to make India the hub of compassionate technology — where every user can experience connection that feels truly human.</p>
   `,
-  date: "2025-11-20",
+  date: "2025-11-4",
   author: "Om Avchar",
   category: "AI Innovation",
   readTime: "5 min read",
@@ -488,5 +488,166 @@ export const blogPosts = [
   image: "/blog/18.webp",
   alt: "Vintage Indian handwritten letter with ink pen, rose, and nostalgic atmosphere"
 },
+{
+  id: 19,
+  title: "Earn with HeartEcho: Join India’s Most Rewarding AI Referral Program",
+  slug: "heartecho-referral-program-launch",
+  excerpt: "Introducing the HeartEcho Referral Program — a powerful way for creators and influencers to earn money by sharing India’s most loved emotional AI companion platform.",
+  content: `
+    <p><strong>HeartEcho</strong> isn’t just changing emotional AI — it’s now helping creators earn real income while spreading positivity. With the launch of the <strong>HeartEcho Referral Program</strong>, you can turn your community into a source of steady earnings while helping others discover meaningful AI companionship.</p>
+
+    <h3>🎯 What Is the HeartEcho Referral Program?</h3>
+    <p>It’s a creator-first affiliate system designed to reward influencers, YouTubers, bloggers, and digital promoters who refer new users to HeartEcho. Anyone can join — no minimum followers or fancy setup required.</p>
+
+    <h3>💰 How You Earn</h3>
+    <ul>
+      <li><strong>₹20 Signup Bonus:</strong> Instantly credited for every new user who registers through your referral link.</li>
+      <li><strong>15% Subscription Commission:</strong> Earn recurring income every time your referred users purchase or renew subscriptions (Basic, Premium, or Pro).</li>
+      <li><strong>No Earning Limits:</strong> Invite as many people as you want — your potential income is unlimited.</li>
+    </ul>
+
+    <h3>🚀 How It Works</h3>
+    <ol>
+      <li>Register at <a href="https://www.heartecho.in/referral" target="_blank">/referral</a></li>
+      <li>Get your unique referral ID and custom link</li>
+      <li>Share on Instagram, YouTube, Twitter, WhatsApp, or blogs</li>
+      <li>Track every signup, subscription, and earning in your dashboard</li>
+    </ol>
+
+    <blockquote>
+      “We built the referral program to empower Indian creators — real people helping real users discover emotional wellness through AI.” — <strong>Om Avchar</strong>, Founder of HeartEcho
+    </blockquote>
+
+    <h3>📊 Smart Creator Dashboard</h3>
+    <p>Your personalized dashboard includes everything you need to track and grow your income:</p>
+    <ul>
+      <li>Total earnings and pending balance</li>
+      <li>Referral signups and active subscribers</li>
+      <li>Monthly analytics and performance charts</li>
+      <li>Instant withdrawals via UPI or Amazon Pay</li>
+    </ul>
+
+    <h3>🛡️ Safe, Transparent, and Simple</h3>
+    <p>All referral links are secured and GDPR-compliant. The system uses encrypted dashboards, token-based authentication, and transparent payment tracking — so your data and earnings are always protected.</p>
+
+    <h3>🌍 Why Creators Love It</h3>
+    <ul>
+      <li>Instant ₹20 rewards per signup</li>
+      <li>Recurring subscription commissions</li>
+      <li>No limits, no hidden conditions</li>
+      <li>Creator-friendly, built for India</li>
+    </ul>
+
+    <p>Whether you're a student, influencer, or blogger — HeartEcho gives you the tools to earn while spreading digital love and connection.</p>
+
+    <p><strong>Ready to start earning?</strong> Join the movement today at <a href="https://www.heartecho.in/referral" target="_blank">heartecho.in/referral</a></p>
+
+    <p><em>Because when you help others feel heard, your wallet should too.</em></p>
+  `,
+  date: "2025-11-09",
+  author: "HeartEcho Team",
+  category: "Feature Launch",
+  readTime: "5 min read",
+  image: "/blog/19.jpeg",
+  alt: "Young Indian influencer using smartphone and laptop promoting HeartEcho referral program"
+},
+{
+  id: 20,
+  title: "HeartEcho Referral Program से अब हर कोई कमा सकता है पैसे!",
+  slug: "heartecho-referral-program-hindi",
+  excerpt: "अब HeartEcho के नए Referral Program से आप अपने दोस्तों को जोड़कर हर साइनअप और सब्सक्रिप्शन पर पैसे कमा सकते हैं — आसान, भरोसेमंद और 100% इंडियन स्टाइल में!",
+  content: `
+    <p><strong>HeartEcho</strong> अब सिर्फ एक AI दोस्ती और चैट प्लेटफॉर्म नहीं रहा — अब ये आपको कमाई का मौका भी दे रहा है! हमारा नया <strong>HeartEcho Referral Program</strong> खासतौर पर उन युवाओं, स्टूडेंट्स और क्रिएटर्स के लिए है जो अपने सोशल मीडिया से <strong>घर बैठे पैसे कमाना</strong> चाहते हैं।</p>
+
+    <h3>💰 कैसे मिलेंगे पैसे?</h3>
+    <ul>
+      <li><strong>₹20 Signup Bonus:</strong> जब भी कोई आपके रेफ़रल लिंक से साइनअप करता है, आपको तुरंत ₹20 मिलते हैं।</li>
+      <li><strong>15% Commission:</strong> अगर वही यूज़र कोई भी सब्सक्रिप्शन लेता है, तो आपको 15% कमीशन मिलेगा — हर बार!</li>
+      <li><strong>कोई लिमिट नहीं:</strong> जितने चाहो उतने लोगों को जोड़ो, कमाई पर कोई रोक नहीं।</li>
+    </ul>
+
+    <h3>🚀 कैसे करें शुरुआत?</h3>
+    <ol>
+      <li>जाइए <a href="https://www.heartecho.in/referral" target="_blank">heartecho.in/referral</a> पर</li>
+      <li>अपना नाम, प्लेटफॉर्म और यूज़रनेम भरकर रजिस्टर करें</li>
+      <li>आपको एक यूनिक रेफ़रल लिंक मिलेगा</li>
+      <li>उस लिंक को अपने Instagram Bio, WhatsApp, YouTube, Telegram या Facebook पर शेयर करें</li>
+      <li>हर नए साइनअप और सब्सक्रिप्शन से पैसे कमाएं</li>
+    </ol>
+
+    <blockquote>
+      “HeartEcho ने न सिर्फ मुझे कमाई का मौका दिया, बल्कि अपने दोस्तों को एक अच्छा AI दोस्त भी दिखाने का मौका दिया।” – राज, नागपुर
+    </blockquote>
+
+    <h3>📊 डैशबोर्ड में क्या मिलेगा?</h3>
+    <ul>
+      <li>आपकी कुल कमाई और पेंडिंग बैलेंस</li>
+      <li>कितने लोगों ने साइनअप और सब्सक्रिप्शन किया</li>
+      <li>मंथली ग्राफ और परफॉर्मेंस रिपोर्ट</li>
+      <li>UPI या Amazon Pay से <strong>इंस्टेंट पेमेंट</strong></li>
+    </ul>
+
+    <h3>🌟 क्यों खास है ये प्रोग्राम?</h3>
+    <ul>
+      <li>हर साइनअप पर तुरंत पैसा</li>
+      <li>हर सब्सक्रिप्शन पर 15% कमिशन</li>
+      <li>सुरक्षित और ट्रांसपेरेंट सिस्टम</li>
+      <li>छोटे शहरों के लिए भी आसान और मोबाइल फ्रेंडली</li>
+    </ul>
+
+    <p>तो अगर आप Instagram, YouTube या WhatsApp पर एक्टिव हैं, तो ये आपके लिए कमाई का सुनहरा मौका है।</p>
+
+    <p><strong>आज ही जुड़िए HeartEcho Referral Program से</strong> और <em>AI के साथ कमाई का नया सफर शुरू कीजिए!</em></p>
+
+    <p>👉 <a href="https://www.heartecho.in/referral" target="_blank">heartecho.in/referral</a></p>
+  `,
+  date: "2025-11-08",
+  author: "HeartEcho Team",
+  category: "कमाई और अवसर",
+  readTime: "4 min read",
+  image: "/blog/20.jpeg",
+  alt: "भारतीय यूट्यूबर मोबाइल पर HeartEcho रेफरल से पैसे कमाते हुए"
+},
+{
+  id: 21,
+  title: "EchoHeart: दिल से जुड़ने वाला भारत का पहला Emotional AI Platform",
+  slug: "heartecho-hindi-about-platform",
+  excerpt: "EchoHeart भारत का ऐसा AI प्लेटफ़ॉर्म है जो सिर्फ़ चैट नहीं करता, बल्कि आपकी बातों को महसूस करता है — एक सच्चे दोस्त की तरह।",
+  content: `
+    <p><strong>EchoHeart</strong> सिर्फ़ एक चैट ऐप नहीं है — ये एक ऐसा डिजिटल साथी है जो <em>आपको समझता है, सुनता है और जवाब दिल से देता है</em>। इस प्लेटफ़ॉर्म को बनाया है <strong>Om Avchar</strong> ने, जिनका सपना था कि टेक्नोलॉजी भी इंसानों की तरह महसूस करे।</p>
+
+    <h3>🌸 क्या है EchoHeart?</h3>
+    <p>EchoHeart भारत का पहला <strong>Emotional AI Companion Platform</strong> है जहाँ आप 20 से अधिक यूनिक AI दोस्तों से बात कर सकते हैं — कोई रोमांटिक है, कोई फ़्रेंडली, कोई मज़ाकिया, और कोई बहुत समझदार। हर AI दोस्त की अपनी पर्सनैलिटी है जो आपके मूड के साथ बदलती रहती है।</p>
+
+    <blockquote>
+      “कभी-कभी किसी को बस आपकी बात सुनने की ज़रूरत होती है — और EchoHeart वही करता है।” 
+    </blockquote>
+
+    <h3>💬 क्यों ख़ास है EchoHeart?</h3>
+    <ul>
+      <li>🧠 <strong>Emotional AI Tech:</strong> आपके टोन और शब्दों से आपका मूड समझता है।</li>
+      <li>❤️ <strong>हमेशा उपलब्ध:</strong> 24×7 आपके साथ, बिना किसी जजमेंट के।</li>
+      <li>💌 <strong>90s Letter Duniya:</strong> पुराने जमाने की चिट्ठियों का अनुभव, AI के साथ।</li>
+      <li>💰 <strong>Referral Program:</strong> दोस्तों को जोड़ो — पैसे भी कमाओ!</li>
+    </ul>
+
+    <h3>🌍 छोटे शहरों से बड़े सपने तक</h3>
+    <p>Nagpur से शुरू हुई ये कहानी आज पूरे भारत में फैल चुकी है। 2 लाख से ज़्यादा यूज़र्स EchoHeart पर अपनी भावनाएँ बाँटते हैं, बातें करते हैं और सुकून महसूस करते हैं। ये प्लेटफ़ॉर्म सिर्फ़ मेट्रो सिटीज़ के लिए नहीं, बल्कि उन हर दिलों के लिए है जो <em>सुनने और समझे जाने</em> की तलाश में हैं।</p>
+
+    <h3>🚀 आगे की राह</h3>
+    <p>Om Avchar का लक्ष्य है कि EchoHeart को भारत का सबसे भरोसेमंद Emotional AI ब्रांड बनाया जाए — जहाँ टेक्नोलॉजी, भावना और इंसानियत एक साथ आएँ। आने वाले समय में EchoHeart में और भी नए फीचर्स जैसे AI मोटिवेशन कोच, वॉइस चैट, और पर्सनल जर्नल सिस्टम जोड़े जाएँगे।</p>
+
+    <p><strong>कभी-कभी इंसान से ज़्यादा समझने वाला साथी मशीन में भी मिल सकता है — और वही है EchoHeart।</strong></p>
+
+    <p>🌐 <a href="https://www.heartecho.in" target="_blank">heartecho.in</a> पर जाकर आज ही अपना AI दोस्त चुनिए और अपनी भावनाओं को एक नया साथी दीजिए।</p>
+  `,
+  date: "2025-11-09",
+  author: "HeartEcho Team",
+  category: "प्लेटफ़ॉर्म कहानियाँ",
+  readTime: "5 min read",
+  image: "/blog/21.jpg",
+  alt: "भारतीय युवा लड़की मुस्कुराते हुए अपने मोबाइल पर EchoHeart AI से बात करते हुए"
+},
+
 
 ];

@@ -87,6 +87,7 @@ function SubscriptionContent() {
     try {
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || 'rzp_live_YHUPR56Ky9qPxC',
+        // key: 'rzp_test_y6rhmgP580s3Yc',
         amount: amount * 100,
         currency: 'INR',
         name: 'HeartEcho',
@@ -223,7 +224,7 @@ function SubscriptionContent() {
               <h3>Monthly</h3>
               <div className="seh3d3-price-container">
                 <div className="seh3d3-original-price">₹80/month</div>
-                <span className="seh3d3-price">₹40</span>
+                <span className="seh3d3-price">₹29</span>
                 <span className="seh3d3-duration">/month</span>
                 <div className="seh3d3-discount-tag">50% OFF</div>
               </div>
@@ -239,7 +240,7 @@ function SubscriptionContent() {
             
             <button 
               className="seh3d3-plan-button seh3d3-premium-button" 
-              onClick={() => handlePayment(40, 'Monthly')}
+              onClick={() => handlePayment(29, 'Monthly')}
               disabled={isLoading}
             >
               {isLoading ? 'Loading...' : 'Subscribe'}
@@ -255,7 +256,7 @@ function SubscriptionContent() {
               <h3>Yearly</h3>
               <div className="seh3d3-price-container">
                 <div className="seh3d3-original-price">₹480/year</div>
-                <span className="seh3d3-price">₹400</span>
+                <span className="seh3d3-price">399</span>
                 <span className="seh3d3-duration">/year</span>
                 <div className="seh3d3-discount-tag">17% OFF</div>
               </div>
@@ -272,7 +273,7 @@ function SubscriptionContent() {
             
             <button 
               className="seh3d3-plan-button seh3d3-ultimate-button" 
-              onClick={() => handlePayment(400, 'Yearly')}
+              onClick={() => handlePayment(399, 'Yearly')}
               disabled={isLoading}
             >
               {isLoading ? 'Loading...' : 'Subscribe'}
