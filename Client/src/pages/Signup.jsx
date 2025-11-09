@@ -24,6 +24,7 @@ function Signup() {
   const [googleUserData, setGoogleUserData] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [isClient, setIsClient] = useState(false);
+  const [referralCodeFromUrl, setReferralCodeFromUrl] = useState("");
 
   // Initialize state after component mounts on client
   const [formData, setFormData] = useState({
@@ -73,7 +74,7 @@ function Signup() {
     if (typeof window === 'undefined') return "";
     
     // First check URL parameters
-    const urlRef = searchParams.get('ref');
+    const urlRef = referralCodeFromUrl;
     if (urlRef) {
       localStorage.setItem('referralCode', urlRef);
       return urlRef;
@@ -84,27 +85,32 @@ function Signup() {
     return storedRef || "";
   };
 
-  // Set isClient to true when component mounts
+  // Set isClient to true when component mounts and get search params
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    // Get referral code from URL params
+    const ref = searchParams.get('ref');
+    if (ref) {
+      setReferralCodeFromUrl(ref);
+    }
+  }, [searchParams]);
 
   // Initialize form data with referral code after component mounts
   useEffect(() => {
-    if (isClient) {
+    if (isClient && referralCodeFromUrl) {
       setFormData(prev => ({
         ...prev,
         referralCode: getInitialReferralCode()
       }));
     }
-  }, [isClient]);
+  }, [isClient, referralCodeFromUrl]);
 
   // Handle URL changes and update referral code
   useEffect(() => {
     if (!isClient) return;
 
     const handleUrlChange = () => {
-      const urlRef = searchParams.get('ref');
+      const urlRef = referralCodeFromUrl;
       if (urlRef) {
         localStorage.setItem('referralCode', urlRef);
         setFormData(prev => ({
@@ -115,7 +121,7 @@ function Signup() {
     };
 
     handleUrlChange();
-  }, [searchParams, isClient]);
+  }, [referralCodeFromUrl, isClient]);
 
   // Listen for storage changes (when referral code is updated from other tabs)
   useEffect(() => {
@@ -674,7 +680,14 @@ function Signup() {
 
   // Don't render anything until client-side to avoid hydration issues
   if (!isClient) {
-    return null;
+    return (
+      <div className='signup-container'>
+        <div className='signup-loading'>
+          <div className="loader-signin"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
