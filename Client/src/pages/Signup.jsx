@@ -23,21 +23,9 @@ function Signup() {
   const [isGoogleSignup, setIsGoogleSignup] = useState(false);
   const [googleUserData, setGoogleUserData] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
+  const [isClient, setIsClient] = useState(false);
 
-  // Get referral code from URL or local storage
-  const getInitialReferralCode = () => {
-    // First check URL parameters
-    const urlRef = searchParams.get('ref');
-    if (urlRef) {
-      localStorage.setItem('referralCode', urlRef);
-      return urlRef;
-    }
-    
-    // Then check local storage
-    const storedRef = localStorage.getItem('referralCode');
-    return storedRef || "";
-  };
-
+  // Initialize state after component mounts on client
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -46,7 +34,7 @@ function Signup() {
     confirmPassword: "",
     twoFA: false,
     profilePicture: "",
-    referralCode: getInitialReferralCode(),
+    referralCode: "",
     termsAccepted: false,
     subscribeNews: false,
     age: "",
@@ -80,8 +68,41 @@ function Signup() {
 
   const googleClientId = "273920667679-85i343d6q2eibbc7e597ougsflo7u6c0.apps.googleusercontent.com";
 
+  // Get referral code from URL or local storage (client-side only)
+  const getInitialReferralCode = () => {
+    if (typeof window === 'undefined') return "";
+    
+    // First check URL parameters
+    const urlRef = searchParams.get('ref');
+    if (urlRef) {
+      localStorage.setItem('referralCode', urlRef);
+      return urlRef;
+    }
+    
+    // Then check local storage
+    const storedRef = localStorage.getItem('referralCode');
+    return storedRef || "";
+  };
+
+  // Set isClient to true when component mounts
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Initialize form data with referral code after component mounts
+  useEffect(() => {
+    if (isClient) {
+      setFormData(prev => ({
+        ...prev,
+        referralCode: getInitialReferralCode()
+      }));
+    }
+  }, [isClient]);
+
   // Handle URL changes and update referral code
   useEffect(() => {
+    if (!isClient) return;
+
     const handleUrlChange = () => {
       const urlRef = searchParams.get('ref');
       if (urlRef) {
@@ -94,10 +115,12 @@ function Signup() {
     };
 
     handleUrlChange();
-  }, [searchParams]);
+  }, [searchParams, isClient]);
 
   // Listen for storage changes (when referral code is updated from other tabs)
   useEffect(() => {
+    if (!isClient) return;
+
     const handleStorageChange = (e) => {
       if (e.key === 'referralCode') {
         setFormData(prev => ({
@@ -109,7 +132,7 @@ function Signup() {
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  }, [isClient]);
 
   const uploadToCloudinary = async (file) => {
     const formData = new FormData();
@@ -284,7 +307,7 @@ function Signup() {
   const [platform, setPlatform] = useState(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (isClient) {
       setPlatform(navigator.platform);
       
       fetch("https://api.ipify.org?format=json")
@@ -299,7 +322,7 @@ function Signup() {
         })
         .catch((error) => console.error("Error fetching location:", error));
     }
-  }, []);
+  }, [isClient]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -326,9 +349,14 @@ function Signup() {
         res = await axios.post(`${api.Url}/auth/register`, formData);
       }
       
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      localStorage.setItem("token", res.data.token);
-      Cookies.set("token", res.data.token, { expires: 7 });
+      if (isClient) {
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        localStorage.setItem("token", res.data.token);
+        Cookies.set("token", res.data.token, { expires: 7 });
+
+        // Clear referral code from local storage after successful signup
+        localStorage.removeItem('referralCode');
+      }
 
       // Track referral if referral code exists
       if (formData.referralCode) {
@@ -346,9 +374,6 @@ function Signup() {
           // Don't block signup if referral tracking fails
         }
       }
-
-      // Clear referral code from local storage after successful signup
-      localStorage.removeItem('referralCode');
 
       if (ip && coordinates) {
         await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform }, {
@@ -402,9 +427,11 @@ function Signup() {
       const checkUser = await axios.post(`${api.Url}/auth/google-login`, { email: userData.email });
       
       if (checkUser.data.user) {
-        localStorage.setItem("token", checkUser.data.token);
-        Cookies.set("token", checkUser.data.token, { expires: 7 });
-        localStorage.setItem("user", JSON.stringify(checkUser.data.user));
+        if (isClient) {
+          localStorage.setItem("token", checkUser.data.token);
+          Cookies.set("token", checkUser.data.token, { expires: 7 });
+          localStorage.setItem("user", JSON.stringify(checkUser.data.user));
+        }
         setNotification({ show: true, message: "Login successful!", type: "success" });
         router.push('/');
       } else {
@@ -444,9 +471,14 @@ function Signup() {
         password: Math.random().toString(36).slice(-8)
       });
 
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      localStorage.setItem("token", res.data.token);
-      Cookies.set("token", res.data.token, { expires: 7 });
+      if (isClient) {
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        localStorage.setItem("token", res.data.token);
+        Cookies.set("token", res.data.token, { expires: 7 });
+
+        // Clear referral code from local storage after successful signup
+        localStorage.removeItem('referralCode');
+      }
 
       // Track referral if referral code exists
       if (formData.referralCode) {
@@ -463,9 +495,6 @@ function Signup() {
           console.error("Error tracking referral:", referralError);
         }
       }
-
-      // Clear referral code from local storage after successful signup
-      localStorage.removeItem('referralCode');
 
       if (ip && coordinates) {
         await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform }, {
@@ -607,7 +636,7 @@ function Signup() {
                   value={formData.referralCode}
                   onChange={handleChange}
                 />
-                {formData.referralCode && (
+                {formData.referralCode && isClient && (
                   <small className="referral-note">
                     Using referral code from: {localStorage.getItem('referralSource') || 'direct link'}
                   </small>
@@ -642,6 +671,11 @@ function Signup() {
         return null;
     }
   };
+
+  // Don't render anything until client-side to avoid hydration issues
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <div className='signup-container'>
@@ -859,7 +893,7 @@ function Signup() {
                         value={formData.referralCode}
                         onChange={handleChange}
                       />
-                      {formData.referralCode && (
+                      {formData.referralCode && isClient && (
                         <small className="referral-note">
                           Using referral code from: {localStorage.getItem('referralSource') || 'direct link'}
                         </small>
