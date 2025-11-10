@@ -1,0 +1,578 @@
+/* Import Apple Font */
+@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap');
+
+/* CSS Variables for Consistent Styling */
+:root {
+  --primary-gradient-wffinf: linear-gradient(135deg, #7c0a41, #f20e61);
+  --primary-pink-wffinf: #d9448b;
+  --primary-red-wffinf: #dc3450;
+  --background-dark-wffinf: #000000;
+  --background-card-wffinf: #0a0a0a;
+  --background-hover-wffinf: #1a1a1a;
+  --border-color-wffinf: #2a2a2a;
+  --text-primary-wffinf: #ffffff;
+  --text-secondary-wffinf: rgba(255, 255, 255, 0.7);
+  --text-tertiary-wffinf: rgba(255, 255, 255, 0.5);
+  --status-pending-wffinf: #f59e0b;
+  --status-progress-wffinf: #3b82f6;
+  --status-resolved-wffinf: #10b981;
+  --border-radius-wffinf: 12px;
+  --spacing-xs-wffinf: 0.5rem;
+  --spacing-sm-wffinf: 0.75rem;
+  --spacing-md-wffinf: 1rem;
+  --spacing-lg-wffinf: 1.5rem;
+  --spacing-xl-wffinf: 2rem;
+  --font-family-wffinf: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  --transition-wffinf: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Header Styles */
+.profile-setting-header3-wffinf {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md-wffinf);
+  background: 'black';
+  border-bottom: 1px solid var(--border-color-wffinf);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.ticket-header-title-wffinf {
+  font-family: var(--font-family-wffinf);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary-wffinf);
+  margin: 0;
+}
+
+.back-button-wffinf {
+  background: transparent;
+  border: none;
+  padding: var(--spacing-xs-wffinf);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition-wffinf);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-button-wffinf:hover {
+  background: var(--background-hover-wffinf);
+  transform: translateX(-2px);
+}
+
+.back-icon-wffinf {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--text-primary-wffinf);
+}
+
+/* Main Container */
+.ticket-container-wffinf {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--spacing-md-wffinf);
+}
+
+/* Hero Section */
+.ticket-hero-wffinf {
+  text-align: center;
+  padding: var(--spacing-xl-wffinf) 0;
+  margin-bottom: var(--spacing-xl-wffinf);
+}
+
+.ticket-hero-icon-wffinf {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto var(--spacing-lg-wffinf);
+  background: var(--primary-gradient-wffinf);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ticket-hero-icon-wffinf svg {
+  width: 40px;
+  height: 40px;
+  color: var(--text-primary-wffinf);
+}
+
+.ticket-hero-title-wffinf {
+  font-family: var(--font-family-wffinf);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary-wffinf);
+  margin: 0 0 var(--spacing-sm-wffinf);
+  background: linear-gradient(135deg, var(--text-primary-wffinf), var(--primary-pink-wffinf));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ticket-hero-subtitle-wffinf {
+  font-family: var(--font-family-wffinf);
+  font-size: 1.1rem;
+  color: var(--text-secondary-wffinf);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Section Styles */
+.tickets-section-wffinf,
+.submit-ticket-section-wffinf {
+  margin-bottom: var(--spacing-xl-wffinf);
+}
+
+.section-header-wffinf {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg-wffinf);
+  flex-wrap: wrap;
+  gap: var(--spacing-sm-wffinf);
+}
+
+.section-title-wffinf {
+  font-family: var(--font-family-wffinf);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary-wffinf);
+  margin: 0;
+}
+
+.section-subtitle-wffinf {
+  font-family: var(--font-family-wffinf);
+  font-size: 0.95rem;
+  color: var(--text-secondary-wffinf);
+  margin: 0;
+  width: 100%;
+}
+
+.ticket-count-wffinf {
+  background: var(--background-hover-wffinf);
+  color: var(--primary-pink-wffinf);
+  padding: var(--spacing-xs-wffinf) var(--spacing-sm-wffinf);
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: var(--font-family-wffinf);
+}
+
+/* Ticket List */
+.ticket-list-wffinf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md-wffinf);
+}
+
+.ticket-card-wffinf {
+  background: var(--background-card-wffinf);
+  border: 1px solid var(--border-color-wffinf);
+  border-radius: var(--border-radius-wffinf);
+  padding: var(--spacing-lg-wffinf);
+  transition: var(--transition-wffinf);
+  position: relative;
+  overflow: hidden;
+}
+
+.ticket-card-wffinf::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--primary-gradient-wffinf);
+  opacity: 0;
+  transition: var(--transition-wffinf);
+}
+
+.ticket-card-wffinf:hover {
+  border-color: var(--primary-pink-wffinf);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(217, 68, 139, 0.1);
+}
+
+.ticket-card-wffinf:hover::before {
+  opacity: 1;
+}
+
+.ticket-header-wffinf {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-md-wffinf);
+  gap: var(--spacing-sm-wffinf);
+  flex-wrap: wrap;
+}
+
+.ticket-id-wffinf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs-wffinf);
+}
+
+.ticket-id-label-wffinf {
+  font-family: var(--font-family-wffinf);
+  font-size: 0.875rem;
+  color: var(--text-secondary-wffinf);
+  font-weight: 500;
+}
+
+.ticket-id-value-wffinf {
+  font-family: var(--font-family-wffinf);
+  font-size: 1rem;
+  color: var(--text-primary-wffinf);
+  font-weight: 600;
+  font-feature-settings: "tnum";
+  letter-spacing: 0.5px;
+}
+
+.ticket-status-wffinf {
+  padding: var(--spacing-xs-wffinf) var(--spacing-sm-wffinf);
+  border-radius: 20px;
+  font-family: var(--font-family-wffinf);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.status-pending-wffinf {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--status-pending-wffinf);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-progress-wffinf {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--status-progress-wffinf);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.status-resolved-wffinf {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--status-resolved-wffinf);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.ticket-issue-wffinf {
+  margin-bottom: var(--spacing-md-wffinf);
+}
+
+.ticket-issue-wffinf p {
+  font-family: var(--font-family-wffinf);
+  font-size: 0.95rem;
+  color: var(--text-secondary-wffinf);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.ticket-footer-wffinf {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--spacing-md-wffinf);
+  border-top: 1px solid var(--border-color-wffinf);
+}
+
+.ticket-date-wffinf {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs-wffinf);
+  font-family: var(--font-family-wffinf);
+  font-size: 0.875rem;
+  color: var(--text-tertiary-wffinf);
+}
+
+.date-icon-wffinf {
+  width: 14px;
+  height: 14px;
+}
+
+/* No Tickets State */
+.no-tickets-wffinf {
+  text-align: center;
+  padding: var(--spacing-xl-wffinf);
+  color: var(--text-secondary-wffinf);
+}
+
+.no-tickets-icon-wffinf {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--spacing-md-wffinf);
+  color: var(--text-tertiary-wffinf);
+}
+
+.no-tickets-icon-wffinf svg {
+  width: 100%;
+  height: 100%;
+}
+
+.no-tickets-wffinf h3 {
+  font-family: var(--font-family-wffinf);
+  font-size: 1.25rem;
+  color: var(--text-primary-wffinf);
+  margin-bottom: var(--spacing-sm-wffinf);
+}
+
+.no-tickets-wffinf p {
+  font-family: var(--font-family-wffinf);
+  margin: 0;
+}
+
+/* Ticket Form */
+.ticket-form-wffinf {
+  background: var(--background-card-wffinf);
+  border: 1px solid var(--border-color-wffinf);
+  border-radius: var(--border-radius-wffinf);
+  padding: var(--spacing-lg-wffinf);
+}
+
+.form-group-wffinf {
+  margin-bottom: var(--spacing-lg-wffinf);
+}
+
+.form-label-wffinf {
+  display: block;
+  font-family: var(--font-family-wffinf);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary-wffinf);
+  margin-bottom: var(--spacing-sm-wffinf);
+}
+
+.required-asterisk-wffinf {
+  color: var(--primary-red-wffinf);
+  margin-left: 2px;
+}
+
+.ticket-textarea-wffinf {
+  width: 100%;
+  background: var(--background-dark-wffinf);
+  border: 1px solid var(--border-color-wffinf);
+  border-radius: var(--border-radius-wffinf);
+  padding: var(--spacing-md-wffinf);
+  color: var(--text-primary-wffinf);
+  font-family: var(--font-family-wffinf);
+  font-size: 1rem;
+  line-height: 1.5;
+  resize: vertical;
+  transition: var(--transition-wffinf);
+  min-height: 120px;
+}
+
+.ticket-textarea-wffinf:focus {
+  outline: none;
+  border-color: var(--primary-pink-wffinf);
+  box-shadow: 0 0 0 2px rgba(217, 68, 139, 0.2);
+}
+
+.ticket-textarea-wffinf::placeholder {
+  color: var(--text-tertiary-wffinf);
+}
+
+.textarea-footer-wffinf {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--spacing-xs-wffinf);
+  font-family: var(--font-family-wffinf);
+  font-size: 0.875rem;
+  color: var(--text-tertiary-wffinf);
+}
+
+.char-count-wffinf {
+  font-feature-settings: "tnum";
+}
+
+.char-hint-wffinf {
+  font-style: italic;
+}
+
+/* Submit Button */
+.submit-ticket-button-wffinf {
+  width: 100%;
+  background: var(--primary-gradient-wffinf);
+  color: var(--text-primary-wffinf);
+  border: none;
+  border-radius: var(--border-radius-wffinf);
+  padding: var(--spacing-md-wffinf) var(--spacing-lg-wffinf);
+  font-family: var(--font-family-wffinf);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-wffinf);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm-wffinf);
+}
+
+.submit-ticket-button-wffinf:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(217, 68, 139, 0.4);
+}
+
+.submit-ticket-button-wffinf:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.button-icon-wffinf {
+  width: 20px;
+  height: 20px;
+}
+
+.button-loader-wffinf {
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin-wffinf 1s linear infinite;
+}
+
+@keyframes spin-wffinf {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Skeleton Loading */
+.ticket-skeleton-container-wffinf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md-wffinf);
+}
+
+.ticket-skeleton-wffinf {
+  background: var(--background-card-wffinf);
+  border: 1px solid var(--border-color-wffinf);
+  border-radius: var(--border-radius-wffinf);
+  padding: var(--spacing-lg-wffinf);
+}
+
+.skeleton-header-wffinf {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md-wffinf);
+}
+
+.skeleton-id-wffinf,
+.skeleton-status-wffinf,
+.skeleton-issue-wffinf,
+.skeleton-date-wffinf {
+  background: linear-gradient(90deg, var(--background-dark-wffinf) 25%, var(--background-hover-wffinf) 50%, var(--background-dark-wffinf) 75%);
+  background-size: 200% 100%;
+  animation: loading-wffinf 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-id-wffinf {
+  width: 120px;
+  height: 20px;
+}
+
+.skeleton-status-wffinf {
+  width: 80px;
+  height: 24px;
+  border-radius: 20px;
+}
+
+.skeleton-issue-wffinf {
+  width: 100%;
+  height: 16px;
+  margin-bottom: var(--spacing-sm-wffinf);
+}
+
+.skeleton-issue-wffinf:last-child {
+  width: 80%;
+}
+
+.skeleton-date-wffinf {
+  width: 150px;
+  height: 14px;
+}
+
+@keyframes loading-wffinf {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ticket-container-wffinf {
+    padding: var(--spacing-sm-wffinf);
+  }
+  
+  .ticket-hero-wffinf {
+    padding: var(--spacing-lg-wffinf) 0;
+  }
+  
+  .ticket-hero-title-wffinf {
+    font-size: 2rem;
+  }
+  
+  .section-header-wffinf {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .ticket-count-wffinf {
+    align-self: flex-start;
+  }
+  
+  .ticket-header-wffinf {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md-wffinf);
+  }
+  
+  .ticket-footer-wffinf {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm-wffinf);
+  }
+  
+  .ticket-form-wffinf {
+    padding: var(--spacing-md-wffinf);
+  }
+}
+
+@media (max-width: 480px) {
+  .ticket-hero-title-wffinf {
+    font-size: 1.75rem;
+  }
+  
+  .ticket-hero-subtitle-wffinf {
+    font-size: 1rem;
+  }
+  
+  .section-title-wffinf {
+    font-size: 1.25rem;
+  }
+  
+  .ticket-card-wffinf {
+    padding: var(--spacing-md-wffinf);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

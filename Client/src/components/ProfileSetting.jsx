@@ -2,6 +2,8 @@
 
 import '../styles/ProfileSetting.css';
 import '../styles/ProfileSetting2.css';
+import '../styles/ProfileSettingX.css';
+
 import BioSection from './ProfileSetting/BioSection';
 import AiAssSection from './ProfileSetting/AiAssSection';
 import ChatMaSection from './ProfileSetting/ChatMaSection';
@@ -41,7 +43,7 @@ function ProfileSetting({ selectedSettingId, onBackSBTNSelect }) {
       case 12:
         return <TicketSection onBackSBTNSelect={onBackSBTNSelect} />;
       default:
-        return <div>Select a setting to view details.</div>;
+        return <div className='profile-setting-cse4'>Select a setting to view details.</div>;
     }
   };
 

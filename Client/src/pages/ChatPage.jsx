@@ -5,6 +5,7 @@ import '../styles/ChatPage.css';
 import ChatsPeople from "../components/ChatsPeople";
 import ChatBox from "../components/ChatBox";
 import { useSearchParams } from "next/navigation";
+import AdvancedLoader from "../components/AdvancedLoader";
 
 function ChatPageContent() {
     const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
@@ -82,7 +83,7 @@ function ChatPageContent() {
 
 export default function ChatPage() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<AdvancedLoader/>}>
             <ChatPageContent />
         </Suspense>
     );

@@ -6,6 +6,7 @@ import "react-phone-number-input/style.css";
 import axios from "axios";
 import api from "../../config/api";
 import PopNoti from "../PopNoti";
+import './BioSection.css'
 
 function BioSection({ onBackSBTNSelect }) {
   const [userData, setUserData] = useState(null);
@@ -37,7 +38,6 @@ function BioSection({ onBackSBTNSelect }) {
   };
 
   useEffect(() => {
-    // Client-side only code
     setToken(typeof window !== 'undefined' ? localStorage.getItem("token") : null);
   }, []);
 
@@ -120,113 +120,132 @@ function BioSection({ onBackSBTNSelect }) {
 
   return (
     <>
-      <header className="profile-setting-header3">
+      <header className="profile-setting-header3-dwdjwd">
         <PopNoti
           message={notification.message}
           type={notification.type}
           isVisible={notification.show}
           onClose={() => setNotification({ ...notification, show: false })}
         />
-        <h2>My Account</h2>
-        <button onClick={() => onBackSBTNSelect(true)}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <h2 className="profile-header-title-dwdsjwd">My Account</h2>
+        <button className="back-button-dwdjwd" onClick={() => onBackSBTNSelect(true)}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="back-icon-dwdjwd">
             <path d="M4.99989 10.0001L4.99976 19L6.99976 19L6.99986 12.0001L17.1717 12L13.222 15.9498L14.6362 17.364L21.0001 11L14.6362 4.63605L13.222 6.05026L17.1717 10L4.99989 10.0001Z"></path>
           </svg>
         </button>
       </header>
 
-      <div className="bio-section-container3">
+      <div className="bio-section-container3-dwdjwd">
         {loading ? (
-          <div className="skeleton-loader">
-            <div className="skeleton-image"></div>
-            <div className="skeleton-text"></div>
-            <div className="skeleton-text small"></div>
+          <div className="skeleton-loader-dwdjwd">
+            <div className="skeleton-image-dwdjwd"></div>
+            <div className="skeleton-text-dwdjwd"></div>
+            <div className="skeleton-text-dwdjwd small-dwdjwd"></div>
           </div>
         ) : (
           <>
-            <div className="bio-section-user-detail-top">
-              {previewImage && (
-                <img
-                  src={previewImage instanceof File ? URL.createObjectURL(previewImage) : previewImage}
-                  alt="Profile Preview"
-                  style={{ width: "100px", height: "100px", borderRadius: "50%" }}
-                />
-              )}
-              <h4>{userData?.name}</h4>
-              <p>{userData?.email}</p>
+            <div className="bio-section-user-detail-top-dwdjwd">
+              <div className="profile-image-container-dwdjwd">
+                {previewImage && (
+                  <img
+                    src={previewImage instanceof File ? URL.createObjectURL(previewImage) : previewImage}
+                    alt="Profile Preview"
+                    className="profile-image-dwdjwd"
+                  />
+                )}
+                <div className="profile-image-overlay-dwdjwd">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setPreviewImage(e.target.files[0])}
+                    className="file-input-dwdjwd"
+                  />
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="camera-icon-dwdjwd">
+                    <path d="M12 9C13.6569 9 15 10.3431 15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9ZM12 17C14.7614 17 17 14.7614 17 12C17 9.23858 14.7614 7 12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17ZM12 4.5C17 4.5 21.27 7.61 23 12C21.27 16.39 17 19.5 12 19.5C7 19.5 2.73 16.39 1 12C2.73 7.61 7 4.5 12 4.5ZM3.18 12C4.83 15.36 8.24 17.5 12 17.5C15.76 17.5 19.17 15.36 20.82 12C19.17 8.64 15.76 6.5 12 6.5C8.24 6.5 4.83 8.64 3.18 12Z"></path>
+                  </svg>
+                </div>
+              </div>
+              <h4 className="user-name-dwdjwd">{userData?.name}</h4>
+              <p className="user-email-dwdjwd">{userData?.email}</p>
             </div>
 
-            <section className="bio-section-box4">
-              <label>
-                Upload Profile Picture:
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setPreviewImage(e.target.files[0])}
-                />
-              </label>
+            <section className="bio-section-box4-dwdjwd">
+              <div className="form-group-dwdjwd">
+                <label className="form-label-dwdjwd">
+                  Phone Number
+                </label>
+                <div className="phone-input-container-dwdjwd">
+                  <PhoneInput
+                    defaultCountry="IN"
+                    placeholder="Enter phone number"
+                    value={userData?.phone_number}
+                    onChange={(value) =>
+                      setUserData({ ...userData, phone_number: value })
+                    }
+                    className="phone-input"
+                  />
+                </div>
+              </div>
 
-              <label>
-                Phone Number:
-                <PhoneInput
-                  defaultCountry="IN"
-                  placeholder="Enter phone number"
-                  value={userData?.phone_number}
-                  onChange={(value) =>
-                    setUserData({ ...userData, phone_number: value })
-                  }
-                />
-              </label>
-
-              <label>
-                Gender:
+              <div className="form-group-dwdjwd">
+                <label className="form-label-dwdjwd">
+                  Gender
+                </label>
                 <select
                   disabled
                   value={userData?.gender}
                   onChange={(e) =>
                     setUserData({ ...userData, gender: e.target.value })
                   }
+                  className="form-select-dwdjwd"
                 >
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
                 </select>
-              </label>
+              </div>
 
-              <label>
-                Age:
+              <div className="form-group-dwdjwd">
+                <label className="form-label-dwdjwd">
+                  Age
+                </label>
                 <input
                   type="number"
                   value={userData?.age}
                   onChange={(e) =>
                     setUserData({ ...userData, age: e.target.value })
                   }
+                  className="form-input-dwdjwd"
+                  min="1"
+                  max="120"
                 />
-              </label>
+              </div>
             </section>
 
-            <h4 className="sign-fdwf4">
-              Interests: <p>You can choose multiple options</p>
-            </h4>
-            <div className="singip-instrwe">
-              <div className="emojis-dign">
+            <div className="interests-section-dwdjwd">
+              <h4 className="interests-title-dwdjwd">
+                Interests <span className="interests-subtitle-dwdjwd">You can choose multiple options</span>
+              </h4>
+              <div className="interests-grid-dwdjwd">
                 {options.interests.map(({ id, label, img }) => (
                   <div
                     key={id}
-                    className={`crete-3-box3s ${
-                      selectedInterests.includes(id) ? "selected-interest" : ""
+                    className={`interest-item-dwdjwd ${
+                      selectedInterests.includes(id) ? "interest-item-selected-dwdjwd" : ""
                     }`}
                     onClick={() => handleInterestSelect(id)}
                   >
-                    <img src={img} alt={label} />
-                    <h3>{label}</h3>
+                    <div className="interest-emoji-dwdjwd">
+                      <img src={img} alt={label} className="interest-image-dwdjwd" />
+                    </div>
+                    <h3 className="interest-label-dwdjwd">{label}</h3>
                   </div>
                 ))}
               </div>
             </div>
 
-            <button style={{marginTop:'1rem'}} className="otp-btn-singr" onClick={handleUpdateProfile} disabled={updating}>
-              {updating ? <span className="loader-signin"></span> : "Update Profile"}
+            <button className="update-button-dwdjwd" onClick={handleUpdateProfile} disabled={updating}>
+              {updating ? <span className="loader-signin-dwdjwd"></span> : "Update Profile"}
             </button>
           </>
         )}
