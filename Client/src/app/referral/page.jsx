@@ -224,7 +224,7 @@ const ReferralProgram = () => {
       if (response.data.success) {
         alert('Account created successfully! You can now login with your referral ID and password.');
         closeFormDialog();
-        router.push(`/referral/${response.data.creator.referralId}/login`);
+        router.push(`/referral/login`);
       } else {
         throw new Error(response.data.message || 'Submission failed');
       }
