@@ -245,7 +245,7 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
         variant="spinner"
         size="large"
         color="primary"
-        text={`Loading chat... ${loadingProgress}%`}
+        text={`Loading chat...`}
         overlay={false}
       />
     </div>
@@ -326,32 +326,46 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
 
           <div className="chat-messages" ref={chatContainerRef}>
             {messages.length === 0 ? (
-              <div className="empty-state">
-                <div className="welcome-message">
-                  <h3>Welcome to your chat with {userProfile?.name || "AI Companion"}! 👋</h3>
-                  <p>Start a conversation by sending a message below.</p>
-                  <div className="suggestion-chips">
-                    <button 
-                      className="suggestion-chip"
-                      onClick={() => setNewMessage("Hello! How are you?")}
-                    >
-                      Hello! How are you?
-                    </button>
-                    <button 
-                      className="suggestion-chip"
-                      onClick={() => setNewMessage("Tell me about yourself")}
-                    >
-                      Tell me about yourself
-                    </button>
-                    <button 
-                      className="suggestion-chip"
-                      onClick={() => setNewMessage("What can you help me with?")}
-                    >
-                      What can you help me with?
-                    </button>
-                  </div>
+              <div className="empty-state-wffinf">
+              <div className="welcome-message-wffinf">
+                <h3 className="welcome-title-wffinf">
+                  Welcome to your chat with {userProfile?.name || "AI Companion"}! <span className="welcome-emoji-wffinf">👋</span>
+                </h3>
+                <p className="welcome-subtitle-wffinf">
+                  Start a meaningful conversation by sending your first message below.
+                </p>
+                <div className="suggestion-chips-wffinf">
+                  <button 
+                    className="suggestion-chip-wffinf"
+                    onClick={() => setNewMessage("Hello! How are you doing today?")}
+                  >
+                    <span className="chip-icon-wffinf">💬</span>
+                    Hello! How are you doing today?
+                  </button>
+                  <button 
+                    className="suggestion-chip-wffinf"
+                    onClick={() => setNewMessage("Can you tell me about yourself and what you can do?")}
+                  >
+                    <span className="chip-icon-wffinf">🤖</span>
+                    Tell me about yourself
+                  </button>
+                  <button 
+                    className="suggestion-chip-wffinf"
+                    onClick={() => setNewMessage("What kind of conversations can we have?")}
+                  >
+                    <span className="chip-icon-wffinf">💡</span>
+                    What can you help me with?
+                  </button>
+                  <button 
+                    className="suggestion-chip-wffinf"
+                    onClick={() => setNewMessage("I'd like to talk about my day and feelings")}
+                  >
+                    <span className="chip-icon-wffinf">🌟</span>
+                    Share my thoughts
+                  </button>
                 </div>
               </div>
+            </div>
             ) : (
               messages.map((msg, index) => (
                 <div 

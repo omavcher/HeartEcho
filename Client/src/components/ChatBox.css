@@ -441,3 +441,284 @@
   }
 }
 
+
+
+/* Import Apple Font */
+@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap');
+
+/* CSS Variables for Consistent Styling */
+:root {
+  --primary-gradient-wffinf: linear-gradient(135deg, #7c0a41, #f20e61);
+  --primary-pink-wffinf: #d9448b;
+  --primary-red-wffinf: #dc3450;
+  --background-dark-wffinf: #000000;
+  --background-card-wffinf: #0a0a0a;
+  --background-hover-wffinf: #1a1a1a;
+  --border-color-wffinf: #2a2a2a;
+  --text-primary-wffinf: #ffffff;
+  --text-secondary-wffinf: rgba(255, 255, 255, 0.7);
+  --text-tertiary-wffinf: rgba(255, 255, 255, 0.5);
+  --border-radius-wffinf: 12px;
+  --spacing-xs-wffinf: 0.5rem;
+  --spacing-sm-wffinf: 0.75rem;
+  --spacing-md-wffinf: 1rem;
+  --spacing-lg-wffinf: 1.5rem;
+  --spacing-xl-wffinf: 2rem;
+  --font-family-wffinf: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  --transition-wffinf: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Empty State Container */
+.empty-state-wffinf {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: var(--spacing-xl-wffinf);
+  text-align: center;
+}
+
+.welcome-message-wffinf {
+  max-width: 500px;
+  width: 100%;
+  animation: fadeInUp-wffinf 0.6s ease-out;
+}
+
+@keyframes fadeInUp-wffinf {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Welcome Icon */
+.welcome-icon-wffinf {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto var(--spacing-lg-wffinf);
+  background: var(--primary-gradient-wffinf);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 25px rgba(217, 68, 139, 0.3);
+}
+
+.welcome-icon-wffinf svg {
+  width: 40px;
+  height: 40px;
+  color: var(--text-primary-wffinf);
+}
+
+/* Welcome Text */
+.welcome-title-wffinf {
+  font-family: var(--font-family-wffinf);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary-wffinf);
+  margin: 0 0 var(--spacing-sm-wffinf);
+  line-height: 1.3;
+}
+
+.welcome-emoji-wffinf {
+  display: inline-block;
+  animation: wave-wffinf 2s infinite;
+  transform-origin: 70% 70%;
+}
+
+@keyframes wave-wffinf {
+  0% { transform: rotate(0deg); }
+  10% { transform: rotate(14deg); }
+  20% { transform: rotate(-8deg); }
+  30% { transform: rotate(14deg); }
+  40% { transform: rotate(-4deg); }
+  50% { transform: rotate(10deg); }
+  60% { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.welcome-subtitle-wffinf {
+  font-family: var(--font-family-wffinf);
+  font-size: 1.1rem;
+  color: var(--text-secondary-wffinf);
+  margin: 0 0 var(--spacing-xl-wffinf);
+  line-height: 1.5;
+}
+
+/* Suggestion Chips */
+.suggestion-chips-wffinf {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-md-wffinf);
+  margin-bottom: var(--spacing-xl-wffinf);
+}
+
+.suggestion-chip-wffinf {
+  background: var(--background-card-wffinf);
+  border: 1px solid var(--border-color-wffinf);
+  border-radius: var(--border-radius-wffinf);
+  padding: var(--spacing-md-wffinf) var(--spacing-lg-wffinf);
+  color: var(--text-primary-wffinf);
+  font-family: var(--font-family-wffinf);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-wffinf);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm-wffinf);
+  text-align: left;
+  line-height: 1.4;
+}
+
+.suggestion-chip-wffinf:hover {
+  background: var(--background-hover-wffinf);
+  border-color: var(--primary-pink-wffinf);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(217, 68, 139, 0.2);
+}
+
+.suggestion-chip-wffinf:active {
+  transform: translateY(0);
+}
+
+.chip-icon-wffinf {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* Features List */
+.welcome-features-wffinf {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-lg-wffinf);
+  flex-wrap: wrap;
+  padding-top: var(--spacing-lg-wffinf);
+  border-top: 1px solid var(--border-color-wffinf);
+}
+
+.feature-item-wffinf {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm-wffinf);
+  font-family: var(--font-family-wffinf);
+  font-size: 0.9rem;
+  color: var(--text-secondary-wffinf);
+}
+
+.feature-icon-wffinf {
+  width: 16px;
+  height: 16px;
+  color: var(--primary-pink-wffinf);
+  flex-shrink: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .empty-state-wffinf {
+    padding: var(--spacing-lg-wffinf);
+    min-height: 50vh;
+  }
+  
+  .welcome-title-wffinf {
+    font-size: 1.5rem;
+  }
+  
+  .welcome-subtitle-wffinf {
+    font-size: 1rem;
+  }
+  
+  .suggestion-chips-wffinf {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm-wffinf);
+  }
+  
+  .suggestion-chip-wffinf {
+    padding: var(--spacing-md-wffinf);
+    font-size: 0.9rem;
+  }
+  
+  .welcome-features-wffinf {
+    gap: var(--spacing-md-wffinf);
+  }
+  
+  .feature-item-wffinf {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .empty-state-wffinf {
+    padding: var(--spacing-md-wffinf);
+  }
+  
+  .welcome-icon-wffinf {
+    width: 60px;
+    height: 60px;
+    margin-bottom: var(--spacing-md-wffinf);
+  }
+  
+  .welcome-icon-wffinf svg {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .welcome-title-wffinf {
+    font-size: 1.3rem;
+  }
+  
+  .welcome-subtitle-wffinf {
+    font-size: 0.95rem;
+    margin-bottom: var(--spacing-lg-wffinf);
+  }
+  
+  .welcome-features-wffinf {
+    flex-direction: column;
+    gap: var(--spacing-sm-wffinf);
+    align-items: center;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .welcome-emoji-wffinf {
+    animation: none;
+  }
+  
+  .welcome-message-wffinf {
+    animation: none;
+  }
+  
+  .suggestion-chip-wffinf:hover {
+    transform: none;
+  }
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .suggestion-chip-wffinf {
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(10px);
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .suggestion-chip-wffinf {
+    border-width: 2px;
+  }
+  
+  .welcome-features-wffinf {
+    border-top-width: 2px;
+  }
+}
+
