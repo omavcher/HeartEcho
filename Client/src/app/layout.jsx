@@ -52,7 +52,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'HeartEcho – India\'s Best AI GF/BF App | Emotional AI Companions',
     description: 'Explore a new way to connect. HeartEcho offers AI girlfriends and boyfriends with instant, lifelike responses. 200K+ users across India are already in love!',
-    images: ['https://heartecho.in/og-image.jpg'],
+    images: ['https://heartecho.in/og-image.jpg' ],
   }
 };
 

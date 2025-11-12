@@ -173,6 +173,7 @@ exports.AiFriendResponse = async (req, res) => {
         **User ke interests:** ${interests}  
 
         📝 **Rules for Reply:**  
+        Replay in short 
         1️⃣ **Jo bhi user bole, directly uska reply de.**  
         2️⃣ **Agar user ka message bada hai, toh thoda detailed aur fun reply de.**  
         3️⃣ **Agar user ek chhoti cheez bole (e.g. "tu bata apne bare mein"), toh seedha simple reply de.**  
