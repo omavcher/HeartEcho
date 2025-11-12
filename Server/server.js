@@ -24,7 +24,10 @@ app.use(cors({
 
 
 // Website reload configuration
-const url = 'https://heartecho.onrender.com';
+
+
+
+const url = process.env.RELOAD_URL;;
 // const url = 'https://heartecho-d851.onrender.com';
 const interval = 90000;
 
