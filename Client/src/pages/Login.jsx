@@ -151,7 +151,7 @@ function Login() {
           </div>
 
           <p className="signup-footerse">
-            © {new Date().getFullYear()} HeartEcho AI <br /> omawcharbusiness123@gmail.com
+            © {new Date().getFullYear()} HeartEcho AI <br /> heartecho.help@gmail.com
           </p>
         </div>
       </div>

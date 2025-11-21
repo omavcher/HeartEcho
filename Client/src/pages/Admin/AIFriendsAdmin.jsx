@@ -11,7 +11,11 @@ import {
   FaSync,
   FaDownload,
   FaChartPie,
-  FaFilter
+  FaFilter,
+  FaPlay,
+  FaTimes,
+  FaImage,
+  FaVideo
 } from "react-icons/fa";
 import {
   PieChart,
@@ -34,6 +38,7 @@ const AIFriendsAdmin = () => {
   const [jsonInput, setJsonInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [previewMedia, setPreviewMedia] = useState({ type: null, url: null });
 
   // Memoized colors for charts
   const colors = useMemo(() => [
@@ -120,6 +125,62 @@ const AIFriendsAdmin = () => {
     });
   }, [aiFriends, selectedGender, selectedStatus, searchTerm]);
 
+  // Media Preview Handlers
+  const handleImagePreview = (url) => {
+    setPreviewMedia({ type: 'image', url });
+  };
+
+  const handleVideoPreview = (url) => {
+    setPreviewMedia({ type: 'video', url });
+  };
+
+  const closePreview = () => {
+    setPreviewMedia({ type: null, url: null });
+  };
+
+  // Media Array Handlers
+  const addImageGalleryItem = () => {
+    setEditFriend(prev => ({
+      ...prev,
+      img_gallery: [...(prev.img_gallery || []), ""]
+    }));
+  };
+
+  const updateImageGalleryItem = (index, value) => {
+    setEditFriend(prev => ({
+      ...prev,
+      img_gallery: prev.img_gallery.map((item, i) => i === index ? value : item)
+    }));
+  };
+
+  const removeImageGalleryItem = (index) => {
+    setEditFriend(prev => ({
+      ...prev,
+      img_gallery: prev.img_gallery.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addVideoGalleryItem = () => {
+    setEditFriend(prev => ({
+      ...prev,
+      video_gallery: [...(prev.video_gallery || []), ""]
+    }));
+  };
+
+  const updateVideoGalleryItem = (index, value) => {
+    setEditFriend(prev => ({
+      ...prev,
+      video_gallery: prev.video_gallery.map((item, i) => i === index ? value : item)
+    }));
+  };
+
+  const removeVideoGalleryItem = (index) => {
+    setEditFriend(prev => ({
+      ...prev,
+      video_gallery: prev.video_gallery.filter((_, i) => i !== index)
+    }));
+  };
+
   // Handlers
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this AI Friend?");
@@ -140,7 +201,9 @@ const AIFriendsAdmin = () => {
   const handleEdit = (friend) => {
     setEditFriend({ 
       ...friend,
-      interests: friend.interests?.join(", ") || ""
+      interests: friend.interests?.join(", ") || "",
+      img_gallery: friend.img_gallery || [],
+      video_gallery: friend.video_gallery || []
     });
   };
 
@@ -150,7 +213,9 @@ const AIFriendsAdmin = () => {
       const token = getToken();
       const submissionData = {
         ...editFriend,
-        interests: editFriend.interests.split(",").map(item => item.trim()).filter(item => item)
+        interests: editFriend.interests.split(",").map(item => item.trim()).filter(item => item),
+        img_gallery: editFriend.img_gallery.filter(item => item.trim() !== ""),
+        video_gallery: editFriend.video_gallery.filter(item => item.trim() !== "")
       };
 
       const response = await axios.put(
@@ -234,6 +299,23 @@ const AIFriendsAdmin = () => {
 
   return (
     <div className="fif-container">
+      {/* Media Preview Modal */}
+      {previewMedia.type && (
+        <div className="fif-media-preview">
+          <div className="fif-media-preview-content">
+            <button className="fif-media-close" onClick={closePreview}>
+              <FaTimes />
+            </button>
+            {previewMedia.type === 'image' && (
+              <img src={previewMedia.url} alt="Preview" className="fif-preview-image" />
+            )}
+            {previewMedia.type === 'video' && (
+              <video src={previewMedia.url} controls autoPlay className="fif-preview-video" />
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <div className="fif-header">
         <div className="fif-header-content">
@@ -410,6 +492,15 @@ const AIFriendsAdmin = () => {
     "description": "Friendly and caring AI companion",
     "initial_message": "Hello! How can I help you today?",
     "avatar_img": "https://example.com/avatar.jpg",
+    "avatar_motion_video": "https://example.com/motion-video.mp4",
+    "img_gallery": [
+      "https://example.com/gallery1.jpg",
+      "https://example.com/gallery2.jpg"
+    ],
+    "video_gallery": [
+      "https://example.com/video1.mp4",
+      "https://example.com/video2.mp4"
+    ],
     "settings": {
       "persona": "Friendly Companion",
       "setting": "Casual Conversation"
@@ -493,6 +584,81 @@ const AIFriendsAdmin = () => {
                             +{friend.interests.length - 3}
                           </span>
                         )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Motion Video Preview */}
+                  {friend.avatar_motion_video && (
+                    <div className="fif-media-section">
+                      <span className="media-label">Motion Video:</span>
+                      <div className="fif-media-preview-item">
+                        <video 
+                          className="fif-media-thumbnail"
+                          onClick={() => handleVideoPreview(friend.avatar_motion_video)}
+                        >
+                          <source src={friend.avatar_motion_video} type="video/mp4" />
+                        </video>
+                        <button 
+                          className="fif-media-play-btn"
+                          onClick={() => handleVideoPreview(friend.avatar_motion_video)}
+                        >
+                          <FaPlay />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Image Gallery Preview */}
+                  {friend.img_gallery?.length > 0 && (
+                    <div className="fif-media-section">
+                      <span className="media-label">Image Gallery ({friend.img_gallery.length}):</span>
+                      <div className="fif-media-grid">
+                        {friend.img_gallery.slice(0, 3).map((img, index) => (
+                          <div key={index} className="fif-media-preview-item">
+                            <img 
+                              src={img} 
+                              alt={`Gallery ${index + 1}`}
+                              className="fif-media-thumbnail"
+                              onClick={() => handleImagePreview(img)}
+                            />
+                            {index === 2 && friend.img_gallery.length > 3 && (
+                              <div className="fif-media-more">
+                                +{friend.img_gallery.length - 3}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Video Gallery Preview */}
+                  {friend.video_gallery?.length > 0 && (
+                    <div className="fif-media-section">
+                      <span className="media-label">Video Gallery ({friend.video_gallery.length}):</span>
+                      <div className="fif-media-grid">
+                        {friend.video_gallery.slice(0, 2).map((video, index) => (
+                          <div key={index} className="fif-media-preview-item">
+                            <video 
+                              className="fif-media-thumbnail"
+                              onClick={() => handleVideoPreview(video)}
+                            >
+                              <source src={video} type="video/mp4" />
+                            </video>
+                            <button 
+                              className="fif-media-play-btn"
+                              onClick={() => handleVideoPreview(video)}
+                            >
+                              <FaPlay />
+                            </button>
+                            {index === 1 && friend.video_gallery.length > 2 && (
+                              <div className="fif-media-more">
+                                +{friend.video_gallery.length - 2}
+                              </div>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
@@ -666,6 +832,84 @@ const AIFriendsAdmin = () => {
                     onChange={(e) => setEditFriend({ ...editFriend, avatar_img: e.target.value })}
                     required
                   />
+                </div>
+
+                <div className="form-group full-width">
+                  <label>Motion Video URL</label>
+                  <input
+                    type="text"
+                    value={editFriend.avatar_motion_video || ""}
+                    onChange={(e) => setEditFriend({ ...editFriend, avatar_motion_video: e.target.value })}
+                    placeholder="https://example.com/motion-video.mp4"
+                  />
+                </div>
+
+                {/* Image Gallery Section */}
+                <div className="form-group full-width">
+                  <div className="fif-array-section">
+                    <label>Image Gallery URLs</label>
+                    <div className="fif-array-items">
+                      {editFriend.img_gallery?.map((url, index) => (
+                        <div key={index} className="fif-array-item">
+                          <input
+                            type="text"
+                            value={url}
+                            onChange={(e) => updateImageGalleryItem(index, e.target.value)}
+                            placeholder="https://example.com/image.jpg"
+                            className="fif-array-input"
+                          />
+                          <button
+                            type="button"
+                            className="fif-array-remove"
+                            onClick={() => removeImageGalleryItem(index)}
+                          >
+                            <FaTimes />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      className="fif-array-add"
+                      onClick={addImageGalleryItem}
+                    >
+                      <FaPlus /> Add Image URL
+                    </button>
+                  </div>
+                </div>
+
+                {/* Video Gallery Section */}
+                <div className="form-group full-width">
+                  <div className="fif-array-section">
+                    <label>Video Gallery URLs</label>
+                    <div className="fif-array-items">
+                      {editFriend.video_gallery?.map((url, index) => (
+                        <div key={index} className="fif-array-item">
+                          <input
+                            type="text"
+                            value={url}
+                            onChange={(e) => updateVideoGalleryItem(index, e.target.value)}
+                            placeholder="https://example.com/video.mp4"
+                            className="fif-array-input"
+                          />
+                          <button
+                            type="button"
+                            className="fif-array-remove"
+                            onClick={() => removeVideoGalleryItem(index)}
+                          >
+                            <FaTimes />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      className="fif-array-add"
+                      onClick={addVideoGalleryItem}
+                    >
+                      <FaPlus /> Add Video URL
+                    </button>
+                  </div>
                 </div>
               </div>
 

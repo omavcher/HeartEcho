@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Skeleton from "react-loading-skeleton";
 import '../styles/AIFriends.css';
@@ -16,6 +16,8 @@ function AIFriends() {
   const [activeTab, setActiveTab] = useState("all");
   const [ageRange, setAgeRange] = useState([18, 50]);
   const [relationshipFilter, setRelationshipFilter] = useState("all");
+  const [hoveredCard, setHoveredCard] = useState(null);
+  const videoRefs = useRef({});
 
   useEffect(() => {
     axios
@@ -54,9 +56,37 @@ function AIFriends() {
 
   const relationshipTypes = [...new Set(aiModels.map(model => model.relationship))];
 
+  const getShortDescription = (description) => {
+    const words = description.split(" ");
+    return words.slice(0, 6).join(" ") + (words.length > 6 ? "..." : "");
+  };
+
+  const handleMouseEnter = (modelId) => {
+    setHoveredCard(modelId);
+    const video = videoRefs.current[modelId];
+    if (video) {
+      video.currentTime = 0;
+      video.play().catch(error => {
+        console.log("Video play failed:", error);
+      });
+    }
+  };
+
+  const handleMouseLeave = (modelId) => {
+    setHoveredCard(null);
+    const video = videoRefs.current[modelId];
+    if (video) {
+      video.pause();
+      video.currentTime = 0;
+    }
+  };
+
+  const hasVideo = (model) => {
+    return model.avatar_motion_video && model.avatar_motion_video.trim() !== "";
+  };
+
   return (
     <div className="ai-container">
-
       {error && <div className="ai-error">{error}</div>}
 
       <div className="ai-filters">
@@ -113,27 +143,64 @@ function AIFriends() {
         {loading ? (
           Array.from({ length: 8 }).map((_, index) => (
             <div className="ai-card skeleton" key={index}>
-              <Skeleton height={300} />
-              <div className="ai-card-content">
-                <Skeleton width={100} />
-                <Skeleton width={60} />
-                <Skeleton count={2} />
+              <div className="portrait-ratio-wrapper">
+                <div className="ai-card-image">
+                  <Skeleton height="100%" containerClassName="skeleton-image" />
+                </div>
+              </div>
+              <div className="ai-floating-info">
+                <Skeleton width={120} height={24} />
+                <Skeleton width={180} height={20} />
               </div>
             </div>
           ))
         ) : filteredModels.length > 0 ? (
           filteredModels.map((model) => (
-            <Link href={`/chatbox?chatId=${model._id}`} className="ai-card" key={model._id}>
-              <div className="ai-card-image">
-                <img src={model.avatar_img} alt={model.name} />
-                <span className="ai-age">{model.age}</span>
-              </div>
-              <div className="ai-card-content">
-                <div className="ai-card-header">
-                  <h3>{model.name}</h3>
-                  <span className="ai-relationship">{model.relationship}</span>
+            <Link 
+              href={`/chatbox?chatId=${model._id}`} 
+              className="ai-card" 
+              key={model._id}
+              onMouseEnter={() => handleMouseEnter(model._id)}
+              onMouseLeave={() => handleMouseLeave(model._id)}
+            >
+              <div className="portrait-ratio-wrapper">
+                <div className="ai-card-image">
+                  {/* Video element - only show when hovering and video exists */}
+                  {hasVideo(model) && (
+                    <video
+                      ref={el => videoRefs.current[model._id] = el}
+                      src={model.avatar_motion_video}
+                      className={`ai-model-video ${hoveredCard === model._id ? 'video-visible' : 'video-hidden'}`}
+                      loop
+                      muted
+                      playsInline
+                      preload="metadata"
+                    />
+                  )}
+                  
+                  {/* Fallback image - show when not hovering or no video */}
+                  <img 
+                    src={model.avatar_img} 
+                    alt={model.name}
+                    className={`${hasVideo(model) && hoveredCard === model._id ? 'image-hidden' : 'image-visible'}`}
+                  />
+                  
+                  <span className="ai-age">{model.age}</span>
+                  <span className="ai-gender">
+                    {model.gender === 'female' ? '♀' : '♂'}
+                  </span>
+                  
+                  {/* Floating info at bottom */}
+                  <div className="ai-floating-info">
+                    <div className="ai-card-header">
+                      <h3>{model.name}</h3>
+                      <span className="ai-relationship">{model.relationship}</span>
+                    </div>
+                    <p className="ai-short-description">
+                      {getShortDescription(model.description)}
+                    </p>
+                  </div>
                 </div>
-                <p>{model.description.split(" ").slice(0, 12).join(" ")}...</p>
               </div>
             </Link>
           ))

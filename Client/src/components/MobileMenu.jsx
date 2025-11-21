@@ -76,9 +76,7 @@ function MobileMenu() {
         </Link>
       ))}
       
-      {/* iOS-style home indicator */}
-      <div className="home-indicator"></div>
-    </div>
+      </div>
   );
 }
 

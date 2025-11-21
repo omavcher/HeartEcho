@@ -6,7 +6,7 @@ import axios from "axios";
 import api from "../config/api";
 import PopNoti from "./PopNoti";
 import { useRouter } from "next/navigation";
-import { FiArrowLeft, FiCopy, FiTrash2, FiX, FiMoreVertical, FiSend } from "react-icons/fi";
+import { FiArrowLeft, FiCopy, FiTrash2, FiX, FiMoreVertical, FiSend, FiEye, FiEyeOff, FiVideo, FiImage } from "react-icons/fi";
 import AdvancedLoader from "./AdvancedLoader";
 
 const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
@@ -25,11 +25,31 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
   const [hoveredMessage, setHoveredMessage] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [loadingProgress, setLoadingProgress] = useState(0); // Track loading progress
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [remainingQuota, setRemainingQuota] = useState(20); // Default quota
 
   useEffect(() => {
-    setToken(typeof window !== 'undefined' ? localStorage.getItem("token") : null);
+    const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
+    setToken(token);
+    
+    // Check subscription status
+    if (token) {
+      checkSubscriptionStatus(token);
+    }
   }, []);
+
+  const checkSubscriptionStatus = async (userToken) => {
+    try {
+      const response = await axios.get(`${api.Url}/user/subscription/status`, {
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      setIsSubscribed(response.data?.isSubscribed || false);
+    } catch (error) {
+      console.error("Error checking subscription:", error);
+      setIsSubscribed(false);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -53,7 +73,12 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
   }, [messages]);
 
   const scrollToBottom = () => {
-    lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (lastMessageRef.current) {
+      lastMessageRef.current.scrollIntoView({ 
+        behavior: "smooth",
+        block: "end"
+      });
+    }
   };
 
   const initializeChatData = async () => {
@@ -61,7 +86,6 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
     setLoadingProgress(0);
     
     try {
-      // Simulate progress updates
       const progressInterval = setInterval(() => {
         setLoadingProgress(prev => {
           if (prev >= 90) {
@@ -72,7 +96,6 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
         });
       }, 200);
 
-      // Run both API calls in parallel
       await Promise.all([
         fetchChatData(),
         fetchAiModelDetails()
@@ -80,8 +103,6 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
 
       clearInterval(progressInterval);
       setLoadingProgress(100);
-      
-      // Small delay to show completion
       setTimeout(() => setIsLoading(false), 300);
       
     } catch (error) {
@@ -99,7 +120,7 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
     try {
       const response = await axios.get(`${api.Url}/user/chats/${chatId}`, {
         headers: { Authorization: `Bearer ${token}` },
-        timeout: 10000 // 10 second timeout
+        timeout: 10000
       });
 
       setMessages((prevMessages) => {
@@ -123,7 +144,7 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
     try {
       const response = await axios.get(`${api.Url}/ai/detials/${chatId}`, {
         headers: { Authorization: `Bearer ${token}` },
-        timeout: 10000 // 10 second timeout
+        timeout: 10000
       });
       
       setUserProfile(response.data?.AiInfo || {});
@@ -131,15 +152,11 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
       
     } catch (error) {
       console.error("Error fetching AI details:", error);
-      if (error.code === 'ECONNABORTED') {
-        throw new Error('AI details request timed out');
-      }
       setUserProfile({ 
         name: "AI Companion", 
         avatar_img: "/heartecho_b.png",
         description: "Your AI companion is ready to chat with you."
       });
-      // Don't throw error for AI details - use fallback data
       setLoadingProgress(prev => Math.min(prev + 30, 90));
     }
   };
@@ -164,7 +181,7 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
         { text: newMessage },
         { 
           headers: { Authorization: `Bearer ${token}` },
-          timeout: 30000 // 30 second timeout for AI response
+          timeout: 30000
         }
       );
 
@@ -172,26 +189,39 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
         (newMsg) => !messages.some((msg) => msg.time === newMsg.time)
       );
 
+      // Update remaining quota from response
+      if (response.data.remainingQuota !== undefined) {
+        setRemainingQuota(response.data.remainingQuota);
+      }
+
       onSendMessage();
       setIsTyping(false);
       setMessages((prevMessages) => [
         ...prevMessages.filter((msg) => !msg.isLoading),
         ...newMessages,
       ]);
+
+      // Auto-scroll after new messages
+      setTimeout(scrollToBottom, 100);
+
     } catch (error) {
       console.error("Error sending message:", error);
       setIsTyping(false);
       
       if (error.response && error.response.status === 403) {
+        const errorMessage = error.response.data?.message || "Your daily message quota is over. Try again tomorrow!";
         setNotification({ 
           show: true, 
-          message: "Your daily message quota is over. Try again tomorrow!", 
+          message: errorMessage, 
           type: "error" 
         });
+        
+        // Update quota to 0 if quota exceeded
+        setRemainingQuota(0);
     
         setTimeout(() => {
           router.push("/subscribe?re=quotaover");
-        }, 1000); 
+        }, 2000); 
       } else {
         setNotification({ 
           show: true, 
@@ -233,12 +263,172 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
       .catch(err => console.error("Error copying text: ", err));
   };
 
+  const handleSubscribeRedirect = () => {
+    router.push("/subscribe");
+  };
+
   const formatTime = (timeString) => {
     const date = new Date(timeString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Enhanced Loading Component with Progress
+  // Check if user can view media based on quota and subscription
+  const canViewMedia = (message) => {
+    if (isSubscribed) return true;
+    if (message.visibility === "show") return true;
+    if (remainingQuota > 0) return true;
+    return false;
+  };
+
+  // Get media cost information
+  const getMediaCostInfo = (message) => {
+    if (isSubscribed) return "Premium User - Unlimited Access";
+    
+    if (message.imgUrl) {
+      return remainingQuota >= 5 ? `Cost: 5 messages (${remainingQuota} remaining)` : "Need 5 messages to view";
+    }
+    
+    if (message.videoUrl) {
+      return remainingQuota >= 10 ? `Cost: 10 messages (${remainingQuota} remaining)` : "Need 10 messages to view";
+    }
+    
+    return "";
+  };
+
+  // Render media content based on visibility and quota
+  const renderMediaContent = (message) => {
+    const canView = canViewMedia(message);
+    const costInfo = getMediaCostInfo(message);
+
+    if (message.videoUrl && canView) {
+      return (
+        <div className="media-container">
+          <video 
+            src={message.videoUrl} 
+            controls 
+            className="media-content"
+            poster={message.thumbnailUrl}
+          >
+            Your browser does not support the video tag.
+          </video>
+          <div className="media-info">
+            <span className="media-time">{formatTime(message.time)}</span>
+            {!isSubscribed && (
+              <span className="quota-cost">{costInfo}</span>
+            )}
+          </div>
+        </div>
+      );
+    } else if (message.videoUrl && !canView) {
+      return (
+        <div className="media-container premium-media">
+          <div className="media-blur-overlay">
+            <video 
+              src={message.videoUrl} 
+              className="media-content blurred-media"
+            />
+            <div className="premium-lock-content">
+              <FiEyeOff size={32} className="premium-icon" />
+              <p className="premium-text">
+                {remainingQuota === 0 
+                  ? "Daily message quota exhausted!" 
+                  : "Subscribe or use message quota to view this video"}
+              </p>
+              <p className="quota-info">Videos cost 10 messages</p>
+              <div className="premium-buttons">
+                <button 
+                  className="subscribe-btn-media primary"
+                  onClick={handleSubscribeRedirect}
+                >
+                  Subscribe Now
+                </button>
+                {remainingQuota > 0 && (
+                  <button 
+                    className="subscribe-btn-media secondary"
+                    onClick={() => setNotification({
+                      show: true,
+                      message: `You have ${remainingQuota} messages remaining. Videos cost 10 messages.`,
+                      type: "info"
+                    })}
+                  >
+                    Use Message Quota
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+          <span className="media-time">{formatTime(message.time)}</span>
+        </div>
+      );
+    } else if (message.imgUrl && canView) {
+      return (
+        <div className="media-container">
+          <img 
+            src={message.imgUrl} 
+            alt="AI generated" 
+            className="media-content"
+          />
+          <div className="media-info">
+            <span className="media-time">{formatTime(message.time)}</span>
+            {!isSubscribed && (
+              <span className="quota-cost">{costInfo}</span>
+            )}
+          </div>
+        </div>
+      );
+    } else if (message.imgUrl && !canView) {
+      return (
+        <div className="media-container premium-media">
+          <div className="media-blur-overlay">
+            <img 
+              src={message.imgUrl} 
+              alt="AI generated" 
+              className="media-content blurred-media"
+            />
+            <div className="premium-lock-content">
+              <FiEyeOff size={32} className="premium-icon" />
+              <p className="premium-text">
+                {remainingQuota === 0 
+                  ? "Daily message quota exhausted!" 
+                  : "Subscribe or use message quota to view this image"}
+              </p>
+              <p className="quota-info">Images cost 5 messages</p>
+              <div className="premium-buttons">
+                <button 
+                  className="subscribe-btn-media primary"
+                  onClick={handleSubscribeRedirect}
+                >
+                  Subscribe Now
+                </button>
+                {remainingQuota > 0 && (
+                  <button 
+                    className="subscribe-btn-media secondary"
+                    onClick={() => setNotification({
+                      show: true,
+                      message: `You have ${remainingQuota} messages remaining. Images cost 5 messages.`,
+                      type: "info"
+                    })}
+                  >
+                    Use Message Quota
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+          <span className="media-time">{formatTime(message.time)}</span>
+        </div>
+      );
+    }
+    
+    // Regular text message
+    return (
+      <div className="message-content">
+        <p>{message.text}</p>
+        <span className="message-time">{formatTime(message.time)}</span>
+      </div>
+    );
+  };
+
   const LoadingState = () => (
     <div className="chat-loading-container">
       <AdvancedLoader 
@@ -260,7 +450,6 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
         onClose={() => setNotification({ ...notification, show: false })}
       />
       
-      {/* Show loader until initial data is loaded */}
       {isLoading ? (
         <LoadingState />
       ) : (
@@ -280,6 +469,7 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
                 <p>{isTyping ? "Typing..." : "Online"}</p>
               </div>
             </div>
+           
           </div>
 
           {showOverlay && (
@@ -327,60 +517,60 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
           <div className="chat-messages" ref={chatContainerRef}>
             {messages.length === 0 ? (
               <div className="empty-state-wffinf">
-              <div className="welcome-message-wffinf">
-                <h3 className="welcome-title-wffinf">
-                  Welcome to your chat with {userProfile?.name || "AI Companion"}! <span className="welcome-emoji-wffinf">👋</span>
-                </h3>
-                <p className="welcome-subtitle-wffinf">
-                  Start a meaningful conversation by sending your first message below.
-                </p>
-                <div className="suggestion-chips-wffinf">
-                  <button 
-                    className="suggestion-chip-wffinf"
-                    onClick={() => setNewMessage("Hello! How are you doing today?")}
-                  >
-                    <span className="chip-icon-wffinf">💬</span>
-                    Hello! How are you doing today?
-                  </button>
-                  <button 
-                    className="suggestion-chip-wffinf"
-                    onClick={() => setNewMessage("Can you tell me about yourself and what you can do?")}
-                  >
-                    <span className="chip-icon-wffinf">🤖</span>
-                    Tell me about yourself
-                  </button>
-                  <button 
-                    className="suggestion-chip-wffinf"
-                    onClick={() => setNewMessage("What kind of conversations can we have?")}
-                  >
-                    <span className="chip-icon-wffinf">💡</span>
-                    What can you help me with?
-                  </button>
-                  <button 
-                    className="suggestion-chip-wffinf"
-                    onClick={() => setNewMessage("I'd like to talk about my day and feelings")}
-                  >
-                    <span className="chip-icon-wffinf">🌟</span>
-                    Share my thoughts
-                  </button>
+                <div className="welcome-message-wffinf">
+                  <h3 className="welcome-title-wffinf">
+                    Welcome to your chat with {userProfile?.name || "AI Companion"}! <span className="welcome-emoji-wffinf">👋</span>
+                  </h3>
+                  <p className="welcome-subtitle-wffinf">
+                    Start a meaningful conversation by sending your first message below.
+                    {!isSubscribed && (
+                      <span className="quota-notice"> You have {remainingQuota} free messages today.</span>
+                    )}
+                  </p>
+                  <div className="suggestion-chips-wffinf">
+                    <button 
+                      className="suggestion-chip-wffinf"
+                      onClick={() => setNewMessage("Hello! How are you doing today?")}
+                    >
+                      <span className="chip-icon-wffinf">💬</span>
+                      Hello! How are you doing today?
+                    </button>
+                    <button 
+                      className="suggestion-chip-wffinf"
+                      onClick={() => setNewMessage("/photo Can you show me a beautiful image?")}
+                    >
+                      <span className="chip-icon-wffinf"><FiImage /></span>
+                      Ask for an image (Cost: 5 messages)
+                    </button>
+                    <button 
+                      className="suggestion-chip-wffinf"
+                      onClick={() => setNewMessage("/video Can you show me a video?")}
+                    >
+                      <span className="chip-icon-wffinf"><FiVideo /></span>
+                      Ask for a video (Cost: 10 messages)
+                    </button>
+                    <button 
+                      className="suggestion-chip-wffinf"
+                      onClick={() => setNewMessage("What kind of conversations can we have?")}
+                    >
+                      <span className="chip-icon-wffinf">💡</span>
+                      What can you help me with?
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
             ) : (
               messages.map((msg, index) => (
                 <div 
                   key={index} 
-                  className={`message ${msg.sender === chatId ? "received" : "sent"}`}
+                  className={`message ${msg.sender === chatId ? "received" : "sent"} ${msg.videoUrl || msg.imgUrl ? 'media-message has-media' : ''}`}
                   ref={index === messages.length - 1 ? lastMessageRef : null}
                   onMouseEnter={() => setHoveredMessage(msg._id)}
                   onMouseLeave={() => setHoveredMessage(null)}
                 >
-                  <div className="message-content">
-                    <p>{msg.text}</p>
-                    <span className="message-time">{formatTime(msg.time)}</span>
-                  </div>
+                  {renderMediaContent(msg)}
                   
-                  {hoveredMessage === msg._id && (
+                  {hoveredMessage === msg._id && !msg.videoUrl && !msg.imgUrl && (
                     <button 
                       className="message-options-btn"
                       onClick={(e) => {
@@ -409,19 +599,23 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
           </div>
 
           <div className="chat-input-container">
+            
+            
             <div className="input-wrapper">
               <input
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                placeholder="Type a message..."
-                disabled={isTyping}
+                placeholder={isSubscribed 
+                  ? "Type a message..." 
+                  : `Type a message... (${remainingQuota} remaining)`}
+                disabled={isTyping || (!isSubscribed && remainingQuota === 0)}
               />
               <button 
                 onClick={handleSendMessage} 
-                disabled={!newMessage.trim() || isTyping}
-                className={`send-btn ${isTyping ? 'sending' : ''}`}
+                disabled={!newMessage.trim() || isTyping || (!isSubscribed && remainingQuota === 0)}
+                className={`send-btn ${isTyping ? 'sending' : ''} ${(!isSubscribed && remainingQuota === 0) ? 'quota-exhausted' : ''}`}
               >
                 {isTyping ? (
                   <div className="typing-indicator">
@@ -433,6 +627,10 @@ const ChatBox = ({ chatId, onBackBTNSelect, onSendMessage }) => {
                   <FiSend size={18} />
                 )}
               </button>
+            </div>
+            <div className="input-hints">
+              <span className="hint-text">Use <code>/photo</code> for images (5 messages)</span>
+              <span className="hint-text">Use <code>/video</code> for videos (10 messages)</span>
             </div>
           </div>
         </>

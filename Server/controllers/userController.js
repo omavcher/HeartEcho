@@ -461,14 +461,25 @@ exports.latAichatmessage = async (req, res) => {
 
 
 
+// Fisher-Yates shuffle algorithm
+const shuffleArray = (array) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 exports.getAllPreAIFriends = async (req, res) => {
   try {
     const allFriends = await PrebuiltAIFriend.find();
+    const shuffledFriends = shuffleArray(allFriends);
 
     res.status(200).json({
       success: true,
-      message: "All AI Friends retrieved successfully!",
-      data: allFriends,
+      message: "All AI Friends retrieved successfully in random order!",
+      data: shuffledFriends,
     });
   } catch (error) {
     console.error("Error fetching AI Friend data:", error);

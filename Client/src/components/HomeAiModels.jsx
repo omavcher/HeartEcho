@@ -14,9 +14,9 @@ function HomeAiModels() {
   const [aiModels, setAiModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [hoveredCard, setHoveredCard] = useState(null);
+  const videoRefs = useRef({});
   const router = useRouter();
-  const containerRef = useRef(null);
 
   useEffect(() => {
     const fetchAiModels = async () => {
@@ -34,38 +34,52 @@ function HomeAiModels() {
     fetchAiModels();
   }, []);
 
-  const handleTabChange = (tab) => {
-    if (tab === activeTab || isTransitioning) return;
-    
-    setIsTransitioning(true);
-    setActiveTab(tab);
-    
-    // Smooth transition delay
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 400);
-  };
-
   const getRandomModels = (models, count) => {
     return [...models]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, count);
   };
   
   const filteredModels = getRandomModels(
     aiModels.filter((model) =>
       activeTab === "girls" ? model.gender === "female" : model.gender === "male"
     ),
-    12
+    10
   );
 
   const handleModelClick = (modelId) => {
-    // Add ripple effect
     router.push(`/chatbox?chatId=${modelId}`);
   };
 
+  const getShortDescription = (description) => {
+    const words = description.split(" ");
+    return words.slice(0, 6).join(" ") + (words.length > 6 ? "..." : "");
+  };
+
+  const handleMouseEnter = (modelId) => {
+    setHoveredCard(modelId);
+    const video = videoRefs.current[modelId];
+    if (video) {
+      video.currentTime = 0;
+      video.play().catch(error => {
+        console.log("Video play failed:", error);
+      });
+    }
+  };
+
+  const handleMouseLeave = (modelId) => {
+    setHoveredCard(null);
+    const video = videoRefs.current[modelId];
+    if (video) {
+      video.pause();
+      video.currentTime = 0;
+    }
+  };
+
+  const hasVideo = (model) => {
+    return model.avatar_motion_video && model.avatar_motion_video.trim() !== "";
+  };
+
   return (
-    <section className="ai-models-container" ref={containerRef}>
+    <section className="ai-models-container">
       <div className="section-header">
         <h2 className="section-title">Meet Your Perfect AI Companion</h2>
         <p className="section-subtitle">Discover personalities that match your preferences</p>
@@ -73,7 +87,7 @@ function HomeAiModels() {
         <div className="gender-toggle" data-active={activeTab}>
           <button
             className={`toggle-option ${activeTab === "girls" ? "active" : ""}`}
-            onClick={() => handleTabChange("girls")}
+            onClick={() => setActiveTab("girls")}
             aria-label="Show female AI companions"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -83,7 +97,7 @@ function HomeAiModels() {
           </button>
           <button
             className={`toggle-option ${activeTab === "boys" ? "active" : ""}`}
-            onClick={() => handleTabChange("boys")}
+            onClick={() => setActiveTab("boys")}
             aria-label="Show male AI companions"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -94,74 +108,89 @@ function HomeAiModels() {
         </div>
       </div>
 
-      <div className={`models-content ${isTransitioning ? 'transitioning' : ''}`}>
-        {loading ? (
-          <div className="models-grid">
-            {[...Array(10)].map((_, index) => (
-              <div className="model-card skeleton" key={index}>
+      {loading ? (
+        <div className="models-grid">
+          {[...Array(10)].map((_, index) => (
+            <div className="model-card skeleton" key={index}>
+              <div className="portrait-ratio-wrapper">
                 <div className="skeleton-image-container">
                   <Skeleton height="100%" containerClassName="skeleton-image" />
                 </div>
-                <div className="model-info">
-                  <Skeleton width={80} height={24} />
-                  <Skeleton height={20} width="70%" />
-                  <Skeleton height={16} count={2} width="90%" />
-                </div>
               </div>
-            ))}
-          </div>
-        ) : error ? (
-          <div className="error-message">
-            <Image 
-              src="/error-icon.svg" 
-              alt="Error"
-              width={80}
-              height={80}
-              className="error-icon"
-            />
-            <p>{error}</p>
-            <button onClick={() => window.location.reload()} className="retry-button">
-              Try Again
-            </button>
-          </div>
-        ) : filteredModels.length === 0 ? (
-          <div className="empty-state">
-            <Image 
-              src="/no-models.svg" 
-              alt="No models found"
-              width={200}
-              height={200}
-              className="empty-icon"
-            />
-            <p>No AI companions found in this category</p>
-            <button onClick={() => window.location.reload()} className="refresh-button">
-              Refresh
-            </button>
-          </div>
-        ) : (
-          <div className="models-grid">
-            {filteredModels.map((model, index) => (
-              <div 
-                className="model-card" 
-                key={model._id}
-                onClick={() => handleModelClick(model._id)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && handleModelClick(model._id)}
-                style={{ 
-                  animationDelay: `${index * 0.03}s`,
-                  transitionDelay: `${index * 0.02}s`
-                }}
-              >
+              <div className="model-floating-info">
+                <Skeleton width={120} height={24} />
+                <Skeleton width={180} height={20} />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="error-message">
+          <Image 
+            src="/error-icon.svg" 
+            alt="Error"
+            width={80}
+            height={80}
+            className="error-icon"
+          />
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()} className="retry-button">
+            Try Again
+          </button>
+        </div>
+      ) : filteredModels.length === 0 ? (
+        <div className="empty-state">
+          <Image 
+            src="/no-models.svg" 
+            alt="No models found"
+            width={200}
+            height={200}
+            className="empty-icon"
+          />
+          <p>No AI companions found in this category</p>
+          <button onClick={() => window.location.reload()} className="refresh-button">
+            Refresh
+          </button>
+        </div>
+      ) : (
+        <div className="models-grid">
+          {filteredModels.map((model, index) => (
+            <div 
+              className="model-card" 
+              key={model._id}
+              onClick={() => handleModelClick(model._id)}
+              onMouseEnter={() => handleMouseEnter(model._id)}
+              onMouseLeave={() => handleMouseLeave(model._id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && handleModelClick(model._id)}
+              style={{ animationDelay: `${index * 0.05}s` }}
+            >
+              <div className="portrait-ratio-wrapper">
                 <div className="model-image-container">
+                  {/* Video element - only show when hovering and video exists */}
+                  {hasVideo(model) && (
+                    <video
+                      ref={el => videoRefs.current[model._id] = el}
+                      src={model.avatar_motion_video}
+                      className={`model-video portrait-image ${hoveredCard === model._id ? 'video-visible' : 'video-hidden'}`}
+                      loop
+                      muted
+                      playsInline
+                      preload="metadata"
+                    />
+                  )}
+                  
+                  {/* Fallback image - show when not hovering or no video */}
                   <Image 
                     src={model.avatar_img} 
                     alt={model.name}
-                    width={180}
-                    height={320}
-                    className="model-image"
+                    width={270}
+                    height={480}
+                    className={`model-image portrait-image ${hasVideo(model) && hoveredCard === model._id ? 'image-hidden' : 'image-visible'}`}
                     priority={index < 4}
                   />
+                  
                   <div className="model-overlay">
                     <span className="model-age">{model.age}</span>
                     <span className="model-gender">
@@ -175,26 +204,20 @@ function HomeAiModels() {
                       </span>
                     )}
                   </div>
-                </div>
-                <div className="model-info">
-                  <h3 className="model-name">{model.name}</h3>
-                  <div className="model-traits">
-                    {model.personality?.split(',').slice(0, 3).map((trait, i) => (
-                      <span key={i} className="trait-badge">{trait.trim()}</span>
-                    ))}
+                  
+                  {/* Modern floating info at bottom */}
+                  <div className="model-floating-info">
+                    <h3 className="model-name">{model.name}</h3>
+                    <p className="model-short-description">
+                      {getShortDescription(model.description)}
+                    </p>
                   </div>
-                  <p className="model-description">
-                    {model.description.split(" ").slice(0, 12).join(" ")}...
-                  </p>
-                  <button className="chat-button">
-                    Start Chatting
-                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
