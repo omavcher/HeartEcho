@@ -71,7 +71,7 @@ async function deductMediaQuota(userInfo, mediaType) {
     return true; // No deduction for premium users
   }
   
-  const quotaRequired = mediaType === 'video' ? 10 : 5;
+  const quotaRequired = mediaType === 'video' ? 20 : 20;
   
   if (userInfo.messageQuota >= quotaRequired) {
     userInfo.messageQuota -= quotaRequired;
