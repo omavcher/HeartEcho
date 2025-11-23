@@ -116,6 +116,14 @@ export default function Home() {
   return (
     <>
       <div className="home-container">
+
+    {serverStatus === "Server is running" && (
+        <section className="ai-models-section-container">
+          <HomeAiModels />
+        </section>
+        )}
+        
+
         {/* Hero Section */}
         <section className="home-hero-section">
           <div className="hero-background-pattern"></div>
@@ -297,12 +305,6 @@ export default function Home() {
         </section>
 
 
-
-    {serverStatus === "Server is running" && (
-        <section className="ai-models-section-container">
-          <HomeAiModels />
-        </section>
-        )}
 
 
 
