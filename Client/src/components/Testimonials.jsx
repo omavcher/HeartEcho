@@ -1,13 +1,12 @@
-'use client';
-import { useState, useEffect } from 'react';
-import './Testimonials.css';
-import Image from 'next/image';
+import React, { useState, useEffect, useRef } from 'react';
 
 const Testimonials = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
-  const testimonials = [
+   const testimonials = [
     {
       id: 1,
       name: "Priya Sharma",
@@ -175,225 +174,610 @@ const Testimonials = () => {
     },
   ];
 
-  // Stats data
   const stats = [
     { number: "15K+", label: "Active Users" },
-    { number: "4.7", label: "Average Rating" },
-    { number: "24/7", label: "Support" }
+    { number: "4.9", label: "App Rating" },
+    { number: "24/7", label: "AI Support" }
   ];
 
   useEffect(() => {
     const interval = setInterval(() => {
       handleNext();
-    }, 5000);
-
+    }, 6000);
     return () => clearInterval(interval);
   }, [currentTestimonial]);
 
   const handleNext = () => {
     if (isAnimating) return;
-    
     setIsAnimating(true);
-    setCurrentTestimonial((prev) => 
-      prev === testimonials.length - 1 ? 0 : prev + 1
-    );
-    
-    setTimeout(() => setIsAnimating(false), 500);
+    setCurrentTestimonial((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1));
+    setTimeout(() => setIsAnimating(false), 600);
   };
 
   const handlePrev = () => {
     if (isAnimating) return;
-    
     setIsAnimating(true);
-    setCurrentTestimonial((prev) => 
-      prev === 0 ? testimonials.length - 1 : prev - 1
-    );
-    
-    setTimeout(() => setIsAnimating(false), 500);
+    setCurrentTestimonial((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));
+    setTimeout(() => setIsAnimating(false), 600);
   };
 
   const handleDotClick = (index) => {
     if (isAnimating || index === currentTestimonial) return;
-    
     setIsAnimating(true);
     setCurrentTestimonial(index);
-    setTimeout(() => setIsAnimating(false), 500);
+    setTimeout(() => setIsAnimating(false), 600);
+  };
+
+  // Swipe handlers for mobile responsiveness
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.changedTouches[0].screenX;
+  };
+
+  const handleTouchEnd = (e) => {
+    touchEndX.current = e.changedTouches[0].screenX;
+    handleSwipe();
+  };
+
+  const handleSwipe = () => {
+    if (touchStartX.current - touchEndX.current > 50) {
+      handleNext();
+    }
+    if (touchEndX.current - touchStartX.current > 50) {
+      handlePrev();
+    }
   };
 
   const renderStars = (rating) => {
     const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.3 && rating % 1 <= 0.7;
-    const hasPartialStar = rating % 1 > 0.7;
-
-    // Full stars
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <span key={`full-${i}`} className="star filled">
-          ★
-        </span>
-      );
+    for (let i = 1; i <= 5; i++) {
+      if (i <= Math.floor(rating)) {
+        stars.push(<span key={i} className="star filled">★</span>);
+      } else if (i === Math.ceil(rating) && !Number.isInteger(rating)) {
+        stars.push(
+          <span key={i} className="star half-filled">
+            ★<span className="half-overlay">★</span>
+          </span>
+        );
+      } else {
+        stars.push(<span key={i} className="star empty">★</span>);
+      }
     }
-
-    // Half star
-    if (hasHalfStar && fullStars < 5) {
-      stars.push(
-        <span key="half" className="star half-filled">
-          <span className="star-half">★</span>
-        </span>
-      );
-    }
-
-    // Partial star (treat as full if more than 0.7)
-    if (hasPartialStar && fullStars < 5) {
-      stars.push(
-        <span key="partial" className="star filled">
-          ★
-        </span>
-      );
-    }
-
-    // Empty stars
-    const emptyStars = 5 - stars.length;
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(
-        <span key={`empty-${i}`} className="star">
-          ☆
-        </span>
-      );
-    }
-
     return stars;
-  };
-
-  const getRatingColor = (rating) => {
-    if (rating >= 4.5) return '#FFD700'; // Gold for high ratings
-    if (rating >= 4.0) return '#FFA500'; // Orange for good ratings
-    if (rating >= 3.5) return '#FF6B6B'; // Red for average ratings
-    return '#CCCCCC'; // Gray for low ratings
-  };
-
-  const formatRating = (rating) => {
-    // Remove trailing .0 if it's a whole number
-    return rating % 1 === 0 ? rating.toString() : rating.toFixed(1);
   };
 
   return (
     <section className="testimonials-section">
+      <style>{`
+        /* -------------------------------------------------------------------------- */
+        /* Design System & Variables                                                  */
+        /* -------------------------------------------------------------------------- */
+        :root {
+          --bg-dark: #050505;
+          --card-bg: rgba(20, 20, 20, 0.6);
+          --card-border: rgba(255, 255, 255, 0.08);
+          --accent-primary: #FF2D95;
+          --accent-glow: rgba(255, 45, 149, 0.4);
+          --text-primary: #ffffff;
+          --text-secondary: rgba(255, 255, 255, 0.6);
+          --gold: #FFD700;
+          --gold-glow: rgba(255, 215, 0, 0.2);
+          --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .testimonials-section {
+          background-color: var(--bg-dark);
+          min-height: 100vh;
+          padding: 4rem 1.5rem;
+          color: var(--text-primary);
+          font-family: 'Inter', -apple-system, sans-serif;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          position: relative;
+        }
+
+        .testimonials-container {
+          width: 100%;
+          max-width: 1000px;
+          position: relative;
+          z-index: 10;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* Header                                                                     */
+        /* -------------------------------------------------------------------------- */
+        .testimonials-header {
+          text-align: center;
+          margin-bottom: 3.5rem;
+          animation: fadeInDown 0.8s var(--transition-smooth);
+        }
+
+        .testimonials-title {
+          font-size: clamp(2rem, 5vw, 3rem);
+          font-weight: 800;
+          margin-bottom: 1rem;
+          background: linear-gradient(135deg, #fff 0%, #b3b3b3 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          letter-spacing: -0.02em;
+        }
+
+        .testimonials-subtitle {
+          font-size: clamp(0.9rem, 2vw, 1.1rem);
+          color: var(--text-secondary);
+          max-width: 500px;
+          margin: 0 auto;
+          line-height: 1.6;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* Carousel Main Area                                                         */
+        /* -------------------------------------------------------------------------- */
+        .carousel-wrapper {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 1rem;
+          margin-bottom: 2rem;
+          position: relative;
+        }
+
+        /* Nav Buttons */
+        .nav-btn {
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid var(--card-border);
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--text-primary);
+          cursor: pointer;
+          transition: all 0.3s ease;
+          backdrop-filter: blur(10px);
+          z-index: 20;
+        }
+
+        .nav-btn:hover {
+          background: rgba(255, 255, 255, 0.1);
+          transform: scale(1.1);
+          border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-btn svg {
+          width: 20px;
+          height: 20px;
+          stroke-width: 2.5;
+        }
+
+        /* Card Track */
+        .testimonials-track {
+          flex: 1;
+          height: 320px;
+          position: relative;
+          perspective: 1000px;
+        }
+
+        .testimonial-card {
+          position: absolute;
+          inset: 0;
+          opacity: 0;
+          transform: translateX(40px) scale(0.9) rotateY(-5deg);
+          transition: all 0.6s var(--transition-smooth);
+          pointer-events: none;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .testimonial-card.active {
+          opacity: 1;
+          transform: translateX(0) scale(1) rotateY(0);
+          pointer-events: auto;
+          z-index: 5;
+        }
+
+        /* Previous card fading out animation */
+        .testimonial-card.prev {
+          transform: translateX(-40px) scale(0.9) rotateY(5deg);
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* Card Content                                                               */
+        /* -------------------------------------------------------------------------- */
+        .card-glass {
+          flex: 1;
+          background: var(--card-bg);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid var(--card-border);
+          border-radius: 24px;
+          padding: 2.5rem;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+
+        /* Subtle gradient shimmer on card */
+        .card-glass::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        }
+
+        .quote-icon {
+          position: absolute;
+          top: 1.5rem;
+          right: 2rem;
+          font-size: 5rem;
+          color: rgba(255, 255, 255, 0.03);
+          font-family: serif;
+          line-height: 1;
+          pointer-events: none;
+        }
+
+        .card-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 1.5rem;
+        }
+
+        .user-profile {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .avatar-wrapper {
+          position: relative;
+          width: 56px;
+          height: 56px;
+        }
+
+        .avatar-img {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        /* Active pulse ring for avatar */
+        .testimonial-card.active .avatar-wrapper::before {
+          content: '';
+          position: absolute;
+          inset: -4px;
+          border-radius: 50%;
+          border: 1px solid var(--accent-primary);
+          opacity: 0;
+          animation: pulseRing 2s infinite;
+        }
+
+        .user-info h3 {
+          font-size: 1.1rem;
+          font-weight: 700;
+          margin: 0;
+          color: var(--text-primary);
+        }
+
+        .user-info p {
+          font-size: 0.85rem;
+          color: var(--accent-primary);
+          margin: 2px 0 0 0;
+          font-weight: 500;
+        }
+
+        .card-body {
+          flex: 1;
+        }
+
+        .comment-text {
+          font-size: 1.1rem;
+          line-height: 1.6;
+          color: rgba(255,255,255,0.85);
+          font-style: italic;
+          margin: 0;
+        }
+
+        .card-footer {
+          margin-top: 1.5rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid rgba(255,255,255,0.05);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .rating-stars {
+          display: flex;
+          gap: 4px;
+          font-size: 1.1rem;
+        }
+
+        .star.filled, .star.half-filled {
+          color: var(--gold);
+          text-shadow: 0 0 10px var(--gold-glow);
+        }
+        
+        .star.half-filled {
+          position: relative;
+          color: rgba(255,255,255,0.1);
+        }
+        
+        .half-overlay {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 50%;
+          overflow: hidden;
+          color: var(--gold);
+        }
+
+        .star.empty {
+          color: rgba(255,255,255,0.1);
+        }
+
+        .review-date {
+          font-size: 0.8rem;
+          color: var(--text-secondary);
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* Indicators & Stats                                                         */
+        /* -------------------------------------------------------------------------- */
+        .controls-section {
+          margin-top: 2rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2.5rem;
+        }
+
+        .dots-container {
+          display: flex;
+          gap: 0.8rem;
+          background: rgba(255, 255, 255, 0.03);
+          padding: 8px 16px;
+          border-radius: 20px;
+          backdrop-filter: blur(4px);
+        }
+
+        .dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.2);
+          cursor: pointer;
+          transition: all 0.3s ease;
+          border: none;
+          padding: 0;
+        }
+
+        .dot.active {
+          background: var(--accent-primary);
+          transform: scale(1.3);
+          box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 2rem;
+          width: 100%;
+          border-top: 1px solid rgba(255,255,255,0.05);
+          padding-top: 2rem;
+        }
+
+        .stat-item {
+          text-align: center;
+          position: relative;
+        }
+        
+        /* Divider between stats */
+        .stat-item:not(:last-child)::after {
+          content: '';
+          position: absolute;
+          right: -1rem;
+          top: 20%;
+          height: 60%;
+          width: 1px;
+          background: rgba(255,255,255,0.1);
+        }
+
+        .stat-number {
+          display: block;
+          font-size: 1.8rem;
+          font-weight: 800;
+          color: #fff;
+          margin-bottom: 0.2rem;
+        }
+
+        .stat-label {
+          font-size: 0.8rem;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* Animations                                                                 */
+        /* -------------------------------------------------------------------------- */
+        @keyframes fadeInDown {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulseRing {
+          0% { transform: scale(0.95); opacity: 0.8; }
+          100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* Responsive                                                                 */
+        /* -------------------------------------------------------------------------- */
+        @media (max-width: 768px) {
+          .testimonials-track {
+            height: 380px; /* Taller for wrapping text on mobile */
+          }
+          
+          .nav-btn {
+            display: none; /* Hide arrows on mobile, rely on swipe */
+          }
+          
+          .card-glass {
+            padding: 1.5rem;
+          }
+          
+          .comment-text {
+            font-size: 1rem;
+          }
+          
+          .stats-grid {
+            gap: 1rem;
+          }
+          
+          .stat-item:not(:last-child)::after {
+            display: none;
+          }
+        }
+
+        @media (max-width: 480px) {
+           .testimonials-section {
+             padding: 2rem 1rem;
+           }
+           
+           .testimonials-track {
+             height: 400px;
+           }
+           
+           .card-header {
+             flex-direction: column;
+             gap: 1rem;
+           }
+           
+           .rating-stars {
+             margin-top: 0.5rem;
+           }
+           
+           .stats-grid {
+             grid-template-columns: 1fr;
+             gap: 1.5rem;
+             border-top: none;
+           }
+           
+           .stat-item {
+             background: rgba(255,255,255,0.03);
+             padding: 1rem;
+             border-radius: 12px;
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+           }
+           
+           .stat-number {
+             font-size: 1.4rem;
+             margin: 0;
+           }
+        }
+      `}</style>
+
       <div className="testimonials-container">
         <div className="testimonials-header">
-          <h2 className="testimonials-title">
-            Loved by Users Worldwide
-          </h2>
+          <h2 className="testimonials-title">Loved by Thousands</h2>
           <p className="testimonials-subtitle">
-            Discover why thousands trust HeartEcho for meaningful connections
+            See why people worldwide are finding comfort and connection with their EchoHeart companions.
           </p>
         </div>
 
-        <div className="testimonials-carousel">
-          <button 
-            className="carousel-button prev-button"
-            onClick={handlePrev}
-            aria-label="Previous testimonial"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <div className="carousel-wrapper">
+          <button className="nav-btn prev" onClick={handlePrev} aria-label="Previous">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
 
-          <div className="testimonials-track">
+          <div 
+            className="testimonials-track"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
             {testimonials.map((testimonial, index) => (
               <div
                 key={testimonial.id}
                 className={`testimonial-card ${
                   index === currentTestimonial ? 'active' : ''
-                } ${isAnimating ? 'animating' : ''}`}
+                }`}
               >
-                <div className="testimonial-content">
-                  {/* Rating Stars */}
-                  <div className="testimonial-rating">
-                    <div className="stars-container">
+                <div className="card-glass">
+                  <div className="quote-icon">"</div>
+                  
+                  <div className="card-header">
+                    <div className="user-profile">
+                      <div className="avatar-wrapper">
+                        <img 
+                          src={testimonial.avatar} 
+                          alt={testimonial.name}
+                          className="avatar-img"
+                        />
+                      </div>
+                      <div className="user-info">
+                        <h3>{testimonial.name}</h3>
+                        <p>{testimonial.role}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="card-body">
+                    <p className="comment-text">
+                      {testimonial.comment}
+                    </p>
+                  </div>
+
+                  <div className="card-footer">
+                    <div className="rating-stars">
                       {renderStars(testimonial.rating)}
                     </div>
-                    <span 
-                      className="rating-text"
-                      style={{ color: getRatingColor(testimonial.rating) }}
-                    >
-                      {formatRating(testimonial.rating)}
-                    </span>
-                  </div>
-
-                  {/* Comment */}
-                  <div className="testimonial-comment">
-                    "{testimonial.comment}"
-                  </div>
-
-                  {/* User Info */}
-                  <div className="testimonial-user">
-                    <div className="user-avatar">
-                      <Image 
-                        src={testimonial.avatar} 
-                        alt={testimonial.name}
-                        width={56}
-                        height={56}
-                        className="avatar-image"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          const fallback = e.target.nextSibling;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
-                      <div className="avatar-fallback">
-                        {testimonial.name.charAt(0)}
-                      </div>
-                    </div>
-                    <div className="user-info">
-                      <div className="user-name">{testimonial.name}</div>
-                      <div className="user-details">
-                        {testimonial.role} • {testimonial.location}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Date */}
-                  <div className="testimonial-date">
-                    {testimonial.date}
+                    <span className="review-date">{testimonial.date}</span>
                   </div>
                 </div>
               </div>
             ))}
           </div>
 
-          <button 
-            className="carousel-button next-button"
-            onClick={handleNext}
-            aria-label="Next testimonial"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <button className="nav-btn next" onClick={handleNext} aria-label="Next">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
 
-        {/* Dots Indicator */}
-        <div className="carousel-dots">
-          {testimonials.map((_, index) => (
-            <button
-              key={index}
-              className={`dot ${index === currentTestimonial ? 'active' : ''}`}
-              onClick={() => handleDotClick(index)}
-              aria-label={`Go to testimonial ${index + 1}`}
-            />
-          ))}
-        </div>
+        <div className="controls-section">
+          <div className="dots-container">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                className={`dot ${index === currentTestimonial ? 'active' : ''}`}
+                onClick={() => handleDotClick(index)}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
 
-        {/* Stats Section */}
-        <div className="stats-section">
           <div className="stats-grid">
             {stats.map((stat, index) => (
               <div key={index} className="stat-item">
-                <div className="stat-number">{stat.number}</div>
-                <div className="stat-label">{stat.label}</div>
+                <span className="stat-number">{stat.number}</span>
+                <span className="stat-label">{stat.label}</span>
               </div>
             ))}
           </div>

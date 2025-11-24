@@ -6,7 +6,7 @@ import PopNoti from '../components/PopNoti';
 import api from '../config/api';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import Cookies from 'js-cookie'; // Make sure this is imported
+import Cookies from 'js-cookie';
 
 function ProfileLists({ handleSettindSelection, onBackSBTNSelect }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -21,10 +21,37 @@ function ProfileLists({ handleSettindSelection, onBackSBTNSelect }) {
   const [twoFactor, setTwoFactor] = useState(false);
   const router = useRouter();
 
+  // Initialize user data from localStorage if available
+  const initializeUserData = () => {
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem("token");
+      const storedUserData = localStorage.getItem("userProfileData");
+      
+      setToken(storedToken);
+      
+      if (storedUserData) {
+        try {
+          const parsedData = JSON.parse(storedUserData);
+          setUserData(parsedData);
+          setTwoFactor(parsedData.twofactor || false);
+        } catch (error) {
+          console.error("Error parsing stored user data:", error);
+          localStorage.removeItem("userProfileData");
+        }
+      }
+    }
+  };
+
   useEffect(() => {
-    // Client-side only code
-    setToken(typeof window !== 'undefined' ? localStorage.getItem("token") : null);
+    initializeUserData();
   }, []);
+
+  // Update localStorage whenever userData changes
+  useEffect(() => {
+    if (userData && typeof window !== 'undefined') {
+      localStorage.setItem("userProfileData", JSON.stringify(userData));
+    }
+  }, [userData]);
 
   const handleDeleteClick = () => {
     const email = userData?.email || "";
@@ -63,7 +90,13 @@ function ProfileLists({ handleSettindSelection, onBackSBTNSelect }) {
       if (res.data.success) {
         await axios.delete(`${api.Url}/user/delete-account`, { headers: { Authorization: `Bearer ${token}` } });
         alert("Account deleted successfully.");
-        localStorage.clear();
+        
+        // Clear all stored data
+        if (typeof window !== 'undefined') {
+          localStorage.clear();
+        }
+        Cookies.remove('token');
+        
         router.push("/login");
       } else {
         setNotification({ show: true, message: "Invalid OTP. Please try again.", type: "error" });
@@ -74,35 +107,60 @@ function ProfileLists({ handleSettindSelection, onBackSBTNSelect }) {
     setSubmiting(false);
   };
 
-  useEffect(() => {
-    const getUserData = async () => {
-      try {
-        const res = await axios.get(
-          `${api.Url}/user/get-user`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (res.data) {
-          setUserData(res.data);
-          setTwoFactor(res.data.twofactor);
+  const fetchUserData = async () => {
+    try {
+      const res = await axios.get(
+        `${api.Url}/user/get-user`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      } catch (error) {
-        setNotification({ show: true, message: "Error fetching user", type: "error" });
-      }
-    };
+      );
 
+      if (res.data) {
+        // Update both state and localStorage with fresh backend data
+        setUserData(res.data);
+        setTwoFactor(res.data.twofactor);
+        
+        // Store in localStorage for future use
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("userProfileData", JSON.stringify(res.data));
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      setNotification({ 
+        show: true, 
+        message: "Error fetching user data. Using cached data.", 
+        type: "warning" 
+      });
+      
+      // If fetch fails, we still have the localStorage data as fallback
+    }
+  };
+
+  useEffect(() => {
     if (token) {
-      getUserData();
+      // Always try to get fresh data from backend, but we have localStorage as fallback
+      fetchUserData();
     }
   }, [token]);
 
   const handleToggle2F = async () => {
     const newStatus = !twoFactor;
+    
+    // Optimistic update - update UI immediately
     setTwoFactor(newStatus);
+    if (userData) {
+      const updatedUserData = { ...userData, twofactor: newStatus };
+      setUserData(updatedUserData);
+      
+      // Update localStorage immediately
+      if (typeof window !== 'undefined') {
+        localStorage.setItem("userProfileData", JSON.stringify(updatedUserData));
+      }
+    }
 
     try {
       const response = await axios.post(`${api.Url}/user/twofactor`, { twofactor: newStatus }, {
@@ -110,33 +168,45 @@ function ProfileLists({ handleSettindSelection, onBackSBTNSelect }) {
           Authorization: `Bearer ${token}`,
         },
       });
+      
       setNotification({
         show: true,
         message: "Two-factor authentication updated successfully",
         type: "success",
       });
+      
+      // Refresh data from backend to ensure consistency
+      fetchUserData();
+      
     } catch (error) {
       setNotification({
         show: true,
         message: error.response?.data?.message || "Error updating two-factor",
         type: "error",
       });
+      
+      // Revert on error
       setTwoFactor(!newStatus);
+      if (userData) {
+        const revertedUserData = { ...userData, twofactor: !newStatus };
+        setUserData(revertedUserData);
+        
+        // Revert localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("userProfileData", JSON.stringify(revertedUserData));
+        }
+      }
     }
   };
 
-
   const handleLogout = () => {
-    // Clear localStorage
-    localStorage.clear();
-  
-    // Remove the auth cookie
+    // Clear all stored data
+    if (typeof window !== 'undefined') {
+      localStorage.clear();
+    }
     Cookies.remove('token');
-  
-    // Redirect to login
     router.push("/login");
   };
-  
 
   return (
     <>
@@ -149,13 +219,17 @@ function ProfileLists({ handleSettindSelection, onBackSBTNSelect }) {
       
       <div className='profile-top-bio-containe'>
         <div className='profile-top-bio-contain-user-info'>
-          <img src={userData?.profile_picture || "/default-profile.png"} alt={`Profile-${userData?.name || "User"}`} />
+          <img 
+            src={userData?.profile_picture || "/default-profile.png"} 
+            alt={`Profile-${userData?.name || "User"}`} 
+          />
           <span>
-            <h2>{userData?.name || "Loading..."}</h2>
-            <p>{userData?.email || "Fetching email..."}</p>
+            <h2>{userData?.name }</h2>
+            <p>{userData?.email}</p>
           </span>
         </div>
       </div>
+
 
       <section className='main-setting-section'>
         <div className='main-setting-list-q3' onClick={() => { handleSettindSelection(2); onBackSBTNSelect(false); }}>

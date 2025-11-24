@@ -81,8 +81,7 @@ function HomeAiModels() {
   return (
     <section className="ai-models-container">
       <div className="section-header">
-        <h2 className="section-title">Meet Your Perfect AI Companion</h2>
-        <p className="section-subtitle">Discover personalities that match your preferences</p>
+  
         
         <div className="gender-toggle" data-active={activeTab}>
           <button

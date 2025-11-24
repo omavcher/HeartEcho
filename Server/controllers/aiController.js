@@ -59,7 +59,7 @@ function hasSufficientQuota(userInfo, mediaType) {
   }
   
   // Free users need sufficient quota
-  const quotaRequired = mediaType === 'video' ? 10 : 5; // Videos cost 10, images cost 5
+  const quotaRequired = mediaType === 'video' ? 20 : 15; // Videos cost 20, images cost 15
   return userInfo.messageQuota >= quotaRequired;
 }
 
@@ -71,7 +71,7 @@ async function deductMediaQuota(userInfo, mediaType) {
     return true; // No deduction for premium users
   }
   
-  const quotaRequired = mediaType === 'video' ? 20 : 20;
+  const quotaRequired = mediaType === 'video' ? 20 : 15;
   
   if (userInfo.messageQuota >= quotaRequired) {
     userInfo.messageQuota -= quotaRequired;
