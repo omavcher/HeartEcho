@@ -79,13 +79,13 @@ function HomeAiModels() {
   };
 
   return (
-    <section className="ai-models-container">
-      <div className="section-header">
+    <section className="ai-models-container-d32ud">
+      <div className="section-header-d32ud">
   
         
-        <div className="gender-toggle" data-active={activeTab}>
+        <div className="gender-toggle-d32ud" data-active={activeTab}>
           <button
-            className={`toggle-option ${activeTab === "girls" ? "active" : ""}`}
+            className={`toggle-option-d32ud ${activeTab === "girls" ? "active-d32ud" : ""}`}
             onClick={() => setActiveTab("girls")}
             aria-label="Show female AI companions"
           >
@@ -95,7 +95,7 @@ function HomeAiModels() {
             Female
           </button>
           <button
-            className={`toggle-option ${activeTab === "boys" ? "active" : ""}`}
+            className={`toggle-option-d32ud ${activeTab === "boys" ? "active-d32ud" : ""}`}
             onClick={() => setActiveTab("boys")}
             aria-label="Show male AI companions"
           >
@@ -108,15 +108,15 @@ function HomeAiModels() {
       </div>
 
       {loading ? (
-        <div className="models-grid">
+        <div className="models-grid-d32ud">
           {[...Array(10)].map((_, index) => (
-            <div className="model-card skeleton" key={index}>
-              <div className="portrait-ratio-wrapper">
-                <div className="skeleton-image-container">
-                  <Skeleton height="100%" containerClassName="skeleton-image" />
+            <div className="model-card-d32ud skeleton-d32ud" key={index}>
+              <div className="portrait-ratio-wrapper-d32ud">
+                <div className="skeleton-image-container-d32ud">
+                  <Skeleton height="100%" containerClassName="skeleton-image-d32ud" />
                 </div>
               </div>
-              <div className="model-floating-info">
+              <div className="model-floating-info-d32ud">
                 <Skeleton width={120} height={24} />
                 <Skeleton width={180} height={20} />
               </div>
@@ -124,38 +124,38 @@ function HomeAiModels() {
           ))}
         </div>
       ) : error ? (
-        <div className="error-message">
+        <div className="error-message-d32ud">
           <Image 
             src="/error-icon.svg" 
             alt="Error"
             width={80}
             height={80}
-            className="error-icon"
+            className="error-icon-d32ud"
           />
           <p>{error}</p>
-          <button onClick={() => window.location.reload()} className="retry-button">
+          <button onClick={() => window.location.reload()} className="retry-button-d32ud">
             Try Again
           </button>
         </div>
       ) : filteredModels.length === 0 ? (
-        <div className="empty-state">
+        <div className="empty-state-d32ud">
           <Image 
             src="/no-models.svg" 
             alt="No models found"
             width={200}
             height={200}
-            className="empty-icon"
+            className="empty-icon-d32ud"
           />
           <p>No AI companions found in this category</p>
-          <button onClick={() => window.location.reload()} className="refresh-button">
+          <button onClick={() => window.location.reload()} className="refresh-button-d32ud">
             Refresh
           </button>
         </div>
       ) : (
-        <div className="models-grid">
+        <div className="models-grid-d32ud">
           {filteredModels.map((model, index) => (
             <div 
-              className="model-card" 
+              className="model-card-d32ud" 
               key={model._id}
               onClick={() => handleModelClick(model._id)}
               onMouseEnter={() => handleMouseEnter(model._id)}
@@ -165,14 +165,14 @@ function HomeAiModels() {
               onKeyDown={(e) => e.key === 'Enter' && handleModelClick(model._id)}
               style={{ animationDelay: `${index * 0.05}s` }}
             >
-              <div className="portrait-ratio-wrapper">
-                <div className="model-image-container">
+              <div className="portrait-ratio-wrapper-d32ud">
+                <div className="model-image-container-d32ud">
                   {/* Video element - only show when hovering and video exists */}
                   {hasVideo(model) && (
                     <video
                       ref={el => videoRefs.current[model._id] = el}
                       src={model.avatar_motion_video}
-                      className={`model-video portrait-image ${hoveredCard === model._id ? 'video-visible' : 'video-hidden'}`}
+                      className={`model-video-d32ud portrait-image-d32ud ${hoveredCard === model._id ? 'video-visible-d32ud' : 'video-hidden-d32ud'}`}
                       loop
                       muted
                       playsInline
@@ -186,28 +186,28 @@ function HomeAiModels() {
                     alt={model.name}
                     width={270}
                     height={480}
-                    className={`model-image portrait-image ${hasVideo(model) && hoveredCard === model._id ? 'image-hidden' : 'image-visible'}`}
+                    className={`model-image-d32ud portrait-image-d32ud ${hasVideo(model) && hoveredCard === model._id ? 'image-hidden-d32ud' : 'image-visible-d32ud'}`}
                     priority={index < 4}
                   />
                   
-                  <div className="model-overlay">
-                    <span className="model-age">{model.age}</span>
-                    <span className="model-gender">
+                  <div className="model-overlay-d32ud">
+                    <span className="model-age-d32ud">{model.age}</span>
+                    <span className="model-gender-d32ud">
                       {model.gender === 'female' ? '♀' : '♂'}
                     </span>
                   </div>
-                  <div className="model-badge">
+                  <div className="model-badge-d32ud">
                     {index < 3 && (
-                      <span className={`popular-tag ${index === 0 ? 'top-choice' : ''}`}>
+                      <span className={`popular-tag-d32ud ${index === 0 ? 'top-choice-d32ud' : ''}`}>
                         {index === 0 ? '🌟 Top Choice' : '⭐ Popular'}
                       </span>
                     )}
                   </div>
                   
                   {/* Modern floating info at bottom */}
-                  <div className="model-floating-info">
-                    <h3 className="model-name">{model.name}</h3>
-                    <p className="model-short-description">
+                  <div className="model-floating-info-d32ud">
+                    <h3 className="model-name-d32ud">{model.name}</h3>
+                    <p className="model-short-description-d32ud">
                       {getShortDescription(model.description)}
                     </p>
                   </div>

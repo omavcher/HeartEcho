@@ -404,8 +404,8 @@ exports.chatsDatas = async (req, res) => {
     // If chat is not found, check in PrebuiltAIFriend or AIFriend
     if (!chat) {
       const aiModelData =
-        (await PrebuiltAIFriend.findById(chatId)) ||
-        (await AIFriend.findById(chatId));
+        (await PrebuiltAIFriend.findById(chatId).select('-img_gallery -video_gallery')) ||
+        (await AIFriend.findById(chatId).select('-img_gallery -video_gallery'));
 
       return res.status(200).json(aiModelData || { error: "Chat not found" });
     }
@@ -577,7 +577,7 @@ exports.paymentSave = async (req, res) => {
       expiryDate = new Date(existingUser.subscriptionExpiry); // Use existing expiry if it's in the future
     }
 
-    if (rupees === 29) {
+    if (rupees === 49) {
       expiryDate.setMonth(expiryDate.getMonth() + 1); // Increase 1 month
     } else if (rupees === 399) {
       expiryDate.setFullYear(expiryDate.getFullYear() + 1); // Increase 1 year
@@ -646,5 +646,162 @@ exports.getPaymentData = async (req, res) => {
   } catch (error) {
     console.error("Error fetching payment data:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+// Check subscription status
+exports.getSubscriptionStatus = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId).select("user_type subscriptionExpiry messageQuota messagesUsedToday lastQuotaReset");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Reset quota if needed
+    user.resetDailyQuota();
+    await user.save();
+
+    const isSubscribed = user.isSubscriptionActive();
+    const remainingQuota = user.getRemainingQuota();
+    const daysUntilExpiry = user.subscriptionExpiry 
+      ? Math.ceil((user.subscriptionExpiry - new Date()) / (1000 * 60 * 60 * 24))
+      : 0;
+
+    res.status(200).json({
+      isSubscribed,
+      remainingQuota,
+      userType: user.user_type,
+      subscriptionExpiry: user.subscriptionExpiry,
+      daysUntilExpiry: Math.max(0, daysUntilExpiry),
+      messageQuota: user.messageQuota,
+      messagesUsedToday: user.messagesUsedToday
+    });
+  } catch (error) {
+    console.error("Error checking subscription status:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Update subscription (for payment success)
+exports.updateSubscription = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { durationType, paymentDetails } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update subscription
+    await user.updateSubscription(durationType);
+
+    // Save payment record if provided
+    if (paymentDetails) {
+      const payment = new Payment({
+        user: userId,
+        rupees: paymentDetails.amount,
+        transaction_id: paymentDetails.transactionId,
+        expiry_date: user.subscriptionExpiry,
+        plan_type: durationType
+      });
+      await payment.save();
+
+      // Add to user's payment history
+      user.payment_history.push(payment._id);
+      await user.save();
+    }
+
+    const updatedUser = await User.findById(userId).select("user_type subscriptionExpiry");
+
+    res.status(200).json({
+      success: true,
+      message: "Subscription updated successfully",
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error("Error updating subscription:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Get subscription plans
+exports.getSubscriptionPlans = async (req, res) => {
+  try {
+    const plans = [
+      {
+        id: "free",
+        name: "Free Plan",
+        price: 0,
+        duration: "forever",
+        features: [
+          "20 messages per day",
+          "Basic AI responses",
+          "Standard chat features"
+        ],
+        messageQuota: 20
+      },
+      {
+        id: "monthly",
+        name: "Monthly Pro",
+        price: 49,
+        duration: "month",
+        features: [
+          "Unlimited messages",
+          "Priority responses",
+          "Media generation",
+          "Advanced AI models"
+        ],
+        messageQuota: 999
+      },
+      {
+        id: "yearly",
+        name: "Yearly Pro",
+        price: 399,
+        duration: "year",
+        features: [
+          "Unlimited messages",
+          "Priority responses",
+          "Media generation",
+          "Advanced AI models",
+          "Save 30% vs monthly"
+        ],
+        messageQuota: 999
+      }
+    ];
+
+    res.status(200).json({ plans });
+  } catch (error) {
+    console.error("Error fetching subscription plans:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Check message quota before sending
+exports.checkMessageQuota = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { cost = 1 } = req.body; // Default cost is 1 for text messages
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const canSend = user.canSendMessage(cost);
+    const remainingQuota = user.getRemainingQuota();
+
+    res.status(200).json({
+      canSend,
+      remainingQuota,
+      isSubscribed: user.isSubscriptionActive(),
+      requiredCost: cost
+    });
+  } catch (error) {
+    console.error("Error checking message quota:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

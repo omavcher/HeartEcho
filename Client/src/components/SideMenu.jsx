@@ -2,14 +2,44 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 import '../styles/SideMenu.css';
+import api from '../config/api';
 
 function SideMenu() {
   const pathname = usePathname();
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const [activeLink, setActiveLink] = useState(pathname);
+
+  const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
+
+  const SaveSubscriptionStatusInLocalStorage = useCallback(async () => {
+    if (!token) return;
+
+    try {
+      const response = await axios.get(`${api.Url}/user/subscription/status`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const isSubscribed = response.data?.isSubscribed || false;
+
+      // ✅ STORE IN LOCAL STORAGE
+      localStorage.setItem("subscribed", JSON.stringify( response.data));
+
+
+    } catch (error) {
+      console.error("Error checking subscription:", error);
+
+      // Store false on fail
+      localStorage.setItem("isSubscribed", "false");
+    }
+  }, [token]);
+
+  useEffect(() => {
+    SaveSubscriptionStatusInLocalStorage();
+  }, [SaveSubscriptionStatusInLocalStorage]);
 
   const menuItems = [
     {

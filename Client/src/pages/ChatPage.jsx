@@ -16,6 +16,71 @@ function ChatPageContent() {
     const [selectedChatId, setSelectedChatId] = useState(aiChatId || null);
     const [refreshChats, setRefreshChats] = useState(false);
 
+    // Detect developer tools
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const detectDevTools = () => {
+            const widthThreshold = 160;
+            const heightThreshold = 160;
+            
+            // Check if devtools is open by checking window dimensions
+            if (window.outerWidth - window.innerWidth > widthThreshold || 
+                window.outerHeight - window.innerHeight > heightThreshold) {
+                console.warn('Developer tools detected');
+                // You can take action here - redirect, show warning, etc.
+                // window.location.href = '/blocked'; // Uncomment to redirect
+            }
+        };
+
+        // Check periodically
+        const interval = setInterval(detectDevTools, 1000);
+        
+        // Check on resize
+        window.addEventListener('resize', detectDevTools);
+        
+        // Debugger protection
+        const originalDebugger = console.debug;
+        console.debug = function() {
+            // You can block or modify debug behavior here
+            return originalDebugger.apply(console, arguments);
+        };
+
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('resize', detectDevTools);
+            console.debug = originalDebugger;
+        };
+    }, []);
+
+    // Block common keyboard shortcuts
+    useEffect(() => {
+        const blockShortcuts = (e) => {
+            // Block F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+U
+            if (e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+                (e.ctrlKey && e.key === 'u')) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        };
+
+        document.addEventListener('keydown', blockShortcuts, true);
+        return () => document.removeEventListener('keydown', blockShortcuts, true);
+    }, []);
+
+    // Right-click disable (optional)
+    useEffect(() => {
+        const blockContextMenu = (e) => {
+            e.preventDefault();
+            return false;
+        };
+
+        document.addEventListener('contextmenu', blockContextMenu);
+        return () => document.removeEventListener('contextmenu', blockContextMenu);
+    }, []);
+
     useEffect(() => {
         const handleResize = () => {
             setWindowWidth(window.innerWidth);

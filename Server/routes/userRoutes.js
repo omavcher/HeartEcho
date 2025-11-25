@@ -24,4 +24,11 @@ router.delete("/chats/:chatId/messages/:messageId", authMiddleware, controller.d
 router.post('/payment/save', authMiddleware , controller.paymentSave);
 router.get('/payment-details', authMiddleware , controller.getPaymentData);
 
+
+router.get("/subscription/status", authMiddleware, controller.getSubscriptionStatus);
+router.get("/plans", authMiddleware, controller.getSubscriptionPlans);
+router.post("/update", authMiddleware, controller.updateSubscription);
+router.post("/check-quota", authMiddleware, controller.checkMessageQuota);
+
+
 module.exports = router;

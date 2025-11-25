@@ -252,7 +252,7 @@ const Testimonials = () => {
         /* Design System & Variables                                                  */
         /* -------------------------------------------------------------------------- */
         :root {
-          --bg-dark: #050505;
+          --bg-dark: #000000ff;
           --card-bg: rgba(20, 20, 20, 0.6);
           --card-border: rgba(255, 255, 255, 0.08);
           --accent-primary: #FF2D95;

@@ -3,7 +3,8 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const axios = require('axios');
-
+// app.js or server.js
+require("./utils/cronJobs");
 dotenv.config();
 connectDB();
 

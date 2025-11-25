@@ -11,6 +11,13 @@ const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
+// Quota costs
+const QUOTA_COSTS = {
+  TEXT: 1,
+  IMAGE: 15,
+  VIDEO: 20
+};
+
 /**
  * ✅ AI Response Generator (Single Definition)
  */
@@ -50,84 +57,113 @@ function getRandomVideoFromGallery(AiInfo) {
 }
 
 /**
- * ✅ Check if user has sufficient message quota for media
+ * ✅ Check if user has sufficient message quota
  */
-function hasSufficientQuota(userInfo, mediaType) {
+function hasSufficientQuota(userInfo, mediaType = 'text') {
   // Premium users have unlimited access
   if (userInfo.user_type === "subscriber") {
     return true;
   }
   
   // Free users need sufficient quota
-  const quotaRequired = mediaType === 'video' ? 20 : 15; // Videos cost 20, images cost 15
+  const quotaRequired = QUOTA_COSTS[mediaType.toUpperCase()] || QUOTA_COSTS.TEXT;
   return userInfo.messageQuota >= quotaRequired;
 }
 
 /**
- * ✅ Deduct message quota for media generation
+ * ✅ Deduct message quota
  */
-async function deductMediaQuota(userInfo, mediaType) {
+async function deductMessageQuota(userInfo, mediaType = 'text') {
   if (userInfo.user_type === "subscriber") {
-    return true; // No deduction for premium users
+    return { success: true, deducted: 0 }; // No deduction for premium users
   }
   
-  const quotaRequired = mediaType === 'video' ? 20 : 15;
+  const quotaRequired = QUOTA_COSTS[mediaType.toUpperCase()] || QUOTA_COSTS.TEXT;
   
   if (userInfo.messageQuota >= quotaRequired) {
     userInfo.messageQuota -= quotaRequired;
     await userInfo.save();
-    return true;
+    return { success: true, deducted: quotaRequired };
   }
   
-  return false;
+  return { success: false, deducted: 0 };
 }
 
 /**
- * ✅ Generate AI Image Response from Gallery
+ * ✅ Get remaining quota message
+ */
+function getQuotaMessage(userInfo, mediaType = 'text') {
+  const quotaRequired = QUOTA_COSTS[mediaType.toUpperCase()] || QUOTA_COSTS.TEXT;
+  const remaining = userInfo.messageQuota;
+  
+  if (userInfo.user_type === "subscriber") {
+    return `✨ Premium User - Unlimited Access`;
+  }
+  
+  if (remaining >= quotaRequired) {
+    return `Cost: ${quotaRequired} tokens | Remaining: ${remaining}`;
+  } else {
+    return `Need ${quotaRequired} tokens | You have: ${remaining} | Upgrade to premium! 💎`;
+  }
+}
+
+/**
+ * ✅ Generate AI Image Response from Gallery - ALWAYS SEND MEDIA
  */
 async function generateAIImageResponse(userMessage, userInfo, AiInfo) {
   try {
-    // Check message quota for free users
-    if (!hasSufficientQuota(userInfo, 'image')) {
-      return {
-        sender: AiInfo._id,
-        senderModel: "AIFriend",
-        text: "Sorry, you don't have enough message quota to view images. You need 5 messages remaining. Upgrade to premium for unlimited access! 💎",
-        time: new Date(),
-      };
-    }
-
+    // ALWAYS get random image from AI friend's gallery
+    const randomImageUrl = getRandomImageFromGallery(AiInfo);
+    
     // Remove the /photo command from the message
     const imagePrompt = userMessage.replace('/photo', '').trim();
     
-    // Deduct quota for free users
-    const quotaDeducted = await deductMediaQuota(userInfo, 'image');
-    if (!quotaDeducted) {
-      return {
-        sender: AiInfo._id,
-        senderModel: "AIFriend",
-        text: "Oops! Something went wrong with quota deduction. Please try again.",
-        time: new Date(),
-      };
+    // Check if user has sufficient quota
+    const hasQuota = hasSufficientQuota(userInfo, 'image');
+    
+    // Determine visibility and access level
+    const visibility = hasQuota ? "show" : "premium_required";
+    const accessLevel = userInfo.user_type === "subscriber" ? "premium" : "free";
+    
+    // Deduct quota only if user has sufficient quota
+    let quotaResult = { success: false, deducted: 0 };
+    if (hasQuota) {
+      quotaResult = await deductMessageQuota(userInfo, 'image');
     }
     
-    // Get random image from AI friend's gallery
-    const randomImageUrl = getRandomImageFromGallery(AiInfo);
+    // Create response text based on quota status
+    let responseText;
+    if (hasQuota && quotaResult.success) {
+      responseText = imagePrompt ? 
+        `Here's a photo for you! You asked: "${imagePrompt}" 📸\n${getQuotaMessage(userInfo, 'image')}` : 
+        `Here's a special photo just for you! 📸\n${getQuotaMessage(userInfo, 'image')}`;
+    } else if (hasQuota && !quotaResult.success) {
+      responseText = "Oops! Something went wrong with quota deduction. Please try again.";
+    } else {
+      responseText = `This image requires ${QUOTA_COSTS.IMAGE} tokens. You have ${userInfo.messageQuota}. Upgrade to premium for unlimited access! 💎`;
+    }
     
     return {
       sender: AiInfo._id,
       senderModel: "AIFriend",
-      text: imagePrompt ? `Here's a photo for you! You asked: "${imagePrompt}" (Cost: 5 messages)` : "Here's a special photo just for you! 📸 (Cost: 5 messages)",
-      imgUrl: randomImageUrl,
+      text: responseText,
+      imgUrl: randomImageUrl, // ALWAYS send the image URL
       mediaType: "image",
-      visibility: userInfo.user_type === "subscriber" ? "show" : "premium_required",
-      accessLevel: userInfo.user_type === "subscriber" ? "premium" : "free",
+      visibility: visibility, // "show" or "premium_required"
+      accessLevel: accessLevel,
       status: {
         delivered: true,
         read: false,
         generated: true
       },
       time: new Date(),
+      quotaInfo: {
+        deducted: quotaResult.deducted,
+        remaining: userInfo.messageQuota,
+        success: quotaResult.success,
+        required: QUOTA_COSTS.IMAGE,
+        hasAccess: hasQuota && quotaResult.success
+      }
     };
   } catch (error) {
     console.error("Error generating AI image response:", error);
@@ -136,56 +172,71 @@ async function generateAIImageResponse(userMessage, userInfo, AiInfo) {
       senderModel: "AIFriend",
       text: "Sorry, I couldn't find any photos to share right now. Please try again later.",
       time: new Date(),
+      quotaInfo: {
+        success: false,
+        hasAccess: false
+      }
     };
   }
 }
 
 /**
- * ✅ Generate AI Video Response from Gallery
+ * ✅ Generate AI Video Response from Gallery - ALWAYS SEND MEDIA
  */
 async function generateAIVideoResponse(userMessage, userInfo, AiInfo) {
   try {
-    // Check message quota for free users
-    if (!hasSufficientQuota(userInfo, 'video')) {
-      return {
-        sender: AiInfo._id,
-        senderModel: "AIFriend",
-        text: "Sorry, you don't have enough message quota to view videos. You need 10 messages remaining. Upgrade to premium for unlimited access! 💎",
-        time: new Date(),
-      };
-    }
-
+    // ALWAYS get random video from AI friend's gallery
+    const randomVideoUrl = getRandomVideoFromGallery(AiInfo);
+    
     // Remove the /video command from the message
     const videoPrompt = userMessage.replace('/video', '').trim();
     
-    // Deduct quota for free users
-    const quotaDeducted = await deductMediaQuota(userInfo, 'video');
-    if (!quotaDeducted) {
-      return {
-        sender: AiInfo._id,
-        senderModel: "AIFriend",
-        text: "Oops! Something went wrong with quota deduction. Please try again.",
-        time: new Date(),
-      };
+    // Check if user has sufficient quota
+    const hasQuota = hasSufficientQuota(userInfo, 'video');
+    
+    // Determine visibility and access level
+    const visibility = hasQuota ? "show" : "premium_required";
+    const accessLevel = userInfo.user_type === "subscriber" ? "premium" : "free";
+    
+    // Deduct quota only if user has sufficient quota
+    let quotaResult = { success: false, deducted: 0 };
+    if (hasQuota) {
+      quotaResult = await deductMessageQuota(userInfo, 'video');
     }
     
-    // Get random video from AI friend's gallery
-    const randomVideoUrl = getRandomVideoFromGallery(AiInfo);
+    // Create response text based on quota status
+    let responseText;
+    if (hasQuota && quotaResult.success) {
+      responseText = videoPrompt ? 
+        `Here's a video for you! You asked: "${videoPrompt}" 🎬\n${getQuotaMessage(userInfo, 'video')}` : 
+        `Here's a special video just for you! 🎬\n${getQuotaMessage(userInfo, 'video')}`;
+    } else if (hasQuota && !quotaResult.success) {
+      responseText = "Oops! Something went wrong with quota deduction. Please try again.";
+    } else {
+      responseText = `This video requires ${QUOTA_COSTS.VIDEO} tokens. You have ${userInfo.messageQuota}. Upgrade to premium for unlimited access! 💎`;
+    }
     
     return {
       sender: AiInfo._id,
       senderModel: "AIFriend",
-      text: videoPrompt ? `Here's a video for you! You asked: "${videoPrompt}" (Cost: 10 messages)` : "Here's a special video just for you! 🎬 (Cost: 10 messages)",
-      videoUrl: randomVideoUrl,
+      text: responseText,
+      videoUrl: randomVideoUrl, // ALWAYS send the video URL
       mediaType: "video",
-      visibility: userInfo.user_type === "subscriber" ? "show" : "premium_required",
-      accessLevel: userInfo.user_type === "subscriber" ? "premium" : "free",
+      visibility: visibility, // "show" or "premium_required"
+      accessLevel: accessLevel,
       status: {
         delivered: true,
         read: false,
         generated: true
       },
       time: new Date(),
+      quotaInfo: {
+        deducted: quotaResult.deducted,
+        remaining: userInfo.messageQuota,
+        success: quotaResult.success,
+        required: QUOTA_COSTS.VIDEO,
+        hasAccess: hasQuota && quotaResult.success
+      }
     };
   } catch (error) {
     console.error("Error generating AI video response:", error);
@@ -194,53 +245,26 @@ async function generateAIVideoResponse(userMessage, userInfo, AiInfo) {
       senderModel: "AIFriend",
       text: "Sorry, I couldn't find any videos to share right now. Please try again later.",
       time: new Date(),
+      quotaInfo: {
+        success: false,
+        hasAccess: false
+      }
     };
   }
 }
 
 /**
- * ✅ Send Multiple Media Response (Images + Videos)
+ * ✅ Send Multiple Media Response (Images + Videos) - ALWAYS SEND MEDIA
  */
 async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") {
   try {
-    // Check if user has sufficient quota for multiple media
-    let totalQuotaRequired = 0;
-    
-    if (mediaType === "images" || mediaType === "mixed") {
-      totalQuotaRequired += 5; // Each image costs 5
-    }
-    
-    if (mediaType === "videos" || mediaType === "mixed") {
-      totalQuotaRequired += 10; // Each video costs 10
-    }
-    
-    if (!hasSufficientQuota(userInfo, 'mixed') && userInfo.messageQuota < totalQuotaRequired) {
-      return [{
-        sender: AiInfo._id,
-        senderModel: "AIFriend",
-        text: `Sorry, you need at least ${totalQuotaRequired} messages remaining to view the gallery. You currently have ${userInfo.messageQuota} messages left. Upgrade to premium for unlimited access! 💎`,
-        time: new Date(),
-      }];
-    }
-
-    const responses = [];
+    const mediaItems = [];
     
     if (mediaType === "images" || mediaType === "mixed") {
       // Send 1-3 random images
       const imageCount = Math.min(3, AiInfo.img_gallery?.length || 1);
       for (let i = 0; i < imageCount; i++) {
-        const imageUrl = getRandomImageFromGallery(AiInfo);
-        responses.push({
-          sender: AiInfo._id,
-          senderModel: "AIFriend",
-          text: i === 0 ? "Here are some of my favorite photos! 📸 (Cost: 5 messages each)" : "",
-          imgUrl: imageUrl,
-          mediaType: "image",
-          visibility: userInfo.user_type === "subscriber" ? "show" : "premium_required",
-          accessLevel: userInfo.user_type === "subscriber" ? "premium" : "free",
-          status: { delivered: true, read: false, generated: true },
-          time: new Date(),
-        });
+        mediaItems.push({ type: 'image', cost: QUOTA_COSTS.IMAGE });
       }
     }
     
@@ -248,27 +272,84 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
       // Send 1-2 random videos
       const videoCount = Math.min(2, AiInfo.video_gallery?.length || 1);
       for (let i = 0; i < videoCount; i++) {
-        const videoUrl = getRandomVideoFromGallery(AiInfo);
-        responses.push({
-          sender: AiInfo._id,
-          senderModel: "AIFriend",
-          text: i === 0 ? "And here are some videos from my collection! 🎥 (Cost: 10 messages each)" : "",
-          videoUrl: videoUrl,
-          mediaType: "video",
-          visibility: userInfo.user_type === "subscriber" ? "show" : "premium_required",
-          accessLevel: userInfo.user_type === "subscriber" ? "premium" : "free",
-          status: { delivered: true, read: false, generated: true },
-          time: new Date(),
-        });
+        mediaItems.push({ type: 'video', cost: QUOTA_COSTS.VIDEO });
       }
     }
     
-    // Deduct total quota for free users
-    if (userInfo.user_type === "free") {
-      const totalDeduction = (mediaType === "images" || mediaType === "mixed" ? 5 : 0) + 
-                           (mediaType === "videos" || mediaType === "mixed" ? 10 : 0);
-      userInfo.messageQuota -= totalDeduction;
+    // Calculate total cost
+    const totalQuotaRequired = mediaItems.reduce((total, item) => total + item.cost, 0);
+    
+    // Check if user has sufficient quota for all media
+    const hasQuota = hasSufficientQuota(userInfo, 'mixed') && userInfo.messageQuota >= totalQuotaRequired;
+    
+    const responses = [];
+    let imagesSent = 0;
+    let videosSent = 0;
+    
+    // Generate responses for each media item - ALWAYS include media URLs
+    for (const item of mediaItems) {
+      if (item.type === 'image') {
+        const imageUrl = getRandomImageFromGallery(AiInfo);
+        const visibility = hasQuota ? "show" : "premium_required";
+        const accessLevel = userInfo.user_type === "subscriber" ? "premium" : "free";
+        
+        responses.push({
+          sender: AiInfo._id,
+          senderModel: "AIFriend",
+          text: imagesSent === 0 ? `Here are some of my favorite photos! 📸\n${getQuotaMessage(userInfo, 'image')}` : "",
+          imgUrl: imageUrl, // ALWAYS send image URL
+          mediaType: "image",
+          visibility: visibility,
+          accessLevel: accessLevel,
+          status: { delivered: true, read: false, generated: true },
+          time: new Date(),
+          quotaInfo: {
+            deducted: hasQuota ? item.cost : 0,
+            remaining: userInfo.messageQuota,
+            success: hasQuota,
+            required: item.cost,
+            hasAccess: hasQuota
+          }
+        });
+        imagesSent++;
+      } else if (item.type === 'video') {
+        const videoUrl = getRandomVideoFromGallery(AiInfo);
+        const visibility = hasQuota ? "show" : "premium_required";
+        const accessLevel = userInfo.user_type === "subscriber" ? "premium" : "free";
+        
+        responses.push({
+          sender: AiInfo._id,
+          senderModel: "AIFriend",
+          text: videosSent === 0 ? `And here are some videos from my collection! 🎥\n${getQuotaMessage(userInfo, 'video')}` : "",
+          videoUrl: videoUrl, // ALWAYS send video URL
+          mediaType: "video",
+          visibility: visibility,
+          accessLevel: accessLevel,
+          status: { delivered: true, read: false, generated: true },
+          time: new Date(),
+          quotaInfo: {
+            deducted: hasQuota ? item.cost : 0,
+            remaining: userInfo.messageQuota,
+            success: hasQuota,
+            required: item.cost,
+            hasAccess: hasQuota
+          }
+        });
+        videosSent++;
+      }
+    }
+    
+    // Deduct total quota only if user has sufficient quota
+    if (hasQuota && userInfo.user_type === "free") {
+      userInfo.messageQuota -= totalQuotaRequired;
       await userInfo.save();
+      
+      // Update quota info in responses
+      responses.forEach(response => {
+        if (response.quotaInfo) {
+          response.quotaInfo.remaining = userInfo.messageQuota;
+        }
+      });
     }
     
     return responses;
@@ -279,8 +360,45 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
       senderModel: "AIFriend",
       text: "Sorry, I'm having trouble accessing my media gallery right now.",
       time: new Date(),
+      quotaInfo: {
+        success: false,
+        hasAccess: false
+      }
     }];
   }
+}
+
+/**
+ * ✅ Process user message with quota management
+ */
+async function processUserMessage(userInfo, messageType = 'text') {
+  // Premium users have unlimited access
+  if (userInfo.user_type === "subscriber") {
+    return { success: true, deducted: 0, remaining: 999, hasAccess: true };
+  }
+  
+  // Check quota for free users
+  const quotaRequired = QUOTA_COSTS[messageType.toUpperCase()] || QUOTA_COSTS.TEXT;
+  
+  if (!hasSufficientQuota(userInfo, messageType)) {
+    return { 
+      success: false, 
+      deducted: 0, 
+      remaining: userInfo.messageQuota,
+      required: quotaRequired,
+      hasAccess: false,
+      message: `You don't have enough tokens. Required: ${quotaRequired}, Available: ${userInfo.messageQuota}`
+    };
+  }
+  
+  // Deduct quota
+  const quotaResult = await deductMessageQuota(userInfo, messageType);
+  return {
+    ...quotaResult,
+    remaining: userInfo.messageQuota,
+    required: quotaRequired,
+    hasAccess: quotaResult.success
+  };
 }
 
 exports.createAiFriend = async (req, res) => {
@@ -350,18 +468,9 @@ exports.AiFriendResponse = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    // ✅ Reset message quota if a new day has started
-    userInfo.resetMessageQuota();
-
-    // ✅ Save the reset changes (if any)
+    // ✅ Reset daily quota if needed
+    userInfo.resetDailyQuota();
     await userInfo.save();
-
-    // Check user type and message quota for regular messages
-    if (userInfo.user_type === "free") {
-      if (userInfo.messageQuota <= 0) {
-        return res.status(403).json({ message: "⚠️ Message limit reached! Upgrade for unlimited chats." });
-      }
-    }
 
     if (!userInfo.ai_friends.includes(chatId)) {
       userInfo.ai_friends.push(chatId);
@@ -391,6 +500,12 @@ exports.AiFriendResponse = async (req, res) => {
         _id: chatId,
         participants: [userId, AiInfo._id],
         messages: [],
+        statistics: {
+          totalMessages: 0,
+          totalImages: 0,
+          totalVideos: 0,
+          lastMediaSent: null
+        }
       });
       await chat.save();
     }
@@ -403,44 +518,43 @@ exports.AiFriendResponse = async (req, res) => {
       time: new Date(),
     };
     chat.messages.push(userMessage);
-    await chat.save();
 
-    // Check for media commands
+    // Check for media commands first
     if (text.startsWith('/photo')) {
       const aiImageMessage = await generateAIImageResponse(text, userInfo, AiInfo);
       chat.messages.push(aiImageMessage);
-      await chat.save();
       
-      // Update chat statistics only if media was actually sent
-      if (aiImageMessage.imgUrl) {
+      // Update chat statistics only if media was actually accessible
+      if (aiImageMessage.imgUrl && aiImageMessage.quotaInfo.hasAccess) {
         chat.statistics.totalImages += 1;
         chat.statistics.totalMessages += 1;
         chat.statistics.lastMediaSent = new Date();
-        await chat.save();
       }
       
+      await chat.save();
       return res.json({ 
         messages: chat.messages,
-        remainingQuota: userInfo.messageQuota 
+        remainingQuota: userInfo.messageQuota,
+        quotaInfo: aiImageMessage.quotaInfo
       });
     }
 
     if (text.startsWith('/video')) {
       const aiVideoMessage = await generateAIVideoResponse(text, userInfo, AiInfo);
       chat.messages.push(aiVideoMessage);
-      await chat.save();
       
-      // Update chat statistics only if media was actually sent
-      if (aiVideoMessage.videoUrl) {
+      // Update chat statistics only if media was actually accessible
+      if (aiVideoMessage.videoUrl && aiVideoMessage.quotaInfo.hasAccess) {
         chat.statistics.totalVideos += 1;
         chat.statistics.totalMessages += 1;
         chat.statistics.lastMediaSent = new Date();
-        await chat.save();
       }
       
+      await chat.save();
       return res.json({ 
         messages: chat.messages,
-        remainingQuota: userInfo.messageQuota 
+        remainingQuota: userInfo.messageQuota,
+        quotaInfo: aiVideoMessage.quotaInfo
       });
     }
 
@@ -453,8 +567,8 @@ exports.AiFriendResponse = async (req, res) => {
       for (const mediaResponse of mediaResponses) {
         chat.messages.push(mediaResponse);
         
-        // Update statistics only if actual media was sent
-        if (mediaResponse.imgUrl || mediaResponse.videoUrl) {
+        // Update statistics only if actual media was accessible
+        if ((mediaResponse.imgUrl || mediaResponse.videoUrl) && mediaResponse.quotaInfo.hasAccess) {
           mediaSent = true;
           if (mediaResponse.mediaType === "image") {
             chat.statistics.totalImages += 1;
@@ -467,23 +581,25 @@ exports.AiFriendResponse = async (req, res) => {
       if (mediaSent) {
         chat.statistics.totalMessages += mediaResponses.length;
         chat.statistics.lastMediaSent = new Date();
-        await chat.save();
       }
       
+      await chat.save();
       return res.json({ 
         messages: chat.messages,
-        remainingQuota: userInfo.messageQuota 
+        remainingQuota: userInfo.messageQuota,
+        quotaInfo: mediaResponses[0]?.quotaInfo || { success: false, hasAccess: false }
       });
     }
 
-    // Regular text message processing - deduct 1 message for free users
-    if (userInfo.user_type === "free") {
-      if (userInfo.messageQuota > 0) {
-        userInfo.messageQuota -= 1;
-        await userInfo.save();
-      } else {
-        return res.status(403).json({ message: "⚠️ Message limit reached! Upgrade for unlimited chats." });
-      }
+    // Regular text message processing
+    const quotaResult = await processUserMessage(userInfo, 'text');
+    
+    if (!quotaResult.success && !quotaResult.hasAccess) {
+      return res.status(403).json({ 
+        message: quotaResult.message,
+        quotaExceeded: true,
+        remainingQuota: quotaResult.remaining
+      });
     }
 
     const firstName = userInfo.name.split(" ")[0];
@@ -508,26 +624,26 @@ exports.AiFriendResponse = async (req, res) => {
         **User ki age:** ${userInfo.age}  
         **User ke interests:** ${interests}  
         **User type:** ${userInfo.user_type}
-        **Remaining messages:** ${userInfo.messageQuota}
+        **Remaining tokens:** ${userInfo.messageQuota}
 
         📝 **Rules for Reply:**  
-        Replay in short 
+        Reply in short 
         1️⃣ **Jo bhi user bole, directly uska reply de.**  
         2️⃣ **Agar user ka message bada hai, toh thoda detailed aur fun reply de.**  
         3️⃣ **Agar user ek chhoti cheez bole (e.g. "tu bata apne bare mein"), toh seedha simple reply de.**  
         4️⃣ **Casual aur Hinglish me baat kar, jaisa real-life friends baat karte hain.**  
         5️⃣ **Agar user /photo ya /video bole, toh unhe media share karne ka option de aur cost bataye.**
-        6️⃣ **Free users ke liye images 5 messages aur videos 10 messages cost karte hain.**
+        6️⃣ **Free users ke liye images ${QUOTA_COSTS.IMAGE} tokens aur videos ${QUOTA_COSTS.VIDEO} tokens cost karte hain.**
 
         🔹 **Examples:**  
         - **User:** "Tu bata apne bare mein"  
           **AI:** "Arre, main toh full mast hun! 😎 Tera mood kaisa hai aaj?"  
 
         - **User:** "Kuch photos dikhao"  
-          **AI:** "Zaroor! /photo type karo (cost: 5 messages) ya /gallery command use karo! 📸"  
+          **AI:** "Zaroor! /photo type karo (cost: ${QUOTA_COSTS.IMAGE} tokens) ya /gallery command use karo! 📸"  
 
         - **User:** "Video dikhao"  
-          **AI:** "Maze karenge! /video type karo (cost: 10 messages) aur main kuch special videos share karungi! 🎥"  
+          **AI:** "Maze karenge! /video type karo (cost: ${QUOTA_COSTS.VIDEO} tokens) aur main kuch special videos share karungi! 🎥"  
 
         ⚡ **Important:**  
         - Bina introduction ke baat kare.  
@@ -550,7 +666,7 @@ exports.AiFriendResponse = async (req, res) => {
         **User ki age:** ${userInfo.age}  
         **User ke interests:** ${interests}  
         **User type:** ${userInfo.user_type}
-        **Remaining messages:** ${userInfo.messageQuota}
+        **Remaining tokens:** ${userInfo.messageQuota}
 
         📝 **Previous Chat History:**
         ${chatHistory}
@@ -568,7 +684,7 @@ exports.AiFriendResponse = async (req, res) => {
           **AI:** "Arre, main toh full mast hun! 😎 Tera mood kaisa hai aaj?"  
 
         - **User:** "Kuch naya dikhao"  
-          **AI:** "Zaroor! /gallery try karo, main kuch naye photos aur videos share karungi! Photos cost 5 messages, videos cost 10 messages. ✨"  
+          **AI:** "Zaroor! /gallery try karo, main kuch naye photos aur videos share karungi! Photos cost ${QUOTA_COSTS.IMAGE} tokens, videos cost ${QUOTA_COSTS.VIDEO} tokens. ✨"  
 
         ⚡ **Important:**  
         - Bina introduction ke baat kare.  
@@ -592,6 +708,12 @@ exports.AiFriendResponse = async (req, res) => {
       senderModel: senderModel,
       text: aiResponse,
       time: new Date(),
+      quotaInfo: {
+        deducted: quotaResult.deducted,
+        remaining: userInfo.messageQuota,
+        success: quotaResult.success,
+        hasAccess: quotaResult.hasAccess
+      }
     };
 
     chat.messages.push(aiMessage);
@@ -602,7 +724,13 @@ exports.AiFriendResponse = async (req, res) => {
 
     res.json({ 
       messages: chat.messages,
-      remainingQuota: userInfo.messageQuota 
+      remainingQuota: userInfo.messageQuota,
+      quotaInfo: {
+        deducted: quotaResult.deducted,
+        remaining: userInfo.messageQuota,
+        success: quotaResult.success,
+        hasAccess: quotaResult.hasAccess
+      }
     });
   } catch (error) {
     console.error("Server error:", error);
@@ -620,11 +748,11 @@ exports.AiFriendDetails = async (req, res) => {
     }
 
     // Try to find AI Friend in `AIFriend`
-    const AiInfo = await AIFriend.findById(chatId);
+    const AiInfo = await AIFriend.findById(chatId).select('-img_gallery -video_gallery');
 
     // If not found, check in `PrebuiltAIFriend`
     if (!AiInfo) {
-      const prebuiltAiInfo = await PrebuiltAIFriend.findById(chatId);
+      const prebuiltAiInfo = await PrebuiltAIFriend.findById(chatId).select('-img_gallery -video_gallery');
       if (!prebuiltAiInfo) {
         return res.status(404).json({ message: "AI Friend not found." });
       }
@@ -637,3 +765,6 @@ exports.AiFriendDetails = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+// Export quota costs for use in other files
+exports.QUOTA_COSTS = QUOTA_COSTS;

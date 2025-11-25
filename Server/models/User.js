@@ -1,3 +1,4 @@
+// models/User.js - Updated version
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
@@ -17,27 +18,23 @@ const userSchema = new mongoose.Schema({
   subscribeNews: { type: Boolean, default: false },
   selectedInterests: [{ type: String }],
 
-  // New Fields for Subscription Management
-  joinedAt: { type: Date, default: Date.now }, // Track account creation date
-  subscriptionExpiry: { type: Date, default: null }, // Null means no expiry (for lifetime access)
+  // Subscription Management
+  joinedAt: { type: Date, default: Date.now },
+  subscriptionExpiry: { type: Date, default: null },
   
-  messageQuota: { type: Number, default: 20 }, // Default free messages per day
-  lastQuotaReset: { type: Date, default: Date.now }, // Track last reset date
+  // Message quota system
+  messageQuota: { type: Number, default: 20 },
+  lastQuotaReset: { type: Date, default: Date.now },
+  messagesUsedToday: { type: Number, default: 0 }, // Track daily usage
 
-  // Referral System Fields
+  // Referral System
   referredBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ReferralCreator',
     default: null
   },
-  referralSignupDate: {
-    type: Date,
-    default: null
-  },
-  hasUsedReferral: {
-    type: Boolean,
-    default: false
-  },
+  referralSignupDate: { type: Date, default: null },
+  hasUsedReferral: { type: Boolean, default: false },
 
   payment_history: [{ type: mongoose.Schema.Types.ObjectId, ref: "Payment" }],
   login_details: [{ type: mongoose.Schema.Types.ObjectId, ref: "LoginDetail" }],
@@ -48,53 +45,97 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Method to reset message quota once per day (Only for free users)
-userSchema.methods.resetMessageQuota = function () {
-  const today = new Date();
-  const lastReset = new Date(this.lastQuotaReset);
-
-  if (
-    today.getUTCFullYear() !== lastReset.getUTCFullYear() ||
-    today.getUTCMonth() !== lastReset.getUTCMonth() ||
-    today.getUTCDate() !== lastReset.getUTCDate()
-  ) {
-    if (this.user_type === "free") {
-      this.messageQuota = 20; // Reset only for free users
-    }
-    this.lastQuotaReset = today;
-  }
-};
-
-// Method to check if a user's subscription is valid
-userSchema.methods.isSubscriptionActive = function () {
-  if (!this.subscriptionExpiry) return false; // No expiry date set means no active subscription
-  return new Date() <= this.subscriptionExpiry; // Check if the current date is before expiry
-};
-
-// Method to update subscription (monthly or yearly)
-userSchema.methods.subscribe = function (durationType) {
+// Method to check and reset daily quota
+userSchema.methods.resetDailyQuota = function () {
   const now = new Date();
+  const lastReset = new Date(this.lastQuotaReset);
+  
+  // Check if it's a new day (comparing year, month, day)
+  if (now.toDateString() !== lastReset.toDateString()) {
+    this.messagesUsedToday = 0;
+    this.lastQuotaReset = now;
+    return true;
+  }
+  return false;
+};
+
+// Method to check if user can send message
+userSchema.methods.canSendMessage = function (cost = 1) {
+  this.resetDailyQuota(); // Reset quota if new day
+  
+  if (this.isSubscriptionActive()) {
+    return true; // Subscribers have unlimited access
+  }
+  
+  return (this.messagesUsedToday + cost) <= this.messageQuota;
+};
+
+// Method to deduct message quota
+userSchema.methods.deductMessageQuota = function (cost = 1) {
+  if (!this.isSubscriptionActive()) {
+    this.messagesUsedToday += cost;
+  }
+  return this.save();
+};
+
+// Method to check if subscription is active
+userSchema.methods.isSubscriptionActive = function () {
+  // If no expiry date, check user_type
+  if (!this.subscriptionExpiry) {
+    return this.user_type === "subscriber";
+  }
+  return new Date() <= this.subscriptionExpiry;
+};
+
+// Method to get remaining quota
+userSchema.methods.getRemainingQuota = function () {
+  this.resetDailyQuota(); // Ensure quota is reset if needed
+  if (this.isSubscriptionActive()) {
+    return 999; // Unlimited for subscribers
+  }
+  return Math.max(0, this.messageQuota - this.messagesUsedToday);
+};
+
+// Method to update subscription
+userSchema.methods.updateSubscription = function (durationType) {
+  const now = new Date();
+  let newExpiry = new Date(now);
+
+  if (this.subscriptionExpiry && this.subscriptionExpiry > now) {
+    newExpiry = new Date(this.subscriptionExpiry); // Extend from current expiry
+  }
 
   if (durationType === "monthly") {
-    now.setMonth(now.getMonth() + 1); // Add 1 month
+    newExpiry.setMonth(newExpiry.getMonth() + 1);
   } else if (durationType === "yearly") {
-    now.setFullYear(now.getFullYear() + 1); // Add 1 year
+    newExpiry.setFullYear(newExpiry.getFullYear() + 1);
   } else if (durationType === "lifetime") {
-    this.subscriptionExpiry = null; // Lifetime subscription (never expires)
+    this.subscriptionExpiry = null; // Never expires
     this.user_type = "subscriber";
-    return;
+    return this.save();
   }
 
-  this.subscriptionExpiry = now;
+  this.subscriptionExpiry = newExpiry;
   this.user_type = "subscriber";
+  return this.save();
 };
 
-// Method to check and reset subscription if expired
-userSchema.methods.checkSubscription = function () {
-  if (this.subscriptionExpiry && new Date() > this.subscriptionExpiry) {
-    this.user_type = "free"; // Revert user back to free if expired
-    this.subscriptionExpiry = null; // Clear expiry date
-  }
+// Static method to check and update expired subscriptions
+userSchema.statics.checkExpiredSubscriptions = async function () {
+  const now = new Date();
+  const result = await this.updateMany(
+    {
+      user_type: "subscriber",
+      subscriptionExpiry: { $lte: now }
+    },
+    {
+      $set: { 
+        user_type: "free",
+        subscriptionExpiry: null
+      }
+    }
+  );
+  return result;
 };
 
 const User = mongoose.model("User", userSchema);

@@ -77,7 +77,7 @@ export const faqCategories = [
     items: [
       {
         question: 'Who created EchoHeart?',
-        answer: 'EchoHeart was single-handedly built by [Your Name] - a developer passionate about emotional technology. From initial concept to serving 200,000+ users, every aspect reflects one person\'s vision for better digital connection.'
+        answer: 'EchoHeart was single-handedly built by Om Avcher - a developer passionate about emotional technology. From initial concept to serving 200,000+ users, every aspect reflects one person\'s vision for better digital connection.'
       },
       {
         question: 'How was EchoHeart built without a team?',

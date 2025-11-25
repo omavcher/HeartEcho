@@ -21,21 +21,21 @@ function AIFriends() {
   // --- STYLES INJECTION ---
   const styles = `
     :root {
-      --bg-dark: #000000ff;
-      --bg-card: #000000ff;
-      --primary: #cf4185;
-      --primary-dark: #9d2f63;
-      --text-main: #ffffff;
-      --text-muted: #a1a1a1;
-      --glass-bg: rgba(20, 20, 20, 0.7);
-      --glass-border: rgba(255, 255, 255, 0.08);
-      --accent: #00e676;
+      --bg-dark-38f3a: #000000ff;
+      --bg-card-38f3a: #000000ff;
+      --primary-38f3a: #cf4185;
+      --primary-dark-38f3a: #9d2f63;
+      --text-main-38f3a: #ffffff;
+      --text-muted-38f3a: #a1a1a1;
+      --glass-bg-38f3a: rgba(20, 20, 20, 0.7);
+      --glass-border-38f3a: rgba(255, 255, 255, 0.08);
+      --accent-38f3a: #00e676;
     }
 
-    .ai-friends-container {
+    .ai-friends-container-38f3a {
       min-height: 100vh;
-      background-color: var(--bg-dark);
-      color: var(--text-main);
+      background-color: var(--bg-dark-38f3a);
+      color: var(--text-main-38f3a);
       font-family: 'Inter', sans-serif;
       padding: 20px;
       background-image: 
@@ -44,160 +44,160 @@ function AIFriends() {
     }
 
     /* Header */
-    .ai-header {
+    .ai-header-38f3a {
       text-align: center;
       margin-bottom: 30px;
     }
 
-    .ai-header h1 {
+    .ai-header-38f3a h1 {
       font-size: 2.5rem;
       font-weight: 800;
       margin: 0;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
+      background: linear-gradient(135deg, var(--primary-38f3a), var(--accent-38f3a));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       letter-spacing: -1px;
     }
 
-    .ai-header p {
-      color: var(--text-muted);
+    .ai-header-38f3a p {
+      color: var(--text-muted-38f3a);
       font-size: 1.1rem;
       margin-top: 10px;
     }
 
     /* Filter Toggle */
-    .filter-toggle {
+    .filter-toggle-38f3a {
       display: flex;
       justify-content: center;
       margin-bottom: 20px;
     }
 
-    .filter-toggle-btn {
+    .filter-toggle-btn-38f3a {
       display: flex;
       align-items: center;
       gap: 8px;
       padding: 10px 20px;
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
+      background: var(--glass-bg-38f3a);
+      border: 1px solid var(--glass-border-38f3a);
       border-radius: 25px;
-      color: var(--text-main);
+      color: var(--text-main-38f3a);
       cursor: pointer;
       transition: all 0.3s ease;
       backdrop-filter: blur(10px);
     }
 
-    .filter-toggle-btn:hover {
-      border-color: var(--primary);
+    .filter-toggle-btn-38f3a:hover {
+      border-color: var(--primary-38f3a);
       transform: translateY(-2px);
     }
 
     /* Filters Panel */
-    .ai-filters-panel {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
+    .ai-filters-panel-38f3a {
+      background: var(--glass-bg-38f3a);
+      border: 1px solid var(--glass-border-38f3a);
       border-radius: 20px;
       padding: 25px;
       margin-bottom: 30px;
       backdrop-filter: blur(20px);
-      animation: slideDown 0.3s ease-out;
+      animation: slideDown-38f3a 0.3s ease-out;
     }
 
-    .filters-grid {
+    .filters-grid-38f3a {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 25px;
     }
 
-    .filter-group {
+    .filter-group-38f3a {
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
 
-    .filter-group label {
+    .filter-group-38f3a label {
       font-weight: 600;
-      color: var(--text-main);
+      color: var(--text-main-38f3a);
       font-size: 0.9rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
-    .filter-options {
+    .filter-options-38f3a {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
     }
 
-    .filter-options button {
+    .filter-options-38f3a button {
       padding: 8px 16px;
-      border: 1px solid var(--glass-border);
+      border: 1px solid var(--glass-border-38f3a);
       background: rgba(255,255,255,0.05);
-      color: var(--text-muted);
+      color: var(--text-muted-38f3a);
       border-radius: 15px;
       cursor: pointer;
       transition: all 0.2s ease;
       font-size: 0.85rem;
     }
 
-    .filter-options button.active {
-      background: var(--primary);
+    .filter-options-38f3a button.active-38f3a {
+      background: var(--primary-38f3a);
       color: white;
-      border-color: var(--primary);
+      border-color: var(--primary-38f3a);
     }
 
-    .filter-options button:hover:not(.active) {
-      border-color: var(--primary);
-      color: var(--primary);
+    .filter-options-38f3a button:hover:not(.active-38f3a) {
+      border-color: var(--primary-38f3a);
+      color: var(--primary-38f3a);
     }
 
-    .range-slider {
+    .range-slider-38f3a {
       position: relative;
       padding: 10px 0;
     }
 
-    .range-slider input[type="range"] {
+    .range-slider-38f3a input[type="range"] {
       width: 100%;
       height: 4px;
-      background: var(--glass-border);
+      background: var(--glass-border-38f3a);
       border-radius: 2px;
       outline: none;
       -webkit-appearance: none;
     }
 
-    .range-slider input[type="range"]::-webkit-slider-thumb {
+    .range-slider-38f3a input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
       width: 18px;
       height: 18px;
-      background: var(--primary);
+      background: var(--primary-38f3a);
       border-radius: 50%;
       cursor: pointer;
       border: 2px solid white;
     }
 
-    .range-values {
+    .range-values-38f3a {
       display: flex;
       justify-content: space-between;
       font-size: 0.8rem;
-      color: var(--text-muted);
+      color: var(--text-muted-38f3a);
       margin-top: 5px;
     }
 
-    .filter-select {
+    .filter-select-38f3a {
       padding: 10px 15px;
-      border: 1px solid var(--glass-border);
+      border: 1px solid var(--glass-border-38f3a);
       background: rgba(255,255,255,0.05);
-      color: var(--text-main);
+      color: var(--text-main-38f3a);
       border-radius: 12px;
       outline: none;
       cursor: pointer;
     }
 
-    .filter-select:focus {
-      border-color: var(--primary);
+    .filter-select-38f3a:focus {
+      border-color: var(--primary-38f3a);
     }
 
-    /* Grid */
-    .ai-grid {
+    /* Grid - Updated for 2 cards per row on mobile */
+    .ai-grid-38f3a {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 25px;
@@ -205,32 +205,32 @@ function AIFriends() {
     }
 
     /* AI Card */
-    .ai-card {
+    .ai-card-38f3a {
       position: relative;
       border-radius: 20px;
       overflow: hidden;
-      background: var(--bg-card);
-      border: 1px solid var(--glass-border);
+      background: var(--bg-card-38f3a);
+      border: 1px solid var(--glass-border-38f3a);
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       cursor: pointer;
       text-decoration: none;
       color: inherit;
     }
 
-    .ai-card:hover {
+    .ai-card-38f3a:hover {
       transform: translateY(-10px) scale(1.02);
-      border-color: var(--primary);
+      border-color: var(--primary-38f3a);
       box-shadow: 0 20px 40px rgba(207, 65, 133, 0.2);
     }
 
-    .portrait-ratio-wrapper {
+    .portrait-ratio-wrapper-38f3a {
       position: relative;
       width: 100%;
       aspect-ratio: 9/16;
       overflow: hidden;
     }
 
-    .ai-card-media {
+    .ai-card-media-38f3a {
       position: absolute;
       top: 0;
       left: 0;
@@ -240,24 +240,24 @@ function AIFriends() {
       transition: opacity 0.3s ease;
     }
 
-    .ai-model-video {
+    .ai-model-video-38f3a {
       opacity: 0;
     }
 
-    .ai-model-video.video-visible {
+    .ai-model-video-38f3a.video-visible-38f3a {
       opacity: 1;
     }
 
-    .ai-model-image {
+    .ai-model-image-38f3a {
       opacity: 1;
     }
 
-    .ai-model-image.image-hidden {
+    .ai-model-image-38f3a.image-hidden-38f3a {
       opacity: 0;
     }
 
     /* Card Badges */
-    .ai-age {
+    .ai-age-38f3a {
       position: absolute;
       top: 12px;
       left: 12px;
@@ -270,7 +270,7 @@ function AIFriends() {
       backdrop-filter: blur(10px);
     }
 
-    .ai-gender {
+    .ai-gender-38f3a {
       position: absolute;
       top: 12px;
       right: 12px;
@@ -283,7 +283,7 @@ function AIFriends() {
     }
 
     /* Floating Info */
-    .ai-floating-info {
+    .ai-floating-info-38f3a {
       position: absolute;
       bottom: 0;
       left: 0;
@@ -295,25 +295,25 @@ function AIFriends() {
       transition: transform 0.3s ease;
     }
 
-    .ai-card:hover .ai-floating-info {
+    .ai-card-38f3a:hover .ai-floating-info-38f3a {
       transform: translateY(0);
     }
 
-    .ai-card-header {
+    .ai-card-header-38f3a {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       margin-bottom: 8px;
     }
 
-    .ai-card-header h3 {
+    .ai-card-header-38f3a h3 {
       margin: 0;
       font-size: 1.2rem;
       font-weight: 700;
     }
 
-    .ai-relationship {
-      background: var(--primary);
+    .ai-relationship-38f3a {
+      background: var(--primary-38f3a);
       color: white;
       padding: 4px 8px;
       border-radius: 8px;
@@ -323,7 +323,7 @@ function AIFriends() {
       letter-spacing: 0.5px;
     }
 
-    .ai-short-description {
+    .ai-short-description-38f3a {
       margin: 0;
       font-size: 0.85rem;
       opacity: 0.9;
@@ -331,7 +331,7 @@ function AIFriends() {
     }
 
     /* Video Play Indicator */
-    .video-indicator {
+    .video-indicator-38f3a {
       position: absolute;
       top: 50%;
       left: 50%;
@@ -348,46 +348,46 @@ function AIFriends() {
       backdrop-filter: blur(10px);
     }
 
-    .ai-card:hover .video-indicator {
+    .ai-card-38f3a:hover .video-indicator-38f3a {
       opacity: 1;
     }
 
     /* Loading States */
-    .ai-card.skeleton {
+    .ai-card-38f3a.skeleton-38f3a {
       pointer-events: none;
     }
 
-    .skeleton-media {
+    .skeleton-media-38f3a {
       width: 100%;
       height: 100%;
       background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
       background-size: 200% 100%;
-      animation: loading 1.5s infinite;
+      animation: loading-38f3a 1.5s infinite;
       border-radius: 20px;
     }
 
-    .skeleton-info {
+    .skeleton-info-38f3a {
       padding: 15px;
     }
 
-    .skeleton-line {
+    .skeleton-line-38f3a {
       height: 12px;
       background: rgba(255,255,255,0.05);
       border-radius: 6px;
       margin-bottom: 8px;
-      animation: loading 1.5s infinite;
+      animation: loading-38f3a 1.5s infinite;
     }
 
-    .skeleton-line.short {
+    .skeleton-line-38f3a.short-38f3a {
       width: 60%;
     }
 
-    .skeleton-line.medium {
+    .skeleton-line-38f3a.medium-38f3a {
       width: 80%;
     }
 
     /* Error & Empty States */
-    .ai-error {
+    .ai-error-38f3a {
       background: #ff4d4d;
       color: white;
       padding: 15px 20px;
@@ -396,52 +396,116 @@ function AIFriends() {
       margin-bottom: 20px;
     }
 
-    .ai-empty {
+    .ai-empty-38f3a {
       grid-column: 1 / -1;
       text-align: center;
       padding: 60px 20px;
-      color: var(--text-muted);
+      color: var(--text-muted-38f3a);
     }
 
-    .ai-empty h3 {
+    .ai-empty-38f3a h3 {
       font-size: 1.5rem;
       margin-bottom: 10px;
     }
 
     /* Animations */
-    @keyframes slideDown {
+    @keyframes slideDown-38f3a {
       from { opacity: 0; transform: translateY(-20px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes loading {
+    @keyframes loading-38f3a {
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
 
-    /* Responsive */
+    /* Responsive - Updated for 2 cards per row on mobile */
     @media (max-width: 768px) {
-      .ai-grid {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
+      .ai-grid-38f3a {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
       }
       
-      .filters-grid {
+      .filters-grid-38f3a {
         grid-template-columns: 1fr;
       }
       
-      .ai-header h1 {
+      .ai-header-38f3a h1 {
         font-size: 2rem;
+      }
+      
+      .ai-card-38f3a {
+        max-width: 100%;
+      }
+      
+      .portrait-ratio-wrapper-38f3a {
+        aspect-ratio: 9/16;
+      }
+      
+      .ai-floating-info-38f3a {
+        padding: 15px 10px 10px;
+      }
+      
+      .ai-card-header-38f3a h3 {
+        font-size: 1rem;
+      }
+      
+      .ai-relationship-38f3a {
+        font-size: 0.6rem;
+        padding: 3px 6px;
+      }
+      
+      .ai-short-description-38f3a {
+        font-size: 0.75rem;
       }
     }
 
     @media (max-width: 480px) {
-      .ai-grid {
-        grid-template-columns: 1fr;
+      .ai-grid-38f3a {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
       }
       
-      .ai-friends-container {
+      .ai-friends-container-38f3a {
         padding: 15px;
+      }
+      
+      .ai-card-38f3a:hover {
+        transform: translateY(-5px) scale(1.01);
+      }
+      
+      .ai-age-38f3a,
+      .ai-gender-38f3a {
+        top: 8px;
+        font-size: 0.7rem;
+        padding: 3px 6px;
+      }
+    }
+
+    /* Tablet Styles */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .ai-grid-38f3a {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+      }
+    }
+
+    /* Large Desktop */
+    @media (min-width: 1200px) {
+      .ai-grid-38f3a {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      }
+    }
+
+    /* Small mobile devices */
+    @media (max-width: 360px) {
+      .ai-grid-38f3a {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      
+      .ai-friends-container-38f3a {
+        padding: 10px;
       }
     }
   `;
@@ -513,19 +577,19 @@ function AIFriends() {
   };
 
   return (
-    <div className="ai-friends-container">
+    <div className="ai-friends-container-38f3a">
       <style>{styles}</style>
 
       {/* Header */}
-      <div className="ai-header">
+      <div className="ai-header-38f3a">
         <h1>Meet Your AI Companions</h1>
         <p>Discover amazing AI personalities ready to chat with you</p>
       </div>
 
       {/* Filter Toggle */}
-      <div className="filter-toggle">
+      <div className="filter-toggle-38f3a">
         <button 
-          className="filter-toggle-btn"
+          className="filter-toggle-btn-38f3a"
           onClick={() => setShowFilters(!showFilters)}
         >
           <Filter size={18} />
@@ -535,15 +599,15 @@ function AIFriends() {
 
       {/* Filters Panel */}
       {showFilters && (
-        <div className="ai-filters-panel">
-          <div className="filters-grid">
-            <div className="filter-group">
+        <div className="ai-filters-panel-38f3a">
+          <div className="filters-grid-38f3a">
+            <div className="filter-group-38f3a">
               <label>Gender</label>
-              <div className="filter-options">
+              <div className="filter-options-38f3a">
                 {['all', 'female', 'male'].map(gender => (
                   <button
                     key={gender}
-                    className={activeTab === gender ? 'active' : ''}
+                    className={activeTab === gender ? 'active-38f3a' : ''}
                     onClick={() => setActiveTab(gender)}
                   >
                     {gender.charAt(0).toUpperCase() + gender.slice(1)}
@@ -552,9 +616,9 @@ function AIFriends() {
               </div>
             </div>
 
-            <div className="filter-group">
+            <div className="filter-group-38f3a">
               <label>Age Range</label>
-              <div className="range-slider">
+              <div className="range-slider-38f3a">
                 <input
                   type="range"
                   min="18"
@@ -569,17 +633,17 @@ function AIFriends() {
                   value={ageRange[1]}
                   onChange={(e) => setAgeRange([ageRange[0], parseInt(e.target.value)])}
                 />
-                <div className="range-values">
+                <div className="range-values-38f3a">
                   <span>{ageRange[0]}</span>
                   <span>{ageRange[1]}</span>
                 </div>
               </div>
             </div>
 
-            <div className="filter-group">
+            <div className="filter-group-38f3a">
               <label>Personality Type</label>
               <select
-                className="filter-select"
+                className="filter-select-38f3a"
                 value={relationshipFilter}
                 onChange={(e) => setRelationshipFilter(e.target.value)}
               >
@@ -594,19 +658,19 @@ function AIFriends() {
       )}
 
       {/* Error Message */}
-      {error && <div className="ai-error">{error}</div>}
+      {error && <div className="ai-error-38f3a">{error}</div>}
 
       {/* AI Models Grid */}
-      <div className="ai-grid">
+      <div className="ai-grid-38f3a">
         {loading ? (
           Array.from({ length: 8 }).map((_, index) => (
-            <div className="ai-card skeleton" key={index}>
-              <div className="portrait-ratio-wrapper">
-                <div className="skeleton-media"></div>
+            <div className="ai-card-38f3a skeleton-38f3a" key={index}>
+              <div className="portrait-ratio-wrapper-38f3a">
+                <div className="skeleton-media-38f3a"></div>
               </div>
-              <div className="skeleton-info">
-                <div className="skeleton-line short"></div>
-                <div className="skeleton-line medium"></div>
+              <div className="skeleton-info-38f3a">
+                <div className="skeleton-line-38f3a short-38f3a"></div>
+                <div className="skeleton-line-38f3a medium-38f3a"></div>
               </div>
             </div>
           ))
@@ -614,18 +678,18 @@ function AIFriends() {
           filteredModels.map((model) => (
             <Link 
               href={`/chatbox?chatId=${model._id}`} 
-              className="ai-card" 
+              className="ai-card-38f3a" 
               key={model._id}
               onMouseEnter={() => handleMouseEnter(model._id)}
               onMouseLeave={() => handleMouseLeave(model._id)}
             >
-              <div className="portrait-ratio-wrapper">
+              <div className="portrait-ratio-wrapper-38f3a">
                 {/* Video element - only show when hovering and video exists */}
                 {hasVideo(model) && (
                   <video
                     ref={el => videoRefs.current[model._id] = el}
                     src={model.avatar_motion_video}
-                    className={`ai-card-media ai-model-video ${hoveredCard === model._id ? 'video-visible' : 'video-hidden'}`}
+                    className={`ai-card-media-38f3a ai-model-video-38f3a ${hoveredCard === model._id ? 'video-visible-38f3a' : 'video-hidden-38f3a'}`}
                     loop
                     muted
                     playsInline
@@ -637,22 +701,22 @@ function AIFriends() {
                 <img 
                   src={model.avatar_img} 
                   alt={model.name}
-                  className={`ai-card-media ai-model-image ${hasVideo(model) && hoveredCard === model._id ? 'image-hidden' : 'image-visible'}`}
+                  className={`ai-card-media-38f3a ai-model-image-38f3a ${hasVideo(model) && hoveredCard === model._id ? 'image-hidden-38f3a' : 'image-visible-38f3a'}`}
                 />
 
                 
-                <span className="ai-age">{model.age}</span>
-                <span className="ai-gender">
+                <span className="ai-age-38f3a">{model.age}</span>
+                <span className="ai-gender-38f3a">
                   {model.gender === 'female' ? '♀' : '♂'}
                 </span>
                 
                 {/* Floating info at bottom */}
-                <div className="ai-floating-info">
-                  <div className="ai-card-header">
+                <div className="ai-floating-info-38f3a">
+                  <div className="ai-card-header-38f3a">
                     <h3>{model.name}</h3>
-                    <span className="ai-relationship">{model.relationship}</span>
+                    <span className="ai-relationship-38f3a">{model.relationship}</span>
                   </div>
-                  <p className="ai-short-description">
+                  <p className="ai-short-description-38f3a">
                     {getShortDescription(model.description)}
                   </p>
                 </div>
@@ -660,7 +724,7 @@ function AIFriends() {
             </Link>
           ))
         ) : (
-          <div className="ai-empty">
+          <div className="ai-empty-38f3a">
             <h3>No matches found</h3>
             <p>Try adjusting your filters to discover more AI companions</p>
           </div>

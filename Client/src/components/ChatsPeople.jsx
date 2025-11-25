@@ -23,7 +23,25 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState(null);
-
+  const [isSubscribed, setIsSubscribed] = useState(false);
+useEffect(() => {
+    // Check subscription status from localStorage
+    if (typeof window !== 'undefined') {
+      const subscriptionData = localStorage.getItem('subscribed');
+      
+      if (subscriptionData) {
+        try {
+          const parsedData = JSON.parse(subscriptionData);
+          // Check if user is subscribed based on your data structure
+          if (parsedData.isSubscribed === true || parsedData.userType === 'subscriber') {
+            setIsSubscribed(true);
+          }
+        } catch (error) {
+          console.error('Error parsing subscription data:', error);
+        }
+      }
+    }
+  }, []);
   // --- STYLES INJECTION ---
   const styles = `
     :root {
@@ -412,6 +430,7 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
       <header className="chats-header">
         <div className="header-content">
           <h1>Conversations</h1>
+          {!isSubscribed && (
           <button 
             className='premium-btn' 
             onClick={() => window.location.href = '/subscribe'}
@@ -419,6 +438,7 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
             <Crown size={16} />
             <span>Go Premium</span>
           </button>
+          )}
         </div>
       </header>
 

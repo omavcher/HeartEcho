@@ -224,7 +224,7 @@ function SubscriptionContent() {
               <h3>Monthly</h3>
               <div className="seh3d3-price-container">
                 <div className="seh3d3-original-price">₹80/month</div>
-                <span className="seh3d3-price">₹29</span>
+                <span className="seh3d3-price">₹49</span>
                 <span className="seh3d3-duration">/month</span>
                 <div className="seh3d3-discount-tag">50% OFF</div>
               </div>
@@ -240,7 +240,7 @@ function SubscriptionContent() {
             
             <button 
               className="seh3d3-plan-button seh3d3-premium-button" 
-              onClick={() => handlePayment(29, 'Monthly')}
+              onClick={() => handlePayment(49, 'Monthly')}
               disabled={isLoading}
             >
               {isLoading ? 'Loading...' : 'Subscribe'}

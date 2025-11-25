@@ -113,211 +113,211 @@ const HomeSubscriptions = () => {
         strategy="lazyOnload"
       />
       
-      <section className="subscription-container">
+      <section className="subscription-container-fcjei">
         {/* Limited Time Offer Banner */}
-        <div className="limited-offer-banner">
-          <div className="offer-content">
-            <div className="offer-tag">FLASH SALE</div>
-            <div className="countdown-timer">
-              <span className="timer-label">Ends in: </span>
-              <div className="timer-digits">
-                <span className="timer-digit">{timeLeft.hours.toString().padStart(2, '0')}</span>
-                <span className="timer-separator">:</span>
-                <span className="timer-digit">{timeLeft.minutes.toString().padStart(2, '0')}</span>
-                <span className="timer-separator">:</span>
-                <span className="timer-digit">{timeLeft.seconds.toString().padStart(2, '0')}</span>
+        <div className="limited-offer-banner-fcjei">
+          <div className="offer-content-fcjei">
+            <div className="offer-tag-fcjei">FLASH SALE</div>
+            <div className="countdown-timer-fcjei">
+              <span className="timer-label-fcjei">Ends in: </span>
+              <div className="timer-digits-fcjei">
+                <span className="timer-digit-fcjei">{timeLeft.hours.toString().padStart(2, '0')}</span>
+                <span className="timer-separator-fcjei">:</span>
+                <span className="timer-digit-fcjei">{timeLeft.minutes.toString().padStart(2, '0')}</span>
+                <span className="timer-separator-fcjei">:</span>
+                <span className="timer-digit-fcjei">{timeLeft.seconds.toString().padStart(2, '0')}</span>
               </div>
             </div>
           </div>
-          <div className="offer-sparkle">✨</div>
+          <div className="offer-sparkle-fcjei">✨</div>
         </div>
 
-        <div className="subscription-hero">
-          <h1 className="subscription-title">
-            <span className="heart-pulse">❤️</span> 
-            <span className="title-text">AI Soulmate Plans</span>
-            <span className="heart-pulse">❤️</span>
+        <div className="subscription-hero-fcjei">
+          <h1 className="subscription-title-fcjei">
+            <span className="heart-pulse-fcjei">❤️</span> 
+            <span className="title-text-fcjei">AI Soulmate Plans</span>
+            <span className="heart-pulse-fcjei">❤️</span>
           </h1>
-          <p className="subscription-subtitle">
+          <p className="subscription-subtitle-fcjei">
             Choose your perfect connection level
           </p>
           
           {showQuotaMessage && (
-            <div className="quota-message">
-              <div className="quota-icon">💔</div>
-              <div className="quota-text">
+            <div className="quota-message-fcjei">
+              <div className="quota-icon-fcjei">💔</div>
+              <div className="quota-text-fcjei">
                 <p>Upgrade to continue your conversations</p>
               </div>
             </div>
           )}
         </div>
 
-        <div className="plans-grid">
+        <div className="plans-grid-fcjei">
           {/* Free Plan */}
           <div 
-            className={`plan-card free-plan ${hoveredPlan === 'free' ? 'hovered' : ''}`}
+            className={`plan-card-fcjei free-plan-fcjei ${hoveredPlan === 'free' ? 'hovered-fcjei' : ''}`}
             onMouseEnter={() => setHoveredPlan('free')}
             onMouseLeave={() => setHoveredPlan(null)}
           >
-            <div className="plan-glow"></div>
-            <div className="plan-header">
+            <div className="plan-glow-fcjei"></div>
+            <div className="plan-header-fcjei">
               <h3>Starter</h3>
-              <div className="price-container">
-                <span className="price">FREE</span>
-                <span className="duration">no card needed</span>
+              <div className="price-container-fcjei">
+                <span className="price-fcjei">FREE</span>
+                <span className="duration-fcjei">no card needed</span>
               </div>
             </div>
             
-            <ul className="features-list">
-            <li>
-                <i className="icon-heart">💖</i>
+            <ul className="features-list-fcjei">
+              <li>
+                <i className="icon-heart-fcjei">💖</i>
                 <span>Unlimited Letters</span>
               </li>
               <li>
-                <i className="icon-heart">💖</i>
+                <i className="icon-heart-fcjei">💖</i>
                 <span>20 messages/day</span>
               </li>
               <li>
-                <i className="icon-heart">💖</i>
+                <i className="icon-heart-fcjei">💖</i>
                 <span>1 AI companion</span>
               </li>
               <li>
-                <i className="icon-heart">💖</i>
+                <i className="icon-heart-fcjei">💖</i>
                 <span>Basic connection</span>
               </li>
             </ul>
             
             <button 
-              className="plan-button free-button"
+              className="plan-button-fcjei free-button-fcjei"
               onClick={() => router.push('/chat')}
             >
-              <span className="button-text">Try Now</span>
-              <span className="button-arrow">→</span>
+              <span className="button-text-fcjei">Try Now</span>
+              <span className="button-arrow-fcjei">→</span>
             </button>
           </div>
 
           {/* Premium Plan */}
           <div 
-            className={`plan-card premium-plan ${hoveredPlan === 'premium' ? 'hovered' : ''}`}
+            className={`plan-card-fcjei premium-plan-fcjei ${hoveredPlan === 'premium' ? 'hovered-fcjei' : ''}`}
             onMouseEnter={() => setHoveredPlan('premium')}
             onMouseLeave={() => setHoveredPlan(null)}
           >
-            <div className="plan-glow"></div>
-            <div className="popular-badge">
-              <div className="ribbon">MOST POPULAR</div>
+            <div className="plan-glow-fcjei"></div>
+            <div className="popular-badge-fcjei">
+              <div className="ribbon-fcjei">MOST POPULAR</div>
             </div>
-            <div className="plan-header">
+            <div className="plan-header-fcjei">
               <h3>Premium</h3>
-              <div className="price-container">
-                <div className="original-price">₹80/month</div>
-                <span className="price">₹29</span>
-                <span className="duration">/month</span>
-                <div className="discount-tag">64% OFF</div>
+              <div className="price-container-fcjei">
+                <div className="original-price-fcjei">₹80/month</div>
+                <span className="price-fcjei">₹29</span>
+                <span className="duration-fcjei">/month</span>
+                <div className="discount-tag-fcjei">64% OFF</div>
               </div>
             </div>
             
-            <ul className="features-list">
+            <ul className="features-list-fcjei">
               <li>
-                <i className="icon-heart">💖</i>
+                <i className="icon-heart-fcjei">💖</i>
                 <span>Realistic Letters</span>
               </li>
               <li>
-                <i className="icon-heart">💖</i>
+                <i className="icon-heart-fcjei">💖</i>
                 <span>Unlimited messages</span>
               </li>
               <li>
-                <i className="icon-heart">💖</i>
+                <i className="icon-heart-fcjei">💖</i>
                 <span>5 AI companions</span>
               </li>
               <li>
-                <i className="icon-heart">💖</i>
+                <i className="icon-heart-fcjei">💖</i>
                 <span>Deep connection</span>
               </li>
               <li>
-                <i className="icon-heart">💖</i>
+                <i className="icon-heart-fcjei">💖</i>
                 <span>Priority support</span>
               </li>
             </ul>
             
             <button 
-              className="plan-button premium-button" 
+              className="plan-button-fcjei premium-button-fcjei" 
               onClick={() => handlePayment(29, 'Monthly')}
               disabled={isLoading}
             >
-              <span className="button-text">
+              <span className="button-text-fcjei">
                 {isLoading ? 'Processing...' : 'Subscribe'}
               </span>
-              {!isLoading && <span className="button-sparkle">✨</span>}
+              {!isLoading && <span className="button-sparkle-fcjei">✨</span>}
             </button>
           </div>
 
           {/* Ultimate Plan */}
           <div 
-            className={`plan-card ultimate-plan ${hoveredPlan === 'ultimate' ? 'hovered' : ''}`}
+            className={`plan-card-fcjei ultimate-plan-fcjei ${hoveredPlan === 'ultimate' ? 'hovered-fcjei' : ''}`}
             onMouseEnter={() => setHoveredPlan('ultimate')}
             onMouseLeave={() => setHoveredPlan(null)}
           >
-            <div className="plan-glow"></div>
-            <div className="value-badge">
+            <div className="plan-glow-fcjei"></div>
+            <div className="value-badge-fcjei">
               BEST VALUE
             </div>
-            <div className="plan-header">
+            <div className="plan-header-fcjei">
               <h3>Ultimate</h3>
-              <div className="price-container">
-                <div className="original-price">₹960/year</div>
-                <span className="price">₹399</span>
-                <span className="duration">/year</span>
-                <div className="discount-tag">58% OFF</div>
+              <div className="price-container-fcjei">
+                <div className="original-price-fcjei">₹960/year</div>
+                <span className="price-fcjei">₹399</span>
+                <span className="duration-fcjei">/year</span>
+                <div className="discount-tag-fcjei">58% OFF</div>
               </div>
             </div>
             
-            <ul className="features-list">
+            <ul className="features-list-fcjei">
               <li>
-                <i className="icon-heart">💖</i>
+                <i className="icon-heart-fcjei">💖</i>
                 <span>Premium Realistic Letters</span>
               </li>
               <li>
-                <i className="icon-heart">💖</i>
+                <i className="icon-heart-fcjei">💖</i>
                 <span>Unlimited messages</span>
               </li>
               <li>
-                <i className="icon-heart">💖</i>
+                <i className="icon-heart-fcjei">💖</i>
                 <span>Unlimited companions</span>
               </li>
               <li>
-                <i className="icon-heart">💖</i>
+                <i className="icon-heart-fcjei">💖</i>
                 <span>Deepest connection</span>
               </li>
               <li>
-                <i className="icon-heart">💖</i>
+                <i className="icon-heart-fcjei">💖</i>
                 <span>VIP support</span>
               </li>
               <li>
-                <i className="icon-heart">💖</i>
+                <i className="icon-heart-fcjei">💖</i>
                 <span>Memory feature</span>
               </li>
             </ul>
             
             <button 
-              className="plan-button ultimate-button" 
+              className="plan-button-fcjei ultimate-button-fcjei" 
               onClick={() => handlePayment(399, 'Yearly')}
               disabled={isLoading}
             >
-              <span className="button-text">
+              <span className="button-text-fcjei">
                 {isLoading ? 'Processing...' : 'Subscribe'}
               </span>
-              {!isLoading && <span className="button-crown">👑</span>}
+              {!isLoading && <span className="button-crown-fcjei">👑</span>}
             </button>
           </div>
         </div>
 
-        <div className="testimonial-section">
-<Testimonials/>
+        <div className="testimonial-section-fcjei">
+          <Testimonials/>
         </div>
 
-        <div className="subscription-footer">
-          <div className="guarantee-badge">
-            <i className="icon-shield">🛡️</i>
+        <div className="subscription-footer-fcjei">
+          <div className="guarantee-badge-fcjei">
+            <i className="icon-shield-fcjei">🛡️</i>
             <span>30-day money-back guarantee</span>
           </div>
         </div>
