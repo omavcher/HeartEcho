@@ -1,484 +1,348 @@
 /* blog.css */
 
-/* Base Styles */
+/* --- Variables & Reset --- */
 :root {
-    --primary-bg: #000000;
-    --secondary-bg: #111111;
-    --text-color: #ffffff;
-    --text-muted: #aaaaaa;
-    --accent-color: #cf4084;
-    --accent-hover: #e05294;
-    --card-bg: #1a1a1a;
-    --border-color: #333333;
-  }
+  --bg-primary: #000000;       
+  --bg-secondary: #272727;     
+  --bg-hover: #3f3f3f;         
+  --text-primary: #f1f1f1;
+  --text-secondary: #aaaaaa;
+  --accent: #cf4084;           
+  --border: #303030;
+  --card-radius: 12px;
+  --transition: 0.2s ease-in-out;
   
-  body {
-    background-color: var(--primary-bg);
-    color: var(--text-color);
-    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-    line-height: 1.6;
-    margin: 0;
-    padding: 0;
-  }
-  
-  a {
-    color: var(--accent-color);
-    text-decoration: none;
-    transition: color 0.3s ease;
-  }
-  
-  a:hover {
-    color: var(--accent-hover);
-  }
-  
-  /* Blog Container */
-  .blog-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
-  }
-  
-  /* Blog Header */
-  .blog-header {
-    text-align: center;
-    margin-bottom: 3rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-  }
-  
-  .blog-header h1 {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    color: var(--accent-color);
-  }
-  
-  .blog-header .subtitle {
-    font-size: 1.1rem;
-    color: var(--text-muted);
-    margin-top: 0;
-  }
-  
-  /* Blog Grid */
-  .blog-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
-  }
-  
-  /* Blog Card */
-  .blog-card {
-    background-color: var(--card-bg);
-    border-radius: 8px;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid var(--border-color);
-  }
-  
-  .blog-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(207, 64, 132, 0.2);
-  }
-  
-  .blog-card-link {
-    display: block;
-    height: 100%;
-  }
-  
-  .blog-image-container {
-    position: relative;
-    height: 200px;
-    overflow: hidden;
-  }
-  
-  .blog-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-  }
-  
-  .blog-card:hover .blog-image {
-    transform: scale(1.05);
-  }
-  
-  .category-badge {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background-color: var(--accent-color);
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    text-transform: uppercase;
-  }
-  
-  .blog-content {
-    padding: 1.5rem;
-  }
-  
-  .meta-info {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-bottom: 0.75rem;
-  }
-  
-  .blog-content h2 {
-    font-size: 1.4rem;
-    margin: 0.5rem 0 1rem;
-    color: var(--text-color);
-  }
-  
-  .excerpt {
-    color: var(--text-muted);
-    margin-bottom: 1.5rem;
-    font-size: 0.95rem;
-  }
-  
-  .author-info {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    border-top: 1px solid var(--border-color);
-    padding-top: 1rem;
-  }
-  
-  /* Blog Post Page Styles */
-  .blog-post-container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
-  }
-  
-  .breadcrumb {
-    color: var(--text-muted);
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-  }
-  
-  .breadcrumb a {
-    color: var(--text-muted);
-  }
-  
-  .breadcrumb a:hover {
-    color: var(--accent-color);
-  }
-  
-  .post-header {
-    margin-bottom: 2rem;
-    text-align: center;
-  }
-  
-  .post-header h1 {
-    font-size: 2.2rem;
-    margin: 1rem 0;
-    color: var(--text-color);
-    line-height: 1.3;
-  }
-  
-  .post-meta {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .featured-image {
-    margin: 2rem 0;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  
-  .featured-image img {
-    width: 100%;
-    max-height: 500px;
-    object-fit: cover;
-  }
-  
-  .post-content {
-    margin: 2rem 0;
-  }
-  
-  .post-content p {
-    margin-bottom: 1.5rem;
-    font-size: 1.05rem;
-    line-height: 1.7;
-  }
-  
-  .post-content h2,
-  .post-content h3 {
-    color: var(--accent-color);
-    margin: 2rem 0 1rem;
-  }
-  
-  .post-footer {
-    margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--border-color);
-  }
-  
-  .tags {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-  }
-  
-  .tags a {
-    color: var(--accent-color);
-    font-weight: bold;
-  }
-  
-  /* Related Posts */
-  .related-posts {
-    margin-top: 4rem;
-  }
-  
-  .related-posts h3 {
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-    color: var(--accent-color);
-    text-align: center;
-  }
-  
-  .related-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1rem;
-  }
-  
-  .related-card {
-    background-color: var(--card-bg);
-    border-radius: 8px;
-    overflow: hidden;
-    transition: transform 0.3s ease;
-    border: 1px solid var(--border-color);
-  }
-  
-  .related-card:hover {
-    transform: translateY(-3px);
-  }
-  
-  .related-card img {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-  }
-  
-  .related-card h4 {
-    font-size: 1.1rem;
-    margin: 0.75rem 1rem;
-    color: var(--text-color);
-  }
-  
-  .related-excerpt {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin: 0 1rem 1rem;
-    padding-bottom: 1rem;
-  }
-  
-  /* Responsive Adjustments */
-  @media (max-width: 768px) {
-    .blog-header h1 {
-      font-size: 2rem;
-    }
-    
-    .post-header h1 {
-      font-size: 1.8rem;
-    }
-    
-    .post-meta {
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    .blog-grid {
-      grid-template-columns: 1fr;
-    }
-    
-    .related-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .blog-container, .blog-post-container {
-      padding: 1.5rem 0.75rem;
-    }
-    
-    .blog-header h1 {
-      font-size: 1.8rem;
-    }
-    
-    .post-header h1 {
-      font-size: 1.6rem;
-    }
-    
-    .post-content p {
-      font-size: 1rem;
-    }
-  }
-
-
-
-
-
-  /* Search and Filter Styles */
-.blog-filters {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
+  /* The Font Stack */
+  --main-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-.search-box {
-  position: relative;
-  margin-bottom: 1.5rem;
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--main-font); /* Applied here */
+  margin: 0;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased; /* Makes font look crisp on Mac */
 }
 
-.search-input {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-  background-color: var(--secondary-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: var(--text-color);
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
+/* Force form elements to use the same font */
+button, input, textarea, select {
+  font-family: inherit;
 }
 
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-color);
-}
-
-.search-icon {
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-}
-
-.filter-controls {
-  display: flex;
-  gap: 1.5rem;
-  align-items: flex-end;
-  flex-wrap: wrap;
-}
-
-.filter-group {
+/* --- Layout Containers --- */
+.blog-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  flex: 1;
-  min-width: 150px;
+  min-height: 100vh;
 }
 
-.filter-group label {
+.main-content-blofd {
+  flex: 1;
+  padding: 0 1.5rem;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* --- 1. Sticky Header & Search --- */
+.controls-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.page-title h1 {
+  font-size: 1.5rem;
+  margin-left: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.5px; /* Tighter tracking for system fonts looks better */
+}
+
+/* YouTube-style Search Bar */
+.search-container {
+  flex: 1;
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+  margin: 0 auto;
+}
+
+.search-input-wrapper {
+  display: flex;
+  width: 100%;
+  background: #121212;
+  border: 1px solid var(--border);
+  border-radius: 40px;
+  overflow: hidden;
+}
+
+.search-input-wrapper input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  padding: 0.75rem 1.2rem;
+  font-size: 1rem;
+  outline: none;
+}
+
+.search-btn {
+  background: #222;
+  border: none;
+  border-left: 1px solid var(--border);
+  padding: 0 1.25rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+/* --- 2. Horizontal Category Chips --- */
+.category-scroll {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: none;
+}
+
+.category-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
   font-size: 0.9rem;
-  color: var(--text-muted);
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.chip:hover {
+  background-color: var(--bg-hover);
+}
+
+.chip.active {
+  background-color: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+/* --- Utility Bar (Sort & View) --- */
+.utility-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
   font-weight: 500;
 }
 
-.filter-select {
+.view-toggles button {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
   padding: 0.5rem;
-  background-color: var(--secondary-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  color: var(--text-color);
-  font-size: 0.9rem;
+}
+
+.view-toggles button.active {
+  color: var(--text-primary);
+}
+
+/* --- 3. The Grid (YouTube Cards) --- */
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px 1.5rem;
+}
+
+.posts-grid.list-view {
+  grid-template-columns: 1fr;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Card Styling */
+.post-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-decoration: none;
   cursor: pointer;
 }
 
-.filter-select:focus {
-  outline: none;
-  border-color: var(--accent-color);
+.list-view .post-card {
+  flex-direction: row;
+  align-items: flex-start;
 }
 
-.clear-filters-btn {
-  padding: 0.5rem 1rem;
-  background-color: transparent;
-  border: 1px solid var(--border-color);
+/* Image Wrapper */
+.thumbnail-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  background-color: #202020;
+}
+
+.list-view .thumbnail-wrapper {
+  width: 360px;
+  flex-shrink: 0;
+}
+
+.post-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.post-card:hover .post-image {
+  transform: scale(1.05);
+}
+
+.duration-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 2px 6px;
   border-radius: 4px;
-  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Content */
+.post-info {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.author-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
   font-size: 0.9rem;
+}
+
+.post-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.post-title {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0 0 0.25rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.post-meta {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.post-excerpt {
+  display: none;
+}
+
+.list-view .post-excerpt {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* --- Footer & Misc --- */
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 3rem;
+  margin-bottom: 2rem;
+}
+
+.load-more-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--accent);
+  padding: 0.75rem 2rem;
+  border-radius: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  white-space: nowrap;
+  font-weight: 600;
+  transition: var(--transition);
+  font-family: inherit;
 }
 
-.clear-filters-btn:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
+.load-more-btn:hover {
+  background: rgba(207, 64, 132, 0.1);
+  border-color: var(--accent);
 }
 
-/* Results Info */
-.results-info {
-  margin-bottom: 1.5rem;
-  padding: 0 0.5rem;
-}
-
-.results-info p {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  margin: 0;
-}
-
-/* No Results */
 .no-results {
-  grid-column: 1 / -1;
   text-align: center;
-  padding: 3rem 2rem;
-  background-color: var(--card-bg);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
+  padding: 4rem 0;
+  color: var(--text-secondary);
 }
 
-.no-results h3 {
-  color: var(--text-color);
-  margin-bottom: 0.5rem;
-}
-
-.no-results p {
-  color: var(--text-muted);
-  margin-bottom: 1.5rem;
-}
-
-/* Responsive Adjustments for Filters */
+/* Responsive */
 @media (max-width: 768px) {
-  .blog-filters {
-    padding: 1rem;
+  .controls-header {
+    top: -60px;
   }
   
-  .filter-controls {
+  .list-view .post-card {
     flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
   }
   
-  .filter-group {
-    min-width: auto;
+  .list-view .thumbnail-wrapper {
+    width: 100%;
   }
   
-  .clear-filters-btn {
-    align-self: flex-start;
-  }
-}
-
-@media (max-width: 480px) {
-  .blog-filters {
-    margin-left: -0.75rem;
-    margin-right: -0.75rem;
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
+  .post-info {
+    margin-top: 0.5rem;
   }
 }

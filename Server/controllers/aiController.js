@@ -18,6 +18,229 @@ const QUOTA_COSTS = {
   VIDEO: 20
 };
 
+// Gender-specific video links
+const GENDER_VIDEO_LINKS = {
+  male: [
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1763728336/male_video1_abc123.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1763728336/male_video2_def456.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1763728336/male_video3_ghi789.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1763728336/male_video4_jkl012.mp4"
+  ],
+  female: [
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098599/media_2_hzpduv.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098599/media_1_bwj3yt.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098597/indian_woman_in_bikini_in_the_car_ue9gcs.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098597/vv_ixzwzn.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098595/media_lfm2ok.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098594/an_indian_woman_in_good_looking_wearing_2_ls6y5l.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098586/an_indian_woman_in_good_looking_wearing_np3hn5.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098586/indian_woman_in_hot_bikini_gtnpjz.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098585/media_3_ilcnjj.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098583/a_confident_indian_woman_in_a_white_rvdzxy.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098582/an_indian_woman_in_good_looking_wearing_1_agqzao.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098580/an_indian_woman_in_a_hot_swimsuit_1_irgtyc.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098579/an_indian_woman_in_a_hot_swimsuit_lhcf1f.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098572/indian_woman_in_bikini_in_the_car_1_e8hdh7.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098570/indian_woman_in_hot_bikini_1_ceb8p6.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098569/indian_woman_in_bikini_in_the_car_2_btokes.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098565/an_indian_woman_in_a_bikini_on_z1t4ui.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098565/bold_indian_woman_in_a_designer_saree_ewepf2.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098564/an_indian_woman_in_a_bikini_on_1_aqwipy.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098561/bold_indian_woman_in_a_designer_saree_1_q0e4zq.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098558/bold_indian_woman_in_a_designer_saree_2_iw9jnk.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098557/indian_model_in_black_chic_outfit_smoky_2_bigmek.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098556/indian_model_in_black_chic_outfit_smoky_gemnr3.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098555/indian_model_in_black_chic_outfit_smoky_1_sywdui.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098553/stylish_indian_woman_in_a_stylishly_draped_m6nedk.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098552/indian_model_in_a_deep_black_chiffon_1_kvmqql.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098548/indian_model_in_a_deep_black_chiffon_cu4ngb.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098548/group_of_desi_girls_posing_for_a_o7lo4m.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098546/desi_woman_in_a_draped_wet_texture_saree_2_doh5xl.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098546/desi_woman_in_a_draped_wet_texture_saree_pugyoo.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098546/indian_girl_taking_a_real_phone_selfie_hatib0.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098544/desi_woman_in_a_draped_wet_texture_saree_1_rmm3ac.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098542/bold_indian_woman_in_a_shimmering_deep_vdkkvc.mp4",
+  "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098541/indian_girl_taking_a_real_phone_selfie_3_xsiw6n.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098540/group_of_three_indian_girls_taking_a_1_gnlmth.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098540/indian_girl_taking_a_real_phone_selfie_2_hvakem.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098539/indian_girl_taking_a_real_phone_selfie_1_qjvysj.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098539/group_of_three_indian_girls_taking_a_3_eynkqw.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098535/group_of_three_indian_girls_taking_a_s3vevl.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098535/group_of_desi_girls_posing_for_a_1_ncxksz.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098533/group_of_three_indian_girls_taking_a_2_x6hfc9.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098531/indian_girl_taking_a_selfie_on_the_1_oj2rcz.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098530/group_of_desi_girls_posing_for_a_3_z8jq0k.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098530/group_of_desi_girls_posing_for_a_2_xftgne.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098529/indian_girl_taking_a_selfie_on_the_qirzax.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098528/desi_woman_taking_a_mirror_selfie_with_napjs1.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098528/desi_woman_taking_a_mirror_selfie_with_3_sxwqfq.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098527/indian_girl_holding_phone_waring_bikin_in_quxszv.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098524/desi_woman_taking_a_mirror_selfie_with_1_xsbnus.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098523/indian_girl_holding_phone_waring_bikin_in_1_xxozwq.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098518/desi_woman_a_moody_low_light_selfie_in_1_sqlrq7.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098518/indian_girl_taking_a_selfie_on_the_2_jxtoca.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098518/desi_woman_taking_a_mirror_selfie_with_2_xfhhyn.mp4",
+"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098515/desi_woman_a_moody_low_light_selfie_in_g4iewc.mp4"
+  ],
+  other: [
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1763728336/neutral_video1_yza567.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1763728336/neutral_video2_bcd890.mp4"
+  ]
+};
+
+// Fallback videos for each gender
+const FALLBACK_VIDEOS = {
+  male: "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764091476/media_1_nib90a.mp4",
+  female: "https://res.cloudinary.com/dzjwb2bng/video/upload/v1763728336/default_female_video_hij456.mp4",
+  other: "https://res.cloudinary.com/dzjwb2bng/video/upload/v1763728336/default_neutral_video_klm789.mp4"
+};
+
+// Video usage tracker - stores which videos have been used for each AI friend
+const videoUsageTracker = new Map();
+
+/**
+ * ✅ Initialize video usage tracker for an AI friend
+ */
+function initializeVideoTracker(aiFriendId, gender) {
+  const genderVideos = GENDER_VIDEO_LINKS[gender] || GENDER_VIDEO_LINKS.other;
+  videoUsageTracker.set(aiFriendId, {
+    usedVideos: new Set(),
+    availableVideos: [...genderVideos],
+    gender: gender
+  });
+}
+
+/**
+ * ✅ Get unused random video for AI friend
+ */
+function getUnusedRandomVideo(aiFriendId, AiInfo) {
+  // Initialize tracker if not exists
+  if (!videoUsageTracker.has(aiFriendId)) {
+    initializeVideoTracker(aiFriendId, AiInfo.gender);
+  }
+  
+  const tracker = videoUsageTracker.get(aiFriendId);
+  
+  // First, check if AI friend has custom videos
+  if (AiInfo.video_gallery && AiInfo.video_gallery.length > 0) {
+    const unusedCustomVideos = AiInfo.video_gallery.filter(video => !tracker.usedVideos.has(video));
+    
+    if (unusedCustomVideos.length > 0) {
+      const randomIndex = Math.floor(Math.random() * unusedCustomVideos.length);
+      const selectedVideo = unusedCustomVideos[randomIndex];
+      tracker.usedVideos.add(selectedVideo);
+      return selectedVideo;
+    }
+    
+    // If all custom videos used, reset and use them again
+    AiInfo.video_gallery.forEach(video => tracker.usedVideos.delete(video));
+    const randomIndex = Math.floor(Math.random() * AiInfo.video_gallery.length);
+    const selectedVideo = AiInfo.video_gallery[randomIndex];
+    tracker.usedVideos.add(selectedVideo);
+    return selectedVideo;
+  }
+  
+  // Use gender-specific videos
+  const unusedVideos = tracker.availableVideos.filter(video => !tracker.usedVideos.has(video));
+  
+  if (unusedVideos.length > 0) {
+    const randomIndex = Math.floor(Math.random() * unusedVideos.length);
+    const selectedVideo = unusedVideos[randomIndex];
+    tracker.usedVideos.add(selectedVideo);
+    return selectedVideo;
+  }
+  
+  // If all videos used, reset and start over
+  console.log(`All videos used for ${aiFriendId}, resetting video usage tracker`);
+  tracker.usedVideos.clear();
+  
+  const randomIndex = Math.floor(Math.random() * tracker.availableVideos.length);
+  const selectedVideo = tracker.availableVideos[randomIndex];
+  tracker.usedVideos.add(selectedVideo);
+  return selectedVideo;
+}
+
+/**
+ * ✅ Get multiple unused random videos for AI friend
+ */
+function getMultipleUnusedVideos(aiFriendId, AiInfo, count = 2) {
+  // Initialize tracker if not exists
+  if (!videoUsageTracker.has(aiFriendId)) {
+    initializeVideoTracker(aiFriendId, AiInfo.gender);
+  }
+  
+  const tracker = videoUsageTracker.get(aiFriendId);
+  const videos = [];
+  
+  // First, check if AI friend has custom videos
+  if (AiInfo.video_gallery && AiInfo.video_gallery.length > 0) {
+    let unusedCustomVideos = AiInfo.video_gallery.filter(video => !tracker.usedVideos.has(video));
+    
+    // If not enough unused videos, reset and use all available
+    if (unusedCustomVideos.length < count) {
+      AiInfo.video_gallery.forEach(video => tracker.usedVideos.delete(video));
+      unusedCustomVideos = [...AiInfo.video_gallery];
+    }
+    
+    for (let i = 0; i < Math.min(count, unusedCustomVideos.length); i++) {
+      const randomIndex = Math.floor(Math.random() * unusedCustomVideos.length);
+      const selectedVideo = unusedCustomVideos.splice(randomIndex, 1)[0];
+      videos.push(selectedVideo);
+      tracker.usedVideos.add(selectedVideo);
+    }
+    return videos;
+  }
+  
+  // Use gender-specific videos
+  let unusedVideos = tracker.availableVideos.filter(video => !tracker.usedVideos.has(video));
+  
+  // If not enough unused videos, reset and use all available
+  if (unusedVideos.length < count) {
+    console.log(`Not enough unused videos for ${aiFriendId}, resetting video usage tracker`);
+    tracker.usedVideos.clear();
+    unusedVideos = [...tracker.availableVideos];
+  }
+  
+  for (let i = 0; i < Math.min(count, unusedVideos.length); i++) {
+    const randomIndex = Math.floor(Math.random() * unusedVideos.length);
+    const selectedVideo = unusedVideos.splice(randomIndex, 1)[0];
+    videos.push(selectedVideo);
+    tracker.usedVideos.add(selectedVideo);
+  }
+  
+  return videos;
+}
+
+/**
+ * ✅ Get video usage statistics for an AI friend
+ */
+function getVideoUsageStats(aiFriendId) {
+  if (!videoUsageTracker.has(aiFriendId)) {
+    return { totalVideos: 0, usedVideos: 0, remainingVideos: 0 };
+  }
+  
+  const tracker = videoUsageTracker.get(aiFriendId);
+  return {
+    totalVideos: tracker.availableVideos.length,
+    usedVideos: tracker.usedVideos.size,
+    remainingVideos: tracker.availableVideos.length - tracker.usedVideos.size,
+    gender: tracker.gender
+  };
+}
+
+/**
+ * ✅ Reset video usage for an AI friend
+ */
+function resetVideoUsage(aiFriendId) {
+  if (videoUsageTracker.has(aiFriendId)) {
+    const tracker = videoUsageTracker.get(aiFriendId);
+    tracker.usedVideos.clear();
+    console.log(`Video usage reset for AI friend: ${aiFriendId}`);
+    return true;
+  }
+  return false;
+}
+
 /**
  * ✅ AI Response Generator (Single Definition)
  */
@@ -37,7 +260,7 @@ async function generateAIResponse(prompt) {
  */
 function getRandomImageFromGallery(AiInfo) {
   if (!AiInfo.img_gallery || AiInfo.img_gallery.length === 0) {
-    return "https://photosmint.com/wp-content/uploads/cute-single-girl-dp-cartoon-for-instagram-1.webp"; // Fallback image
+    return "https://photosmint.com/wp-content/uploads/cute-single-girl-dp-cartoon-for-instagram-1.webp";
   }
   
   const randomIndex = Math.floor(Math.random() * AiInfo.img_gallery.length);
@@ -45,27 +268,27 @@ function getRandomImageFromGallery(AiInfo) {
 }
 
 /**
- * ✅ Get Random Video from AI Friend's Gallery
+ * ✅ Get Random Video from AI Friend's Gallery (Gender-Specific with Usage Tracking)
  */
 function getRandomVideoFromGallery(AiInfo) {
-  if (!AiInfo.video_gallery || AiInfo.video_gallery.length === 0) {
-    return "https://res.cloudinary.com/dzjwb2bng/video/upload/v1763728336/Kiara_ygrurw.mp4"; // Fallback video
-  }
-  
-  const randomIndex = Math.floor(Math.random() * AiInfo.video_gallery.length);
-  return AiInfo.video_gallery[randomIndex];
+  return getUnusedRandomVideo(AiInfo._id.toString(), AiInfo);
+}
+
+/**
+ * ✅ Get Multiple Random Videos from AI Friend's Gallery (Gender-Specific with Usage Tracking)
+ */
+function getMultipleRandomVideos(AiInfo, count = 2) {
+  return getMultipleUnusedVideos(AiInfo._id.toString(), AiInfo, count);
 }
 
 /**
  * ✅ Check if user has sufficient message quota
  */
 function hasSufficientQuota(userInfo, mediaType = 'text') {
-  // Premium users have unlimited access
   if (userInfo.user_type === "subscriber") {
     return true;
   }
   
-  // Free users need sufficient quota
   const quotaRequired = QUOTA_COSTS[mediaType.toUpperCase()] || QUOTA_COSTS.TEXT;
   return userInfo.messageQuota >= quotaRequired;
 }
@@ -75,7 +298,7 @@ function hasSufficientQuota(userInfo, mediaType = 'text') {
  */
 async function deductMessageQuota(userInfo, mediaType = 'text') {
   if (userInfo.user_type === "subscriber") {
-    return { success: true, deducted: 0 }; // No deduction for premium users
+    return { success: true, deducted: 0 };
   }
   
   const quotaRequired = QUOTA_COSTS[mediaType.toUpperCase()] || QUOTA_COSTS.TEXT;
@@ -112,26 +335,18 @@ function getQuotaMessage(userInfo, mediaType = 'text') {
  */
 async function generateAIImageResponse(userMessage, userInfo, AiInfo) {
   try {
-    // ALWAYS get random image from AI friend's gallery
     const randomImageUrl = getRandomImageFromGallery(AiInfo);
-    
-    // Remove the /photo command from the message
     const imagePrompt = userMessage.replace('/photo', '').trim();
     
-    // Check if user has sufficient quota
     const hasQuota = hasSufficientQuota(userInfo, 'image');
-    
-    // Determine visibility and access level
     const visibility = hasQuota ? "show" : "premium_required";
     const accessLevel = userInfo.user_type === "subscriber" ? "premium" : "free";
     
-    // Deduct quota only if user has sufficient quota
     let quotaResult = { success: false, deducted: 0 };
     if (hasQuota) {
       quotaResult = await deductMessageQuota(userInfo, 'image');
     }
     
-    // Create response text based on quota status
     let responseText;
     if (hasQuota && quotaResult.success) {
       responseText = imagePrompt ? 
@@ -147,9 +362,9 @@ async function generateAIImageResponse(userMessage, userInfo, AiInfo) {
       sender: AiInfo._id,
       senderModel: "AIFriend",
       text: responseText,
-      imgUrl: randomImageUrl, // ALWAYS send the image URL
+      imgUrl: randomImageUrl,
       mediaType: "image",
-      visibility: visibility, // "show" or "premium_required"
+      visibility: visibility,
       accessLevel: accessLevel,
       status: {
         delivered: true,
@@ -181,30 +396,23 @@ async function generateAIImageResponse(userMessage, userInfo, AiInfo) {
 }
 
 /**
- * ✅ Generate AI Video Response from Gallery - ALWAYS SEND MEDIA
+ * ✅ Generate AI Video Response from Gallery - ALWAYS SEND MEDIA (Gender-Specific with Usage Tracking)
  */
 async function generateAIVideoResponse(userMessage, userInfo, AiInfo) {
   try {
-    // ALWAYS get random video from AI friend's gallery
+    // Get gender-specific random video with usage tracking
     const randomVideoUrl = getRandomVideoFromGallery(AiInfo);
-    
-    // Remove the /video command from the message
     const videoPrompt = userMessage.replace('/video', '').trim();
     
-    // Check if user has sufficient quota
     const hasQuota = hasSufficientQuota(userInfo, 'video');
-    
-    // Determine visibility and access level
     const visibility = hasQuota ? "show" : "premium_required";
     const accessLevel = userInfo.user_type === "subscriber" ? "premium" : "free";
     
-    // Deduct quota only if user has sufficient quota
     let quotaResult = { success: false, deducted: 0 };
     if (hasQuota) {
       quotaResult = await deductMessageQuota(userInfo, 'video');
     }
     
-    // Create response text based on quota status
     let responseText;
     if (hasQuota && quotaResult.success) {
       responseText = videoPrompt ? 
@@ -216,13 +424,16 @@ async function generateAIVideoResponse(userMessage, userInfo, AiInfo) {
       responseText = `This video requires ${QUOTA_COSTS.VIDEO} tokens. You have ${userInfo.messageQuota}. Upgrade to premium for unlimited access! 💎`;
     }
     
+    // Get video usage stats for logging
+    const videoStats = getVideoUsageStats(AiInfo._id.toString());
+    
     return {
       sender: AiInfo._id,
       senderModel: "AIFriend",
       text: responseText,
-      videoUrl: randomVideoUrl, // ALWAYS send the video URL
+      videoUrl: randomVideoUrl,
       mediaType: "video",
-      visibility: visibility, // "show" or "premium_required"
+      visibility: visibility,
       accessLevel: accessLevel,
       status: {
         delivered: true,
@@ -236,7 +447,8 @@ async function generateAIVideoResponse(userMessage, userInfo, AiInfo) {
         success: quotaResult.success,
         required: QUOTA_COSTS.VIDEO,
         hasAccess: hasQuota && quotaResult.success
-      }
+      },
+      videoUsage: videoStats // Include usage stats for debugging
     };
   } catch (error) {
     console.error("Error generating AI video response:", error);
@@ -254,23 +466,26 @@ async function generateAIVideoResponse(userMessage, userInfo, AiInfo) {
 }
 
 /**
- * ✅ Send Multiple Media Response (Images + Videos) - ALWAYS SEND MEDIA
+ * ✅ Send Multiple Media Response (Images + Videos) - ALWAYS SEND MEDIA (Gender-Specific with Usage Tracking)
  */
 async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") {
   try {
     const mediaItems = [];
     
     if (mediaType === "images" || mediaType === "mixed") {
-      // Send 1-3 random images
-      const imageCount = Math.min(3, AiInfo.img_gallery?.length || 1);
+      const imageCount = Math.min(4, AiInfo.img_gallery?.length || 1);
       for (let i = 0; i < imageCount; i++) {
         mediaItems.push({ type: 'image', cost: QUOTA_COSTS.IMAGE });
       }
     }
     
     if (mediaType === "videos" || mediaType === "mixed") {
-      // Send 1-2 random videos
-      const videoCount = Math.min(2, AiInfo.video_gallery?.length || 1);
+      // Get gender-specific videos with usage tracking
+      const videoCount = Math.min(2, 
+        (AiInfo.video_gallery?.length > 0 ? AiInfo.video_gallery.length : 
+         GENDER_VIDEO_LINKS[AiInfo.gender]?.length || 2)
+      );
+      
       for (let i = 0; i < videoCount; i++) {
         mediaItems.push({ type: 'video', cost: QUOTA_COSTS.VIDEO });
       }
@@ -286,7 +501,11 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
     let imagesSent = 0;
     let videosSent = 0;
     
-    // Generate responses for each media item - ALWAYS include media URLs
+    // Get gender-specific videos in advance with usage tracking
+    const genderVideos = getMultipleRandomVideos(AiInfo, mediaItems.filter(item => item.type === 'video').length);
+    let videoIndex = 0;
+    
+    // Generate responses for each media item
     for (const item of mediaItems) {
       if (item.type === 'image') {
         const imageUrl = getRandomImageFromGallery(AiInfo);
@@ -297,7 +516,7 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
           sender: AiInfo._id,
           senderModel: "AIFriend",
           text: imagesSent === 0 ? `Here are some of my favorite photos! 📸\n${getQuotaMessage(userInfo, 'image')}` : "",
-          imgUrl: imageUrl, // ALWAYS send image URL
+          imgUrl: imageUrl,
           mediaType: "image",
           visibility: visibility,
           accessLevel: accessLevel,
@@ -313,7 +532,8 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
         });
         imagesSent++;
       } else if (item.type === 'video') {
-        const videoUrl = getRandomVideoFromGallery(AiInfo);
+        const videoUrl = genderVideos[videoIndex] || getRandomVideoFromGallery(AiInfo);
+        videoIndex++;
         const visibility = hasQuota ? "show" : "premium_required";
         const accessLevel = userInfo.user_type === "subscriber" ? "premium" : "free";
         
@@ -321,7 +541,7 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
           sender: AiInfo._id,
           senderModel: "AIFriend",
           text: videosSent === 0 ? `And here are some videos from my collection! 🎥\n${getQuotaMessage(userInfo, 'video')}` : "",
-          videoUrl: videoUrl, // ALWAYS send video URL
+          videoUrl: videoUrl,
           mediaType: "video",
           visibility: visibility,
           accessLevel: accessLevel,
@@ -372,12 +592,10 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
  * ✅ Process user message with quota management
  */
 async function processUserMessage(userInfo, messageType = 'text') {
-  // Premium users have unlimited access
   if (userInfo.user_type === "subscriber") {
     return { success: true, deducted: 0, remaining: 999, hasAccess: true };
   }
   
-  // Check quota for free users
   const quotaRequired = QUOTA_COSTS[messageType.toUpperCase()] || QUOTA_COSTS.TEXT;
   
   if (!hasSufficientQuota(userInfo, messageType)) {
@@ -391,7 +609,6 @@ async function processUserMessage(userInfo, messageType = 'text') {
     };
   }
   
-  // Deduct quota
   const quotaResult = await deductMessageQuota(userInfo, messageType);
   return {
     ...quotaResult,
@@ -430,16 +647,25 @@ exports.createAiFriend = async (req, res) => {
             setting: generatedData.PersonaData.setting,
         },
         initial_message: generatedData.PersonaData.message,
-        avatar_img: generatedData.Image
+        avatar_img: generatedData.Image,
+        // Add gender-specific videos to the video gallery
+        video_gallery: GENDER_VIDEO_LINKS[generatedData.Gender] || GENDER_VIDEO_LINKS.other
     });
 
     await newAIFriend.save();
+
+    // Initialize video usage tracker for this AI friend
+    initializeVideoTracker(newAIFriend._id.toString(), generatedData.Gender);
 
     await User.findByIdAndUpdate(userId, { 
         $push: { ai_friends: newAIFriend._id } 
     });
 
-    res.status(201).json({ message: "AI Friend created successfully!", friend: newAIFriend });
+    res.status(201).json({ 
+      message: "AI Friend created successfully!", 
+      friend: newAIFriend,
+      videoStats: getVideoUsageStats(newAIFriend._id.toString())
+    });
 
   } catch (error) {
     console.error("Error creating AI Friend:", error);
@@ -457,18 +683,15 @@ exports.AiFriendResponse = async (req, res) => {
       return res.status(400).json({ message: "Message cannot be empty." });
     }
 
-    // Validate MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(chatId)) {
       return res.status(400).json({ message: "Invalid Chat ID." });
     }
 
-    // Fetch user info and validate user_type
     const userInfo = await User.findById(userId);
     if (!userInfo) {
       return res.status(404).json({ message: "User not found." });
     }
 
-    // ✅ Reset daily quota if needed
     userInfo.resetDailyQuota();
     await userInfo.save();
 
@@ -477,7 +700,6 @@ exports.AiFriendResponse = async (req, res) => {
       await userInfo.save();
     }
 
-    // Find AI Friend in `AIFriend` or `PrebuiltAIFriend`
     let AiInfo = await AIFriend.findById(chatId);
     let senderModel = "AIFriend";
 
@@ -490,7 +712,6 @@ exports.AiFriendResponse = async (req, res) => {
       return res.status(404).json({ message: "AI Friend not found." });
     }
 
-    // Ensure chat exists, or create a new one
     let chat = await Chat.findById(chatId);
     let isNewChat = false;
 
@@ -510,7 +731,6 @@ exports.AiFriendResponse = async (req, res) => {
       await chat.save();
     }
 
-    // Add user message to chat history
     const userMessage = {
       sender: userId,
       senderModel: "User",
@@ -524,7 +744,6 @@ exports.AiFriendResponse = async (req, res) => {
       const aiImageMessage = await generateAIImageResponse(text, userInfo, AiInfo);
       chat.messages.push(aiImageMessage);
       
-      // Update chat statistics only if media was actually accessible
       if (aiImageMessage.imgUrl && aiImageMessage.quotaInfo.hasAccess) {
         chat.statistics.totalImages += 1;
         chat.statistics.totalMessages += 1;
@@ -543,7 +762,6 @@ exports.AiFriendResponse = async (req, res) => {
       const aiVideoMessage = await generateAIVideoResponse(text, userInfo, AiInfo);
       chat.messages.push(aiVideoMessage);
       
-      // Update chat statistics only if media was actually accessible
       if (aiVideoMessage.videoUrl && aiVideoMessage.quotaInfo.hasAccess) {
         chat.statistics.totalVideos += 1;
         chat.statistics.totalMessages += 1;
@@ -558,16 +776,13 @@ exports.AiFriendResponse = async (req, res) => {
       });
     }
 
-    // Special command: /gallery - send multiple media
     if (text.startsWith('/gallery')) {
       const mediaResponses = await sendMultipleMediaResponse(userInfo, AiInfo, "mixed");
       
-      // Add all media responses to chat
       let mediaSent = false;
       for (const mediaResponse of mediaResponses) {
         chat.messages.push(mediaResponse);
         
-        // Update statistics only if actual media was accessible
         if ((mediaResponse.imgUrl || mediaResponse.videoUrl) && mediaResponse.quotaInfo.hasAccess) {
           mediaSent = true;
           if (mediaResponse.mediaType === "image") {
@@ -605,10 +820,8 @@ exports.AiFriendResponse = async (req, res) => {
     const firstName = userInfo.name.split(" ")[0];
     const interests = userInfo.selectedInterests.join(", ");
 
-    // Get all messages for context (excluding media metadata for prompt)
     const chatHistory = chat.messages.map(msg => {
       const sender = msg.senderModel === "User" ? firstName : AiInfo.name;
-      // Only include text messages in history for context
       return msg.text ? `${sender}: ${msg.text}` : null;
     }).filter(msg => msg !== null).join("\n");
 
@@ -702,7 +915,6 @@ exports.AiFriendResponse = async (req, res) => {
 
     const aiResponse = await generateAIResponse(prompt);
 
-    // AI message structure with correct senderModel
     const aiMessage = {
       sender: AiInfo._id,
       senderModel: senderModel,
@@ -718,7 +930,6 @@ exports.AiFriendResponse = async (req, res) => {
 
     chat.messages.push(aiMessage);
     
-    // Update chat statistics
     chat.statistics.totalMessages += 1;
     await chat.save();
 
@@ -742,15 +953,12 @@ exports.AiFriendDetails = async (req, res) => {
   try {
     const { chatId } = req.params;
 
-    // Validate MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(chatId)) {
       return res.status(400).json({ message: "Invalid Chat ID" });
     }
 
-    // Try to find AI Friend in `AIFriend`
     const AiInfo = await AIFriend.findById(chatId).select('-img_gallery -video_gallery');
 
-    // If not found, check in `PrebuiltAIFriend`
     if (!AiInfo) {
       const prebuiltAiInfo = await PrebuiltAIFriend.findById(chatId).select('-img_gallery -video_gallery');
       if (!prebuiltAiInfo) {
@@ -766,5 +974,45 @@ exports.AiFriendDetails = async (req, res) => {
   }
 };
 
-// Export quota costs for use in other files
+// Add new endpoint to get video usage stats
+exports.getVideoUsageStats = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(chatId)) {
+      return res.status(400).json({ message: "Invalid Chat ID" });
+    }
+
+    const stats = getVideoUsageStats(chatId);
+    res.json({ videoUsage: stats });
+  } catch (error) {
+    console.error("Error getting video usage stats:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Add new endpoint to reset video usage
+exports.resetVideoUsage = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(chatId)) {
+      return res.status(400).json({ message: "Invalid Chat ID" });
+    }
+
+    const reset = resetVideoUsage(chatId);
+    if (reset) {
+      res.json({ message: "Video usage reset successfully", videoUsage: getVideoUsageStats(chatId) });
+    } else {
+      res.status(404).json({ message: "AI Friend not found in video tracker" });
+    }
+  } catch (error) {
+    console.error("Error resetting video usage:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Export quota costs and gender video links for use in other files
 exports.QUOTA_COSTS = QUOTA_COSTS;
+exports.GENDER_VIDEO_LINKS = GENDER_VIDEO_LINKS;
+exports.FALLBACK_VIDEOS = FALLBACK_VIDEOS;

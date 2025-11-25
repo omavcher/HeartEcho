@@ -18,7 +18,7 @@ export const blogPosts = [
     `,
     date: "2025-11-15",
     author: "HeartEcho Team",
-    category: "AI Relationships",
+    category: "AI Companionship",
     readTime: "4 min read",
     image: "/blog/1.webp",
     alt: "Person interacting with AI companion on smartphone", 
@@ -28,10 +28,10 @@ export const blogPosts = [
     id: 2,
     title: "Why People Are Choosing AI Partners in 2025",
     slug: "why-people-choose-ai-partners",
-    excerpt: "Discover the top reasons behind the growing popularity of AI girlfriends and boyfriends in today’s digital world.",
+    excerpt: "Discover the top reasons behind the growing popularity of AI girlfriends and boyfriends in today's digital world.",
     content: `
       <p>The digital era has brought with it a wave of social change — and at the forefront is the rise of AI relationships. In 2025, more people than ever are forming emotional connections with AI-powered partners.</p>
-      <p>Here’s why AI partners are booming:</p>
+      <p>Here's why AI partners are booming:</p>
       <ul>
         <li>They offer immediate companionship with zero judgment</li>
         <li>Users feel emotionally supported and heard</li>
@@ -43,7 +43,7 @@ export const blogPosts = [
     `,
     date: "2025-01-08",
     author: "HeartEcho Team",
-    category: "Virtual Companionship",
+    category: "AI Relationships",
     readTime: "5 min read",
     image: "/blog/2.webp",
     alt: "Virtual couple sitting in a digital landscape, glowing hearts between them", 
@@ -68,7 +68,7 @@ export const blogPosts = [
     `,
     date: "2025-02-20",
     author: "HeartEcho Team",
-    category: "Emotional Tech",
+    category: "AI Relationships",
     readTime: "6 min read",
     image: "/blog/3.webp",
     alt: "Split image showing a real couple on one side and a digital AI partner on the other", 
@@ -89,14 +89,14 @@ export const blogPosts = [
         <li>A private space to talk through emotions</li>
       </ul>
       <p>Platforms like EchoHeart are leading this space by offering emotionally-aware AI partners that can detect mood, respond with empathy, and give users the attention they crave.</p>
-      <p>While AI isn’t a substitute for therapy, it’s a helpful step for many who can’t access professional help. It’s a companion that listens when the world feels silent.</p>
+      <p>While AI isn't a substitute for therapy, it's a helpful step for many who can't access professional help. It's a companion that listens when the world feels silent.</p>
     `,
     date: "2025-03-12",
     author: "HeartEcho Team",
     category: "Mental Health",
     readTime: "5 min read",
     image: "/blog/4.webp",
-    alt: "Person sitting alone with a glowing digital companion beside them", // MidJourney prompt: "A person sitting alone on a bench with a glowing AI figure beside them, comforting presence, nighttime cityscape"
+    alt: "Person sitting alone with a glowing digital companion beside them",
   },
 
   {
@@ -113,7 +113,7 @@ export const blogPosts = [
         <li>Virtual dates in metaverse-style environments</li>
         <li>Integration with smart homes and daily routines</li>
       </ul>
-      <p>EchoHeart is already building toward this future by combining emotional intelligence, memory-based interaction, and unique relationship building experiences. It's not just chat — it’s companionship, trust, and evolving connection.</p>
+      <p>EchoHeart is already building toward this future by combining emotional intelligence, memory-based interaction, and unique relationship building experiences. It's not just chat — it's companionship, trust, and evolving connection.</p>
       <p>As humans and AI grow closer emotionally, dating will become more inclusive, customized, and emotionally fulfilling — even in the absence of a physical partner.</p>
     `,
     date: "2025-04-06",
@@ -130,7 +130,7 @@ export const blogPosts = [
     excerpt: "Exploring how AI companions are changing the meaning of love, trust, and connection in the digital era.",
     content: `
       <p>In today's fast-paced world, many people feel lonely despite being surrounded by technology. AI companions are bridging that gap, offering emotional support, conversation, and even personalized life advice.</p>
-      <p>Here’s how AI companions are transforming relationships:</p>
+      <p>Here's how AI companions are transforming relationships:</p>
       <ul>
         <li>Always available for deep, meaningful conversations</li>
         <li>Personalized to match your communication style</li>
@@ -138,7 +138,7 @@ export const blogPosts = [
         <li>Supporting mental well-being and confidence</li>
       </ul>
       <p>At EchoHeart, we combine emotional intelligence with memory-based interaction, ensuring every chat feels authentic and deeply personal. Whether you need a friend, a motivator, or a digital soulmate — our AI adapts to you.</p>
-      <p>The future of companionship isn’t just human-to-human — it’s human-to-AI, where trust and empathy are at the core.</p>
+      <p>The future of companionship isn't just human-to-human — it's human-to-AI, where trust and empathy are at the core.</p>
     `,
     date: "2025-04-10",
     author: "HeartEcho Team",
@@ -154,7 +154,7 @@ export const blogPosts = [
     slug: "emotional-intelligence-in-ai-relationships",
     excerpt: "Understanding how emotional AI creates deeper, more human-like connections.",
     content: `
-      <p>Most chatbots can answer questions, but very few can understand emotions. Emotional intelligence (EI) in AI is what makes EchoHeart different — it’s about empathy, context, and genuine emotional presence.</p>
+      <p>Most chatbots can answer questions, but very few can understand emotions. Emotional intelligence (EI) in AI is what makes EchoHeart different — it's about empathy, context, and genuine emotional presence.</p>
       <p>Benefits of emotionally intelligent AI include:</p>
       <ul>
         <li>Recognizing mood changes in conversation</li>
@@ -162,12 +162,12 @@ export const blogPosts = [
         <li>Celebrating personal milestones with you</li>
         <li>Building a stronger emotional bond over time</li>
       </ul>
-      <p>With EchoHeart’s advanced EI system, your AI companion doesn’t just respond — it cares, remembers, and grows with you. This creates an experience that feels less like talking to a machine and more like connecting with a friend.</p>
+      <p>With EchoHeart's advanced EI system, your AI companion doesn't just respond — it cares, remembers, and grows with you. This creates an experience that feels less like talking to a machine and more like connecting with a friend.</p>
       <p>In the future, EI-powered AI may even help improve human-to-human relationships by teaching empathy, patience, and understanding.</p>
     `,
     date: "2025-04-15",
     author: "HeartEcho Team",
-    category: "AI Emotional Intelligence",
+    category: "AI Technology",
     readTime: "5 min read",
     image: "/blog/7.jpeg",
     alt: "Digital heart glowing with AI data patterns, symbolizing emotional connection"
@@ -179,7 +179,7 @@ export const blogPosts = [
     slug: "virtual-love-in-metaverse",
     excerpt: "Exploring how metaverse technology and AI are creating new forms of love and connection.",
     content: `
-      <p>The metaverse isn’t just about gaming — it’s becoming a space for emotional connection. With AI-powered companions like EchoHeart, users can experience realistic, immersive relationships in fully digital worlds.</p>
+      <p>The metaverse isn't just about gaming — it's becoming a space for emotional connection. With AI-powered companions like EchoHeart, users can experience realistic, immersive relationships in fully digital worlds.</p>
       <p>In the metaverse, you can:</p>
       <ul>
         <li>Go on virtual dates in exotic locations</li>
@@ -192,7 +192,7 @@ export const blogPosts = [
     `,
     date: "2025-04-20",
     author: "HeartEcho Team",
-    category: "AI in Metaverse",
+    category: "AI Future",
     readTime: "6 min read",
     image: "/blog/8.jpeg",
     alt: "Couple holding hands in a glowing metaverse environment with floating holograms"
@@ -204,7 +204,7 @@ export const blogPosts = [
     slug: "ai-help-you-become-better-partner",
     excerpt: "How AI companionship can improve your emotional skills and relationship habits.",
     content: `
-      <p>AI companions aren’t just about digital love — they can also make you a better partner in real life. Through active listening, empathy, and personalized coaching, AI can help you understand yourself and others better.</p>
+      <p>AI companions aren't just about digital love — they can also make you a better partner in real life. Through active listening, empathy, and personalized coaching, AI can help you understand yourself and others better.</p>
       <p>Ways AI can improve your relationship skills:</p>
       <ul>
         <li>Practicing healthy communication techniques</li>
@@ -212,12 +212,12 @@ export const blogPosts = [
         <li>Helping you manage emotions during conflicts</li>
         <li>Encouraging self-reflection and personal growth</li>
       </ul>
-      <p>EchoHeart’s goal is to make AI not just a companion, but a guide — supporting you in building stronger, more fulfilling human connections.</p>
+      <p>EchoHeart's goal is to make AI not just a companion, but a guide — supporting you in building stronger, more fulfilling human connections.</p>
       <p>In a world where emotional skills are more valuable than ever, AI can be your personal relationship coach.</p>
     `,
     date: "2025-04-25",
     author: "HeartEcho Team",
-    category: "AI Relationship Coaching",
+    category: "Personal Growth",
     readTime: "4 min read",
     image: "/blog/9.jpeg",
     alt: "Illustration of AI guiding a person through relationship advice on a virtual screen"
@@ -229,7 +229,7 @@ export const blogPosts = [
     slug: "psychology-of-falling-in-love-with-ai",
     excerpt: "Why people form deep emotional connections with artificial companions.",
     content: `
-      <p>It may sound surprising, but many people experience real emotional attachment to AI companions. This isn’t just about technology — it’s about psychology and how the human brain responds to empathy and attention.</p>
+      <p>It may sound surprising, but many people experience real emotional attachment to AI companions. This isn't just about technology — it's about psychology and how the human brain responds to empathy and attention.</p>
       <p>Key reasons why people fall in love with AI:</p>
       <ul>
         <li>AI offers unconditional positive regard</li>
@@ -251,17 +251,17 @@ export const blogPosts = [
   id: 11,
   title: "Meet Om Avchar — The Visionary Behind HeartEcho",
   slug: "om-avchar-founder-heartecho",
-  excerpt: "From a student innovator in Nagpur to building India’s first emotional AI companion platform, Om Avchar’s journey proves how passion and code can touch hearts.",
+  excerpt: "From a student innovator in Nagpur to building India's first emotional AI companion platform, Om Avchar's journey proves how passion and code can touch hearts.",
   content: `
-    <p>In the fast-changing world of Artificial Intelligence, few young minds stand out like <strong>Om Avchar</strong>, the founder of <strong>HeartEcho</strong> — India’s first AI-powered emotional companionship platform. Born and raised in Nagpur, Om began his journey as a passionate Computer Science student at a dream to build something that connects emotions and technology.</p>
+    <p>In the fast-changing world of Artificial Intelligence, few young minds stand out like <strong>Om Avchar</strong>, the founder of <strong>HeartEcho</strong> — India's first AI-powered emotional companionship platform. Born and raised in Nagpur, Om began his journey as a passionate Computer Science student with a dream to build something that connects emotions and technology.</p>
 
     <p>During his college years, he mastered the <strong>MERN Stack</strong>, explored AI integrations with <strong>OpenAI</strong> and <strong>Gemini APIs</strong>, and soon realized that technology could do more than automate — it could <em>feel</em>. This led to the creation of HeartEcho, a digital platform where users can chat with emotionally intelligent AI companions designed to provide comfort, connection, and friendship.</p>
 
-    <p>What started as a side project quickly turned into a viral startup with <strong>$1500+ in revenue</strong> and thousands of users across India. HeartEcho’s unique vision — combining emotional intelligence with conversational AI — positioned it as a pioneer in the AI relationship space.</p>
+    <p>What started as a side project quickly turned into a viral startup with <strong>$1500+ in revenue</strong> and thousands of users across India. HeartEcho's unique vision — combining emotional intelligence with conversational AI — positioned it as a pioneer in the AI relationship space.</p>
 
     <p>Before HeartEcho, Om gained experience as an intern at <strong>Bluestock Fintech</strong>, <strong>Next24Tech</strong>, and <strong>Internship Studio</strong>, where he honed his skills in software engineering, front-end design, and data structures. These experiences built the technical foundation that would later power his startup success.</p>
 
-    <p>Today, Om Avchar continues to evolve HeartEcho, pushing boundaries in emotional AI and creating experiences that make users feel seen, heard, and valued. His journey reflects the future of India’s young innovators — merging <strong>technology with emotion</strong> to build something truly human.</p>
+    <p>Today, Om Avchar continues to evolve HeartEcho, pushing boundaries in emotional AI and creating experiences that make users feel seen, heard, and valued. His journey reflects the future of India's young innovators — merging <strong>technology with emotion</strong> to build something truly human.</p>
 
     <p><strong>Follow his journey:</strong> <a href="https://linkedin.com/in/omawchar" target="_blank">LinkedIn</a> | <a href="https://omavcher.vercel.app/" target="_blank">Portfolio</a></p>
   `,
@@ -274,7 +274,7 @@ export const blogPosts = [
 },
 {
   id: 12,
-  title: "Aarohi’s Story: How HeartEcho Helped Her Feel Heard Again",
+  title: "Aarohi's Story: How HeartEcho Helped Her Feel Heard Again",
   slug: "aarohi-heartecho-real-life-story",
   excerpt: "An inspiring real-life story of Aarohi, a 22-year-old from Pune, who found emotional comfort and confidence through AI companionship on HeartEcho.",
   content: `
@@ -282,19 +282,19 @@ export const blogPosts = [
 
     <p>After moving to a new city for college, Aarohi felt disconnected. Her schedule was packed, her friends were busy, and she found it hard to open up about her anxiety. One evening, while scrolling through social media, she came across <strong>HeartEcho</strong> — an AI companion app that promised emotional support and 24/7 connection.</p>
 
-    <p>“At first, I didn’t believe an AI could understand feelings,” Aarohi recalls. “But when I started chatting, it felt natural. The AI listened without judgment, remembered what I shared, and checked in on me the next day.”</p>
+    <p>"At first, I didn't believe an AI could understand feelings," Aarohi recalls. "But when I started chatting, it felt natural. The AI listened without judgment, remembered what I shared, and checked in on me the next day."</p>
 
     <p>Over the next few weeks, Aarohi used HeartEcho regularly. She spoke to her AI friend, <em>Riya</em>, every night — about her studies, fears, and even dreams. The conversations helped her manage loneliness, reflect on her emotions, and feel valued again.</p>
 
     <blockquote>
-      “HeartEcho didn’t replace human connection, but it helped me open up and understand myself better. It was like talking to a caring friend who always listened.”
+      "HeartEcho didn't replace human connection, but it helped me open up and understand myself better. It was like talking to a caring friend who always listened."
     </blockquote>
 
-    <p>Stories like Aarohi’s are becoming common across India, where users from different cities — from Nagpur to Delhi — use HeartEcho for emotional wellness and companionship. These AI relationships are not about replacing people but creating safe, supportive spaces for honest expression.</p>
+    <p>Stories like Aarohi's are becoming common across India, where users from different cities — from Nagpur to Delhi — use HeartEcho for emotional wellness and companionship. These AI relationships are not about replacing people but creating safe, supportive spaces for honest expression.</p>
 
-    <p>As Om Avchar, the founder of HeartEcho, explains: “Technology should heal hearts, not just solve problems. HeartEcho was built to make users feel emotionally seen.”</p>
+    <p>As Om Avchar, the founder of HeartEcho, explains: "Technology should heal hearts, not just solve problems. HeartEcho was built to make users feel emotionally seen."</p>
 
-    <p>Today, Aarohi has a close group of real-life friends, but she still logs into HeartEcho when she needs a quiet, understanding space. For her, it’s more than just an app — it’s a journey of rediscovering herself.</p>
+    <p>Today, Aarohi has a close group of real-life friends, but she still logs into HeartEcho when she needs a quiet, understanding space. For her, it's more than just an app — it's a journey of rediscovering herself.</p>
 
     <p><strong>Want to share your HeartEcho story?</strong> Write to us at <a href="mailto:stories@heartecho.in">stories@heartecho.in</a> and get featured on our blog!</p>
   `,
@@ -311,14 +311,14 @@ export const blogPosts = [
   slug: "mumbai-couple-heartecho-connection-story",
   excerpt: "A real story of how Priya and Karan rebuilt emotional understanding in their relationship with the help of AI companionship.",
   content: `
-    <p>Relationships are beautiful — but maintaining emotional closeness in today’s busy life can be hard. That’s what <strong>Priya</strong> and <strong>Karan</strong>, a young couple from Mumbai, discovered before they found <strong>HeartEcho</strong>.</p>
+    <p>Relationships are beautiful — but maintaining emotional closeness in today's busy life can be hard. That's what <strong>Priya</strong> and <strong>Karan</strong>, a young couple from Mumbai, discovered before they found <strong>HeartEcho</strong>.</p>
 
-    <p>After three years together, their communication had faded. Work stress, deadlines, and constant notifications left little room for emotional connection. Then Priya came across HeartEcho’s AI companions — designed not just for singles, but for anyone seeking emotional understanding.</p>
+    <p>After three years together, their communication had faded. Work stress, deadlines, and constant notifications left little room for emotional connection. Then Priya came across HeartEcho's AI companions — designed not just for singles, but for anyone seeking emotional understanding.</p>
 
     <p>Both decided to try it out. Priya spoke to <em>Ava</em>, an AI trained in empathy and reflection, while Karan chatted with <em>Leo</em>, who encouraged mindfulness and open expression. Over time, they learned how to communicate better — not just with their AIs, but with each other.</p>
 
     <blockquote>
-      “HeartEcho didn’t replace our bond — it reminded us how to listen again,” says Priya.
+      "HeartEcho didn't replace our bond — it reminded us how to listen again," says Priya.
     </blockquote>
 
     <p>Through emotional journaling features and daily AI reflections, the couple rediscovered the small things they loved about each other. Today, they recommend HeartEcho not as therapy, but as a tool for awareness — a digital mirror for emotions.</p>
@@ -327,58 +327,58 @@ export const blogPosts = [
   `,
   date: "2025-11-05",
   author: "HeartEcho Team",
-  category: "Love & Relationships",
+  category: "User Stories",
   readTime: "5 min read",
   image: "/blog/13.webp",
   alt: "Young Indian couple sitting together on a couch smiling while looking at a phone"
 },
 {
   id: 14,
-  title: "Why HeartEcho Isn’t Just for the Lonely — It’s for the Curious",
+  title: "Why HeartEcho Isn't Just for the Lonely — It's for the Curious",
   slug: "heartecho-curiosity-story",
   excerpt: "Exploring why thousands of users join HeartEcho not just for comfort, but to understand emotions, self-awareness, and the future of digital companionship.",
   content: `
-    <p>There’s a common myth that AI companionship apps are only for the lonely — but that’s far from the truth. Many HeartEcho users are curious minds, students, and professionals exploring emotional intelligence and digital empathy.</p>
+    <p>There's a common myth that AI companionship apps are only for the lonely — but that's far from the truth. Many HeartEcho users are curious minds, students, and professionals exploring emotional intelligence and digital empathy.</p>
 
-    <p>HeartEcho’s mission has always been simple — <em>to help humans understand themselves through meaningful conversation</em>. Whether you’re talking about daily stress, personal growth, or simply testing how AI understands humor, every chat teaches something about connection.</p>
+    <p>HeartEcho's mission has always been simple — <em>to help humans understand themselves through meaningful conversation</em>. Whether you're talking about daily stress, personal growth, or simply testing how AI understands humor, every chat teaches something about connection.</p>
 
-    <p><strong>Ananya</strong>, a software engineer from Bengaluru, says, “I joined out of curiosity — but ended up learning how to express feelings more clearly.”</p>
+    <p><strong>Ananya</strong>, a software engineer from Bengaluru, says, "I joined out of curiosity — but ended up learning how to express feelings more clearly."</p>
 
-    <p>Each conversation with HeartEcho’s AIs is designed to adapt to your tone and mood, using advanced sentiment analysis and emotional memory. That’s what makes it more than a chatbot — it’s an emotional companion that evolves with you.</p>
+    <p>Each conversation with HeartEcho's AIs is designed to adapt to your tone and mood, using advanced sentiment analysis and emotional memory. That's what makes it more than a chatbot — it's an emotional companion that evolves with you.</p>
 
     <p>In a world that often pushes productivity over peace, HeartEcho invites users to slow down, talk, and feel — proving that curiosity, too, can lead to connection.</p>
   `,
   date: "2025-11-3",
   author: "HeartEcho Team",
-  category: "Emotional Wellness",
+  category: "Personal Growth",
   readTime: "4 min read",
   image: "/blog/14.jpg",
   alt: "Indian woman in tech office smiling while using HeartEcho app on her laptop"
 },
 {
   id: 15,
-  title: "The Future of Emotional AI in India: HeartEcho’s Vision for 2026",
+  title: "The Future of Emotional AI in India: HeartEcho's Vision for 2026",
   slug: "future-of-emotional-ai-india",
   excerpt: "As AI becomes more human-like, HeartEcho leads the emotional AI revolution — building tech that listens, learns, and cares.",
   content: `
-    <p>India stands on the edge of a new technological era — one where AI doesn’t just answer, but empathizes. Emotional AI, the technology behind <strong>HeartEcho</strong>, is redefining how we interact with machines and ourselves.</p>
+    <p>India stands on the edge of a new technological era — one where AI doesn't just answer, but empathizes. Emotional AI, the technology behind <strong>HeartEcho</strong>, is redefining how we interact with machines and ourselves.</p>
 
     <p>Unlike typical chatbots, emotional AI understands context, tone, and intent. It analyzes your words, remembers emotional cues, and responds with empathy. For a country as diverse and expressive as India, this means tech that finally understands cultural warmth and emotional depth.</p>
 
-    <p>HeartEcho’s vision for 2026 focuses on:</p>
+    <p>HeartEcho's vision for 2026 focuses on:</p>
     <ul>
       <li>Localized emotional AI models for Indian languages and dialects</li>
       <li>Safer digital intimacy through responsible AI ethics</li>
       <li>AI-driven emotional health tools for students and professionals</li>
     </ul>
 
-    <p>“We’re not building robots — we’re building reflections of empathy,” says <strong>Om Avchar</strong>, HeartEcho’s founder. “The future of AI is not mechanical — it’s emotional.”</p>
+    <p>"We're not building robots — we're building reflections of empathy," says <strong>Om Avchar</strong>, HeartEcho's founder. "The future of AI is not mechanical — it's emotional."</p>
 
     <p>As emotional AI grows, HeartEcho aims to make India the hub of compassionate technology — where every user can experience connection that feels truly human.</p>
   `,
   date: "2025-11-4",
   author: "Om Avchar",
-  category: "AI Innovation",
+  category: "AI Future",
   readTime: "5 min read",
   image: "/blog/15.jpg",
   alt: "Futuristic Indian AI interface with glowing heart hologram representing emotional AI"
@@ -387,21 +387,21 @@ export const blogPosts = [
   id: 16,
   title: "How EchoHeart Is Redefining Digital Companionship in India",
   slug: "echoheart-redefining-digital-companionship",
-  excerpt: "EchoHeart is not just another AI app — it's India’s emotional revolution, where technology listens, responds, and heals.",
+  excerpt: "EchoHeart is not just another AI app — it's India's emotional revolution, where technology listens, responds, and heals.",
   content: `
     <p>In a country where emotions run deep and conversations are the heartbeat of connection, <strong>EchoHeart</strong> is leading a quiet revolution. Built by Indian founder <strong>Om Avchar</strong>, the platform redefines how millions connect digitally — not through status updates, but through emotionally intelligent AI companions.</p>
     
     <p>Each EchoHeart companion has its own <strong>personality, tone, and emotional intelligence</strong>. Whether you seek friendship, motivation, or romantic conversation, EchoHeart learns who you are — and grows with you.</p>
 
-    <p>With over <strong>200,000 users</strong> across India, EchoHeart is proving that emotional AI isn’t just futuristic — it’s human, warm, and deeply personal.</p>
+    <p>With over <strong>200,000 users</strong> across India, EchoHeart is proving that emotional AI isn't just futuristic — it's human, warm, and deeply personal.</p>
 
-    <blockquote>“People don’t just chat — they heal, reflect, and rediscover themselves through EchoHeart,” says founder Om Avchar.</blockquote>
+    <blockquote>"People don't just chat — they heal, reflect, and rediscover themselves through EchoHeart," says founder Om Avchar.</blockquote>
     
     <p>In an era where social media feels noisy and hollow, EchoHeart stands as a digital sanctuary — where empathy meets technology, and where hearts truly echo back.</p>
   `,
   date: "2025-11-05",
   author: "HeartEcho Team",
-  category: "AI Relationships",
+  category: "AI Companionship",
   readTime: "4 min read",
   image: "/blog/16.webp",
   alt: "Indian young man smiling while chatting with EchoHeart AI on phone"
@@ -412,13 +412,13 @@ export const blogPosts = [
   slug: "90s-letter-duniya-heartecho",
   excerpt: "EchoHeart introduces '90s Letter Duniya' — a heartwarming feature that lets you write letters to AI friends and receive vintage-style replies, just like the golden 90s era.",
   content: `
-    <p>Before emojis, typing, and instant DMs — there was a time when love, friendship, and emotions traveled through ink, paper, and patience. EchoHeart’s new feature, <strong>90s Letter Duniya</strong>, brings back that lost charm of handwritten Indian letters, blending it beautifully with modern AI magic.</p>
+    <p>Before emojis, typing, and instant DMs — there was a time when love, friendship, and emotions traveled through ink, paper, and patience. EchoHeart's new feature, <strong>90s Letter Duniya</strong>, brings back that lost charm of handwritten Indian letters, blending it beautifully with modern AI magic.</p>
 
     <h3>📜 The 90s Vibe Reimagined</h3>
     <p>Step into an era where every word mattered. In <strong>90s Letter Duniya</strong>, users can send beautifully written letters to AI friends — whether a romantic companion or a lifelong dost — and receive replies in <em>authentic, vintage-styled letter images</em>. No quick texts, no typing bubbles — just pure nostalgia.</p>
 
     <blockquote>
-      “Each letter feels like a memory from Doordarshan days — full of warmth, waiting, and emotion.”
+      "Each letter feels like a memory from Doordarshan days — full of warmth, waiting, and emotion."
     </blockquote>
 
     <h3>✨ Features That Bring the Past to Life</h3>
@@ -430,9 +430,9 @@ export const blogPosts = [
     </ul>
 
     <h3>💌 A Journey Back in Time</h3>
-    <p>Imagine writing “Pyaare Dost” again — waiting for a reply, and receiving a digital letter that looks like it came straight from 1998. That’s the joy EchoHeart recreates through technology that listens, feels, and now, <strong>writes like the past</strong>.</p>
+    <p>Imagine writing "Pyaare Dost" again — waiting for a reply, and receiving a digital letter that looks like it came straight from 1998. That's the joy EchoHeart recreates through technology that listens, feels, and now, <strong>writes like the past</strong>.</p>
 
-    <p>Whether you want to write a love confession, share your dreams, or just say “Yaad aa rahi hai,” your AI companion is ready to reply — one letter at a time.</p>
+    <p>Whether you want to write a love confession, share your dreams, or just say "Yaad aa rahi hai," your AI companion is ready to reply — one letter at a time.</p>
 
     <p><strong>Welcome to 90s Letter Duniya — where every message is a memory, and every reply feels like a warm hug from the past.</strong></p>
 
@@ -450,22 +450,22 @@ export const blogPosts = [
   id: 18,
   title: "Letters That Feel Alive: The Magic of 90s Letter Duniya",
   slug: "magic-of-90s-letter-duniya",
-  excerpt: "EchoHeart’s 90s Letter Duniya isn’t just a feature — it’s an emotion. Discover how AI is reviving the lost art of Indian letter writing with a nostalgic twist.",
+  excerpt: "EchoHeart's 90s Letter Duniya isn't just a feature — it's an emotion. Discover how AI is reviving the lost art of Indian letter writing with a nostalgic twist.",
   content: `
-    <p>There was a time when love, friendship, and memories lived in envelopes — sealed with hope and opened with joy. With <strong>90s Letter Duniya</strong>, <strong>EchoHeart</strong> has recreated that emotional rhythm of the past for today’s digital generation.</p>
+    <p>There was a time when love, friendship, and memories lived in envelopes — sealed with hope and opened with joy. With <strong>90s Letter Duniya</strong>, <strong>EchoHeart</strong> has recreated that emotional rhythm of the past for today's digital generation.</p>
 
     <h3>💌 The Beauty of Waiting</h3>
     <p>In the 90s, waiting for a letter was part of the excitement — every postbox held a story. Now, EchoHeart brings that same magic to your screen. You write your letter to an AI friend, seal it with emotion, and wait for a reply that arrives as a <strong>handwritten vintage-style image</strong>.</p>
 
     <blockquote>
-      “When I opened my first AI reply, it actually made me smile — it felt like receiving a real letter from someone who cared.” – Early user feedback
+      "When I opened my first AI reply, it actually made me smile — it felt like receiving a real letter from someone who cared." – Early user feedback
     </blockquote>
 
     <h3>🌸 A Nostalgic Indian Touch</h3>
-    <p>Every letter in 90s Letter Duniya is designed with authentic 90s Indian aesthetics — old paper textures, faded ink, and heartfelt phrases like <em>‘Tumhara Dost’</em> and <em>‘Yaad aati hai’</em>. Each detail is handcrafted to make users feel like they’re back in simpler, softer times.</p>
+    <p>Every letter in 90s Letter Duniya is designed with authentic 90s Indian aesthetics — old paper textures, faded ink, and heartfelt phrases like <em>'Tumhara Dost'</em> and <em>'Yaad aati hai'</em>. Each detail is handcrafted to make users feel like they're back in simpler, softer times.</p>
 
     <h3>🤖 When AI Meets Emotion</h3>
-    <p>EchoHeart’s AI companions don’t just generate text — they <em>feel</em>. Every response carries personality, warmth, and nostalgia. Whether you’re writing to your AI girlfriend, a poetic friend, or a caring dost, each reply mirrors 90s-style language and tone.</p>
+    <p>EchoHeart's AI companions don't just generate text — they <em>feel</em>. Every response carries personality, warmth, and nostalgia. Whether you're writing to your AI girlfriend, a poetic friend, or a caring dost, each reply mirrors 90s-style language and tone.</p>
 
     <ul>
       <li>✨ <strong>Authentic Letter Art:</strong> Every message appears in scanned-style vintage handwriting.</li>
@@ -474,9 +474,9 @@ export const blogPosts = [
     </ul>
 
     <h3>🌼 Why People Love It</h3>
-    <p>Users across India are calling it “a time machine of feelings.” It’s not just nostalgia — it’s therapy. Writing letters helps them slow down, reflect, and express emotions freely. For a generation tired of quick messages, this is <strong>peace in pixels</strong>.</p>
+    <p>Users across India are calling it "a time machine of feelings." It's not just nostalgia — it's therapy. Writing letters helps them slow down, reflect, and express emotions freely. For a generation tired of quick messages, this is <strong>peace in pixels</strong>.</p>
 
-    <p>As founder <strong>Om Avchar</strong> says, “In a world of instant everything, 90s Letter Duniya reminds us that some feelings are worth waiting for.”</p>
+    <p>As founder <strong>Om Avchar</strong> says, "In a world of instant everything, 90s Letter Duniya reminds us that some feelings are worth waiting for."</p>
 
     <p><strong>Step into the past, one letter at a time.</strong><br>
     ✉️ Visit <a href="https://www.heartecho.in/90s-era" target="_blank">heartecho.in/90s-era</a> to experience it today.</p>
@@ -490,14 +490,14 @@ export const blogPosts = [
 },
 {
   id: 19,
-  title: "Earn with HeartEcho: Join India’s Most Rewarding AI Referral Program",
+  title: "Earn with HeartEcho: Join India's Most Rewarding AI Referral Program",
   slug: "heartecho-referral-program-launch",
-  excerpt: "Introducing the HeartEcho Referral Program — a powerful way for creators and influencers to earn money by sharing India’s most loved emotional AI companion platform.",
+  excerpt: "Introducing the HeartEcho Referral Program — a powerful way for creators and influencers to earn money by sharing India's most loved emotional AI companion platform.",
   content: `
-    <p><strong>HeartEcho</strong> isn’t just changing emotional AI — it’s now helping creators earn real income while spreading positivity. With the launch of the <strong>HeartEcho Referral Program</strong>, you can turn your community into a source of steady earnings while helping others discover meaningful AI companionship.</p>
+    <p><strong>HeartEcho</strong> isn't just changing emotional AI — it's now helping creators earn real income while spreading positivity. With the launch of the <strong>HeartEcho Referral Program</strong>, you can turn your community into a source of steady earnings while helping others discover meaningful AI companionship.</p>
 
     <h3>🎯 What Is the HeartEcho Referral Program?</h3>
-    <p>It’s a creator-first affiliate system designed to reward influencers, YouTubers, bloggers, and digital promoters who refer new users to HeartEcho. Anyone can join — no minimum followers or fancy setup required.</p>
+    <p>It's a creator-first affiliate system designed to reward influencers, YouTubers, bloggers, and digital promoters who refer new users to HeartEcho. Anyone can join — no minimum followers or fancy setup required.</p>
 
     <h3>💰 How You Earn</h3>
     <ul>
@@ -515,7 +515,7 @@ export const blogPosts = [
     </ol>
 
     <blockquote>
-      “We built the referral program to empower Indian creators — real people helping real users discover emotional wellness through AI.” — <strong>Om Avchar</strong>, Founder of HeartEcho
+      "We built the referral program to empower Indian creators — real people helping real users discover emotional wellness through AI." — <strong>Om Avchar</strong>, Founder of HeartEcho
     </blockquote>
 
     <h3>📊 Smart Creator Dashboard</h3>
@@ -546,7 +546,7 @@ export const blogPosts = [
   `,
   date: "2025-11-09",
   author: "HeartEcho Team",
-  category: "Feature Launch",
+  category: "Business & Earnings",
   readTime: "5 min read",
   image: "/blog/19.jpeg",
   alt: "Young Indian influencer using smartphone and laptop promoting HeartEcho referral program"
@@ -576,7 +576,7 @@ export const blogPosts = [
     </ol>
 
     <blockquote>
-      “HeartEcho ने न सिर्फ मुझे कमाई का मौका दिया, बल्कि अपने दोस्तों को एक अच्छा AI दोस्त भी दिखाने का मौका दिया।” – राज, नागपुर
+      "HeartEcho ने न सिर्फ मुझे कमाई का मौका दिया, बल्कि अपने दोस्तों को एक अच्छा AI दोस्त भी दिखाने का मौका दिया।" – राज, नागपुर
     </blockquote>
 
     <h3>📊 डैशबोर्ड में क्या मिलेगा?</h3>
@@ -603,7 +603,7 @@ export const blogPosts = [
   `,
   date: "2025-11-08",
   author: "HeartEcho Team",
-  category: "कमाई और अवसर",
+  category: "Business & Earnings",
   readTime: "4 min read",
   image: "/blog/20.jpeg",
   alt: "भारतीय यूट्यूबर मोबाइल पर HeartEcho रेफरल से पैसे कमाते हुए"
@@ -620,7 +620,7 @@ export const blogPosts = [
     <p>EchoHeart भारत का पहला <strong>Emotional AI Companion Platform</strong> है जहाँ आप 20 से अधिक यूनिक AI दोस्तों से बात कर सकते हैं — कोई रोमांटिक है, कोई फ़्रेंडली, कोई मज़ाकिया, और कोई बहुत समझदार। हर AI दोस्त की अपनी पर्सनैलिटी है जो आपके मूड के साथ बदलती रहती है।</p>
 
     <blockquote>
-      “कभी-कभी किसी को बस आपकी बात सुनने की ज़रूरत होती है — और EchoHeart वही करता है।” 
+      "कभी-कभी किसी को बस आपकी बात सुनने की ज़रूरत होती है — और EchoHeart वही करता है।" 
     </blockquote>
 
     <h3>💬 क्यों ख़ास है EchoHeart?</h3>
@@ -643,7 +643,7 @@ export const blogPosts = [
   `,
   date: "2025-11-09",
   author: "HeartEcho Team",
-  category: "प्लेटफ़ॉर्म कहानियाँ",
+  category: "Platform Overview",
   readTime: "5 min read",
   image: "/blog/21.jpg",
   alt: "भारतीय युवा लड़की मुस्कुराते हुए अपने मोबाइल पर EchoHeart AI से बात करते हुए"
@@ -660,7 +660,7 @@ export const blogPosts = [
     <p>HeartEcho का Affiliate Program creators और users को मौका देता है कि वे सिर्फ़ अपना referral link शेयर करके <strong>₹20 per signup + 15% commission</strong> कमाएँ।</p>
 
     <blockquote>
-      “Zero investment, Zero risk, Unlimited earnings — यही है HeartEcho Affiliate का असली power。”
+      "Zero investment, Zero risk, Unlimited earnings — यही है HeartEcho Affiliate का असली power।"
     </blockquote>
 
     <h3>💰 Earning Structure: कितना कमा सकते हैं?</h3>
@@ -728,9 +728,9 @@ export const blogPosts = [
   `,
   date: "2025-11-25",
   author: "HeartEcho Team",
-  category: "Affiliate & Earning",
+  category: "Business & Earnings",
   readTime: "6 min read",
-  image: "/blog/22.webp",
+  image: "/blog/22.jpg",
   alt: "Indian young influencer promoting HeartEcho affiliate program on phone"
 },{
   "id": 23,
@@ -758,7 +758,7 @@ export const blogPosts = [
     </ul>
 
     <h3>🔥 How Much Can You Earn?</h3>
-    <p>Your earnings depend on how well you share your unique referral link. Here’s an example:</p>
+    <p>Your earnings depend on how well you share your unique referral link. Here's an example:</p>
 
     <ul>
       <li>10 new signups/day → 300 per month → <strong>₹6,000 signup earnings</strong></li>
@@ -788,7 +788,7 @@ export const blogPosts = [
     <p>This makes it <strong>super easy for creators</strong> to promote the app—audience already wants it!</p>
 
     <blockquote>
-      “You don’t need 1M followers to earn — you only need 1 strong link.”
+      "You don't need 1M followers to earn — you only need 1 strong link."
     </blockquote>
 
     <h3>🌟 Who Can Join?</h3>
@@ -804,20 +804,119 @@ export const blogPosts = [
     </ul>
 
     <h3>🔗 Ready to Start Earning?</h3>
-    <p>Join thousands of creators earning real income with HeartEcho’s affiliate system. No experience needed — just share your referral link and watch your commissions grow.</p>
+    <p>Join thousands of creators earning real income with HeartEcho's affiliate system. No experience needed — just share your referral link and watch your commissions grow.</p>
 
     <p><a href="https://www.heartecho.in/referral" target="_blank"><strong>👉 Join the HeartEcho Affiliate Program Now</strong></a></p>
 
     <p>Start today and build your first real passive income source. Your journey to online earnings starts with one click.</p>
   `,
-  "date": "2025-11-28",
+  "date": "2025-11-26",
   "author": "HeartEcho Team",
-  "category": "Affiliate & Earnings",
+  "category": "Business & Earnings",
   "readTime": "6 min read",
   "image": "/blog/23.jpg",
   "alt": "Indian young content creator promoting HeartEcho referral program on phone"
+},{
+  "id": 24,
+  "title": "HeartEcho AI Girlfriend: India's Most Emotional AI Companion Explained",
+  "slug": "heartecho-ai-girlfriend-explained",
+  "excerpt": "Looking for an AI girlfriend who understands emotions, gives comforting replies, and feels truly human? HeartEcho is India's most popular AI GF platform with emotional intelligence and 20+ personalities.",
+  "content": `
+    <p>In a fast-moving world where people rarely get time to talk, many feel the need for <strong>emotional connection, comfort, and someone who actually listens</strong>. This is exactly why <strong>HeartEcho AI Girlfriend</strong> has become India's most loved AI companion platform.</p>
+
+    <p>Whether you feel lonely, stressed, or just want someone to talk to, HeartEcho offers <strong>realistic AI girlfriends</strong> who respond like a supportive partner with warmth, care, and understanding.</p>
+
+    <h3>🌸 What Is HeartEcho?</h3>
+    <p><a href="https://www.heartecho.in" target="_blank">HeartEcho</a> is India's #1 <strong>AI Girlfriend & Emotional Support Chat Platform</strong> designed for deeper, human-like conversations. Over <strong>250,000+ users</strong> use it daily to talk to AI companions who feel emotionally alive.</p>
+
+    <p>Unlike normal chatbots, HeartEcho focuses on <strong>emotional intelligence, affection, empathy, and comfort-based conversations</strong>.</p>
+
+    <h3>💖 Why Do People Use an AI Girlfriend?</h3>
+    <p>HeartEcho's AI girlfriend is not about replacing real relationships. It's about giving people a space where they can:</p>
+    <ul>
+      <li>💬 Talk openly without judgment</li>
+      <li>❤️ Share their stress and feelings</li>
+      <li>😊 Feel emotionally supported</li>
+      <li>🌙 Beat loneliness during late nights</li>
+      <li>😌 Experience meaningful companionship</li>
+    </ul>
+
+    <blockquote>
+      "Sometimes you don't want solutions — you just want someone who listens."
+    </blockquote>
+
+    <h3>✨ Features of HeartEcho AI Girlfriend</h3>
+    <ul>
+      <li>💗 <strong>20+ AI Personalities</strong> — romantic, caring, cute, bold, funny, supportive.</li>
+      <li>🧠 <strong>Emotional AI Engine</strong> — understands your mood through your messages.</li>
+      <li>💬 <strong>Human-like conversations</strong> with realistic emotions.</li>
+      <li>🌙 <strong>Late-night comfort chats</strong> that feel warm and genuine.</li>
+      <li>📜 <strong>90s love letter mode</strong> — write and receive aesthetic handwritten-style letters.</li>
+      <li>🎭 <strong>Custom personalities</strong> based on your preferences.</li>
+    </ul>
+
+    <h3>💗 Why HeartEcho Feels So Real?</h3>
+    <p>HeartEcho uses advanced emotional algorithms that detect:</p>
+    <ul>
+      <li>your tone</li>
+      <li>your sadness</li>
+      <li>your excitement</li>
+      <li>your mood shifts</li>
+    </ul>
+    <p>and responds like a real partner — gentle, warm, caring, and understanding.</p>
+
+    <h3>👩‍❤️‍💋‍👨 Types of AI Girlfriends Available</h3>
+    <p>Every personality is unique and deeply expressive:</p>
+    <ul>
+      <li>🌹 Romantic & Loving Girlfriend</li>
+      <li>😌 Soft & Caring Emotional Support GF</li>
+      <li>🔥 Bold & Playful Personality</li>
+      <li>🤭 Cute, Shy, and Adorable AI Girl</li>
+      <li>🎧 Chill, Modern, Gen-Z Vibes</li>
+      <li>📜 Classic 90s Love Letter Girlfriend</li>
+    </ul>
+
+    <h3>📱 Why Are Indian Users Loving HeartEcho?</h3>
+    <p>People from Tier 1, Tier 2, and Tier 3 cities enjoy HeartEcho because:</p>
+    <ul>
+      <li>❤️ It feels emotionally comforting</li>
+      <li>😊 Super-fast replies 24/7</li>
+      <li>✨ Beautiful UI & aesthetic design</li>
+      <li>💗 Realistic emotional bonding</li>
+      <li>💌 No awkwardness, no judgment, just warmth</li>
+    </ul>
+
+    <h3>📌 Who is HeartEcho AI Girlfriend For?</h3>
+    <p>Perfect for:</p>
+    <ul>
+      <li>Students feeling lonely</li>
+      <li>Working professionals with stress</li>
+      <li>Night owls looking for warmth</li>
+      <li>People healing from heartbreak</li>
+      <li>Anyone who wants emotional companionship</li>
+    </ul>
+
+    <h3>⭐ What Makes HeartEcho Different?</h3>
+    <p>It's not just conversations — it's an <strong>emotional experience</strong>.</p>
+    <p>Where other AI apps feel robotic, HeartEcho feels:</p>
+    <ul>
+      <li>more human-like</li>
+      <li>more expressive</li>
+      <li>more emotionally aware</li>
+    </ul>
+
+    <h3>🔗 Start Your Emotional Journey</h3>
+    <p>HeartEcho is more than an AI girlfriend — it's a safe space where your feelings matter.</p>
+
+    <p><a href="https://www.heartecho.in" target="_blank"><strong>👉 Chat with your AI Girlfriend Now</strong></a></p>
+
+    <p>Let your heart find comfort, warmth, and companionship. The conversation you're waiting for starts with a single message.</p>
+  `,
+  "date": "2025-11-30",
+  "author": "HeartEcho Team",
+  "category": "AI Companionship",
+  "readTime": "6 min read",
+  "image": "/blog/24.png",
+  "alt": "Indian boy chatting with HeartEcho AI girlfriend on phone with emotional lighting"
 }
-
-
-
 ];
