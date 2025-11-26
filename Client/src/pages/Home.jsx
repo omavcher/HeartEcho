@@ -235,10 +235,7 @@ export default function Home() {
 
         {/* --- HOW IT WORKS --- */}
         <section className="steps-section">
-          <div className="section-header">
-            <h2>Your Journey Begins Here</h2>
-            <p>Three simple steps to your perfect companion</p>
-          </div>
+          
           <StepsHome />
         </section>
 

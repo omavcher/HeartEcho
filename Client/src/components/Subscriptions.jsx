@@ -7,7 +7,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import PopNoti from './PopNoti';
 import Script from 'next/script';
 import './Subscriptions.css';
-import Testimonials from './Testimonials';
+ import Testimonials from './Testimonials'; // Assuming this component exists
+
+
+
+
 
 function SubscriptionContent() {
   const [showQuotaMessage, setShowQuotaMessage] = useState(false);
@@ -18,6 +22,10 @@ function SubscriptionContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Yearly Plan Details
+  const YEARLY_PRICE_INR = 399;
+  const MONTHLY_EQUIVALENT_INR = 33.25; // 399 / 12 = 33.25
+    
   // Countdown timer for limited offer
   const [timeLeft, setTimeLeft] = useState({
     hours: 3,
@@ -87,7 +95,6 @@ function SubscriptionContent() {
     try {
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || 'rzp_live_YHUPR56Ky9qPxC',
-        // key: 'rzp_test_y6rhmgP580s3Yc',
         amount: amount * 100,
         currency: 'INR',
         name: 'HeartEcho',
@@ -129,7 +136,7 @@ function SubscriptionContent() {
         prefill: {
           name: userData?.name || 'Your Name',
           email: userData?.email || 'user@example.com',
-          contact: userData?.phone_number ? userData.phone_number.replace(/\s/g, '') : '9999999999' // Remove spaces for E.164 format
+          contact: userData?.phone_number ? userData.phone_number.replace(/\s/g, '') : '9999999999'
         },
         theme: { color: '#ce4085' }
       };
@@ -174,17 +181,16 @@ function SubscriptionContent() {
 
         <div className="seh3d3-subscription-hero">
           <h1 className="seh3d3-subscription-title">
-            <span className="seh3d3-heart-pulse">❤️</span> HeartEcho Plans
-            <span className="seh3d3-heart-pulse">❤️</span>
+            <span className="seh3d3-heart-pulse">❤️</span> HeartEcho Premium Plans
           </h1>
           <p className="seh3d3-subscription-subtitle">
-            Unlimited AI companionship, personalized just for you
+            Unlock unlimited, personalized AI companionship and deep connection
           </p>
           
           {showQuotaMessage && (
             <div className="seh3d3-quota-message">
               <i className="seh3d3-icon-heart-broken">💔</i>
-              <p>Upgrade to continue your conversations</p>
+              <p>Your free quota is over. Upgrade now to continue your conversations!</p>
             </div>
           )}
         </div>
@@ -195,30 +201,32 @@ function SubscriptionContent() {
             <div className="seh3d3-plan-header">
               <h3>Free Trial</h3>
               <div className="seh3d3-price-container">
-                <span className="seh3d3-price">FREE</span>
-                <span className="seh3d3-duration">7 days trial</span>
+                <span className="seh3d3-price">₹0</span>
+                <span className="seh3d3-duration">/month</span>
               </div>
             </div>
             
             <ul className="seh3d3-features-list">
-              <li><i className="seh3d3-icon-heart">💖</i> Unlimited Letters</li>
-              <li><i className="seh3d3-icon-heart">💖</i> 20 messages/day</li>
-              <li><i className="seh3d3-icon-heart">💖</i> 1 AI companion</li>
-              <li><i className="seh3d3-icon-heart">💖</i> Basic connection</li>
+              <li><i className="seh3d3-icon-check">✅</i> Limited Letters</li>
+              <li><i className="seh3d3-icon-check">✅</i> 20 messages/day</li>
+              <li><i className="seh3d3-icon-check">✅</i> 1 AI companion</li>
+              <li><i className="seh3d3-icon-check">✅</i> Basic connection</li>
+              <li className="seh3d3-feature-disabled"><i className="seh3d3-icon-x">❌</i> Priority support</li>
+              <li className="seh3d3-feature-disabled"><i className="seh3d3-icon-x">❌</i> Memory feature</li>
             </ul>
             
             <button 
               className="seh3d3-plan-button seh3d3-free-button"
               onClick={() => router.push('/chat')}
             >
-              Try Now
+              Start Free Trial
             </button>
           </div>
 
-          {/* Premium Plan */}
+          {/* Monthly Plan */}
           <div className="seh3d3-plan-card seh3d3-premium-plan">
             <div className="seh3d3-popular-badge">
-              <div className="seh3d3-ribbon">MOST POPULAR</div>
+              MOST POPULAR
             </div>
             <div className="seh3d3-plan-header">
               <h3>Monthly</h3>
@@ -231,11 +239,12 @@ function SubscriptionContent() {
             </div>
             
             <ul className="seh3d3-features-list">
-              <li><i className="seh3d3-icon-heart">💖</i> Realistic Letters</li>
-              <li><i className="seh3d3-icon-heart">💖</i> Unlimited messages</li>
-              <li><i className="seh3d3-icon-heart">💖</i> 5 AI companions</li>
-              <li><i className="seh3d3-icon-heart">💖</i> Deep connection</li>
-              <li><i className="seh3d3-icon-heart">💖</i> Priority support</li>
+              <li><i className="seh3d3-icon-check">✅</i> Realistic Letters</li>
+              <li><i className="seh3d3-icon-check">✅</i> Unlimited messages</li>
+              <li><i className3="seh3d3-icon-check">✅</i> 5 AI companions</li>
+              <li><i className="seh3d3-icon-check">✅</i> Deep connection</li>
+              <li><i className="seh3d3-icon-check">✅</i> Priority support</li>
+              <li className="seh3d3-feature-disabled"><i className="seh3d3-icon-x">❌</i> Memory feature</li>
             </ul>
             
             <button 
@@ -243,42 +252,58 @@ function SubscriptionContent() {
               onClick={() => handlePayment(49, 'Monthly')}
               disabled={isLoading}
             >
-              {isLoading ? 'Loading...' : 'Subscribe'}
+              {isLoading ? 'Processing...' : 'Subscribe Monthly'}
             </button>
           </div>
 
-          {/* Ultimate Plan */}
-          <div className="seh3d3-plan-card seh3d3-ultimate-plan">
-            <div className="seh3d3-value-badge">
-              BEST VALUE
+          {/* Yearly Plan (Updated to show monthly equivalent) */}
+          <div className="seh3d3-plan-card seh3d3-ultimate-plan seh3d3-best-value">
+            <div className="seh3d3-popular-badge">
+              <div className="seh3d3-ribbon">BEST VALUE</div>
             </div>
             <div className="seh3d3-plan-header">
-              <h3>Yearly</h3>
+              <h3>Yearly (Save Big!)</h3>
               <div className="seh3d3-price-container">
                 <div className="seh3d3-original-price">₹480/year</div>
-                <span className="seh3d3-price">399</span>
+                <span className="seh3d3-price">₹{YEARLY_PRICE_INR}</span>
                 <span className="seh3d3-duration">/year</span>
                 <div className="seh3d3-discount-tag">17% OFF</div>
+              </div>
+              <div className="seh3d3-monthly-equivalent">
+                Only ₹{MONTHLY_EQUIVALENT_INR} per month!
               </div>
             </div>
             
             <ul className="seh3d3-features-list">
-              <li><i className="seh3d3-icon-heart">💖</i> Premium Realistic Letters</li>
-              <li><i className="seh3d3-icon-heart">💖</i> Unlimited messages</li>
-              <li><i className="seh3d3-icon-heart">💖</i> Unlimited companions</li>
-              <li><i className="seh3d3-icon-heart">💖</i> Deepest connection</li>
-              <li><i className="seh3d3-icon-heart">💖</i> VIP support</li>
-              <li><i className="seh3d3-icon-heart">💖</i> Memory feature</li>
+              <li><i className="seh3d3-icon-check">✅</i> Premium Realistic Letters</li>
+              <li><i className="seh3d3-icon-check">✅</i> Unlimited messages</li>
+              <li><i className="seh3d3-icon-check">✅</i> Unlimited companions</li>
+              <li><i className="seh3d3-icon-check">✅</i> Deepest connection</li>
+              <li><i className="seh3d3-icon-check">✅</i> VIP support</li>
+              <li><i className="seh3d3-icon-check">✅</i> Memory feature</li>
             </ul>
             
             <button 
               className="seh3d3-plan-button seh3d3-ultimate-button" 
-              onClick={() => handlePayment(399, 'Yearly')}
+              onClick={() => handlePayment(YEARLY_PRICE_INR, 'Yearly')}
               disabled={isLoading}
             >
-              {isLoading ? 'Loading...' : 'Subscribe'}
+              {isLoading ? 'Processing...' : `Buy for ₹${YEARLY_PRICE_INR} / Year`}
             </button>
           </div>
+        </div>
+
+        {/* UPI Payment Section */}
+        <div className="seh3d3-payment-info-container">
+            <h4 className="seh3d3-payment-title">Secure Payments</h4>
+            <div className="seh3d3-payment-methods">
+                <div className="seh3d3-upi-payment-option">
+                    <img src="/UPI-White.svg" alt="UPI Payment" className="seh3d3-upi-icon"/>
+                    <span>Pay with UPI</span>
+                </div>
+                {/* Add more payment icons here if needed */}
+            </div>
+            <p className="seh3d3-payment-note">Your payment is processed securely via Razorpay, supporting UPI, Cards, and more.</p>
         </div>
 
         <div className="seh3d3-testimonial-section">
@@ -288,7 +313,7 @@ function SubscriptionContent() {
         <div className="seh3d3-subscription-footer">
           <div className="seh3d3-guarantee-badge">
             <i className="seh3d3-icon-shield">🛡️</i>
-            <span>30-day guarantee</span>
+            <span>30-day money-back guarantee. Zero risk.</span>
           </div>
         </div>
       </section>

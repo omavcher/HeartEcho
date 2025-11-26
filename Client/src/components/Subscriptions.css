@@ -1,296 +1,375 @@
-/* Mobile-Optimized CSS with Pure Black Theme */
+/* Mobile-Optimized CSS with Pure Black Theme and Enhanced Styling */
 .seh3d3-subscription-container {
     max-width: 100%;
     margin: 0 auto;
-    padding: 1rem;
+    padding: 1.5rem 1rem;
     color: #fff;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', sans-serif;
     background-color: #000000;
-  }
-  
-  /* Limited Offer Banner */
-  .seh3d3-limited-offer-banner {
-    background: linear-gradient(90deg, #ce4085, #9d2c66);
-    padding: 0.6rem;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
+}
+
+/* Limited Offer Banner */
+.seh3d3-limited-offer-banner {
+    background: linear-gradient(90deg, #e74c9a, #ce4085); /* Brighter gradient */
+    padding: 0.8rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-  }
-  
-  .seh3d3-offer-tag {
+    gap: 0.8rem;
+    font-size: 1rem;
+    box-shadow: 0 4px 15px rgba(206, 64, 133, 0.4);
+}
+
+.seh3d3-offer-tag {
     background: #000;
     color: #fff;
-    padding: 0.2rem 0.8rem;
-    border-radius: 20px;
-    font-weight: 700;
-    font-size: 0.8rem;
-  }
-  
-  .seh3d3-countdown-timer {
+    padding: 0.3rem 1rem;
+    border-radius: 25px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.seh3d3-countdown-timer {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
-    font-weight: 600;
-  }
-  
-  .seh3d3-timer-digit {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 0.1rem 0.4rem;
-    border-radius: 4px;
-    min-width: 24px;
+    gap: 0.5rem;
+    font-weight: 700;
+}
+
+.seh3d3-timer-digit {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    min-width: 30px;
     display: inline-block;
     text-align: center;
-    font-size: 0.9rem;
-  }
-  
-  .seh3d3-subscription-hero {
+    font-size: 1rem;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.seh3d3-subscription-hero {
     text-align: center;
-    margin-bottom: 1.5rem;
-  }
-  
-  .seh3d3-subscription-title {
-    font-size: 1.8rem;
-    font-weight: 700;
+    margin-bottom: 2rem;
+}
+
+.seh3d3-subscription-title {
+    font-size: 2.2rem;
+    font-weight: 800;
     margin-bottom: 0.5rem;
     color: #fff;
-  }
-  
-  .seh3d3-heart-pulse {
+}
+
+.seh3d3-heart-pulse {
+    color: #ce4085;
     animation: seh3d3-pulse 1.5s infinite;
-  }
-  
-  .seh3d3-subscription-subtitle {
-    font-size: 1rem;
-    color: rgba(255, 255, 255, 0.8);
-    margin: 0 auto 1.5rem;
-  }
-  
-  /* Quota Message */
-  .seh3d3-quota-message {
+}
+
+.seh3d3-subscription-subtitle {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.7);
+    max-width: 600px;
+    margin: 0.5rem auto 2rem;
+}
+
+/* Quota Message */
+.seh3d3-quota-message {
     background: linear-gradient(135deg, #ce4085, #9d2c66);
     color: white;
-    padding: 0.8rem;
-    border-radius: 8px;
+    padding: 1rem;
+    border-radius: 10px;
     margin: 0 auto;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-    max-width: 100%;
-  }
-  
-  /* Plans Grid - Mobile First */
-  .seh3d3-plans-grid {
+    gap: 0.8rem;
+    font-size: 1rem;
+    font-weight: 600;
+    max-width: 500px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Plans Grid */
+.seh3d3-plans-grid {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    margin: 1.5rem 0;
-  }
-  
-  .seh3d3-plan-card {
+    gap: 1.5rem;
+    margin: 1.5rem 0 3rem;
+}
+
+.seh3d3-plan-card {
     background: #111111;
-    border-radius: 10px;
-    padding: 1.2rem;
+    border-radius: 15px;
+    padding: 1.5rem;
     position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  }
-  
-  .seh3d3-plan-header {
-    margin-bottom: 1rem;
-    padding-bottom: 0.8rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .seh3d3-plan-card h3 {
-    font-size: 1.3rem;
-    margin-bottom: 0.3rem;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.seh3d3-plan-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.7);
+}
+
+.seh3d3-premium-plan {
+    border-color: #ce4085;
+}
+
+/* Best Value Highlight for Yearly Plan */
+.seh3d3-ultimate-plan.seh3d3-best-value {
+    background: #1c1c1c; /* Slightly darker to stand out */
+    border-color: #fff;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+}
+
+.seh3d3-plan-header {
+    margin-bottom: 1.2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.seh3d3-plan-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
     color: white;
-  }
-  
-  .seh3d3-price-container {
+}
+
+.seh3d3-price-container {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
-    gap: 0.3rem;
-  }
-  
-  .seh3d3-price {
-    font-size: 1.8rem;
-    font-weight: 700;
-  }
-  
-  .seh3d3-duration {
-    font-size: 0.9rem;
+    gap: 0.5rem;
+}
+
+.seh3d3-price {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ce4085;
+}
+
+.seh3d3-duration {
+    font-size: 1rem;
     color: rgba(255, 255, 255, 0.6);
-    margin-bottom: 0.2rem;
-  }
-  
-  .seh3d3-original-price {
+    margin-bottom: 0.3rem;
+}
+
+.seh3d3-original-price {
     text-decoration: line-through;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.9rem;
     width: 100%;
-  }
-  
-  .seh3d3-discount-tag {
+    margin-top: 0.5rem;
+}
+
+.seh3d3-discount-tag {
     background: #ce4085;
     color: white;
-    padding: 0.1rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.7rem;
-    font-weight: 600;
-  }
-  
-  /* Badges */
-  .seh3d3-popular-badge,
-  .seh3d3-value-badge {
-    position: absolute;
-    top: -10px;
-    right: 10px;
-    background: linear-gradient(135deg, #ce4085, #e74c9a);
-    color: white;
     padding: 0.2rem 0.6rem;
-    border-radius: 12px;
-    font-size: 0.7rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* Monthly Equivalent for Yearly Plan */
+.seh3d3-monthly-equivalent {
+    font-size: 1rem;
     font-weight: 600;
-  }
-  
-  /* Features List */
-  .seh3d3-features-list {
+    color: #4cd964; /* Green for savings */
+    margin-top: 0.5rem;
+    padding: 0.3rem 0;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+/* Badges */
+.seh3d3-popular-badge {
+    position: absolute;
+    top: -12px;
+    right: 15px;
+    background: linear-gradient(135deg, #e74c9a, #ce4085);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Features List */
+.seh3d3-features-list {
     list-style: none;
     padding: 0;
-    margin: 1rem 0;
-  }
-  
-  .seh3d3-features-list li {
-    margin-bottom: 0.6rem;
+    margin: 1rem 0 1.5rem;
+}
+
+.seh3d3-features-list li {
+    margin-bottom: 0.8rem;
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.85rem;
-  }
-  
-  /* Buttons */
-  .seh3d3-plan-button {
+    gap: 0.6rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* Icons for features */
+.seh3d3-icon-check {
+    color: #4cd964; /* Green for included features */
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.seh3d3-icon-x {
+    color: #ff3b30; /* Red for disabled/excluded features */
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.seh3d3-feature-disabled {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Buttons */
+.seh3d3-plan-button {
     width: 100%;
-    padding: 0.8rem;
+    padding: 1rem;
     border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 0.9rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
     cursor: pointer;
-    margin-top: 0.8rem;
-  }
-  
-  .seh3d3-free-button {
+    margin-top: 1rem;
+    transition: background-color 0.3s ease, transform 0.2s;
+    text-transform: uppercase;
+}
+
+.seh3d3-plan-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.seh3d3-free-button {
     background: rgba(255, 255, 255, 0.1);
     color: white;
-  }
-  
-  .seh3d3-premium-button {
-    background: linear-gradient(135deg, #ce4085, #9d2c66);
+}
+
+.seh3d3-premium-button {
+    background: linear-gradient(135deg, #ce4085, #e74c9a);
     color: white;
-  }
-  
-  .seh3d3-ultimate-button {
-    background: linear-gradient(135deg, #9d2c66, #7a2250);
-    color: white;
-  }
-  
-  .seh3d3-plan-button:disabled {
-    opacity: 0.7;
-  }
-  
-  /* Testimonial Section */
-  .seh3d3-testimonial-section {
-    margin: 1.5rem 0;
-  }
-  
-  .seh3d3-testimonial {
-    background: #111111;
-    border-radius: 10px;
-    padding: 1rem;
+}
+
+.seh3d3-ultimate-button {
+    background: #fff; /* White button for best value */
+    color: #ce4085;
+    font-weight: 800;
+}
+
+.seh3d3-plan-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* UPI Payment Section */
+.seh3d3-payment-info-container {
+    text-align: center;
+    margin: 3rem 0;
+    padding: 1.5rem;
+    background: #1a1a1a;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.seh3d3-payment-title {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: #fff;
+    font-weight: 700;
+}
+
+.seh3d3-payment-methods {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.seh3d3-upi-payment-option {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .seh3d3-user-avatar {
-    font-size: 1.8rem;
-    flex-shrink: 0;
-  }
-  
-  .seh3d3-quote {
-    font-style: italic;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.9rem;
-  }
-  
-  .seh3d3-user-name {
-    margin-top: 0.3rem;
+    gap: 0.5rem;
+    flex-direction: column;
+    font-size: 1rem;
     font-weight: 600;
-    color: #fff;
-    font-style: normal;
-    font-size: 0.8rem;
-  }
-  
-  /* Footer */
-  .seh3d3-subscription-footer {
+    color: #4cd964;
+}
+
+.seh3d3-payment-note {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 0.5rem;
+}
+
+/* Testimonial Section */
+.seh3d3-testimonial-section {
+    margin: 3rem 0;
+    /* Styles for the Testimonials component will go here */
+}
+
+.seh3d3-testimonials-placeholder {
+    padding: 2rem;
+    background: #111;
+    border-radius: 10px;
     text-align: center;
-    margin-top: 1.5rem;
-  }
-  
-  .seh3d3-guarantee-badge {
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+/* Footer */
+.seh3d3-subscription-footer {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.seh3d3-guarantee-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-    background: rgba(0, 80, 0, 0.2);
+    gap: 0.5rem;
+    background: rgba(76, 217, 100, 0.1);
     color: #4cd964;
-    padding: 0.4rem 0.8rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-  }
-  
-  /* Animations */
-  @keyframes seh3d3-pulse {
+    padding: 0.6rem 1rem;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid rgba(76, 217, 100, 0.3);
+}
+
+/* Animations */
+@keyframes seh3d3-pulse {
     0% { transform: scale(1); }
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
-  }
-  
-  /* Tablet and Desktop Responsive */
-  @media (min-width: 768px) {
+}
+
+/* Tablet and Desktop Responsive */
+@media (min-width: 768px) {
     .seh3d3-subscription-container {
-      padding: 1.5rem;
+        padding: 2.5rem 2rem;
     }
-  
+
     .seh3d3-plans-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
     }
-  
+
     .seh3d3-plan-card {
-      padding: 1.5rem;
+        padding: 2rem;
     }
-  }
-  
-  /* Large Desktop */
-  @media (min-width: 1024px) {
-    .seh3d3-subscription-container {
-      max-width: 1200px;
-      padding: 2rem;
+
+    .seh3d3-ultimate-plan.seh3d3-best-value {
+        transform: scale(1.05); /* Make it stand out more */
     }
-  
-    .seh3d3-plans-grid {
-      gap: 1.5rem;
-    }
-  }
+}
