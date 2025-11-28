@@ -16,11 +16,16 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 const FRONTEND = process.env.FRONTEND || "https://www.heartecho.in";
 
 app.use(cors({
-  origin: ["https://www.heartecho.in", "www.heartecho.in", "http://heartecho.in", "http://www.heartecho.in",
-           "http://localhost:3000"],  
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true // Allow cookies and authentication headers
+  origin: [
+    "https://heartecho.in",
+    "https://www.heartecho.in",
+    "http://heartecho.in",
+    "http://www.heartecho.in",
+    "http://localhost:3000"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
 }));
 
 
