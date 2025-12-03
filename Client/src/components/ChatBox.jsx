@@ -177,6 +177,7 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
   const [remainingQuota, setRemainingQuota] = useState(20);
   const [showScrollDown, setShowScrollDown] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [tempMessages, setTempMessages] = useState([]); // Store temporary messages
 
   // Refs
   const overlayRef = useRef(null);
@@ -190,13 +191,16 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
     return isSubscribed || remainingQuota > 0;
   }, [isSubscribed, remainingQuota]);
 
-  const displayMessages = useMemo(() => 
-    messages.filter(msg => 
+  // Combine regular messages with temporary messages
+  const displayMessages = useMemo(() => {
+    const filteredMessages = messages.filter(msg => 
       !msg.text?.includes("don't have enough message quota") && 
       !msg.isLoading
-    ), 
-    [messages]
-  );
+    );
+    
+    // Add temporary messages at the end
+    return [...filteredMessages, ...tempMessages];
+  }, [messages, tempMessages]);
 
   // Effects
   useEffect(() => {
@@ -226,19 +230,19 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
   }, [chatId, token]);
 
   useEffect(() => {
-    if (messages.length > 0 && isInitialLoad) {
+    if (displayMessages.length > 0 && isInitialLoad) {
       setTimeout(() => {
         scrollToBottom(true);
         setIsInitialLoad(false);
       }, 100);
     }
-  }, [messages.length, isInitialLoad]);
+  }, [displayMessages.length, isInitialLoad]);
 
   useEffect(() => {
-    if (messages.length > 0 && !isInitialLoad) {
+    if (displayMessages.length > 0 && !isInitialLoad) {
       scrollToBottom();
     }
-  }, [messages.length]);
+  }, [displayMessages.length]);
 
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
@@ -390,18 +394,19 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
       return;
     }
 
-    // Optimistic UI update
-    const tempMsg = {
-      _id: `temp-${Date.now()}`,
+    // Create user message object IMMEDIATELY
+    const userMsg = {
+      _id: `user-${Date.now()}`,
       sender: "me",
       senderModel: "User",
       text: textToSend,
       time: new Date().toISOString(),
       mediaType: "text",
-      isLoading: true,
+      isTemp: true // Mark as temporary
     };
 
-    setMessages(prev => [...prev, tempMsg]);
+    // Add to temporary messages IMMEDIATELY
+    setTempMessages(prev => [...prev, userMsg]);
     setNewMessage("");
     setIsTyping(true);
 
@@ -420,7 +425,10 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
         setRemainingQuota(response.data.remainingQuota);
       }
 
-      // Fetch updated chat data
+      // Remove the temporary user message
+      setTempMessages(prev => prev.filter(msg => msg._id !== userMsg._id));
+      
+      // Fetch updated chat data (includes both user and AI messages)
       await fetchChatData();
       
       onSendMessage();
@@ -430,8 +438,8 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
       console.error("Error sending message:", error);
       setIsTyping(false);
       
-      // Remove optimistic message on error
-      setMessages(prev => prev.filter(msg => !msg.isLoading));
+      // Remove temporary message on error
+      setTempMessages(prev => prev.filter(msg => msg._id !== userMsg._id));
       
       if (error.response?.status === 403) {
         const errorMessage = error.response.data?.message || "Your daily token quota is over. Try again tomorrow!";
@@ -648,23 +656,17 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
               displayMessages.map((msg, index) => (
                 <div 
                   key={msg._id || index}
-                  className={`message-row ${msg.sender === "me" ? 'sent' : 'received'}`}
+                  className={`message-row ${msg.sender === "me" ? 'sent' : 'received'} ${msg.isTemp ? 'temp-message' : ''}`}
                   ref={index === displayMessages.length - 1 ? lastMessageRef : null}
                   onMouseEnter={() => setHoveredMessage(msg._id)}
                   onMouseLeave={() => setHoveredMessage(null)}
                 >
-                  {msg.sender !== "me" && (
-                    <img 
-                      src={userProfile?.avatar_img || "/heartecho_b.png"} 
-                      className="chat-msg-avatar" 
-                      alt="AI Avatar" 
-                    />
-                  )}
+                 
                   <div className="message-bubble">
                     {renderMessageContent(msg)}
                   </div>
                   
-                  {hoveredMessage === msg._id && msg.sender === "me" && (
+                  {hoveredMessage === msg._id && msg.sender === "me" && !msg.isTemp && (
                     <button 
                       className="msg-options-trigger"
                       onClick={(e) => {
@@ -676,12 +678,14 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
                     </button>
                   )}
                   
-                  <MessageOptions
-                    message={msg}
-                    onCopy={handleCopyMessage}
-                    onDelete={handleDeleteMessage}
-                    isVisible={selectedMessage === msg._id}
-                  />
+                  {!msg.isTemp && (
+                    <MessageOptions
+                      message={msg}
+                      onCopy={handleCopyMessage}
+                      onDelete={handleDeleteMessage}
+                      isVisible={selectedMessage === msg._id}
+                    />
+                  )}
                 </div>
               ))
             )}
@@ -1228,6 +1232,10 @@ const STYLES = `
   flex-direction: row-reverse;
 }
 
+.message-row.temp-message {
+  opacity: 0.9;
+}
+
 .chat-msg-avatar {
   width: 32px; 
   height: 32px;
@@ -1251,6 +1259,7 @@ const STYLES = `
   background: var(--msg-received);
   border-bottom-left-radius: 4px;
   border: 1px solid var(--glass-border);
+
 }
 
 .sent .message-bubble {

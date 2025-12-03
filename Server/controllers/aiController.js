@@ -1,15 +1,10 @@
+// aiController.js - Updated version
 const mongoose = require("mongoose");
-const User = require("..//models/User");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const nodemailer = require('nodemailer');
+const User = require("../models/User");
 const AIFriend = require("../models/AIFriend");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 const Chat = require("../models/Chat");
 const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+const groqAI = require("./groq-multi-model"); // Import the Groq AI wrapper
 
 // Quota costs
 const QUOTA_COSTS = {
@@ -114,14 +109,12 @@ function initializeVideoTracker(aiFriendId, gender) {
  * ✅ Get unused random video for AI friend
  */
 function getUnusedRandomVideo(aiFriendId, AiInfo) {
-  // Initialize tracker if not exists
   if (!videoUsageTracker.has(aiFriendId)) {
     initializeVideoTracker(aiFriendId, AiInfo.gender);
   }
   
   const tracker = videoUsageTracker.get(aiFriendId);
   
-  // First, check if AI friend has custom videos
   if (AiInfo.video_gallery && AiInfo.video_gallery.length > 0) {
     const unusedCustomVideos = AiInfo.video_gallery.filter(video => !tracker.usedVideos.has(video));
     
@@ -132,7 +125,6 @@ function getUnusedRandomVideo(aiFriendId, AiInfo) {
       return selectedVideo;
     }
     
-    // If all custom videos used, reset and use them again
     AiInfo.video_gallery.forEach(video => tracker.usedVideos.delete(video));
     const randomIndex = Math.floor(Math.random() * AiInfo.video_gallery.length);
     const selectedVideo = AiInfo.video_gallery[randomIndex];
@@ -140,7 +132,6 @@ function getUnusedRandomVideo(aiFriendId, AiInfo) {
     return selectedVideo;
   }
   
-  // Use gender-specific videos
   const unusedVideos = tracker.availableVideos.filter(video => !tracker.usedVideos.has(video));
   
   if (unusedVideos.length > 0) {
@@ -150,7 +141,6 @@ function getUnusedRandomVideo(aiFriendId, AiInfo) {
     return selectedVideo;
   }
   
-  // If all videos used, reset and start over
   console.log(`All videos used for ${aiFriendId}, resetting video usage tracker`);
   tracker.usedVideos.clear();
   
@@ -164,7 +154,6 @@ function getUnusedRandomVideo(aiFriendId, AiInfo) {
  * ✅ Get multiple unused random videos for AI friend
  */
 function getMultipleUnusedVideos(aiFriendId, AiInfo, count = 2) {
-  // Initialize tracker if not exists
   if (!videoUsageTracker.has(aiFriendId)) {
     initializeVideoTracker(aiFriendId, AiInfo.gender);
   }
@@ -172,11 +161,9 @@ function getMultipleUnusedVideos(aiFriendId, AiInfo, count = 2) {
   const tracker = videoUsageTracker.get(aiFriendId);
   const videos = [];
   
-  // First, check if AI friend has custom videos
   if (AiInfo.video_gallery && AiInfo.video_gallery.length > 0) {
     let unusedCustomVideos = AiInfo.video_gallery.filter(video => !tracker.usedVideos.has(video));
     
-    // If not enough unused videos, reset and use all available
     if (unusedCustomVideos.length < count) {
       AiInfo.video_gallery.forEach(video => tracker.usedVideos.delete(video));
       unusedCustomVideos = [...AiInfo.video_gallery];
@@ -191,10 +178,8 @@ function getMultipleUnusedVideos(aiFriendId, AiInfo, count = 2) {
     return videos;
   }
   
-  // Use gender-specific videos
   let unusedVideos = tracker.availableVideos.filter(video => !tracker.usedVideos.has(video));
   
-  // If not enough unused videos, reset and use all available
   if (unusedVideos.length < count) {
     console.log(`Not enough unused videos for ${aiFriendId}, resetting video usage tracker`);
     tracker.usedVideos.clear();
@@ -242,15 +227,20 @@ function resetVideoUsage(aiFriendId) {
 }
 
 /**
- * ✅ AI Response Generator (Single Definition)
+ * ✅ AI Response Generator using Groq (with Gemini fallback)
  */
 async function generateAIResponse(prompt) {
   try {
-    const result = await model.generateContent(prompt);
-    console.log("AI Response generated successfully");
-    return result.response?.text() || "Arey yaar, abhi thoda busy hoon. Baad me baat karein? 😅";
+    console.log("🔄 Generating AI response with Groq (Gemini fallback)...");
+    
+    // Use Groq AI with Gemini fallback
+    const response = await groqAI.generateAIResponse(prompt);
+    
+    console.log(`✅ AI Response generated successfully (Source: ${response.includes('gemini') ? 'Gemini Fallback' : 'Groq'})`);
+    return response || "Arey yaar, abhi thoda busy hoon. Baad me baat karein? 😅";
+    
   } catch (error) {
-    console.error("Error generating AI response:", error);
+    console.error("❌ All AI models failed:", error);
     return "Bhai, lagta hai server thoda tantrum maar raha hai. Try kar phir se!";
   }
 }
@@ -400,7 +390,6 @@ async function generateAIImageResponse(userMessage, userInfo, AiInfo) {
  */
 async function generateAIVideoResponse(userMessage, userInfo, AiInfo) {
   try {
-    // Get gender-specific random video with usage tracking
     const randomVideoUrl = getRandomVideoFromGallery(AiInfo);
     const videoPrompt = userMessage.replace('/video', '').trim();
     
@@ -424,7 +413,6 @@ async function generateAIVideoResponse(userMessage, userInfo, AiInfo) {
       responseText = `This video requires ${QUOTA_COSTS.VIDEO} tokens. You have ${userInfo.messageQuota}. Upgrade to premium for unlimited access! 💎`;
     }
     
-    // Get video usage stats for logging
     const videoStats = getVideoUsageStats(AiInfo._id.toString());
     
     return {
@@ -448,7 +436,7 @@ async function generateAIVideoResponse(userMessage, userInfo, AiInfo) {
         required: QUOTA_COSTS.VIDEO,
         hasAccess: hasQuota && quotaResult.success
       },
-      videoUsage: videoStats // Include usage stats for debugging
+      videoUsage: videoStats
     };
   } catch (error) {
     console.error("Error generating AI video response:", error);
@@ -480,7 +468,6 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
     }
     
     if (mediaType === "videos" || mediaType === "mixed") {
-      // Get gender-specific videos with usage tracking
       const videoCount = Math.min(2, 
         (AiInfo.video_gallery?.length > 0 ? AiInfo.video_gallery.length : 
          GENDER_VIDEO_LINKS[AiInfo.gender]?.length || 2)
@@ -491,21 +478,16 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
       }
     }
     
-    // Calculate total cost
     const totalQuotaRequired = mediaItems.reduce((total, item) => total + item.cost, 0);
-    
-    // Check if user has sufficient quota for all media
     const hasQuota = hasSufficientQuota(userInfo, 'mixed') && userInfo.messageQuota >= totalQuotaRequired;
     
     const responses = [];
     let imagesSent = 0;
     let videosSent = 0;
     
-    // Get gender-specific videos in advance with usage tracking
     const genderVideos = getMultipleRandomVideos(AiInfo, mediaItems.filter(item => item.type === 'video').length);
     let videoIndex = 0;
     
-    // Generate responses for each media item
     for (const item of mediaItems) {
       if (item.type === 'image') {
         const imageUrl = getRandomImageFromGallery(AiInfo);
@@ -559,12 +541,10 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
       }
     }
     
-    // Deduct total quota only if user has sufficient quota
     if (hasQuota && userInfo.user_type === "free") {
       userInfo.messageQuota -= totalQuotaRequired;
       await userInfo.save();
       
-      // Update quota info in responses
       responses.forEach(response => {
         if (response.quotaInfo) {
           response.quotaInfo.remaining = userInfo.messageQuota;
@@ -648,13 +628,11 @@ exports.createAiFriend = async (req, res) => {
         },
         initial_message: generatedData.PersonaData.message,
         avatar_img: generatedData.Image,
-        // Add gender-specific videos to the video gallery
         video_gallery: GENDER_VIDEO_LINKS[generatedData.Gender] || GENDER_VIDEO_LINKS.other
     });
 
     await newAIFriend.save();
 
-    // Initialize video usage tracker for this AI friend
     initializeVideoTracker(newAIFriend._id.toString(), generatedData.Gender);
 
     await User.findByIdAndUpdate(userId, { 
@@ -913,6 +891,7 @@ exports.AiFriendResponse = async (req, res) => {
         `;
     }
 
+    // Use the updated generateAIResponse function with Groq + Gemini fallback
     const aiResponse = await generateAIResponse(prompt);
 
     const aiMessage = {
