@@ -31,6 +31,7 @@ const AboutPage = () => {
                     width={200}
                     height={200}
                     className="idkxpw-founder-image"
+                    priority
                   />
                   <div className="idkxpw-image-glow"></div>
                 </div>
@@ -57,6 +58,34 @@ const AboutPage = () => {
                     <span className="idkxpw-stat-number">#1</span>
                     <span className="idkxpw-stat-label">Ranking</span>
                   </div>
+                </motion.div>
+
+                {/* Product Hunt Badge */}
+                <motion.div
+                  className="idkxpw-producthunt-badge-wrapper"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7, duration: 0.5 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <a 
+                    href="https://www.producthunt.com/posts/heartecho-ai?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-heartecho&#0045;ai" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="idkxpw-producthunt-link"
+                    aria-label="Check out HeartEcho Ai on Product Hunt"
+                  >
+                    <img 
+                      src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1045834&theme=dark&t=1764835554967" 
+                      alt="HeartEcho&#0032;Ai - &#0035;1&#0032;AI&#0032;Girlfriend&#0032;&#0038;&#0032;Romantic&#0032;AI&#0032;Chat&#0032;Platform | Product Hunt" 
+                      className="idkxpw-producthunt-badge"
+                      width="250"
+                      height="54"
+                      loading="lazy"
+                    />
+                  </a>
+                  <div className="idkxpw-producthunt-label">Featured on Product Hunt</div>
                 </motion.div>
               </div>
             </motion.div>
@@ -124,6 +153,10 @@ const AboutPage = () => {
                 Generated $1,500+ in revenue
               </li>
               <li>
+                <span className="idkxpw-achievement-icon">🏆</span>
+                Featured as #1 AI Girlfriend on Product Hunt
+              </li>
+              <li>
                 <span className="idkxpw-achievement-icon">🛡️</span>
                 Created a safe space for emotional connection
               </li>
@@ -167,12 +200,81 @@ const AboutPage = () => {
             <p className="idkxpw-section-text">
               What started as one person's vision is now growing into a movement. And I'm just getting started.
             </p>
+            
+            {/* Product Hunt Badge - Desktop */}
+            <div className="idkxpw-producthunt-section-desktop">
+              <div className="idkxpw-section-divider"></div>
+              <div className="idkxpw-producthunt-section">
+                <h4 className="idkxpw-producthunt-title">Recognized by the Community</h4>
+                <p className="idkxpw-producthunt-description">
+                  EchoHeart was featured on Product Hunt as the #1 AI Girlfriend & Romantic AI Chat Platform
+                </p>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <a 
+                    href="https://www.producthunt.com/posts/heartecho-ai?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-heartecho&#0045;ai" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="idkxpw-producthunt-link"
+                    aria-label="Check out HeartEcho Ai on Product Hunt"
+                  >
+                    <img 
+                      src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1045834&theme=dark&t=1764835554967" 
+                      alt="HeartEcho&#0032;Ai - &#0035;1&#0032;AI&#0032;Girlfriend&#0032;&#0038;&#0032;Romantic&#0032;AI&#0032;Chat&#0032;Platform | Product Hunt" 
+                      className="idkxpw-producthunt-badge-large"
+                      width="250"
+                      height="54"
+                      loading="lazy"
+                    />
+                  </a>
+                </motion.div>
+              </div>
+            </div>
+
             <div className="idkxpw-signature-block">
               <div className="idkxpw-signature">— Om Avcher</div>
               <div className="idkxpw-signature-role">Founder, EchoHeart</div>
             </div>
           </motion.div>
         </section>
+
+        {/* Product Hunt Mobile Section */}
+        <motion.section 
+          className="idkxpw-producthunt-mobile-section"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+        >
+          <div className="idkxpw-producthunt-mobile-content">
+            <h3 className="idkxpw-producthunt-mobile-title">🏆 Featured on Product Hunt</h3>
+            <p className="idkxpw-producthunt-mobile-description">
+              Recognized as #1 AI Girlfriend & Romantic AI Chat Platform
+            </p>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <a 
+                href="https://www.producthunt.com/posts/heartecho-ai?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-heartecho&#0045;ai" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="idkxpw-producthunt-link"
+                aria-label="Check out HeartEcho Ai on Product Hunt"
+              >
+                <img 
+                  src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1045834&theme=dark&t=1764835554967" 
+                  alt="HeartEcho&#0032;Ai - &#0035;1&#0032;AI&#0032;Girlfriend&#0032;&#0038;&#0032;Romantic&#0032;AI&#0032;Chat&#0032;Platform | Product Hunt" 
+                  className="idkxpw-producthunt-badge-mobile"
+                  width="250"
+                  height="54"
+                  loading="lazy"
+                />
+              </a>
+            </motion.div>
+          </div>
+        </motion.section>
 
         {/* CTA Section */}
         <motion.section 
@@ -186,6 +288,7 @@ const AboutPage = () => {
             className="idkxpw-cta-button"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => window.open('https://heartecho.ai', '_blank')}
           >
             Experience EchoHeart
           </motion.button>

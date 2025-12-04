@@ -142,7 +142,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
 .idkxpw-founder-name {
@@ -172,7 +172,6 @@
   padding: 1rem 1.5rem;
   border-radius: 15px;
   border: 1px solid rgba(206, 64, 133, 0.3);
-  margin-top: 1rem;
   backdrop-filter: blur(10px);
 }
 
@@ -199,6 +198,39 @@
   width: 1px;
   height: 30px;
   background: rgba(206, 64, 133, 0.5);
+}
+
+/* Product Hunt Badge Styles */
+.idkxpw-producthunt-badge-wrapper {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.idkxpw-producthunt-link {
+  display: inline-block;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.idkxpw-producthunt-badge {
+  width: 220px;
+  height: auto;
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+
+.idkxpw-producthunt-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  background: rgba(206, 64, 133, 0.1);
+  padding: 0.3rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(206, 64, 133, 0.3);
 }
 
 /* Hero Text */
@@ -322,6 +354,83 @@
   grid-column: 1 / -1;
 }
 
+/* Product Hunt Section in Vision Card */
+.idkxpw-producthunt-section-desktop {
+  margin: 2.5rem 0;
+}
+
+.idkxpw-section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(206, 64, 133, 0.3), transparent);
+  margin: 2rem 0;
+}
+
+.idkxpw-producthunt-section {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(206, 64, 133, 0.05);
+  border-radius: 16px;
+  border: 1px solid rgba(206, 64, 133, 0.2);
+}
+
+.idkxpw-producthunt-title {
+  font-size: 1.4rem;
+  color: #ce4085;
+  margin-bottom: 0.8rem;
+  font-weight: 700;
+}
+
+.idkxpw-producthunt-description {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.idkxpw-producthunt-badge-large {
+  width: 250px;
+  height: 54px;
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+
+/* Mobile Product Hunt Section */
+.idkxpw-producthunt-mobile-section {
+  display: none;
+  margin: 3rem auto;
+  padding: 2.5rem 1.5rem;
+  background: linear-gradient(135deg, rgba(26, 10, 26, 0.9), rgba(0, 0, 0, 0.9));
+  border-radius: 20px;
+  border: 1px solid rgba(206, 64, 133, 0.3);
+  max-width: 500px;
+  position: relative;
+  z-index: 1;
+}
+
+.idkxpw-producthunt-mobile-content {
+  text-align: center;
+}
+
+.idkxpw-producthunt-mobile-title {
+  font-size: 1.5rem;
+  color: #ce4085;
+  margin-bottom: 0.8rem;
+  font-weight: 700;
+}
+
+.idkxpw-producthunt-mobile-description {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.idkxpw-producthunt-badge-mobile {
+  width: 220px;
+  height: auto;
+  border-radius: 8px;
+}
+
 .idkxpw-signature-block {
   text-align: right;
   margin-top: 2rem;
@@ -435,6 +544,14 @@
     height: 1px;
   }
   
+  .idkxpw-producthunt-section-desktop {
+    display: none;
+  }
+  
+  .idkxpw-producthunt-mobile-section {
+    display: block;
+  }
+  
   .idkxpw-cta-title {
     font-size: 1.6rem;
   }
@@ -460,5 +577,13 @@
   
   .idkxpw-cta-section {
     padding: 3rem 1rem;
+  }
+  
+  .idkxpw-producthunt-badge {
+    width: 200px;
+  }
+  
+  .idkxpw-producthunt-mobile-section {
+    padding: 2rem 1rem;
   }
 }
