@@ -104,7 +104,19 @@ export const metadata = {
         width: 1200,
         height: 630,
         alt: 'HeartEcho Ai - AI Companions for Emotional Connection',
-      }
+      },
+      {
+        url: 'https://heartecho.in/og-image2.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'HeartEcho Ai - AI Companions for Emotional Connection',
+      },
+      {
+        url: 'https://heartecho.in/og-image3.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'HeartEcho Ai - AI Companions for Emotional Connection',
+      },
     ],
     type: 'website',
     locale: 'en_IN',
