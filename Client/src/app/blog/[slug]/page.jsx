@@ -23,7 +23,6 @@ export async function generateMetadata({ params }) {
 }
 
 export default function BlogPost({ params }) {
-  // Add proper error handling and validation
   if (!params || !params.slug) {
     return <NotFound />;
   }
