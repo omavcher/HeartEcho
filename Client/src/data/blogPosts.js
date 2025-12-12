@@ -348,11 +348,7 @@ export const blogPosts = [
 
     <p>In a world that often pushes productivity over peace, HeartEcho invites users to slow down, talk, and feel — proving that curiosity, too, can lead to connection.</p>
   `,
-<<<<<<< HEAD
-  date: "2025-11-03", 
-=======
   date: "2025-11-03",
->>>>>>> restore-old-version
   author: "HeartEcho Team",
   category: "Personal Growth",
   readTime: "4 min read",

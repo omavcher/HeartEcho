@@ -28,11 +28,6 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default function BlogPost({ params }) {
-  if (!params || !params.slug) {
-    return <NotFound />;
-  }
-}
 export async function generateStaticParams() {
   return blogPosts.map((post) => ({
     slug: post.slug,
