@@ -103,14 +103,8 @@ export async function generateMetadata({ params }) {
             width: 1200,
             height: 630,
             alt: `${story.title} - ${story.characterName}'s Story`,
-          },
-          {
-            url: story.characterAvatar || '/api/placeholder/400/400',
-            width: 400,
-            height: 400,
-            alt: story.characterName,
           }
-        ].filter(img => img.url),
+        ],
         locale: 'en_US',
         type: 'article',
       },
@@ -118,7 +112,7 @@ export async function generateMetadata({ params }) {
         card: 'summary_large_image',
         title: story.title,
         description: description,
-        images: [story.characterAvatar || story.backgroundImage || '/api/placeholder/400/400'],
+        images: [ story.backgroundImage || '/api/placeholder/400/400'],
       },
       robots: {
         index: true,

@@ -134,13 +134,7 @@ function transformStoryData(storyData) {
         width: 1200,
         height: 630,
         alt: `${storyData.title} - ${storyData.characterName}'s Story`,
-      },
-      {
-        url: storyData.characterAvatar || '/api/placeholder/400/400',
-        width: 400,
-        height: 400,
-        alt: storyData.characterName,
       }
-    ].filter(img => img.url)
+    ]
   };
 }
