@@ -505,6 +505,7 @@ export default function Footer() {
             <div className="footer-nav-col">
               <h3 className="footer-col-title">Resources</h3>
               <ul className="footer-nav-list">
+              <li><Link href="hot-stories">Hot Stories</Link></li>
                 <li><Link href="/faq">FAQs</Link></li>
                 <li><Link href="/blog">Blog</Link></li>
                 <li><Link href="/referral">Referral Program</Link></li>

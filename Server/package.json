@@ -16,6 +16,7 @@
     "@google/generative-ai": "^0.22.0",
     "axios": "^1.10.0",
     "bcryptjs": "^3.0.2",
+    "bytez.js": "^3.0.0",
     "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
