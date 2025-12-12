@@ -1,60 +1,146 @@
-// Client/src/app/hot-stories/[slug]/metadata.js
-import api from '../../../config/api';
+// app/hot-stories/[slug]/metadata.js
+import api from '../../../config/api'
 
-export async function generateMetadata({ params }) {
-  const slug = params.slug;
-
+export async function generateStoryMetadata({ params }) {
   try {
-    const res = await fetch(`${api.Url}/story/getbyid/${slug}`, {
+    // Await the params to get the slug
+    const { slug } = await params;
+    
+    // Fetch story data
+    const response = await fetch(`${api.Url}/story/getbyid/${slug}`, {
       next: { revalidate: 300 }
     });
-
-    if (!res.ok) return { title: 'Story Not Found' };
-
-    const json = await res.json();
-    if (!json.success || !json.data) return { title: 'Story Loading...' };
-
-    const s = json.data;
-
+    
+    if (!response.ok) {
+      return getDefaultMetadata();
+    }
+    
+    const json = await response.json();
+    
+    if (!json.success || !json.data) {
+      return getDefaultMetadata();
+    }
+    
+    const story = json.data;
+    
+    // Transform story data
+    const transformedStory = transformStoryData(story);
+    
     return {
-      title: `${s.title} - ${s.characterName} ki Hot ${s.category} Sex Story in Hindi & English`,
-      description: s.excerpt || `${s.characterName}, ${s.characterAge} saal ki sexy ${s.category} from ${s.city}. Puri garam kahani padho aur character se chat karo.`,
-      keywords: [
-        `${s.category} sex story`,
-        `hindi sex kahani`,
-        `${s.characterName} ki chudai`,
-        `desi ${s.category.toLowerCase()} kahani`,
-        `indian erotic stories`,
-        `${s.city} bhabhi story`,
-        'adult hindi stories',
-        ...s.tags
-      ].join(', '),
-      alternates: {
-        canonical: `https://heartecho.in/hot-stories/${slug}`,
-      },
+      title: `${transformedStory.title} - ${transformedStory.characterName} ki Hot ${transformedStory.category} Story`,
+      description: transformedStory.seoDescription,
+      keywords: transformedStory.seoKeywords.join(', '),
+      authors: [{ name: 'HeartEcho' }],
       openGraph: {
-        title: `${s.title} - ${s.characterName} ki Sex Story`,
-        description: s.excerpt || "Full hot story + live chat with character",
-        url: `https://heartecho.in/hot-stories/${slug}`,
-        images: [
-          { url: s.characterAvatar, width: 400, height: 711 },
-          { url: s.backgroundImage, width: 1200, height: 675 }
-        ],
+        title: `${transformedStory.title} - ${transformedStory.characterName}'s Story`,
+        description: transformedStory.seoDescription,
+        url: `https://heartecho.com/hot-stories/${slug}`,
+        siteName: 'HeartEcho',
+        images: transformedStory.seoImages,
+        locale: 'en_US',
         type: 'article',
-        locale: 'hi_IN',
       },
       twitter: {
         card: 'summary_large_image',
-        title: s.title,
-        description: s.excerpt || "Click to read full erotic story",
-        images: [s.characterAvatar],
+        title: transformedStory.title,
+        description: transformedStory.seoDescription,
+        images: transformedStory.seoImages,
       },
-      robots: 'index, follow',
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-video-preview': -1,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
+        },
+      },
+      alternates: {
+        canonical: `https://heartecho.com/hot-stories/${slug}`,
+      },
+      other: {
+        'og:locale:alternate': 'hi_IN',
+        'article:published_time': transformedStory.createdAt,
+        'article:modified_time': transformedStory.updatedAt,
+        'article:section': transformedStory.category,
+        'article:tag': transformedStory.seoKeywords,
+      },
     };
-  } catch {
-    return {
-      title: 'Hot Desi Story - Hindi Sex Kahani',
-      description: 'Latest Indian erotic stories in Hindi and English',
-    };
+    
+  } catch (error) {
+    console.error('Error generating metadata:', error);
+    return getDefaultMetadata();
   }
+}
+
+function getDefaultMetadata() {
+  return {
+    title: 'HeartEcho Stories - Interactive Stories from Indian Cities',
+    description: 'Explore interactive stories from major cities across India. Discover stories from Mumbai, Delhi, Bangalore, Hyderabad, Chennai, Kolkata and more.',
+  };
+}
+
+function transformStoryData(storyData) {
+  const description = storyData.description || storyData.excerpt || '';
+  
+  return {
+    id: storyData._id,
+    title: storyData.title || 'Untitled Story',
+    slug: storyData.slug,
+    excerpt: storyData.excerpt,
+    description: description,
+    category: storyData.category,
+    city: storyData.city,
+    characterName: storyData.characterName || 'Character',
+    characterAge: storyData.characterAge,
+    characterAvatar: storyData.characterAvatar || '/api/placeholder/400/711',
+    backgroundImage: storyData.backgroundImage || '/api/placeholder/1200/675',
+    createdAt: storyData.createdAt,
+    updatedAt: storyData.updatedAt,
+    tags: storyData.tags || [],
+    content_en: storyData.content_en || { 
+      story: storyData.description || '# Story', 
+      cliffhanger: '', 
+      teaserChat: 'Hi', 
+      cta: 'Start Chat' 
+    },
+    content_hi: storyData.content_hi || { 
+      story: storyData.description || '# कहानी', 
+      cliffhanger: '', 
+      teaserChat: 'हाय', 
+      cta: 'चैट शुरू करें' 
+    },
+    
+    // SEO specific fields
+    seoDescription: description.length > 155 ? 
+      description.substring(0, 152) + '...' : 
+      description || `Read ${storyData.characterName}'s ${storyData.category} story from ${storyData.city}.`,
+    
+    seoKeywords: [
+      `${storyData.category} story`,
+      `${storyData.characterName} story`,
+      `${storyData.city} stories`,
+      'Indian interactive stories',
+      'desi stories',
+      'heartecho stories',
+      ...(storyData.tags || [])
+    ],
+    
+    seoImages: [
+      {
+        url: storyData.backgroundImage || '/api/placeholder/1200/630',
+        width: 1200,
+        height: 630,
+        alt: `${storyData.title} - ${storyData.characterName}'s Story`,
+      },
+      {
+        url: storyData.characterAvatar || '/api/placeholder/400/400',
+        width: 400,
+        height: 400,
+        alt: storyData.characterName,
+      }
+    ].filter(img => img.url)
+  };
 }
