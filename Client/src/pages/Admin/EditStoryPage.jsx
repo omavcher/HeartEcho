@@ -10,6 +10,18 @@ import api from '../../config/api';
 const EditStoryPage = () => {
   const params = useParams();
   const router = useRouter();
+
+  if (!params || !params.id) {
+    // You can return loading, redirect, or null
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+  
+
   const storyId = params.id;
   
   // Main form state
