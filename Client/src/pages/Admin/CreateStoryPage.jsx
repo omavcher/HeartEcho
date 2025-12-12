@@ -88,8 +88,8 @@ const CreateStoryPage = () => {
   ];
 
   // Cloudinary upload configuration
-  const cloudName = 'dsm6pjmxt';
-  const uploadPreset = 'story_images'; // You need to create this in Cloudinary
+  const cloudName = 'dx6rjowfb';
+  const uploadPreset = 'ml_default'; // You need to create this in Cloudinary
 
   // Fetch characters on modal open
   useEffect(() => {
@@ -144,8 +144,6 @@ const CreateStoryPage = () => {
     formData.append('cloud_name', cloudName);
     
     // Add folder based on type
-    const folder = type === 'background' ? 'story_backgrounds' : 'character_avatars';
-    formData.append('folder', folder);
     
     try {
       const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
