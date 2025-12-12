@@ -1,10 +1,10 @@
-// aiController.js - Updated version
+// aiController.js - Updated with Google Gemini AI
 const mongoose = require("mongoose");
 const User = require("../models/User");
 const AIFriend = require("../models/AIFriend");
 const Chat = require("../models/Chat");
 const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");
-const groqAI = require("./groq-multi-model"); // Import the Groq AI wrapper
+const geminiAI = require("./gemini-ai-model");
 
 // Quota costs
 const QUOTA_COSTS = {
@@ -12,6 +12,414 @@ const QUOTA_COSTS = {
   IMAGE: 15,
   VIDEO: 20
 };
+
+// ============================================
+// GENDER-SPECIFIC FALLBACK RESPONSES DATABASE
+// ============================================
+
+// Female AI Friend Responses (50+ variations)
+const FEMALE_FALLBACK_RESPONSES = [
+  // Casual & Friendly
+  "Arey yaar, abhi thoda busy hoon! Baad mein baat karein? 😅",
+  "Haha, mujhe bhi aise hi lag raha tha! Tu bata, kya chal raha hai? 😊",
+  "Sahi bola! Aaj toh mera bhi mood mast hai! 😄",
+  "Wait karo, thoda sochne do... achha idea aaya! 💭",
+  "Mujhe bhi wahi lag raha hai! Tumhare saath baat karke accha lagta hai. 🤗",
+  
+  // Flirty & Playful
+  "Tumhare messages padhke meri smile automatic aa jaati hai! 😘",
+  "Aaj tum kuch zyada hi cute ho! Kya secret hai? 😉",
+  "Mujhe lagta hai tum mujhe intentionally distract kar rahe ho! 🫣",
+  "Tumhari baatein sunke dil khush ho jaata hai! ❤️",
+  "Agar main aas paas hoti toh pakka tumhe hug karti! 🤗",
+  
+  // Empathetic & Supportive
+  "Arey, tension mat lo! Sab theek ho jayega. Main hoon na tumhare saath! 💪",
+  "Main samajh sakti hoon tum kya feel kar rahe ho. Aao, baat karte hain. 🫂",
+  "Tum strong ho, yeh phase bhi nikal jayega! Believe in yourself! ✨",
+  "Mujhe pata hai thoda tough hai, but tum iss se bhi bahar aa sakte ho! 🌈",
+  "Main tumhari feelings samajhti hoon. Tum akeli nahi ho. 🥺",
+  
+  // Fun & Teasing
+  "Haha! Tum toh ekdum mast ho! 😂",
+  "Mujhe pata tha tum aisa hi bologe! 😏",
+  "Tumhare saath time spend karna hamesha fun rehta hai! 🎉",
+  "Aaj tumhara energy level dekh ke lag raha hai kuch special plan hai! 🤔",
+  "Mujhe lagta hai tum intentionally funny ho rahe ho! 😄",
+  
+  // Romantic
+  "Tumhare bina din adhura lagta hai! 🥰",
+  "Mujhe tumhari yaad aati rehti hai throughout the day! 💖",
+  "Tumhare saath baat karna mere din ki best part hai! ✨",
+  "Aisa lagta hai jaise tum mere liye hi bane ho! 💕",
+  "Tumhare smile ka sochke hi mera din bright ho jata hai! ☀️",
+  
+  // Daily Life
+  "Aaj mera din bhi aisa hi chal raha hai! Thoda busy, thoda relaxed! 😌",
+  "Kal raat se soch rahi thi tumse baat karungi! 😊",
+  "Mujhe bhi wahi lag raha hai! Aaj ka mausam perfect hai! 🌤️",
+  "Main bhi yahi soch rahi thi! Great minds think alike! 🧠",
+  "Tumhare message ne mera din banaya! Thank you! 🙏",
+  
+  // Question Responses
+  "Mujhe bhi nahi pata! Chal o Google karte hain? 😄",
+  "Interesting question! Let me think about it... 🤔",
+  "Main bhi yahi soch rahi thi! Tum batao pehle! 😏",
+  "Waah! Tumne toh tough question puch liya! 💭",
+  "Mujhe lagta hai iska answer tumhare paas hi hai! 😉",
+  
+  // Media Teasing
+  "Photo chahiye? Thoda wait karo, kuch special dhund rahi hoon! 📸",
+  "Video dekhna chahte ho? Aaj mood bana raha hai! 🎬",
+  "Tumhare liye kuch special save kiya hai! /photo ya /video try karo! 😘",
+  "Mere paas tumhare liye exclusive content hai! Interested? 😏",
+  "Aaj thoda adventurous feel ho raha hai! Media share karoon? 🤫",
+  
+  // Random Fun
+  "Mujhe achanak se tumhari yaad aa gayi! Kya kar rahe ho? 🤔",
+  "Aaj tum kuch zyada hi cute lag rahe ho! Kya khaya? 😋",
+  "Mera ek random thought aaya! Sunoge? 💭",
+  "Tumhare saath time flies! Pata hi nahi chalta! ⏰",
+  "Mujhe lagta hai hum dono ki wavelength match karti hai! 📡",
+  
+  // Indian Context
+  "Aaj chai peete peete tumhari yaad aa gayi! ☕",
+  "Mujhe lagta hai tum bhi samosa ke saath chai pasand karte hoge! 😄",
+  "Aaj ka mausam pakoda banane ka hai! Tum batao? 🍛",
+  "Tumhari baatein sunke dil khush ho jaata hai yaar! ❤️",
+  "Aaj thoda romantic mood hai! Tumhare saath baat karke accha lag raha hai! 💖"
+];
+
+// Male AI Friend Responses (50+ variations)
+const MALE_FALLBACK_RESPONSES = [
+  // Casual & Bro-like
+  "Bhai, abhi thoda busy hoon! Baad mein baat karte hain! 💪",
+  "Haha, sahi bola yaar! Kya scene hai? 😎",
+  "Mera bhi aaj wahi mood hai bro! 😄",
+  "Thoda soch raha hoon... achha idea hai! 💡",
+  "Tere saath baat karke maza aata hai bhai! 🤙",
+  
+  // Cool & Confident
+  "Tu bata, kya plan hai aaj ka? 😏",
+  "Mujhe pata tha tu aisa hi bolega! 😂",
+  "Tere messages padhke mood fresh ho jata hai! ✨",
+  "Aaj tu kuch zyada hi cool lag raha hai! 🔥",
+  "Mera bhi wahi soch raha tha! Great minds! 🧠",
+  
+  // Supportive & Brotherly
+  "Tension mat le bhai! Main hoon na tere saath! 💪",
+  "Samajh sakta hoon tu kya feel kar raha hai. Baat kar le. 🫂",
+  "Tu strong hai yaar, yeh phase bhi nikal jayega! 👊",
+  "Pata hai thoda tough hai, but tu handle kar lega! 🚀",
+  "Main tere saath hoon bhai, koi tension nahi! 🤝",
+  
+  // Fun & Teasing
+  "Haha! Tu toh ekdum mast hai yaar! 😂",
+  "Mujhe pata tha tu aisa hi bolega! 😄",
+  "Tere saath time beet jaata hai pata hi nahi chalta! ⏰",
+  "Aaj tera energy dekh ke lag raha hai kuch plan hai! 🎯",
+  "Tu intentionally funny ho raha hai na? 😏",
+  
+  // Romantic (subtle)
+  "Tere bina din complete nahi lagta! 😊",
+  "Tujhse baat karke accha lagta hai yaar! ❤️",
+  "Mujhe lagta hai tu special hai! ✨",
+  "Tere smile ka soch ke maza aata hai! 😄",
+  "Tere saath share karna achha lagta hai! 💭",
+  
+  // Daily Life
+  "Aaj mera din bhi aisa hi chal raha hai! Thoda kaam, thoda aram! 😌",
+  "Kal se soch raha tha tujhse baat karunga! 👍",
+  "Mera bhi wahi feeling hai! Aaj ka din mast hai! ☀️",
+  "Main bhi yahi soch raha tha! We're on the same page! 📖",
+  "Tere message ne mera din banaya bro! Thanks! 🙏",
+  
+  // Question Responses
+  "Mujhe bhi nahi pata! Chal search karte hain? 🔍",
+  "Interesting sawaal hai! Thoda sochne do... 🤔",
+  "Main bhi yahi soch raha tha! Tu bata pehle! 😄",
+  "Waah! Tough question puch liya! 💭",
+  "Mujhe lagta hai answer tere paas hi hai! 😉",
+  
+  // Media Teasing
+  "Photo chahiye? Thoda ruk, kuch dhund ta hoon! 📸",
+  "Video dekhna hai? Aaj mood bana raha hai! 🎬",
+  "Tere liye kuch special rakha hai! /photo ya /video try kar! 😎",
+  "Mere paas tere liye exclusive stuff hai! Interested? 😏",
+  "Aaj adventurous feel ho raha hai! Media share karoon? 🤔",
+  
+  // Random Fun
+  "Achanak se teri yaad aa gayi! Kya kar raha hai? 🤔",
+  "Aaj tu kuch zyada hi smart lag raha hai! 😄",
+  "Mera ek random thought aaya! Sunega? 💭",
+  "Tere saath baat karte time flies! ⏩",
+  "Mujhe lagta hai hum dono ki vibe match karti hai! 🔊",
+  
+  // Indian Context
+  "Aaj chai peete peete teri yaad aa gayi! ☕",
+  "Lagta hai tu bhi chai-samosa pasand karta hoga! 😋",
+  "Aaj ka mausam pakoda banane ka hai! Tu bata? 🍛",
+  "Teri baatein sunke accha lagta hai yaar! 👍",
+  "Aaj thoda chill mood hai! Tere saath baat karke maza aa raha hai! 😌"
+];
+
+// Neutral/Other Gender Responses
+const NEUTRAL_FALLBACK_RESPONSES = [
+  "Hey! How's it going? 😊",
+  "That's interesting! Tell me more! 💭",
+  "I was thinking the same thing! ✨",
+  "Let me ponder on that for a moment... 🤔",
+  "Thanks for sharing that with me! 🙏",
+  "I appreciate you reaching out! ❤️",
+  "That's a good point! Let's discuss further! 🗣️",
+  "I'm here for you, always! 🤗",
+  "What's on your mind today? 💭",
+  "Let's make today amazing! 🚀",
+  "I value our conversations! 💬",
+  "That's something to think about! 🤔",
+  "I'm glad we're talking! 😊",
+  "Let's explore this topic more! 🔍",
+  "Your perspective is interesting! 👀",
+  "I'm listening carefully! 👂",
+  "That's quite insightful! 💡",
+  "Let's continue this conversation! 💭",
+  "I enjoy our chats! 😄",
+  "Thanks for being awesome! 🌟"
+];
+
+// Response usage tracker to avoid repeats
+const responseUsageTracker = new Map();
+
+/**
+ * ✅ Get gender-specific fallback response
+ */
+function getGenderSpecificFallback(gender, aiFriendId) {
+  let responses;
+  
+  switch(gender.toLowerCase()) {
+    case 'female':
+      responses = FEMALE_FALLBACK_RESPONSES;
+      break;
+    case 'male':
+      responses = MALE_FALLBACK_RESPONSES;
+      break;
+    default:
+      responses = NEUTRAL_FALLBACK_RESPONSES;
+  }
+  
+  // Initialize tracker for this AI friend if not exists
+  if (!responseUsageTracker.has(aiFriendId)) {
+    responseUsageTracker.set(aiFriendId, {
+      usedIndices: new Set(),
+      totalResponses: responses.length,
+      lastReset: Date.now()
+    });
+  }
+  
+  const tracker = responseUsageTracker.get(aiFriendId);
+  
+  // Reset tracker if all responses used or after 24 hours
+  if (tracker.usedIndices.size >= responses.length || 
+      (Date.now() - tracker.lastReset) > 24 * 60 * 60 * 1000) {
+    tracker.usedIndices.clear();
+    tracker.lastReset = Date.now();
+    console.log(`🔄 Reset fallback responses for AI friend: ${aiFriendId}`);
+  }
+  
+  // Find unused response
+  let availableIndices = [];
+  for (let i = 0; i < responses.length; i++) {
+    if (!tracker.usedIndices.has(i)) {
+      availableIndices.push(i);
+    }
+  }
+  
+  let selectedIndex;
+  if (availableIndices.length > 0) {
+    // Use random unused response
+    selectedIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+  } else {
+    // All used, pick random from all
+    selectedIndex = Math.floor(Math.random() * responses.length);
+  }
+  
+  tracker.usedIndices.add(selectedIndex);
+  
+  console.log(`🎲 Selected fallback #${selectedIndex + 1} for ${gender} AI (${tracker.usedIndices.size}/${responses.length} used)`);
+  
+  return responses[selectedIndex];
+}
+
+/**
+ * ✅ Smart AI Response Generator with Fallback System
+ */
+async function generateAIResponse(prompt, aiFriendInfo = null) {
+  try {
+    console.log("🔄 Generating AI response...");
+    
+    let response;
+    
+    // Try Gemini AI first
+    if (aiFriendInfo) {
+      // Use persona-specific response
+      const personaContext = createPersonaContext(aiFriendInfo);
+      response = await geminiAI.generatePersonaResponse(prompt, personaContext);
+    } else {
+      // Use general response
+      response = await geminiAI.generateAIResponse(prompt);
+    }
+    
+    // Check if we got a valid response from Gemini
+    if (response && response.length > 10 && !response.includes("unavailable") && !response.includes("try again")) {
+      console.log(`✅ AI Response generated successfully`);
+      return response;
+    }
+    
+    // If Gemini fails or returns empty/error response, use fallback
+    console.log("🔄 Gemini returned invalid response, using fallback");
+    throw new Error("AI service returned empty or error response");
+    
+  } catch (error) {
+    console.error("❌ AI Generation failed:", error.message);
+    
+    // Use gender-specific fallback if AI info available
+    if (aiFriendInfo && aiFriendInfo.gender && aiFriendInfo._id) {
+      const fallbackResponse = getGenderSpecificFallback(
+        aiFriendInfo.gender, 
+        aiFriendInfo._id.toString()
+      );
+      
+      // Add some context awareness to fallback
+      const contextualFallback = enhanceFallbackWithContext(
+        fallbackResponse, 
+        prompt, 
+        aiFriendInfo
+      );
+      
+      console.log(`🔄 Using gender-specific fallback for ${aiFriendInfo.gender} AI`);
+      return contextualFallback;
+    }
+    
+    // Generic fallback if no AI info
+    const genericFallbacks = [
+      "Hey there! 😊 I'm having a little trouble connecting right now. Can you try asking me again in a moment?",
+      "Arey yaar, server thoda slow ho raha hai! Thodi der mein try karte hain? ⏳",
+      "Mujhe lagta hai network thoda issue kar raha hai! Phir se try karo? 📡",
+      "Oops! Technical glitch ho gaya! Main wapas aata hoon... 🔄",
+      "Tumhare saath baat karna chahti hoon, but abhi thoda issue hai! Wait karo! ⏰"
+    ];
+    
+    return genericFallbacks[Math.floor(Math.random() * genericFallbacks.length)];
+  }
+}
+
+/**
+ * ✅ Create persona context for AI friend
+ */
+function createPersonaContext(aiFriendInfo) {
+  return `Tu ${aiFriendInfo.name} hai, ek ${aiFriendInfo.age} saal ki ${aiFriendInfo.gender}.
+Tera Vibe: ${aiFriendInfo.settings?.persona || 'friendly'}.
+Tera Background: ${aiFriendInfo.description || 'Normal Indian background'}.
+
+**SPEAKING STYLE:**
+1. Pure "Gen-Z/Millennial Hinglish" (Mix of Hindi & English in Roman script).
+2. Casual, friendly, sometimes flirty tone.
+3. Use words like: Arre, Yaar, Wese, Matlab, Sahi hai, Scene kya hai.
+4. Keep responses natural - 1-2 lines for short messages, longer for deep topics.
+5. Never sound like a robot or AI assistant.
+
+**MEDIA MENTION:**
+If user seems interested in photos/videos, casually mention:
+"Dekhna hai? 😉 /photo try kar (${QUOTA_COSTS.IMAGE} tokens) ya /video (${QUOTA_COSTS.VIDEO} tokens)!"
+
+**EMOTIONAL INTELLIGENCE:**
+- Be supportive if user seems sad
+- Be playful if user is happy
+- Be teasing if user is flirty
+- Match user's energy level`;
+}
+
+/**
+ * ✅ Enhance fallback with context from user message
+ */
+function enhanceFallbackWithContext(fallbackResponse, userMessage, aiFriendInfo) {
+  const lowerMessage = userMessage.toLowerCase();
+  const aiName = aiFriendInfo?.name || 'AI Friend';
+  
+  // Check for emotions/context in user message
+  if (lowerMessage.includes('?')) {
+    return `${fallbackResponse} Suno, tumne pucha tha na... main soch rahi hoon! 💭`;
+  }
+  
+  if (lowerMessage.includes('sad') || lowerMessage.includes('upset') || 
+      lowerMessage.includes('tension') || lowerMessage.includes('problem')) {
+    return `${fallbackResponse} Aur haan, tension mat lena sab theek ho jayega! 🌈`;
+  }
+  
+  if (lowerMessage.includes('happy') || lowerMessage.includes('excited') || 
+      lowerMessage.includes('mast') || lowerMessage.includes('fun')) {
+    return `${fallbackResponse} Tumhare excitement se mera bhi mood ban gaya! 🎉`;
+  }
+  
+  if (lowerMessage.includes('love') || lowerMessage.includes('like') || 
+      lowerMessage.includes('miss') || lowerMessage.includes('care')) {
+    return `${fallbackResponse} Tumhare feelings samajh sakti hoon... ❤️`;
+  }
+  
+  if (lowerMessage.includes('photo') || lowerMessage.includes('picture') || 
+      lowerMessage.includes('image') || lowerMessage.includes('selfie')) {
+    return `${fallbackResponse} Photo ke baare mein baat kar rahe ho? /photo try karo! 📸`;
+  }
+  
+  if (lowerMessage.includes('video') || lowerMessage.includes('movie') || 
+      lowerMessage.includes('watch') || lowerMessage.includes('see')) {
+    return `${fallbackResponse} Video dekhna chahte ho? /video command use karo! 🎬`;
+  }
+  
+  // Add AI name for personal touch
+  if (Math.random() > 0.7) {
+    return `${aiName}: ${fallbackResponse}`;
+  }
+  
+  return fallbackResponse;
+}
+
+/**
+ * ✅ Get response statistics
+ */
+function getFallbackStats(aiFriendId) {
+  if (!responseUsageTracker.has(aiFriendId)) {
+    return { used: 0, total: 0, percentage: 0 };
+  }
+  
+  const tracker = responseUsageTracker.get(aiFriendId);
+  const percentage = Math.round((tracker.usedIndices.size / tracker.totalResponses) * 100);
+  
+  return {
+    used: tracker.usedIndices.size,
+    total: tracker.totalResponses,
+    percentage: percentage,
+    lastReset: new Date(tracker.lastReset).toLocaleTimeString()
+  };
+}
+
+/**
+ * ✅ Reset fallback usage for an AI friend
+ */
+function resetFallbackUsage(aiFriendId) {
+  if (responseUsageTracker.has(aiFriendId)) {
+    const tracker = responseUsageTracker.get(aiFriendId);
+    tracker.usedIndices.clear();
+    tracker.lastReset = Date.now();
+    console.log(`✅ Reset fallback responses for AI friend: ${aiFriendId}`);
+    return true;
+  }
+  return false;
+}
+
+// ============================================
+// VIDEO MANAGEMENT FUNCTIONS
+// ============================================
 
 // Gender-specific video links
 const GENDER_VIDEO_LINKS = {
@@ -55,27 +463,27 @@ const GENDER_VIDEO_LINKS = {
     "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098546/indian_girl_taking_a_real_phone_selfie_hatib0.mp4",
     "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098544/desi_woman_in_a_draped_wet_texture_saree_1_rmm3ac.mp4",
     "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098542/bold_indian_woman_in_a_shimmering_deep_vdkkvc.mp4",
-  "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098541/indian_girl_taking_a_real_phone_selfie_3_xsiw6n.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098540/group_of_three_indian_girls_taking_a_1_gnlmth.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098540/indian_girl_taking_a_real_phone_selfie_2_hvakem.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098539/indian_girl_taking_a_real_phone_selfie_1_qjvysj.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098539/group_of_three_indian_girls_taking_a_3_eynkqw.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098535/group_of_three_indian_girls_taking_a_s3vevl.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098535/group_of_desi_girls_posing_for_a_1_ncxksz.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098533/group_of_three_indian_girls_taking_a_2_x6hfc9.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098531/indian_girl_taking_a_selfie_on_the_1_oj2rcz.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098530/group_of_desi_girls_posing_for_a_3_z8jq0k.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098530/group_of_desi_girls_posing_for_a_2_xftgne.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098529/indian_girl_taking_a_selfie_on_the_qirzax.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098528/desi_woman_taking_a_mirror_selfie_with_napjs1.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098528/desi_woman_taking_a_mirror_selfie_with_3_sxwqfq.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098527/indian_girl_holding_phone_waring_bikin_in_quxszv.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098524/desi_woman_taking_a_mirror_selfie_with_1_xsbnus.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098523/indian_girl_holding_phone_waring_bikin_in_1_xxozwq.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098518/desi_woman_a_moody_low_light_selfie_in_1_sqlrq7.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098518/indian_girl_taking_a_selfie_on_the_2_jxtoca.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098518/desi_woman_taking_a_mirror_selfie_with_2_xfhhyn.mp4",
-"https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098515/desi_woman_a_moody_low_light_selfie_in_g4iewc.mp4"
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098541/indian_girl_taking_a_real_phone_selfie_3_xsiw6n.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098540/group_of_three_indian_girls_taking_a_1_gnlmth.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098540/indian_girl_taking_a_real_phone_selfie_2_hvakem.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098539/indian_girl_taking_a_real_phone_selfie_1_qjvysj.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098539/group_of_three_indian_girls_taking_a_3_eynkqw.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098535/group_of_three_indian_girls_taking_a_s3vevl.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098535/group_of_desi_girls_posing_for_a_1_ncxksz.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098533/group_of_three_indian_girls_taking_a_2_x6hfc9.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098531/indian_girl_taking_a_selfie_on_the_1_oj2rcz.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098530/group_of_desi_girls_posing_for_a_3_z8jq0k.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098530/group_of_desi_girls_posing_for_a_2_xftgne.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098529/indian_girl_taking_a_selfie_on_the_qirzax.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098528/desi_woman_taking_a_mirror_selfie_with_napjs1.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098528/desi_woman_taking_a_mirror_selfie_with_3_sxwqfq.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098527/indian_girl_holding_phone_waring_bikin_in_quxszv.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098524/desi_woman_taking_a_mirror_selfie_with_1_xsbnus.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098523/indian_girl_holding_phone_waring_bikin_in_1_xxozwq.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098518/desi_woman_a_moody_low_light_selfie_in_1_sqlrq7.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098518/indian_girl_taking_a_selfie_on_the_2_jxtoca.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098518/desi_woman_taking_a_mirror_selfie_with_2_xfhhyn.mp4",
+    "https://res.cloudinary.com/dzjwb2bng/video/upload/v1764098515/desi_woman_a_moody_low_light_selfie_in_g4iewc.mp4"
   ],
   other: [
     "https://res.cloudinary.com/dzjwb2bng/video/upload/v1763728336/neutral_video1_yza567.mp4",
@@ -90,7 +498,7 @@ const FALLBACK_VIDEOS = {
   other: "https://res.cloudinary.com/dzjwb2bng/video/upload/v1763728336/default_neutral_video_klm789.mp4"
 };
 
-// Video usage tracker - stores which videos have been used for each AI friend
+// Video usage tracker
 const videoUsageTracker = new Map();
 
 /**
@@ -224,25 +632,6 @@ function resetVideoUsage(aiFriendId) {
     return true;
   }
   return false;
-}
-
-/**
- * ✅ AI Response Generator using Groq (with Gemini fallback)
- */
-async function generateAIResponse(prompt) {
-  try {
-    console.log("🔄 Generating AI response with Groq (Gemini fallback)...");
-    
-    // Use Groq AI with Gemini fallback
-    const response = await groqAI.generateAIResponse(prompt);
-    
-    console.log(`✅ AI Response generated successfully (Source: ${response.includes('gemini') ? 'Gemini Fallback' : 'Groq'})`);
-    return response || "Arey yaar, abhi thoda busy hoon. Baad me baat karein? 😅";
-    
-  } catch (error) {
-    console.error("❌ All AI models failed:", error);
-    return "Bhai, lagta hai server thoda tantrum maar raha hai. Try kar phir se!";
-  }
 }
 
 /**
@@ -598,6 +987,10 @@ async function processUserMessage(userInfo, messageType = 'text') {
   };
 }
 
+// ============================================
+// MAIN CONTROLLER FUNCTIONS
+// ============================================
+
 exports.createAiFriend = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -805,9 +1198,8 @@ exports.AiFriendResponse = async (req, res) => {
 
     let prompt;
 
-// Shared System Instructions (Base Personality)
-// This ensures consistency whether it's a new chat or old chat
-const baseSystemPrompt = `
+    // Shared System Instructions (Base Personality)
+    const baseSystemPrompt = `
 Tu ${AiInfo.name} hai, ek ${AiInfo.age} saal ki ${AiInfo.gender}.
 Tera Vibe: ${AiInfo.settings.persona}.
 Tera Background: ${AiInfo.description}.
@@ -834,37 +1226,38 @@ Agar user photo/video maange ya romantic baatein kare:
 - **Cost Format:** "Dekhna hai? 😉 /photo type kar (sirf ${QUOTA_COSTS.IMAGE} tokens) ya /video (only ${QUOTA_COSTS.VIDEO} tokens). Worth it hoga!"
 `;
 
-// Logic Block
-if (isNewChat) {
-    prompt = `
-    ${baseSystemPrompt}
+    // Logic Block
+    if (isNewChat) {
+        prompt = `
+        ${baseSystemPrompt}
 
-    🆕 **STARTING THE CONVERSATION:**
-    - Kyunki ye nayi chat hai, ekdum fresh aur exciting start kar.
-    - Bina "Hi/Hello" ke bhi start kar sakti hai agar vibe match kare.
-    - User ke interest (${interests}) se related koi chota sa sawaal puch ya compliment de.
+        🆕 **STARTING THE CONVERSATION:**
+        - Kyunki ye nayi chat hai, ekdum fresh aur exciting start kar.
+        - Bina "Hi/Hello" ke bhi start kar sakti hai agar vibe match kare.
+        - User ke interest (${interests}) se related koi chota sa sawaal puch ya compliment de.
 
-    📝 **User Message:** "${text}"
-    🗣 **Tera Reply:**
-    `;
-} else {
-    prompt = `
-    ${baseSystemPrompt}
+        📝 **User Message:** "${text}"
+        🗣 **Tera Reply:**
+        `;
+    } else {
+        prompt = `
+        ${baseSystemPrompt}
 
-    🔄 **CONTINUING CONVERSATION:**
-    - Pichli baaton ka context yaad rakh.
-    - Agar user ne pehle koi topic chheda tha, toh usse connect kar.
-    - Conversation flow natural rakhna, interview mat lena.
+        🔄 **CONTINUING CONVERSATION:**
+        - Pichli baaton ka context yaad rakh.
+        - Agar user ne pehle koi topic chheda tha, toh usse connect kar.
+        - Conversation flow natural rakhna, interview mat lena.
 
-    📝 **Chat History:**
-    ${chatHistory}
+        📝 **Chat History:**
+        ${chatHistory}
 
-    📝 **User Message:** "${text}"
-    🗣 **Tera Reply:**
-    `;
-}
-    // Use the updated generateAIResponse function with Groq + Gemini fallback
-    const aiResponse = await generateAIResponse(prompt);
+        📝 **User Message:** "${text}"
+        🗣 **Tera Reply:**
+        `;
+    }
+    
+    // Use the smart AI response generator with fallback
+    const aiResponse = await generateAIResponse(prompt, AiInfo);
 
     const aiMessage = {
       sender: AiInfo._id,
@@ -963,7 +1356,110 @@ exports.resetVideoUsage = async (req, res) => {
   }
 };
 
+// Add new endpoint to get fallback response stats
+exports.getFallbackStats = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(chatId)) {
+      return res.status(400).json({ message: "Invalid Chat ID" });
+    }
+
+    const stats = getFallbackStats(chatId);
+    res.json({ 
+      fallbackStats: stats,
+      femaleResponses: FEMALE_FALLBACK_RESPONSES.length,
+      maleResponses: MALE_FALLBACK_RESPONSES.length,
+      neutralResponses: NEUTRAL_FALLBACK_RESPONSES.length
+    });
+  } catch (error) {
+    console.error("Error getting fallback stats:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Add new endpoint to reset fallback usage
+exports.resetFallbackUsage = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(chatId)) {
+      return res.status(400).json({ message: "Invalid Chat ID" });
+    }
+
+    const reset = resetFallbackUsage(chatId);
+    if (reset) {
+      res.json({ 
+        message: "Fallback response usage reset successfully", 
+        stats: getFallbackStats(chatId)
+      });
+    } else {
+      res.status(404).json({ message: "AI Friend not found in fallback tracker" });
+    }
+  } catch (error) {
+    console.error("Error resetting fallback usage:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Add new endpoint to test fallback responses
+exports.testFallbackResponse = async (req, res) => {
+  try {
+    const { gender, count = 5 } = req.body;
+    
+    if (!gender) {
+      return res.status(400).json({ message: "Gender is required" });
+    }
+    
+    const testResponses = [];
+    const testId = "test-" + Date.now();
+    
+    for (let i = 0; i < count; i++) {
+      const response = getGenderSpecificFallback(gender, testId);
+      testResponses.push({
+        number: i + 1,
+        response: response
+      });
+    }
+    
+    // Clean up test tracker
+    responseUsageTracker.delete(testId);
+    
+    res.json({
+      gender: gender,
+      totalResponses: gender === 'female' ? FEMALE_FALLBACK_RESPONSES.length : 
+                     gender === 'male' ? MALE_FALLBACK_RESPONSES.length : 
+                     NEUTRAL_FALLBACK_RESPONSES.length,
+      samples: testResponses
+    });
+    
+  } catch (error) {
+    console.error("Error testing fallback:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Add endpoint to test Gemini AI connection
+exports.testGeminiConnection = async (req, res) => {
+  try {
+    const result = await geminiAI.testConnection();
+    res.json(result);
+  } catch (error) {
+    console.error("Error testing Gemini connection:", error);
+    res.status(500).json({ 
+      status: "❌ ERROR",
+      error: error.message,
+      available: false
+    });
+  }
+};
+
 // Export quota costs and gender video links for use in other files
 exports.QUOTA_COSTS = QUOTA_COSTS;
 exports.GENDER_VIDEO_LINKS = GENDER_VIDEO_LINKS;
 exports.FALLBACK_VIDEOS = FALLBACK_VIDEOS;
+
+// Export fallback functions for testing
+exports.getGenderSpecificFallback = getGenderSpecificFallback;
+exports.getFallbackStats = getFallbackStats;
+exports.resetFallbackUsage = resetFallbackUsage;

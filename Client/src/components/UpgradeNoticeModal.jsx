@@ -1,61 +1,51 @@
 "use client";
 import React, { useState } from 'react';
 
-// Use the new placeholder URL provided by the user
+// Use the placeholder URL provided
 const placeholderImageUrl = "https://cdn.candy.ai/287087049-1918fd35-2ac2-4fde-a3e1-b2ce1c86a10f-webp90";
 
-// Inline SVG for the Audio Waveform
+// --- Components ---
+
 const AudioWaveform = ({ className = '' }) => (
-    <svg 
-        className={className}
-        viewBox="0 0 100 50" 
-        fill="none" 
-        xmlns="http://www.w3.org/2000/svg"
-    >
-        {/* Pink/Red bars - simulating the pulsing waveform */}
+    <svg className={className} viewBox="0 0 100 50" fill="none" xmlns="http://www.w3.org/2000/svg">
         {[5, 15, 25, 35, 45, 55, 65, 75, 85].map((x, index) => (
             <rect 
                 key={index}
                 x={x} 
                 y={25 - [10, 20, 15, 25, 5, 25, 15, 20, 10][index]} 
-                width="8" 
+                width="6" 
                 height={[20, 40, 30, 50, 10, 50, 30, 40, 20][index]} 
-                rx="4" 
-                fill="#ff6384"
+                rx="3" 
+                fill="#ec4899"
+                className="animate-pulse-bar"
+                style={{ animationDelay: `${index * 0.1}s` }}
             />
         ))}
     </svg>
 );
 
-// Inline SVG for the Diamond Icon in the button (now used as "Premium icon")
 const DiamondIcon = () => (
-    <svg 
-        className="premium-icon" 
-        viewBox="0 0 24 24" 
-        fill="currentColor" 
-        xmlns="http://www.w3.org/2000/svg"
-    >
-        {/* Diamond shape path (reusing the original diamond path for simplicity) */}
+    <svg className="premium-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 2L2 12L12 22L22 12L12 2Z" />
     </svg>
 );
 
-/**
- * Responsive Upgrade Notice Modal Component with embedded CSS.
- */
+const CloseIcon = () => (
+    <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+    </svg>
+);
+
 const UpgradeNoticeModal = () => {
     const [isOpen, setIsOpen] = useState(true);
 
-    if (!isOpen) {
-        return null;
-    }
+    if (!isOpen) return null;
 
-    // New structure based on user input, using custom classNames instead of Tailwind
     return (
         <>
             <div className="paywall-overlay font-inter">
                 
-                {/* Main Modal Container */}
+                {/* Modal Container */}
                 <div className="paywall-modal">
                     
                     {/* Close Button */}
@@ -64,394 +54,359 @@ const UpgradeNoticeModal = () => {
                         className="paywall-close-btn"
                         aria-label="Close modal"
                     >
-                        {/* Using the standard close icon SVG */}
-                        <svg className="close-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
+                        <CloseIcon />
                     </button>
 
-                    {/* Background elements (replaced with CSS/removed) */}
-                    {/* Note: All divs referencing external background assets have been removed
-                        and their styling is handled by the main modal container CSS for simplicity 
-                        and compliance with the single-file environment. */}
-                    
-                    <div className="paywall-main-content">
+                    {/* --- Left Side (Image) --- */}
+                    <div className="modal-image-section">
                         
-                        {/* Image Section / Left (Desktop) */}
-                        <div className="paywall-image-wrapper">
-                            
-                            {/* Mobile only elements (background rects/lights, gradient overlay) */}
-                            <div className="mobile-bg-elements">
-                                {/* These are placeholders for the complex background shapes from the original template */}
-                                <div className="mobile-rect-placeholder rect-1"></div>
-                                <div className="mobile-rect-placeholder rect-2"></div>
-                            </div>
-                            
-                            {/* The Main Image */}
-                            <img 
-                                src={placeholderImageUrl} 
-                                className="paywall-image"
-                                alt="AI character profile"
-                                onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/152x229/101010/ffffff?text=Image+Not+Found" }}
-                            />
-
-                            {/* Mobile image gradient overlay (replaced complex div structure) */}
-                            <div className="mobile-image-gradient-overlay"></div>
+                        {/* Mobile Background Decor (Abstract Shapes) */}
+                        <div className="mobile-decor-bg">
+                            <div className="decor-shape shape-1"></div>
+                            <div className="decor-shape shape-2"></div>
                         </div>
 
-                        {/* Content Section / Right (Desktop) */}
-                        <div className="paywall-content-section">
-                            
-                            {/* Waveform and Title Block */}
-                            <div className="paywall-title-block">
-                                {/* Mobile Waveform (absolute positioning) */}
-                                <div className="mobile-waveform-pos">
-                                    <AudioWaveform className="waveform-svg" />
-                                </div>
-                                
-                                <div className="flex gap-1 items-center">
-                                    <h3 className="title-part1">Upgrade to Unlock</h3>
-                                </div>
-                                <h3 className="title-part2">AI Voice Messages !</h3>
-                            </div>
-                            
-                            {/* Body Text */}
-                            <div className="paywall-body-text">
-                                <div className="body-text-light">This feature is available exclusively for our Premium Users.</div>
-                                <div className="body-text-base-new">
-                                    <h4 className="font-medium text-sm">Become a Premium user now and experience the conversation in more immersive way with audio messages.</h4>
-                                </div>
-                            </div>
+                        {/* Main Image */}
+                        <div className="image-container">
+                            <img 
+                                src={placeholderImageUrl} 
+                                className="profile-image"
+                                alt="AI Character"
+                                onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/300x400/101010/ffffff?text=No+Image" }}
+                            />
+                            {/* Gradient Overlay for Text Readability on Mobile */}
+                            <div className="image-gradient-overlay"></div>
+                        </div>
+                    </div>
 
-                            {/* Desktop Waveform */}
-                            <div className="desktop-waveform-pos">
+                    {/* --- Right Side (Content) --- */}
+                    <div className="modal-content-section">
+                        
+                        {/* Header Group */}
+                        <div className="content-header">
+                            <div className="waveform-wrapper">
                                 <AudioWaveform className="waveform-svg" />
                             </div>
                             
-                            {/* CTA Button */}
-                            <a href="/subscribe" className="paywall-cta">
-                                {/* Using the existing DiamondIcon for the Premium badge */}
-                                <DiamondIcon />
-                                <div className="cta-text">
-                                    Upgrade to Premium
-                                </div>
-                            </a>
+                            <div className="title-group">
+                                <span className="eyebrow">UPGRADE TO UNLOCK</span>
+                                <h2 className="main-title">AI Voice Messages</h2>
+                            </div>
                         </div>
+
+                        {/* Description */}
+                        <div className="content-body">
+                            <p className="highlight-text">
+                                Exclusive feature for Premium Users.
+                            </p>
+                            <p className="description-text">
+                                Experience the conversation in a more immersive way. Hear their voice, catch the nuance, and feel the connection.
+                            </p>
+                        </div>
+
+                        {/* CTA Button */}
+                        <a href="/subscribe" className="cta-button">
+                            <DiamondIcon />
+                            <span>Upgrade to Premium</span>
+                            <div className="glow-effect"></div>
+                        </a>
                     </div>
                 </div>
             </div>
-            
-            {/* Embedded CSS Styles */}
+
+            {/* --- STYLES --- */}
             <style jsx global>{`
-                /* Font import for Inter (Optional but good practice) */
-                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-                
-                .font-inter {
-                    font-family: 'Inter', sans-serif;
-                }
-                
-                /* Primary Color for Gradient/Accents (based on the user's template) */
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
                 :root {
-                    --color-primary: #ec4899; /* Tailwind pink-500 */
-                    --color-dark-bg: #100C0B; /* bg-[#100C0B] */
-                    --color-content-bg: rgba(28, 27, 25, 0.6); /* md:bg-[#1C1B1999] */
+                    --color-primary: #ec4899;
+                    --color-primary-dark: #be185d;
+                    --color-bg-dark: #121212;
+                    --color-bg-card: #1E1E1E;
+                    --color-text-dim: #A1A1AA;
+                    --shadow-glow: 0 0 20px rgba(236, 72, 153, 0.4);
                 }
 
-                /* --- 1. Overlay --- */
+                .font-inter { font-family: 'Inter', sans-serif; }
+
+                /* 1. Overlay */
                 .paywall-overlay {
                     position: fixed;
                     inset: 0;
-                    z-index: 50;
-                    overflow-y: auto;
+                    z-index: 9999;
                     display: flex;
                     justify-content: center;
-                    align-items: center;
-                    background-color: rgba(0, 0, 0, 0.85); /* Slightly darker overlay */
+                    align-items: center; /* Centers vertically on desktop */
+                    background-color: rgba(0, 0, 0, 0.8);
+                    backdrop-filter: blur(8px);
                     padding: 1rem;
+                    animation: fadeIn 0.3s ease-out;
                 }
 
-                /* --- 2. Main Modal Container --- */
+                /* 2. Modal Container */
                 .paywall-modal {
                     position: relative;
-                    width: 320px; /* Mobile width */
-                    height: 475px; /* Mobile height */
-                    border-radius: 1.5rem; /* rounded-3xl */
-                    background-color: var(--color-dark-bg);
-                    color: white;
-                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
-                    border: 2px solid #282828;
-                    overflow: hidden;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    overflow: visible;
-                }
-
-                /* --- 3. Close Button --- */
-                .paywall-close-btn {
-                    position: absolute;
-                    top: 0.5rem; /* top-2 */
-                    right: 0.5rem; /* right-2 */
-                    width: 1.5rem; /* w-6 */
-                    height: 1.5rem; /* h-6 */
-                    z-index: 50;
-                    background: none;
-                    border: none;
-                    cursor: pointer;
-                    padding: 0;
-                }
-                .close-icon {
                     width: 100%;
-                    height: 100%;
-                    color: #9ca3af;
-                }
-
-                /* --- 4. Main Content Wrapper (Flex) --- */
-                .paywall-main-content {
-                    display: flex;
-                    flex-direction: column; /* Mobile: column */
-                    justify-content: space-between;
-                    align-items: center;
-                    width: 100%;
-                    height: 100%;
-                    padding: 2rem; /* p-8 */
-                    z-index: 20;
-                    position: relative;
-                }
-
-                /* --- 5. Image Section / Left --- */
-                .paywall-image-wrapper {
-                    position: absolute;
-                    top: -154px;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                }
-                
-                .paywall-image {
-                    position: absolute;
-                    bottom: 130px; /* approx bottom-[340px] in 546px height */
-                    left: 85px; /* left-[85px] */
-                    width: 152px; /* w-[152px] */
-                    height: 229px; /* h-[229px] */
-                    object-fit: cover;
-                    border-radius: 0.75rem; /* rounded-2xl */
-                    z-index: 20;
-                    /* Simulating the border-img-paywall-modal with a box shadow */
-                    box-shadow: 0 0 0 3px var(--color-primary), 0 0 15px rgba(255, 99, 132, 0.5); 
-                }
-
-                /* Mobile Background Elements (Complex shape placeholders) */
-                .mobile-bg-elements {
-                    display: block; /* Visible on mobile */
-                }
-                .mobile-rect-placeholder {
-                        position: absolute;
-                        background-color: var(--color-primary);
-                        
-                        border-radius: 12px;
-                        z-index: 20;
-                }
-                .mobile-bg-elements .rect-1 {
-    top: 85px;
-    right: 61px;
-    width: 150px;
-    height: 245px;
-    opacity: 0.75;
-    transform: rotate(15deg);
-    background: linear-gradient(135deg, #a61f82ff 0%, #fad0c4 100%);
-    background-repeat: no-repeat;
-    background-size: cover;
-}
-                .mobile-bg-elements .rect-2 {
-                    bottom: 167px;
-    right: 85px;
-    width: 137px;
-    height: 201px;
-    transform: rotate(-10deg);
-    background: linear-gradient(135deg, #d81fa7ff 0%, #e8623dff 100%);
-    background-repeat: no-repeat;
-    background-size: cover;
-                }
-
-                /* Mobile Image Gradient Overlay */
-                .mobile-image-gradient-overlay {
-                    position: absolute;
-                    bottom: 120px; /* Aligned with image bottom */
-                    left: 75px; /* left-[75px] */
-                    z-index: 30;
-                    border-radius: 0.75rem; /* rounded-2xl */
-                    width: 175px; /* w-[175px] */
-                    height: 200px; /* h-[200px] */
-                    background-image: linear-gradient(to bottom, rgba(70, 27, 40, 0) 11.75%, #1F1014 90%);
-                }
-
-                /* --- 6. Content Section / Right --- */
-                .paywall-content-section {
-                    margin-top: 185px; /* mt-[185px] to push content below image on mobile */
+                    max-width: 340px; /* Mobile standard width */
+                    background-color: var(--color-bg-dark);
+                    border: 1px solid #333;
+                    border-radius: 24px;
                     display: flex;
                     flex-direction: column;
-                    color: white;
-                    flex: 1;
-                    justify-content: space-between;
-                    z-index: 30;
-                    width: 100%; /* Full width on mobile */
+                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+                    overflow: visible; /* Allows image to pop out on mobile */
+                    margin-top: 40px; /* Space for image pop-out */
                 }
 
-                /* Title and Text Styling */
-                .paywall-title-block {
-                    position: relative;
-                }
-
-                .title-part1 {
-                    font-size: 1.25rem; /* text-xl */
-                    font-weight: 300; /* font-extralight */
-                }
-                .title-part2 {
-                    font-size: 1.25rem; /* text-xl */
-                    font-weight: 500;
-                    color: var(--color-primary); /* text-primary */
-                }
-
-                .paywall-body-text {
-                    margin-top: 1rem;
-                }
-
-                .body-text-light {
-                    color: #a1a1aa; /* text-neutral-400 */
-                    font-size: 0.75rem; /* text-xs */
-                    font-weight: 300; /* font-extralight */
-                    margin-bottom: 0.5rem; /* mb-2 */
-                }
-
-                .body-text-base-new h4 {
-                    font-size: 0.875rem; /* text-sm */
-                    font-weight: 500;
-                }
-
-                /* Waveform Positioning (Mobile - absolute, Desktop - static) */
-                .waveform-svg {
-                    width: 100%;
-                    height: 53px;
-                }
-
-                .mobile-waveform-pos {
+                /* 3. Close Button */
+                .paywall-close-btn {
                     position: absolute;
-                    bottom: 66px;
-                   right: 108px;
+                    top: 12px;
+                    right: 12px;
+                    width: 32px;
+                    height: 32px;
+                    background: rgba(255,255,255,0.1);
+                    border-radius: 50%;
+                    color: white;
+                    border: none;
+                    cursor: pointer;
+                    z-index: 50;
+                    padding: 6px;
+                    transition: background 0.2s;
+                }
+                .paywall-close-btn:hover { background: rgba(255,255,255,0.2); }
+
+                /* 4. Image Section (Top/Left) */
+                .modal-image-section {
+                    position: relative;
                     width: 100%;
-                    max-width: 180px; /* Approximate width */
-                    text-align: left;
-                    display: block;
-                }
-
-                .desktop-waveform-pos {
-                    display: none; /* Hidden on mobile */
-                }
-
-                /* --- 7. CTA Button (A link) --- */
-                .paywall-cta {
                     display: flex;
                     justify-content: center;
-                    align-items: center;
-                    max-width: 100%;
-                    padding: 0.625rem 1rem; /* py-2.5 */
-                    border-radius: 1rem; /* rounded-2xl */
+                    z-index: 10;
+                }
+
+                /* The Main Image */
+                .image-container {
+                    position: relative;
+                    width: 160px;
+                    height: 220px;
+                    margin-top: -60px; /* Pull image up out of card */
+                    border-radius: 16px;
+                    box-shadow: var(--shadow-glow);
+                    z-index: 20;
+                }
+
+                .profile-image {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    border-radius: 16px;
                     border: 2px solid var(--color-primary);
-                    gap: 0.5rem; /* gap-2 */
-                    cursor: pointer;
+                }
+
+                /* Mobile Background Shapes (The colored squares behind image) */
+                .mobile-decor-bg {
+                    position: absolute;
+                    top: -50px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 200px;
+                    height: 200px;
+                    z-index: 0;
+                    pointer-events: none;
+                }
+                .decor-shape {
+                    position: absolute;
+                    border-radius: 12px;
+                    opacity: 0.6;
+                }
+                .shape-1 {
+                    width: 140px; height: 180px;
+                    background: linear-gradient(45deg, #ec4899, #f87171);
+                    top: 10px; right: 20px;
+                    transform: rotate(12deg);
+                }
+                .shape-2 {
+                    width: 140px; height: 160px;
+                    background: linear-gradient(45deg, #8b5cf6, #ec4899);
+                    top: 20px; left: 20px;
+                    transform: rotate(-8deg);
+                }
+
+                /* 5. Content Section (Bottom/Right) */
+                .modal-content-section {
+                    padding: 3rem 1.5rem 2rem 1.5rem; /* Top padding clears the image */
+                    text-align: center;
+                    color: white;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.5rem;
+                }
+
+                .waveform-wrapper {
+                    width: 120px;
+                    height: 40px;
+                    margin: 0 auto 1rem auto;
+                }
+                .waveform-svg {
+                    width: 100%;
+                    height: 100%;
+                    color: var(--color-primary);
+                }
+
+                .title-group { display: flex; flex-direction: column; gap: 0.25rem; }
+                
+                .eyebrow {
+                    font-size: 0.75rem;
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                    color: var(--color-text-dim);
+                    font-weight: 600;
+                }
+                
+                .main-title {
+                    font-size: 1.75rem;
+                    font-weight: 800;
+                    line-height: 1.1;
+                    background: linear-gradient(to right, #fff, #fbcfe8);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                }
+
+                .content-body { display: flex; flex-direction: column; gap: 0.75rem; }
+                
+                .highlight-text {
+                    font-size: 0.875rem;
+                    color: #f472b6;
+                    font-weight: 500;
+                }
+                
+                .description-text {
+                    font-size: 0.875rem;
+                    line-height: 1.5;
+                    color: var(--color-text-dim);
+                }
+
+                /* 6. CTA Button */
+                .cta-button {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.75rem;
+                    width: 100%;
+                    padding: 1rem;
+                    background: linear-gradient(90deg, #ec4899 0%, #db2777 100%);
+                    border-radius: 14px;
+                    color: white;
+                    font-weight: 700;
+                    font-size: 1rem;
                     text-decoration: none;
-                    margin-top: 1.5rem;
-
-                    /* primary-gradient simulation */
-                    background-image: linear-gradient(to right, #ec4899, #dc2626); 
-                    transition: all 0.3s ease;
+                    transition: transform 0.2s, box-shadow 0.2s;
+                    overflow: hidden;
+                    box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
                 }
-                .paywall-cta:hover {
-                    opacity: 0.9;
+                .cta-button:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 25px rgba(236, 72, 153, 0.5);
+                }
+                .cta-button:active { transform: scale(0.98); }
+
+                .premium-icon { width: 20px; height: 20px; }
+
+                /* Button Shine Animation */
+                .glow-effect {
+                    position: absolute;
+                    top: 0; left: -100%;
+                    width: 50%; height: 100%;
+                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+                    transform: skewX(-20deg);
+                    animation: shine 3s infinite;
                 }
 
-                .premium-icon {
-                    width: 1.25rem; /* w-5 */
-                    height: 1.25rem;
-                    color: white;
-                    flex-shrink: 0;
+                /* --- Animations --- */
+                @keyframes shine {
+                    0% { left: -100%; }
+                    20% { left: 200%; }
+                    100% { left: 200%; }
                 }
-                .cta-text {
-                    color: white;
-                    font-size: 0.95rem; /* text-lg */
-                    font-weight: 600; /* font-semibold */
-                    align-self: stretch;
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: scale(0.95); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+                .animate-pulse-bar {
+                    animation: pulseHeight 1.5s ease-in-out infinite;
+                    transform-origin: bottom;
+                }
+                @keyframes pulseHeight {
+                    0%, 100% { transform: scaleY(0.5); }
+                    50% { transform: scaleY(1); }
                 }
 
-
-                /* --- Desktop Styles (min-width: 768px / md) --- */
+                /* --- DESKTOP OPTIMIZATIONS (MD+) --- */
                 @media (min-width: 768px) {
-                    
                     .paywall-modal {
-                        width: 740px; /* md:w-[740px] */
-                        height: 475px; 
-                    }
-                    
-                    /* Background elements are now hidden/handled by other divs */
-                    .mobile-bg-elements, .mobile-image-gradient-overlay {
-                        display: none;
-                    }
-
-                    .paywall-main-content {
-                        flex-direction: row; /* Desktop: row */
-                        padding: 1.5rem; /* Adjust padding for desktop */
+                        max-width: 800px;
+                        height: 450px;
+                        flex-direction: row; /* Switch to Horizontal Layout */
+                        overflow: hidden; /* Contain image inside */
+                        margin-top: 0;
+                        padding: 0;
+                        align-items: stretch;
+                        border: 1px solid #2a2a2a;
                     }
 
-                    /* Image Section Layout (Left) */
-                    .paywall-image-wrapper {
-                        position: static; /* Reset positioning */
-                        width: 307px; /* md:w-[307px] */
-                        height: 462px; /* md:h-[462px] */
+                    /* Desktop Image Section (Left Half) */
+                    .modal-image-section {
+                        width: 45%;
                         flex-shrink: 0;
-                        margin-right: 1rem;
+                        height: auto;
+                        margin: 0;
+                        padding: 0;
                     }
-                    
-                    .paywall-image {
-                        position: static; /* Reset positioning */
+
+                    /* Hide mobile decor on desktop */
+                    .mobile-decor-bg { display: none; }
+
+                    .image-container {
                         width: 100%;
                         height: 100%;
-                        max-width: 307px;
-                        max-height: 462px;
-                        border-radius: 0.75rem;
-                        /* Simulating the border-img-paywall-modal with a box shadow */
-                        box-shadow: 0 0 0 3px var(--color-primary), 0 0 15px rgba(255, 99, 132, 0.5); 
+                        margin: 0;
+                        border-radius: 0;
+                        box-shadow: none;
+                        border: none;
                     }
 
-                    /* Content Section Layout (Right) */
-                    .paywall-content-section {
-                        margin-top: 0; /* Reset margin */
-                        margin-left: 1rem; /* md:ml-4 */
-                        padding: 2rem; /* md:p-8 */
-                        width: 357px; /* md:w-[357px] */
-                        height: 462px; /* md:h-[462px] */
-                        background-color: var(--color-content-bg);
-                        border-radius: 0.5rem; /* rounded-lg */
-                        justify-content: space-between;
-                        flex-shrink: 1;
-                    }
-
-                    /* Waveform Positioning Swap */
-                    .mobile-waveform-pos {
-                        display: none; /* Hide mobile waveform */
-                    }
-
-                    .desktop-waveform-pos {
-                        display: block; /* Show desktop waveform */
-                        margin-top: 1.25rem; /* my-5 */
-                        margin-bottom: 1.25rem;
+                    .profile-image {
                         width: 100%;
-                        height: 53px;
+                        height: 100%;
+                        border-radius: 0;
+                        border: none;
+                        mask-image: linear-gradient(to right, black 85%, transparent 100%);
                     }
-                    
-                    /* CTA Button Styling */
-                    .paywall-cta {
-                        border-radius: 0.5rem; /* md:rounded-lg */
+
+                    /* Desktop Content Section (Right Half) */
+                    .modal-content-section {
+                        width: 55%;
+                        padding: 3rem;
+                        text-align: left;
+                        justify-content: center;
+                        align-items: flex-start;
+                        background: linear-gradient(to left, #121212 0%, #1a1a1a 100%);
+                    }
+
+                    .waveform-wrapper { margin: 0 0 1.5rem 0; width: 140px; }
+
+                    .title-group { gap: 0.5rem; }
+                    .main-title { font-size: 2.5rem; }
+
+                    .content-body { gap: 1rem; max-width: 90%; }
+                    .description-text { font-size: 1rem; }
+
+                    .cta-button {
+                        width: auto;
+                        padding: 1rem 2.5rem;
+                        margin-top: 1rem;
                     }
                 }
             `}</style>

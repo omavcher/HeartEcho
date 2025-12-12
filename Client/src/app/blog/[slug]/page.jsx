@@ -1,12 +1,18 @@
 import { blogPosts } from '../../../data/blogPosts';
 import BlogPostContent from './BlogPostContent';
-import NotFound from '../../not-found';
+import { notFound } from 'next/navigation';
 
 const getPostBySlug = (slug) => blogPosts.find(post => post.slug === slug);
 
 export async function generateMetadata({ params }) {
-  const post = getPostBySlug(params.slug);
-  if (!post) return { title: "Post Not Found | HeartEcho", description: "Not found" };
+  // Destructure and await params
+  const { slug } = await params;
+  const post = getPostBySlug(slug);
+  
+  if (!post) return { 
+    title: "Post Not Found | HeartEcho", 
+    description: "The blog post you're looking for doesn't exist." 
+  };
 
   return {
     title: `${post.title} | HeartEcho`,
@@ -26,11 +32,25 @@ export default function BlogPost({ params }) {
   if (!params || !params.slug) {
     return <NotFound />;
   }
+}
+export async function generateStaticParams() {
+  return blogPosts.map((post) => ({
+    slug: post.slug,
+  }));
+}
 
-  const post = getPostBySlug(params.slug);
+export default async function BlogPost({ params }) {
+  // Destructure and await params
+  const { slug } = await params;
+  
+  if (!slug) {
+    notFound();
+  }
+
+  const post = getPostBySlug(slug);
   
   if (!post) {
-    return <NotFound />;
+    notFound();
   }
 
   return <BlogPostContent post={post} />;

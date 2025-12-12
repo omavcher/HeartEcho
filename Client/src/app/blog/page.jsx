@@ -47,7 +47,7 @@ export default function BlogPage() {
       return matchesSearch && matchesCategory;
     });
 
-    // Default sort: Newest first (Standard YouTube behavior)
+    // Default sort: Newest first
     filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     return filtered;
@@ -65,7 +65,7 @@ export default function BlogPage() {
     return name ? name.split(' ').map(n => n[0]).join('').substring(0,2) : 'AI';
   };
 
-  // Helper to format date relative (e.g., "2 days ago")
+  // Helper to format date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -80,7 +80,7 @@ export default function BlogPage() {
       </Head>
       
       <div className="blog-wrapper">
-        <main className="main-content-blofd">
+        <main className="main-content-blog">
           
           {/* Header Controls */}
           <header className="controls-header">
@@ -104,7 +104,7 @@ export default function BlogPage() {
               </div>
             </div>
 
-            {/* Category Chips (Horizontal Scroll) */}
+            {/* Category Chips */}
             <div className="category-scroll">
               {categories.map(category => (
                 <button
@@ -161,7 +161,6 @@ export default function BlogPage() {
 
                   {/* Content Area */}
                   <div className="post-info">
-                    {/* Only show avatar in Grid view, usually */}
                     <div className="author-avatar">
                       {getInitials(post.author)}
                     </div>
@@ -180,7 +179,7 @@ export default function BlogPage() {
               ))
             ) : (
               <div className="no-results">
-                <h3>No videos... er, articles found 😕</h3>
+                <h3>No articles found 😕</h3>
                 <p>Try searching for something else or clear your filters.</p>
                 <button 
                   onClick={() => {setSearchQuery(''); setSelectedCategory('All');}} 

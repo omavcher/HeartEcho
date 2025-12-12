@@ -1,37 +1,86 @@
-'use client'; // Added this directive to use client-side features like useEffect
-
+'use client';
 import React, { useState, useEffect } from "react";
-import '../styles/Discover.css'
-import Link from 'next/link' // Changed from react-router-dom to next/link
-import HomeCosAi from '../components/HomeCosAi'
+import '../styles/Discover.css';
+import Link from 'next/link';
+import HomeCosAi from '../components/HomeCosAi';
 import AIFriends from "../components/AIFriends";
 import Footer from "../components/Footer";
+import LoginModal from "../components/LoginModel"; // Import your LoginModal component
+import { motion, AnimatePresence } from "framer-motion"; // For animations
 
 function Discover() {
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Helper function to get localStorage items safely
+  const getLocal = (key) => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(key);
+    }
+    return null;
+  };
 
   useEffect(() => {
+    // Check if user is not logged in and show modal after 3 seconds
+    const checkLogin = () => {
+      const token = getLocal('token');
+      if (!token) {
+        // Show modal after 3 seconds
+        setTimeout(() => {
+          setShowLoginModal(true);
+        }, 3000);
+      }
+    };
+
+    checkLogin();
+
     // Check subscription status from localStorage
-    if (typeof window !== 'undefined') {
-      const subscriptionData = localStorage.getItem('subscribed');
-      
-      if (subscriptionData) {
-        try {
-          const parsedData = JSON.parse(subscriptionData);
-          // Check if user is subscribed based on your data structure
-          if (parsedData.isSubscribed === true || parsedData.userType === 'subscriber') {
-            setIsSubscribed(true);
-          }
-        } catch (error) {
-          console.error('Error parsing subscription data:', error);
+    const subscriptionData = getLocal('subscribed');
+    
+    if (subscriptionData) {
+      try {
+        const parsedData = JSON.parse(subscriptionData);
+        // Check if user is subscribed based on your data structure
+        if (parsedData.isSubscribed === true || parsedData.userType === 'subscriber') {
+          setIsSubscribed(true);
         }
+      } catch (error) {
+        console.error('Error parsing subscription data:', error);
       }
     }
   }, []);
 
+  const handleCloseModal = () => {
+    setShowLoginModal(false);
+  };
+
   return (
     <>
       <div className='friends-main-conatiner'>
+        {/* Login Modal */}
+        <AnimatePresence>
+          {showLoginModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="modal-backdrop"
+              onClick={handleCloseModal}
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 50, scale: 0.9 }}
+                transition={{ type: "spring", damping: 25 }}
+                className="modal-content"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <LoginModal onClose={handleCloseModal} />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <header>
           <h1>Discover</h1>
           {!isSubscribed && (
@@ -51,7 +100,7 @@ function Discover() {
       </div>
       <Footer/>
     </>
-  )
+  );
 }
 
-export default Discover
+export default Discover;

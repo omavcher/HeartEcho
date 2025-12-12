@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { FaUsers, FaRobot, FaExclamationCircle, FaChartBar, FaBars, FaTimes, FaChevronRight, FaUserPlus } from "react-icons/fa";
 import "./AdminPanel.css";
+import { MdHistoryEdu } from "react-icons/md";
+import { CiEdit } from "react-icons/ci";
 
 // Import your admin components
 import AdminDashboard from "./Admin/AdminDashboard.jsx";
@@ -11,6 +13,9 @@ import UsersAdmin from "./Admin/UsersAdmin.jsx";
 import AIFriendsAdmin from "./Admin/AIFriendsAdmin.jsx";
 import ComplaintsAdmin from "./Admin/ComplaintsAdmin.jsx";
 import ReferralAdmin from "./Admin/ReferralAdmin.jsx";
+import CreateStoryPage from "./Admin/CreateStoryPage.jsx";
+import StoriesAdmin from "./Admin/AdminStoy.jsx";
+import EditStoryPage from "./Admin/EditStoryPage.jsx";
 
 
 const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -21,9 +26,13 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
   const navItems = [
     { path: "/admin/dashboard", label: "Dashboard", icon: <FaChartBar /> },
     { path: "/admin/users", label: "Users", icon: <FaUsers /> },
+    { path: "/admin/stories", label: "Stories", icon: <MdHistoryEdu/> }, // Add this
     { path: "/admin/ai-friends", label: "AI Friends", icon: <FaRobot /> },
     { path: "/admin/complaints", label: "Complaints", icon: <FaExclamationCircle /> },
     { path: "/admin/referral", label: "Referral Program", icon: <FaUserPlus /> },
+    { path: "/admin/create-story", label: "Create Story", icon: <MdHistoryEdu /> },
+    { path: "/admin/stories/edit/:id", label: "Edit Story", icon: <CiEdit /> },
+
   ];
 
   return (
@@ -126,16 +135,20 @@ const AdminPanel = () => {
     return () => document.removeEventListener('keydown', handleEscape);
   }, []);
 
-  const renderContent = () => {
-    const contentMap = {
-      '/admin/dashboard': <Dashboard />,
-      '/admin/users': <Users />,
-      '/admin/ai-friends': <AIFriends />,
-      '/admin/complaints': <Complaints />,
-      '/admin/referral': <Referral />,
-    };
-    return contentMap[pathname] || <Dashboard />;
+  // In AdminPanel.jsx
+const renderContent = () => {
+  const contentMap = {
+    '/admin/dashboard': <Dashboard />,
+    '/admin/users': <Users />,
+    '/admin/stories': <StoriesAdmin/>,
+    '/admin/ai-friends': <AIFriends />,
+    '/admin/complaints': <Complaints />,
+    '/admin/referral': <Referral />,
+    '/admin/create-story': <CreateStoryPage/>,
+
   };
+  return contentMap[pathname] || <Dashboard />;
+};
 
   return (
     <div className="admin-container">

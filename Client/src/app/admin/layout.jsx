@@ -1,12 +1,13 @@
+// components/AdminLayout.jsx
 import PropTypes from 'prop-types';
 import AdminPanel from '../../pages/AdminPanel';
 
 export default function AdminLayout({ children }) {
   return (
-    <div className="min-h-screen flex">
+    <div className="admin-layout">
       <AdminPanel />
-      <div>
-        <main>{children}</main>
+      <div className="admin-layout-content">
+        <main className="admin-main-content">{children}</main>
       </div>
     </div>
   );

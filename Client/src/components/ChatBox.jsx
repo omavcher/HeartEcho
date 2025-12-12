@@ -5,9 +5,10 @@ import axios from "axios";
 import { 
   ArrowLeft, Copy, Trash2, X, MoreVertical, 
   Send, EyeOff, Video, Image as ImageIcon, Info,
-  Lock, Zap, ArrowDown
+  Lock, Zap, ArrowDown, Bot, Sparkles, Clock, Wifi
 } from "lucide-react";
 import api from "../config/api";
+import { useRouter } from 'next/navigation';
 
 // Constants
 const QUOTA_COSTS = {
@@ -16,9 +17,51 @@ const QUOTA_COSTS = {
   VIDEO: 20
 };
 
-const useRouter = () => ({
-  push: (path) => window.location.href = path
-});
+// Enhanced bot configuration
+const BOT_CONFIG = {
+  MESSAGE_INTERVAL_MIN: 15000, // 15 seconds minimum
+  MESSAGE_INTERVAL_MAX: 45000, // 45 seconds maximum
+  INACTIVITY_THRESHOLD: 30000, // 30 seconds
+  TYPING_DELAY_MIN: 800, // 0.8 seconds minimum
+  TYPING_DELAY_MAX: 2500, // 2.5 seconds maximum
+  RESPONSE_DELAY_MIN: 1000, // 1 second minimum
+  RESPONSE_DELAY_MAX: 4000, // 4 seconds maximum
+  INITIAL_WELCOME_DELAY: 2000, // 2 seconds for initial welcome
+  NETWORK_EMULATION: true, // Simulate network delays
+  TYPING_VARIABILITY: true // Randomize typing speed
+};
+
+// Bot personality and message patterns
+const BOT_PERSONALITY = {
+  GREETINGS: [
+    "Hey there! I noticed you just opened our chat. How's your day going? 😊",
+    "Hello! I'm here to help. What's on your mind today?",
+    "Hi! I see you're back. Ready to continue our conversation?",
+    "Welcome back! I was just thinking about our last chat. How have you been?",
+    "Greetings! I'm excited to chat with you today. What shall we talk about?"
+  ],
+  FOLLOW_UPS: [
+    "By the way, I was wondering...",
+    "Speaking of which...",
+    "Oh, I just remembered something...",
+    "Before I forget...",
+    "This reminds me..."
+  ],
+  QUESTIONS: [
+    "What do you think about that?",
+    "How does that make you feel?",
+    "Have you experienced something similar?",
+    "Would you like to know more?",
+    "What's your perspective on this?"
+  ],
+  REACTIONS: [
+    "Interesting!",
+    "Fascinating!",
+    "That's cool!",
+    "I see...",
+    "Makes sense!"
+  ]
+};
 
 const PopNoti = ({ message, type, isVisible, onClose }) => {
   if (!isVisible) return null;
@@ -33,10 +76,32 @@ const PopNoti = ({ message, type, isVisible, onClose }) => {
   );
 };
 
-const AdvancedLoader = ({ text }) => (
+const AdvancedLoader = ({ text, progress }) => (
   <div className="advanced-loader">
     <div className="spinner"></div>
     <span className="loader-text">{text}</span>
+    {progress !== undefined && (
+      <div className="loader-progress">
+        <div className="loader-progress-bar" style={{ width: `${progress}%` }}></div>
+      </div>
+    )}
+  </div>
+);
+
+const BotMessageIndicator = ({ isTyping }) => (
+  <div className="bot-message-indicator">
+    <div className="bot-avatar-pulse">
+      <Bot size={12} />
+    </div>
+    {isTyping && <span className="typing-dots"><span>.</span><span>.</span><span>.</span></span>}
+  </div>
+);
+
+const NetworkIndicator = ({ isActive }) => (
+  <div className={`network-indicator ${isActive ? 'active' : ''}`}>
+    <Wifi size={12} />
+    <span>Bot thinking</span>
+    <div className="network-pulse"></div>
   </div>
 );
 
@@ -82,6 +147,8 @@ const MediaMessage = ({ message, isSubscribed, remainingQuota, onSubscribe }) =>
   if (!isImage && !isVideo) {
     return (
       <div className="text-content">
+        {message.isBotMessage && <BotMessageIndicator isTyping={false} />}
+        {message.isBotTyping && <NetworkIndicator isActive={true} />}
         <p>{message.text}</p>
         <span className="message-time">{formatTime(message.time)}</span>
       </div>
@@ -148,14 +215,24 @@ const formatTime = (timeString) => {
       minute: '2-digit' 
     });
   } catch (e) { 
-    return new Date().toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+    return "00:00";
   }
 };
 
-// --- MAIN COMPONENT ---
+// Utility function for random delays
+const getRandomDelay = (min, max) => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+// Utility function to get random bot message
+const getRandomBotMessage = () => {
+  const categories = ['GREETINGS', 'FOLLOW_UPS', 'QUESTIONS', 'REACTIONS'];
+  const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+  const messages = BOT_PERSONALITY[randomCategory];
+  return messages[Math.floor(Math.random() * messages.length)];
+};
+
+// Main Component
 const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} }) => {
   // State
   const [messages, setMessages] = useState([]);
@@ -177,13 +254,26 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
   const [remainingQuota, setRemainingQuota] = useState(20);
   const [showScrollDown, setShowScrollDown] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [tempMessages, setTempMessages] = useState([]); // Store temporary messages
+  const [tempMessages, setTempMessages] = useState([]);
+  
+  // Enhanced bot state
+  const [lastActivityTime, setLastActivityTime] = useState(() => Date.now());
+  const [isBotMessageEnabled, setIsBotMessageEnabled] = useState(true);
+  const [isFetchingBotMessage, setIsFetchingBotMessage] = useState(false);
+  const [botMessageInterval, setBotMessageInterval] = useState(null);
+  const [isBotTyping, setIsBotTyping] = useState(false);
+  const [botTypingMessage, setBotTypingMessage] = useState(null);
+  const [isInitialBotTriggered, setIsInitialBotTriggered] = useState(false);
+  const [networkLatency, setNetworkLatency] = useState(0);
 
   // Refs
   const overlayRef = useRef(null);
   const chatContainerRef = useRef(null);
   const lastMessageRef = useRef(null);
   const menuRef = useRef(null);
+  const messageCounter = useRef(0);
+  const botTypingTimeoutRef = useRef(null);
+  const botMessageTimeoutRef = useRef(null);
   const router = useRouter();
 
   // Memoized values
@@ -191,25 +281,296 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
     return isSubscribed || remainingQuota > 0;
   }, [isSubscribed, remainingQuota]);
 
-  // Combine regular messages with temporary messages
   const displayMessages = useMemo(() => {
     const filteredMessages = messages.filter(msg => 
       !msg.text?.includes("don't have enough message quota") && 
       !msg.isLoading
     );
     
-    // Add temporary messages at the end
+    // Add bot typing indicator if active
+    if (isBotTyping && botTypingMessage) {
+      return [...filteredMessages, ...tempMessages, {
+        _id: 'bot-typing-indicator',
+        sender: "ai",
+        senderModel: "AI",
+        text: botTypingMessage.text || "Bot is typing...",
+        time: new Date().toISOString(),
+        mediaType: "text",
+        isBotMessage: true,
+        isBotTyping: true,
+        isTemp: true
+      }];
+    }
+    
     return [...filteredMessages, ...tempMessages];
-  }, [messages, tempMessages]);
+  }, [messages, tempMessages, isBotTyping, botTypingMessage]);
+
+  // Event Handlers
+  const showNotification = useCallback((message, type) => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => {
+      setNotification(prev => ({ ...prev, show: false }));
+    }, 3000);
+  }, []);
+
+  const scrollToBottom = useCallback((instant = false) => {
+    if (lastMessageRef.current) {
+      lastMessageRef.current.scrollIntoView({ 
+        behavior: instant ? "instant" : "smooth",
+        block: "end"
+      });
+    }
+    setShowScrollDown(false);
+  }, []);
+
+  // Enhanced bot message functions
+  const simulateNetworkLatency = useCallback(async () => {
+    if (!BOT_CONFIG.NETWORK_EMULATION) return 0;
+    
+    const latency = getRandomDelay(100, 800);
+    setNetworkLatency(latency);
+    await new Promise(resolve => setTimeout(resolve, latency));
+    return latency;
+  }, []);
+
+  const simulateTyping = useCallback(async (messageLength) => {
+    const baseDelay = getRandomDelay(
+      BOT_CONFIG.TYPING_DELAY_MIN,
+      BOT_CONFIG.TYPING_DELAY_MAX
+    );
+    
+    // Adjust typing speed based on message length
+    const lengthFactor = Math.min(messageLength / 100, 2);
+    const finalDelay = baseDelay * lengthFactor;
+    
+    return new Promise(resolve => setTimeout(resolve, finalDelay));
+  }, []);
+
+  const triggerBotTypingIndicator = useCallback((messageText) => {
+    setIsBotTyping(true);
+    setBotTypingMessage({
+      text: messageText || "Thinking of a response...",
+      isTyping: true
+    });
+  }, []);
+
+  const clearBotTypingIndicator = useCallback(() => {
+    setIsBotTyping(false);
+    setBotTypingMessage(null);
+    if (botTypingTimeoutRef.current) {
+      clearTimeout(botTypingTimeoutRef.current);
+    }
+  }, []);
+
+  const sendBotMessage = useCallback(async (messageText = null, options = {}) => {
+    const {
+      isInitial = false,
+      forceSend = false,
+      customDelay = null
+    } = options;
+
+    if (!isBotMessageEnabled && !forceSend) return;
+    if (isFetchingBotMessage) return;
+
+    try {
+      setIsFetchingBotMessage(true);
+      
+      // Simulate network latency
+      await simulateNetworkLatency();
+      
+      // Trigger typing indicator with realistic delay
+      const typingDelay = getRandomDelay(500, 1500);
+      await new Promise(resolve => setTimeout(resolve, typingDelay));
+      
+      // Get bot message
+      let botMessage = messageText;
+      if (!botMessage) {
+        // Fetch from API or use fallback
+        try {
+          const requestData = {
+            chatId,
+            userProfile: {
+              name: userProfile?.name || "User",
+              age: userProfile?.age || "N/A",
+              relationship: userProfile?.relationship || "User",
+              gender: userProfile?.gender || "female"
+            }
+          };
+
+          const response = await axios.post(
+            `${api.Url}/bots/bots-message`,
+            requestData,
+            {
+              headers: { 
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              timeout: 20000
+            }
+          );
+
+          botMessage = response.data?.message || getRandomBotMessage();
+        } catch (error) {
+          console.error("Bot API error, using fallback:", error);
+          botMessage = getRandomBotMessage();
+        }
+      }
+
+      // Simulate typing
+      triggerBotTypingIndicator(botMessage);
+      await simulateTyping(botMessage.length);
+
+      // Add response delay for realism
+      const responseDelay = customDelay || getRandomDelay(
+        BOT_CONFIG.RESPONSE_DELAY_MIN,
+        BOT_CONFIG.RESPONSE_DELAY_MAX
+      );
+      
+      await new Promise(resolve => setTimeout(resolve, responseDelay));
+
+      // Create bot message object
+      messageCounter.current += 1;
+      const botMsg = {
+        _id: `bot-${messageCounter.current}-${Date.now()}`,
+        sender: "ai",
+        senderModel: "AI",
+        text: botMessage,
+        time: new Date().toISOString(),
+        mediaType: "text",
+        isBotMessage: true,
+        isInitial: isInitial
+      };
+
+      // Add to messages
+      setMessages(prev => [...prev, botMsg]);
+      clearBotTypingIndicator();
+
+      // Update quota (bot messages might be free or have different cost)
+      if (!isSubscribed) {
+        setRemainingQuota(prev => Math.max(0, prev - 0));
+      }
+
+      // Show notification for initial bot message
+      if (isInitial) {
+        showNotification("Bot has joined the conversation", "info");
+      }
+
+    } catch (error) {
+      console.error("Error in bot message flow:", error);
+      clearBotTypingIndicator();
+    } finally {
+      setIsFetchingBotMessage(false);
+    }
+  }, [
+    isBotMessageEnabled,
+    isFetchingBotMessage,
+    token,
+    chatId,
+    userProfile,
+    isSubscribed,
+    showNotification,
+    simulateNetworkLatency,
+    simulateTyping,
+    triggerBotTypingIndicator,
+    clearBotTypingIndicator
+  ]);
+
+  const checkAndSendBotMessage = useCallback(async () => {
+    // Check if user has been inactive
+    const currentTime = Date.now();
+    const timeSinceLastActivity = currentTime - lastActivityTime;
+    
+    // Don't send bot message if:
+    if (isTyping || 
+        timeSinceLastActivity < BOT_CONFIG.INACTIVITY_THRESHOLD || 
+        isFetchingBotMessage || 
+        !isBotMessageEnabled ||
+        isBotTyping) {
+      return;
+    }
+
+    // Don't send if user just sent a message
+    const lastMessage = displayMessages[displayMessages.length - 1];
+    if (lastMessage && lastMessage.sender === "me") {
+      const timeSinceLastMessage = currentTime - new Date(lastMessage.time).getTime();
+      if (timeSinceLastMessage < 10000) {
+        return;
+      }
+    }
+
+    // Random interval for next bot message
+    const nextInterval = getRandomDelay(
+      BOT_CONFIG.MESSAGE_INTERVAL_MIN,
+      BOT_CONFIG.MESSAGE_INTERVAL_MAX
+    );
+
+    // Schedule next bot message check
+    if (botMessageTimeoutRef.current) {
+      clearTimeout(botMessageTimeoutRef.current);
+    }
+    
+    botMessageTimeoutRef.current = setTimeout(() => {
+      checkAndSendBotMessage();
+    }, nextInterval);
+
+    // Send bot message
+    await sendBotMessage();
+
+  }, [
+    lastActivityTime,
+    isTyping,
+    isFetchingBotMessage,
+    isBotMessageEnabled,
+    isBotTyping,
+    displayMessages,
+    sendBotMessage
+  ]);
+
+  // Initial bot message on page load
+  const triggerInitialBotMessage = useCallback(async () => {
+    if (isInitialBotTriggered || !isBotMessageEnabled) return;
+    
+    setIsInitialBotTriggered(true);
+    
+    // Wait a bit for user to see the chat
+    await new Promise(resolve => setTimeout(resolve, BOT_CONFIG.INITIAL_WELCOME_DELAY));
+    
+    // Send initial welcome message
+    await sendBotMessage(
+      BOT_PERSONALITY.GREETINGS[Math.floor(Math.random() * BOT_PERSONALITY.GREETINGS.length)],
+      { isInitial: true, forceSend: true }
+    );
+
+    // Start the regular bot message interval
+    const initialInterval = getRandomDelay(
+      BOT_CONFIG.MESSAGE_INTERVAL_MIN * 2,
+      BOT_CONFIG.MESSAGE_INTERVAL_MAX * 1.5
+    );
+    
+    botMessageTimeoutRef.current = setTimeout(() => {
+      checkAndSendBotMessage();
+    }, initialInterval);
+
+  }, [isInitialBotTriggered, isBotMessageEnabled, sendBotMessage, checkAndSendBotMessage]);
 
   // Effects
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
+    const token = localStorage.getItem("token");
     setToken(token);
     
     if (token) {
       checkSubscriptionStatus(token);
     }
+    
+    // Set initial activity time
+    setLastActivityTime(Date.now());
+
+    // Cleanup on unmount
+    return () => {
+      if (botTypingTimeoutRef.current) clearTimeout(botTypingTimeoutRef.current);
+      if (botMessageTimeoutRef.current) clearTimeout(botMessageTimeoutRef.current);
+      if (botMessageInterval) clearInterval(botMessageInterval);
+    };
   }, []);
 
   useEffect(() => {
@@ -236,13 +597,13 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
         setIsInitialLoad(false);
       }, 100);
     }
-  }, [displayMessages.length, isInitialLoad]);
+  }, [displayMessages.length, isInitialLoad, scrollToBottom]);
 
   useEffect(() => {
     if (displayMessages.length > 0 && !isInitialLoad) {
       scrollToBottom();
     }
-  }, [displayMessages.length]);
+  }, [displayMessages.length, scrollToBottom]);
 
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
@@ -258,6 +619,30 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
     return () => chatContainer.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    // Start initial bot message after chat is loaded
+    if (!isLoading && isBotMessageEnabled && !isInitialBotTriggered) {
+      triggerInitialBotMessage();
+    }
+  }, [isLoading, isBotMessageEnabled, isInitialBotTriggered, triggerInitialBotMessage]);
+
+  useEffect(() => {
+    // Update last activity time on user interaction
+    const updateActivityTime = () => {
+      setLastActivityTime(Date.now());
+    };
+
+    window.addEventListener('mousedown', updateActivityTime);
+    window.addEventListener('keydown', updateActivityTime);
+    window.addEventListener('touchstart', updateActivityTime);
+
+    return () => {
+      window.removeEventListener('mousedown', updateActivityTime);
+      window.removeEventListener('keydown', updateActivityTime);
+      window.removeEventListener('touchstart', updateActivityTime);
+    };
+  }, []);
+
   // API Calls
   const checkSubscriptionStatus = useCallback(async (userToken) => {
     try {
@@ -271,38 +656,6 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
       setIsSubscribed(false);
     }
   }, []);
-
-  const initializeChatData = useCallback(async () => {
-    setIsLoading(true);
-    setLoadingProgress(0);
-    setIsInitialLoad(true);
-    
-    try {
-      const progressInterval = setInterval(() => {
-        setLoadingProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 200);
-
-      await Promise.all([
-        fetchChatData(),
-        fetchAiModelDetails()
-      ]);
-
-      clearInterval(progressInterval);
-      setLoadingProgress(100);
-      setTimeout(() => setIsLoading(false), 300);
-      
-    } catch (error) {
-      console.error("Error initializing chat data:", error);
-      showNotification("Failed to load chat. Please try again.", "error");
-      setIsLoading(false);
-    }
-  }, [token, chatId]);
 
   const fetchChatData = useCallback(async () => {
     try {
@@ -325,7 +678,8 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
           visibility: msg.visibility,
           accessLevel: msg.accessLevel,
           status: msg.status,
-          quotaInfo: msg.quotaInfo
+          quotaInfo: msg.quotaInfo,
+          isBotMessage: msg.isBotMessage || false
         }));
 
         setMessages(transformedMessages);
@@ -363,24 +717,39 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
     }
   }, [token, chatId]);
 
-  // Event Handlers
-  const showNotification = useCallback((message, type) => {
-    setNotification({ show: true, message, type });
-    setTimeout(() => {
-      setNotification(prev => ({ ...prev, show: false }));
-    }, 3000);
-  }, []);
+  const initializeChatData = useCallback(async () => {
+    setIsLoading(true);
+    setLoadingProgress(0);
+    setIsInitialLoad(true);
+    
+    try {
+      const progressInterval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 200);
 
-  const scrollToBottom = useCallback((instant = false) => {
-    if (lastMessageRef.current) {
-      lastMessageRef.current.scrollIntoView({ 
-        behavior: instant ? "instant" : "smooth",
-        block: "end"
-      });
+      await Promise.all([
+        fetchChatData(),
+        fetchAiModelDetails()
+      ]);
+
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+      setTimeout(() => setIsLoading(false), 300);
+      
+    } catch (error) {
+      console.error("Error initializing chat data:", error);
+      showNotification("Failed to load chat. Please try again.", "error");
+      setIsLoading(false);
     }
-    setShowScrollDown(false);
-  }, []);
+  }, [token, chatId, fetchChatData, fetchAiModelDetails, showNotification]);
 
+  // More Event Handlers
   const handleScrollDownClick = useCallback(() => {
     scrollToBottom();
   }, [scrollToBottom]);
@@ -394,18 +763,22 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
       return;
     }
 
-    // Create user message object IMMEDIATELY
+    // Update last activity time
+    setLastActivityTime(Date.now());
+
+    // Create user message object
+    messageCounter.current += 1;
     const userMsg = {
-      _id: `user-${Date.now()}`,
+      _id: `user-${messageCounter.current}-${Date.now()}`,
       sender: "me",
       senderModel: "User",
       text: textToSend,
       time: new Date().toISOString(),
       mediaType: "text",
-      isTemp: true // Mark as temporary
+      isTemp: true
     };
 
-    // Add to temporary messages IMMEDIATELY
+    // Add to temporary messages
     setTempMessages(prev => [...prev, userMsg]);
     setNewMessage("");
     setIsTyping(true);
@@ -420,7 +793,6 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
         }
       );
 
-      // Update remaining quota from response
       if (response.data.remainingQuota !== undefined) {
         setRemainingQuota(response.data.remainingQuota);
       }
@@ -428,17 +800,27 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
       // Remove the temporary user message
       setTempMessages(prev => prev.filter(msg => msg._id !== userMsg._id));
       
-      // Fetch updated chat data (includes both user and AI messages)
+      // Fetch updated chat data
       await fetchChatData();
       
       onSendMessage();
       setIsTyping(false);
 
+      // Reset bot message timer after user message
+      if (botMessageTimeoutRef.current) {
+        clearTimeout(botMessageTimeoutRef.current);
+      }
+      
+      // Schedule next bot message
+      const responseDelay = getRandomDelay(8000, 20000);
+      botMessageTimeoutRef.current = setTimeout(() => {
+        checkAndSendBotMessage();
+      }, responseDelay);
+
     } catch (error) {
       console.error("Error sending message:", error);
       setIsTyping(false);
       
-      // Remove temporary message on error
       setTempMessages(prev => prev.filter(msg => msg._id !== userMsg._id));
       
       if (error.response?.status === 403) {
@@ -453,7 +835,7 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
         showNotification("Failed to get a response. Try again.", "error");
       }
     }
-  }, [newMessage, canSendMessage, token, chatId, fetchChatData, onSendMessage, router, showNotification]);
+  }, [newMessage, canSendMessage, token, chatId, fetchChatData, onSendMessage, router, showNotification, checkAndSendBotMessage]);
 
   const handleDeleteMessage = useCallback(async (messageId) => {
     try {
@@ -496,6 +878,30 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
     }
   }, [handleSendMessage]);
 
+  const toggleBotMessages = useCallback(() => {
+    const newState = !isBotMessageEnabled;
+    setIsBotMessageEnabled(newState);
+    
+    if (newState) {
+      showNotification("Auto messages enabled", "success");
+      // Start bot messages if not already triggered
+      if (!isInitialBotTriggered) {
+        triggerInitialBotMessage();
+      }
+    } else {
+      if (botMessageTimeoutRef.current) {
+        clearTimeout(botMessageTimeoutRef.current);
+        botMessageTimeoutRef.current = null;
+      }
+      if (botMessageInterval) {
+        clearInterval(botMessageInterval);
+        setBotMessageInterval(null);
+      }
+      clearBotTypingIndicator();
+      showNotification("Auto messages disabled", "info");
+    }
+  }, [isBotMessageEnabled, isInitialBotTriggered, triggerInitialBotMessage, clearBotTypingIndicator, showNotification]);
+
   const renderMessageContent = useCallback((message) => {
     const isMedia = message.mediaType === "image" || message.mediaType === "video";
     
@@ -512,8 +918,12 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
 
     return (
       <div className="text-content">
+        {message.isBotMessage}
         <p>{message.text}</p>
-        <span className="message-time">{formatTime(message.time)}</span>
+        <span className="message-time">
+          {formatTime(message.time)}
+          {message.isBotMessage}
+        </span>
       </div>
     );
   }, [isSubscribed, remainingQuota, handleSubscribeRedirect]);
@@ -536,6 +946,10 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
     }
   ], []);
 
+  const quotaPercentage = useMemo(() => {
+    return Math.min(100, (remainingQuota / 20) * 100);
+  }, [remainingQuota]);
+
   return (
     <div className="chat-box-container">
       <style>{STYLES}</style>
@@ -549,7 +963,7 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
 
       {isLoading ? (
         <div className="chat-loading-screen">
-          <AdvancedLoader text="Loading your conversation..." />
+          <AdvancedLoader text="Loading your conversation..." progress={loadingProgress} />
         </div>
       ) : (
         <>
@@ -570,13 +984,19 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
               </div>
               <div className="header-info">
                 <h3>{userProfile?.name || "AI Companion"}</h3>
-                <span className="status-text">{isTyping ? "Typing..." : "Online"}</span>
+                <span className="status-text">
+                  {isTyping ? "Typing..." : "Online"}
+                  {isBotTyping && " • Bot is typing..."}
+                </span>
               </div>
             </div>
             
-            <button className="nav-btn info" onClick={() => setShowOverlay(true)}>
-              <Info size={20} />
-            </button>
+            <div className="header-controls">
+             
+              <button className="nav-btn info" onClick={() => setShowOverlay(true)}>
+                <Info size={18} />
+              </button>
+            </div>
           </div>
 
           {/* PROFILE OVERLAY */}
@@ -601,6 +1021,7 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
                     <h2>{userProfile?.name || "AI Companion"}</h2>
                     <span className="portrait-role">
                       {userProfile?.relationship || "AI Assistant"}
+                      {isBotMessageEnabled && " • Auto Messages"}
                     </span>
                   </div>
                 </div>
@@ -608,6 +1029,22 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
                   <div className="detail-card">
                     <span className="label">Age</span>
                     <span className="value">{userProfile?.age || "N/A"}</span>
+                  </div>
+                  <div className="detail-card">
+                    <span className="label">Tokens</span>
+                    <span className="value">{remainingQuota}</span>
+                  </div>
+                  <div className="detail-card full">
+                    <span className="label">Auto Messages</span>
+                    <div className="toggle-wrapper">
+                      <span className="value">{isBotMessageEnabled ? "Enabled" : "Disabled"}</span>
+                      <button 
+                        className={`toggle-btn ${isBotMessageEnabled ? 'active' : ''}`}
+                        onClick={toggleBotMessages}
+                      >
+                        <div className="toggle-slider"></div>
+                      </button>
+                    </div>
                   </div>
                   <div className="detail-card full">
                     <span className="label">Interests</span>
@@ -621,6 +1058,12 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
                     <span className="label">About</span>
                     <p className="bio-text">
                       {userProfile?.description || "Your AI companion is here to help and chat with you."}
+                      {isBotMessageEnabled && (
+                        <span className="bot-message-note">
+                          <br />
+                          <Bot size={12} /> I'll send occasional messages to keep the conversation flowing.
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -640,6 +1083,13 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
                     You have {remainingQuota} free tokens today
                   </p>
                 )}
+                {isBotMessageEnabled && (
+                  <div className="bot-welcome-note">
+                    <Bot size={14} />
+                    <span>I'll join the conversation shortly...</span>
+                  </div>
+                )}
+
                 <div className="quick-suggestions">
                   {quickSuggestions.map((suggestion, index) => (
                     <button
@@ -656,13 +1106,20 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
               displayMessages.map((msg, index) => (
                 <div 
                   key={msg._id || index}
-                  className={`message-row ${msg.sender === "me" ? 'sent' : 'received'} ${msg.isTemp ? 'temp-message' : ''}`}
+                  className={`message-row ${msg.sender === "me" ? 'sent' : 'received'} ${msg.isTemp ? 'temp-message' : ''} ${msg.isBotTyping ? 'bot-typing' : ''}`}
                   ref={index === displayMessages.length - 1 ? lastMessageRef : null}
                   onMouseEnter={() => setHoveredMessage(msg._id)}
                   onMouseLeave={() => setHoveredMessage(null)}
                 >
-                 
-                  <div className="message-bubble">
+                  {msg.sender === "ai" && !msg.isBotTyping && (
+                    <img 
+                      src={userProfile?.avatar_img || "/heartecho_b.png"} 
+                      className="chat-msg-avatar" 
+                      alt="AI Avatar" 
+                    />
+                  )}
+                  
+                  <div className={`message-bubble ${msg.isBotTyping ? 'typing-bubble' : ''}`}>
                     {renderMessageContent(msg)}
                   </div>
                   
@@ -678,7 +1135,7 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
                     </button>
                   )}
                   
-                  {!msg.isTemp && (
+                  {!msg.isTemp && !msg.isBotTyping && (
                     <MessageOptions
                       message={msg}
                       onCopy={handleCopyMessage}
@@ -720,18 +1177,18 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
             <div className="input-wrapper-outer">
               <div className="media-btn-group">
                 <button 
-                  className="media-trigger-btn" 
+                  className={`media-trigger-btn ${isBotTyping ? 'disabled' : ''}`} 
                   onClick={() => handleMediaRequest('image')} 
                   title={`Ask for Photo (${QUOTA_COSTS.IMAGE} tokens)`}
-                  disabled={isTyping || !canSendMessage}
+                  disabled={isTyping || !canSendMessage || isBotTyping}
                 >
                   <ImageIcon size={20} />
                 </button>
                 <button 
-                  className="media-trigger-btn" 
+                  className={`media-trigger-btn ${isBotTyping ? 'disabled' : ''}`} 
                   onClick={() => handleMediaRequest('video')} 
                   title={`Ask for Video (${QUOTA_COSTS.VIDEO} tokens)`}
-                  disabled={isTyping || !canSendMessage}
+                  disabled={isTyping || !canSendMessage || isBotTyping}
                 >
                   <Video size={20} />
                 </button>
@@ -744,12 +1201,12 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder={isSubscribed ? "Type your message..." : `Type your message... (${remainingQuota} tokens remaining)`}
-                  disabled={isTyping || !canSendMessage}
+                  disabled={isTyping || !canSendMessage || isBotTyping}
                 />
                 <button 
-                  className={`send-action-btn ${newMessage.trim() ? 'active' : ''}`}
+                  className={`send-action-btn ${newMessage.trim() ? 'active' : ''} ${isBotTyping ? 'disabled' : ''}`}
                   onClick={() => handleSendMessage()}
-                  disabled={!newMessage.trim() || isTyping || !canSendMessage}
+                  disabled={!newMessage.trim() || isTyping || !canSendMessage || isBotTyping}
                 >
                   <Send size={18} />
                 </button>
@@ -758,7 +1215,7 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
             {!isSubscribed && (
               <div 
                 className={`quota-mini-bar ${remainingQuota < 5 ? 'quota-warning' : ''}`} 
-                style={{width: `${Math.min(100, (remainingQuota/20)*100)}%`}}
+                style={{width: `${quotaPercentage}%`}}
               />
             )}
           </div>
@@ -770,7 +1227,7 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
 
 export default ChatBox;
 
-// Styles
+// Enhanced Styles
 const STYLES = `
 /* --- VARIABLES --- */
 :root {
@@ -786,6 +1243,9 @@ const STYLES = `
   --msg-sent: #cf4185;
   --danger: #ff4d4d;
   --gold: #FFD700;
+  --bot-color: #6366f1;
+  --typing-color: #00e676;
+  --network-color: #00b8d4;
 }
 
 /* --- NOTIFICATIONS --- */
@@ -808,7 +1268,7 @@ const STYLES = `
 
 .pop-notification.error { background: var(--danger); }
 .pop-notification.success { background: #00e676; }
-.pop-notification.info { background: #2196f3; }
+.pop-notification.info { background: var(--bot-color); }
 
 .pop-noti-close {
   background: none;
@@ -829,12 +1289,29 @@ const STYLES = `
   flex-direction: column;
   align-items: center;
   gap: 15px;
+  width: 200px;
 }
 
 .loader-text {
   color: var(--primary);
   font-size: 0.9rem;
   letter-spacing: 0.5px;
+}
+
+.loader-progress {
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.loader-progress-bar {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 2px;
+  transition: width 0.3s ease;
 }
 
 .spinner {
@@ -929,7 +1406,7 @@ const STYLES = `
   padding: 10px;
   border-radius: 50%;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -937,6 +1414,26 @@ const STYLES = `
 
 .nav-btn:hover { 
   background: rgba(255,255,255,0.1); 
+}
+
+.nav-btn.active {
+  color: var(--bot-color);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.nav-btn.bot-toggle.active {
+  color: var(--typing-color);
+  animation: pulse-bot 2s infinite;
+}
+
+@keyframes pulse-bot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.header-controls {
+  display: flex;
+  gap: 4px;
 }
 
 .header-profile {
@@ -1149,11 +1646,59 @@ const STYLES = `
   font-weight: 500; 
   color: #fff; 
 }
+
+.toggle-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.toggle-btn {
+  width: 44px;
+  height: 24px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.toggle-btn.active {
+  background: var(--bot-color);
+  border-color: var(--bot-color);
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.toggle-btn.active .toggle-slider {
+  transform: translateX(20px);
+}
+
 .bio-text { 
   margin: 0; 
   line-height: 1.6; 
   font-size: 0.95rem; 
   color: #ddd; 
+}
+
+.bot-message-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--bot-color);
 }
 
 /* --- MESSAGES AREA --- */
@@ -1188,6 +1733,36 @@ const STYLES = `
   color: var(--primary);
   font-size: 0.9rem;
   margin-top: 10px;
+}
+
+.bot-welcome-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--bot-color);
+  font-size: 0.85rem;
+  margin-top: 15px;
+  padding: 8px 16px;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 12px;
+  animation: fadeInOut 3s infinite;
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.bot-message-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--bot-color);
+  font-size: 0.85rem;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 8px;
 }
 
 .quick-suggestions { 
@@ -1236,6 +1811,15 @@ const STYLES = `
   opacity: 0.9;
 }
 
+.message-row.bot-typing {
+  animation: typingPulse 2s infinite;
+}
+
+@keyframes typingPulse {
+  0%, 100% { opacity: 0.95; }
+  50% { opacity: 0.85; }
+}
+
 .chat-msg-avatar {
   width: 32px; 
   height: 32px;
@@ -1259,7 +1843,6 @@ const STYLES = `
   background: var(--msg-received);
   border-bottom-left-radius: 4px;
   border: 1px solid var(--glass-border);
-
 }
 
 .sent .message-bubble {
@@ -1271,12 +1854,106 @@ const STYLES = `
 .text-content p { 
   margin: 0; 
 }
+
+.bot-message-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  color: var(--bot-color);
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+
+.bot-message-indicator .bot-avatar-pulse {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: botPulse 2s infinite;
+}
+
+@keyframes botPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.typing-dots {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.typing-dots span {
+  animation: typingDot 1.5s infinite;
+  opacity: 0;
+}
+
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingDot {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.network-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: var(--network-color);
+  margin-bottom: 6px;
+  opacity: 0.8;
+}
+
+.network-indicator.active {
+  animation: networkPulse 1.5s infinite;
+}
+
+.network-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--network-color);
+  position: relative;
+}
+
+.network-pulse::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 1px solid var(--network-color);
+  border-radius: 50%;
+  animation: ripple 1.5s infinite;
+}
+
+@keyframes networkPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes ripple {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
 .message-time {
   display: block;
   font-size: 0.65rem;
   opacity: 0.7;
   margin-top: 4px;
   text-align: right;
+}
+
+.bot-tag {
+  color: var(--bot-color);
+  font-weight: 500;
 }
 
 /* Message Options */
@@ -1457,20 +2134,21 @@ const STYLES = `
 
 /* TYPING */
 .typing-bubble {
-  padding: 15px;
+  padding: 15px 20px;
   display: flex;
-  gap: 4px;
+  gap: 6px;
   align-items: center;
   width: fit-content;
   background: var(--msg-received);
   border-radius: 18px;
   border-bottom-left-radius: 4px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
 }
 
 .dot {
-  width: 6px;
-  height: 6px;
-  background: #666;
+  width: 8px;
+  height: 8px;
+  background: var(--bot-color);
   border-radius: 50%;
   animation: bounce 1.4s infinite;
 }
@@ -1514,6 +2192,17 @@ const STYLES = `
   background: rgba(207, 65, 133, 0.1);
   color: var(--primary);
   border-color: var(--primary);
+}
+
+.media-trigger-btn.active {
+  color: var(--bot-color);
+  border-color: var(--bot-color);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.media-trigger-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .media-trigger-btn:disabled {
@@ -1567,6 +2256,11 @@ const STYLES = `
   background: var(--primary);
   color: white;
   transform: scale(1.05);
+}
+
+.send-action-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .send-action-btn:disabled {
@@ -1623,6 +2317,10 @@ const STYLES = `
   }
   .media-container {
     max-width: 250px;
+  }
+  .header-controls {
+    display: flex;
+    gap: 2px;
   }
 }
 `;
