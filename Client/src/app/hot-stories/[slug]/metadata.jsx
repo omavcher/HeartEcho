@@ -1,4 +1,4 @@
-// app/hot-stories/[slug]/metadata.jss
+// app/hot-stories/[slug]/metadata.js
 import api from '../../../config/api'
 
 export async function generateStoryMetadata({ params }) {
