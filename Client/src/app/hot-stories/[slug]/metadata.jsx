@@ -95,7 +95,7 @@ function transformStoryData(storyData) {
     city: storyData.city,
     characterName: storyData.characterName || 'Character',
     characterAge: storyData.characterAge,
-    characterAvatar: storyData.characterAvatar || '/api/placeholder/400/711',
+    characterAvatar: storyData.backgroundImage || '/api/placeholder/400/711',
     backgroundImage: storyData.backgroundImage || '/api/placeholder/1200/675',
     createdAt: storyData.createdAt,
     updatedAt: storyData.updatedAt,
