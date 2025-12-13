@@ -116,7 +116,7 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
     "@type": "Article",
     "headline": transformedStory.title,
     "description": transformedStory.excerpt || transformedStory.description,
-    "image": [transformedStory.characterAvatar, transformedStory.backgroundImage].filter(Boolean),
+    "image": transformedStory.backgroundImage,
     "author": {
       "@type": "Person",
       "name": transformedStory.characterName || "Anonymous"
@@ -126,14 +126,14 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
       "name": "HeartEcho",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://heartecho.com/logo.png"
+        "url": "https://heartecho.in/heartecho_b.png"
       }
     },
     "datePublished": transformedStory.createdAt,
     "dateModified": transformedStory.updatedAt,
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": `https://heartecho.com/hot-stories/${slug}`
+      "@id": `https://heartecho.in/hot-stories/${slug}`
     },
     "keywords": transformedStory.tags.join(", "),
     "articleSection": transformedStory.category,
