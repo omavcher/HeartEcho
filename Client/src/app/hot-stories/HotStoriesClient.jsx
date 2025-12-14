@@ -436,7 +436,7 @@ export function HotStoriesClient({
             <button onClick={scrollToFilters} className="cta-button primary">
               Explore Stories
             </button>
-            <Link href="/create-story" className="cta-button secondary">
+            <Link href="https://docs.google.com/forms/d/e/1FAIpQLSdIphDpWaWCr-mk5LrPrjQK-B9hT9UK6rUSuUX22RJSHFw9zw/viewform?usp=dialog" className="cta-button secondary">
               Create Story
             </Link>
           </div>

@@ -660,57 +660,89 @@ function getMultipleRandomVideos(AiInfo, count = 2) {
   return getMultipleUnusedVideos(AiInfo._id.toString(), AiInfo, count);
 }
 
+// ============================================
+// CORRECTED QUOTA MANAGEMENT FUNCTIONS
+// ============================================
+
 /**
- * ✅ Check if user has sufficient message quota
+ * ✅ Check if user has sufficient message quota - CORRECTED VERSION
  */
 function hasSufficientQuota(userInfo, mediaType = 'text') {
-  if (userInfo.user_type === "subscriber") {
+  // Always check daily quota reset first
+  userInfo.resetDailyQuota();
+  
+  if (userInfo.user_type === "subscriber" && userInfo.isSubscriptionActive()) {
     return true;
   }
   
   const quotaRequired = QUOTA_COSTS[mediaType.toUpperCase()] || QUOTA_COSTS.TEXT;
-  return userInfo.messageQuota >= quotaRequired;
+  const remaining = userInfo.messageQuota - userInfo.messagesUsedToday;
+  
+  console.log(`[Quota Check] User: ${userInfo.email}, Type: ${userInfo.user_type}, Used: ${userInfo.messagesUsedToday}/${userInfo.messageQuota}, Required: ${quotaRequired}, Remaining: ${remaining}`);
+  
+  return remaining >= quotaRequired;
 }
 
 /**
- * ✅ Deduct message quota
+ * ✅ Deduct message quota - CORRECTED VERSION
  */
 async function deductMessageQuota(userInfo, mediaType = 'text') {
-  if (userInfo.user_type === "subscriber") {
-    return { success: true, deducted: 0 };
+  // Always check daily quota reset first
+  userInfo.resetDailyQuota();
+  
+  if (userInfo.user_type === "subscriber" && userInfo.isSubscriptionActive()) {
+    console.log(`[Quota Deduction] ${userInfo.email} - Subscriber (no deduction)`);
+    return { success: true, deducted: 0, remaining: userInfo.messageQuota - userInfo.messagesUsedToday };
   }
   
   const quotaRequired = QUOTA_COSTS[mediaType.toUpperCase()] || QUOTA_COSTS.TEXT;
+  const remaining = userInfo.messageQuota - userInfo.messagesUsedToday;
   
-  if (userInfo.messageQuota >= quotaRequired) {
-    userInfo.messageQuota -= quotaRequired;
+  if (remaining >= quotaRequired) {
+    userInfo.messagesUsedToday += quotaRequired;
     await userInfo.save();
-    return { success: true, deducted: quotaRequired };
+    
+    console.log(`[Quota Deduction] ${userInfo.email} - Deducted ${quotaRequired}, Now used: ${userInfo.messagesUsedToday}/${userInfo.messageQuota}`);
+    
+    return { 
+      success: true, 
+      deducted: quotaRequired, 
+      remaining: userInfo.messageQuota - userInfo.messagesUsedToday 
+    };
   }
   
-  return { success: false, deducted: 0 };
+  console.log(`[Quota Deduction] ${userInfo.email} - Insufficient quota. Required: ${quotaRequired}, Available: ${remaining}`);
+  return { 
+    success: false, 
+    deducted: 0, 
+    remaining: remaining,
+    message: `Insufficient tokens. Required: ${quotaRequired}, Available: ${remaining}`
+  };
 }
 
 /**
- * ✅ Get remaining quota message
+ * ✅ Get remaining quota message - CORRECTED VERSION
  */
 function getQuotaMessage(userInfo, mediaType = 'text') {
-  const quotaRequired = QUOTA_COSTS[mediaType.toUpperCase()] || QUOTA_COSTS.TEXT;
-  const remaining = userInfo.messageQuota;
+  // Always check daily quota reset first
+  userInfo.resetDailyQuota();
   
-  if (userInfo.user_type === "subscriber") {
+  const quotaRequired = QUOTA_COSTS[mediaType.toUpperCase()] || QUOTA_COSTS.TEXT;
+  const remaining = userInfo.messageQuota - userInfo.messagesUsedToday;
+  
+  if (userInfo.user_type === "subscriber" && userInfo.isSubscriptionActive()) {
     return `✨ Premium User - Unlimited Access`;
   }
   
   if (remaining >= quotaRequired) {
-    return `Cost: ${quotaRequired} tokens | Remaining: ${remaining}`;
+    return `Cost: ${quotaRequired} tokens | Remaining: ${remaining} | Used today: ${userInfo.messagesUsedToday}/${userInfo.messageQuota}`;
   } else {
-    return `Need ${quotaRequired} tokens | You have: ${remaining} | Upgrade to premium! 💎`;
+    return `Need ${quotaRequired} tokens | You have: ${remaining} | Upgrade to premium for unlimited access! 💎`;
   }
 }
 
 /**
- * ✅ Generate AI Image Response from Gallery - ALWAYS SEND MEDIA
+ * ✅ Generate AI Image Response from Gallery - CORRECTED VERSION
  */
 async function generateAIImageResponse(userMessage, userInfo, AiInfo) {
   try {
@@ -719,9 +751,9 @@ async function generateAIImageResponse(userMessage, userInfo, AiInfo) {
     
     const hasQuota = hasSufficientQuota(userInfo, 'image');
     const visibility = hasQuota ? "show" : "premium_required";
-    const accessLevel = userInfo.user_type === "subscriber" ? "premium" : "free";
+    const accessLevel = userInfo.user_type === "subscriber" && userInfo.isSubscriptionActive() ? "premium" : "free";
     
-    let quotaResult = { success: false, deducted: 0 };
+    let quotaResult = { success: false, deducted: 0, remaining: 0 };
     if (hasQuota) {
       quotaResult = await deductMessageQuota(userInfo, 'image');
     }
@@ -732,9 +764,9 @@ async function generateAIImageResponse(userMessage, userInfo, AiInfo) {
         `Here's a photo for you! You asked: "${imagePrompt}" 📸\n${getQuotaMessage(userInfo, 'image')}` : 
         `Here's a special photo just for you! 📸\n${getQuotaMessage(userInfo, 'image')}`;
     } else if (hasQuota && !quotaResult.success) {
-      responseText = "Oops! Something went wrong with quota deduction. Please try again.";
+      responseText = quotaResult.message || "Oops! Something went wrong with quota deduction. Please try again.";
     } else {
-      responseText = `This image requires ${QUOTA_COSTS.IMAGE} tokens. You have ${userInfo.messageQuota}. Upgrade to premium for unlimited access! 💎`;
+      responseText = `This image requires ${QUOTA_COSTS.IMAGE} tokens. You have ${userInfo.messageQuota - userInfo.messagesUsedToday} remaining. Upgrade to premium for unlimited access! 💎`;
     }
     
     return {
@@ -753,10 +785,12 @@ async function generateAIImageResponse(userMessage, userInfo, AiInfo) {
       time: new Date(),
       quotaInfo: {
         deducted: quotaResult.deducted,
-        remaining: userInfo.messageQuota,
+        remaining: userInfo.messageQuota - userInfo.messagesUsedToday,
         success: quotaResult.success,
         required: QUOTA_COSTS.IMAGE,
-        hasAccess: hasQuota && quotaResult.success
+        hasAccess: hasQuota && quotaResult.success,
+        usedToday: userInfo.messagesUsedToday,
+        dailyQuota: userInfo.messageQuota
       }
     };
   } catch (error) {
@@ -775,7 +809,7 @@ async function generateAIImageResponse(userMessage, userInfo, AiInfo) {
 }
 
 /**
- * ✅ Generate AI Video Response from Gallery - ALWAYS SEND MEDIA (Gender-Specific with Usage Tracking)
+ * ✅ Generate AI Video Response from Gallery - CORRECTED VERSION
  */
 async function generateAIVideoResponse(userMessage, userInfo, AiInfo) {
   try {
@@ -784,9 +818,9 @@ async function generateAIVideoResponse(userMessage, userInfo, AiInfo) {
     
     const hasQuota = hasSufficientQuota(userInfo, 'video');
     const visibility = hasQuota ? "show" : "premium_required";
-    const accessLevel = userInfo.user_type === "subscriber" ? "premium" : "free";
+    const accessLevel = userInfo.user_type === "subscriber" && userInfo.isSubscriptionActive() ? "premium" : "free";
     
-    let quotaResult = { success: false, deducted: 0 };
+    let quotaResult = { success: false, deducted: 0, remaining: 0 };
     if (hasQuota) {
       quotaResult = await deductMessageQuota(userInfo, 'video');
     }
@@ -797,9 +831,9 @@ async function generateAIVideoResponse(userMessage, userInfo, AiInfo) {
         `Here's a video for you! You asked: "${videoPrompt}" 🎬\n${getQuotaMessage(userInfo, 'video')}` : 
         `Here's a special video just for you! 🎬\n${getQuotaMessage(userInfo, 'video')}`;
     } else if (hasQuota && !quotaResult.success) {
-      responseText = "Oops! Something went wrong with quota deduction. Please try again.";
+      responseText = quotaResult.message || "Oops! Something went wrong with quota deduction. Please try again.";
     } else {
-      responseText = `This video requires ${QUOTA_COSTS.VIDEO} tokens. You have ${userInfo.messageQuota}. Upgrade to premium for unlimited access! 💎`;
+      responseText = `This video requires ${QUOTA_COSTS.VIDEO} tokens. You have ${userInfo.messageQuota - userInfo.messagesUsedToday} remaining. Upgrade to premium for unlimited access! 💎`;
     }
     
     const videoStats = getVideoUsageStats(AiInfo._id.toString());
@@ -820,10 +854,12 @@ async function generateAIVideoResponse(userMessage, userInfo, AiInfo) {
       time: new Date(),
       quotaInfo: {
         deducted: quotaResult.deducted,
-        remaining: userInfo.messageQuota,
+        remaining: userInfo.messageQuota - userInfo.messagesUsedToday,
         success: quotaResult.success,
         required: QUOTA_COSTS.VIDEO,
-        hasAccess: hasQuota && quotaResult.success
+        hasAccess: hasQuota && quotaResult.success,
+        usedToday: userInfo.messagesUsedToday,
+        dailyQuota: userInfo.messageQuota
       },
       videoUsage: videoStats
     };
@@ -843,7 +879,7 @@ async function generateAIVideoResponse(userMessage, userInfo, AiInfo) {
 }
 
 /**
- * ✅ Send Multiple Media Response (Images + Videos) - ALWAYS SEND MEDIA (Gender-Specific with Usage Tracking)
+ * ✅ Send Multiple Media Response - CORRECTED VERSION
  */
 async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") {
   try {
@@ -868,7 +904,7 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
     }
     
     const totalQuotaRequired = mediaItems.reduce((total, item) => total + item.cost, 0);
-    const hasQuota = hasSufficientQuota(userInfo, 'mixed') && userInfo.messageQuota >= totalQuotaRequired;
+    const hasQuota = hasSufficientQuota(userInfo, 'mixed') && (userInfo.messageQuota - userInfo.messagesUsedToday) >= totalQuotaRequired;
     
     const responses = [];
     let imagesSent = 0;
@@ -877,11 +913,14 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
     const genderVideos = getMultipleRandomVideos(AiInfo, mediaItems.filter(item => item.type === 'video').length);
     let videoIndex = 0;
     
+    // Deduct quota only once if user has enough
+    let quotaDeducted = false;
+    
     for (const item of mediaItems) {
       if (item.type === 'image') {
         const imageUrl = getRandomImageFromGallery(AiInfo);
         const visibility = hasQuota ? "show" : "premium_required";
-        const accessLevel = userInfo.user_type === "subscriber" ? "premium" : "free";
+        const accessLevel = userInfo.user_type === "subscriber" && userInfo.isSubscriptionActive() ? "premium" : "free";
         
         responses.push({
           sender: AiInfo._id,
@@ -894,8 +933,8 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
           status: { delivered: true, read: false, generated: true },
           time: new Date(),
           quotaInfo: {
-            deducted: hasQuota ? item.cost : 0,
-            remaining: userInfo.messageQuota,
+            deducted: hasQuota ? (quotaDeducted ? 0 : item.cost) : 0,
+            remaining: userInfo.messageQuota - userInfo.messagesUsedToday,
             success: hasQuota,
             required: item.cost,
             hasAccess: hasQuota
@@ -906,7 +945,7 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
         const videoUrl = genderVideos[videoIndex] || getRandomVideoFromGallery(AiInfo);
         videoIndex++;
         const visibility = hasQuota ? "show" : "premium_required";
-        const accessLevel = userInfo.user_type === "subscriber" ? "premium" : "free";
+        const accessLevel = userInfo.user_type === "subscriber" && userInfo.isSubscriptionActive() ? "premium" : "free";
         
         responses.push({
           sender: AiInfo._id,
@@ -919,8 +958,8 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
           status: { delivered: true, read: false, generated: true },
           time: new Date(),
           quotaInfo: {
-            deducted: hasQuota ? item.cost : 0,
-            remaining: userInfo.messageQuota,
+            deducted: hasQuota ? (quotaDeducted ? 0 : item.cost) : 0,
+            remaining: userInfo.messageQuota - userInfo.messagesUsedToday,
             success: hasQuota,
             required: item.cost,
             hasAccess: hasQuota
@@ -930,13 +969,18 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
       }
     }
     
-    if (hasQuota && userInfo.user_type === "free") {
-      userInfo.messageQuota -= totalQuotaRequired;
+    // Deduct quota only once for all media
+    if (hasQuota && userInfo.user_type === "free" && !quotaDeducted) {
+      userInfo.messagesUsedToday += totalQuotaRequired;
       await userInfo.save();
+      quotaDeducted = true;
       
+      // Update remaining quota in all responses
       responses.forEach(response => {
         if (response.quotaInfo) {
-          response.quotaInfo.remaining = userInfo.messageQuota;
+          response.quotaInfo.remaining = userInfo.messageQuota - userInfo.messagesUsedToday;
+          response.quotaInfo.usedToday = userInfo.messagesUsedToday;
+          response.quotaInfo.dailyQuota = userInfo.messageQuota;
         }
       });
     }
@@ -958,31 +1002,45 @@ async function sendMultipleMediaResponse(userInfo, AiInfo, mediaType = "mixed") 
 }
 
 /**
- * ✅ Process user message with quota management
+ * ✅ Process user message with quota management - CORRECTED VERSION
  */
 async function processUserMessage(userInfo, messageType = 'text') {
-  if (userInfo.user_type === "subscriber") {
-    return { success: true, deducted: 0, remaining: 999, hasAccess: true };
+  // Always check daily quota reset first
+  userInfo.resetDailyQuota();
+  
+  if (userInfo.user_type === "subscriber" && userInfo.isSubscriptionActive()) {
+    return { 
+      success: true, 
+      deducted: 0, 
+      remaining: userInfo.messageQuota - userInfo.messagesUsedToday,
+      usedToday: userInfo.messagesUsedToday,
+      dailyQuota: userInfo.messageQuota,
+      hasAccess: true,
+      message: "Subscriber - unlimited access"
+    };
   }
   
   const quotaRequired = QUOTA_COSTS[messageType.toUpperCase()] || QUOTA_COSTS.TEXT;
+  const remaining = userInfo.messageQuota - userInfo.messagesUsedToday;
   
-  if (!hasSufficientQuota(userInfo, messageType)) {
+  if (remaining < quotaRequired) {
     return { 
       success: false, 
       deducted: 0, 
-      remaining: userInfo.messageQuota,
+      remaining: remaining,
+      usedToday: userInfo.messagesUsedToday,
+      dailyQuota: userInfo.messageQuota,
       required: quotaRequired,
       hasAccess: false,
-      message: `You don't have enough tokens. Required: ${quotaRequired}, Available: ${userInfo.messageQuota}`
+      message: `You don't have enough tokens. Required: ${quotaRequired}, Available: ${remaining}`
     };
   }
   
   const quotaResult = await deductMessageQuota(userInfo, messageType);
   return {
     ...quotaResult,
-    remaining: userInfo.messageQuota,
-    required: quotaRequired,
+    usedToday: userInfo.messagesUsedToday,
+    dailyQuota: userInfo.messageQuota,
     hasAccess: quotaResult.success
   };
 }
@@ -1063,6 +1121,7 @@ exports.AiFriendResponse = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
+    // Reset daily quota if needed (this is already done in hasSufficientQuota)
     userInfo.resetDailyQuota();
     await userInfo.save();
 
@@ -1124,7 +1183,7 @@ exports.AiFriendResponse = async (req, res) => {
       await chat.save();
       return res.json({ 
         messages: chat.messages,
-        remainingQuota: userInfo.messageQuota,
+        remainingQuota: userInfo.messageQuota - userInfo.messagesUsedToday,
         quotaInfo: aiImageMessage.quotaInfo
       });
     }
@@ -1142,7 +1201,7 @@ exports.AiFriendResponse = async (req, res) => {
       await chat.save();
       return res.json({ 
         messages: chat.messages,
-        remainingQuota: userInfo.messageQuota,
+        remainingQuota: userInfo.messageQuota - userInfo.messagesUsedToday,
         quotaInfo: aiVideoMessage.quotaInfo
       });
     }
@@ -1172,7 +1231,7 @@ exports.AiFriendResponse = async (req, res) => {
       await chat.save();
       return res.json({ 
         messages: chat.messages,
-        remainingQuota: userInfo.messageQuota,
+        remainingQuota: userInfo.messageQuota - userInfo.messagesUsedToday,
         quotaInfo: mediaResponses[0]?.quotaInfo || { success: false, hasAccess: false }
       });
     }
@@ -1184,7 +1243,9 @@ exports.AiFriendResponse = async (req, res) => {
       return res.status(403).json({ 
         message: quotaResult.message,
         quotaExceeded: true,
-        remainingQuota: quotaResult.remaining
+        remainingQuota: quotaResult.remaining,
+        usedToday: quotaResult.usedToday,
+        dailyQuota: quotaResult.dailyQuota
       });
     }
 
@@ -1209,7 +1270,9 @@ Tera Background: ${AiInfo.description}.
 - Age: ${userInfo.age}
 - Interests: ${interests}
 - User Type: ${userInfo.user_type}
-- Wallet: ${userInfo.messageQuota} tokens
+- Daily Quota: ${userInfo.messageQuota} messages/day
+- Used Today: ${userInfo.messagesUsedToday} messages
+- Remaining: ${userInfo.messageQuota - userInfo.messagesUsedToday} messages
 
 🔥 **CORE SPEAKING STYLE (Very Important):**
 1. **Language:** Pure "Gen-Z/Millennial Hinglish". (Mix of Hindi & English written in Roman script).
@@ -1266,7 +1329,9 @@ Agar user photo/video maange ya romantic baatein kare:
       time: new Date(),
       quotaInfo: {
         deducted: quotaResult.deducted,
-        remaining: userInfo.messageQuota,
+        remaining: userInfo.messageQuota - userInfo.messagesUsedToday,
+        usedToday: userInfo.messagesUsedToday,
+        dailyQuota: userInfo.messageQuota,
         success: quotaResult.success,
         hasAccess: quotaResult.hasAccess
       }
@@ -1279,10 +1344,12 @@ Agar user photo/video maange ya romantic baatein kare:
 
     res.json({ 
       messages: chat.messages,
-      remainingQuota: userInfo.messageQuota,
+      remainingQuota: userInfo.messageQuota - userInfo.messagesUsedToday,
       quotaInfo: {
         deducted: quotaResult.deducted,
-        remaining: userInfo.messageQuota,
+        remaining: userInfo.messageQuota - userInfo.messagesUsedToday,
+        usedToday: userInfo.messagesUsedToday,
+        dailyQuota: userInfo.messageQuota,
         success: quotaResult.success,
         hasAccess: quotaResult.hasAccess
       }
@@ -1314,6 +1381,38 @@ exports.AiFriendDetails = async (req, res) => {
     res.json({ AiInfo });
   } catch (error) {
     console.error("Server error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Add new endpoint to get user's quota status
+exports.getUserQuotaStatus = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    const userInfo = await User.findById(userId);
+    if (!userInfo) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    userInfo.resetDailyQuota();
+    await userInfo.save();
+
+    const quotaStatus = userInfo.getQuotaStatus();
+    
+    res.json({
+      success: true,
+      quotaStatus: quotaStatus,
+      remainingQuota: userInfo.messageQuota - userInfo.messagesUsedToday,
+      usedToday: userInfo.messagesUsedToday,
+      dailyQuota: userInfo.messageQuota,
+      isSubscriber: userInfo.user_type === "subscriber",
+      isSubscriptionActive: userInfo.isSubscriptionActive(),
+      subscriptionExpiry: userInfo.subscriptionExpiry,
+      quotaCosts: QUOTA_COSTS
+    });
+  } catch (error) {
+    console.error("Error getting user quota status:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

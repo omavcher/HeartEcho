@@ -450,10 +450,6 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
         setRemainingQuota(prev => Math.max(0, prev - 0));
       }
 
-      // Show notification for initial bot message
-      if (isInitial) {
-        showNotification("Bot has joined the conversation", "info");
-      }
 
     } catch (error) {
       console.error("Error in bot message flow:", error);
@@ -986,7 +982,6 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
                 <h3>{userProfile?.name || "AI Companion"}</h3>
                 <span className="status-text">
                   {isTyping ? "Typing..." : "Online"}
-                  {isBotTyping && " • Bot is typing..."}
                 </span>
               </div>
             </div>

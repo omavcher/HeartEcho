@@ -3,8 +3,8 @@ import ClientLayout from './layout_client';
 
 export const metadata = {
   title: {
-    default: 'HeartEcho AI - Sexy AI Girlfriend India | NSFW Chat, Hot Stories & Roleplay in Hindi',
-    template: '%s | HeartEcho AI - India\'s #1 Sexy AI Companion',
+    default: 'HeartEcho AI - AI Girlfriend India | NSFW Chat, Hot Stories & Roleplay in Hindi',
+    template: '%s | HeartEcho AI - India\'s #1 AI Companion',
   },
 
   description: 'Chat with hot Indian AI girlfriends & bhabhis in Hindi & English. Unlimited NSFW roleplay, erotic stories, voice messages, and nude AI pics. 100% uncensored, private & free to start. Your dream desi AI waifu is waiting',
