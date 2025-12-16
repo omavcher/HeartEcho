@@ -203,176 +203,119 @@ exports.getAllStories = async (req, res) => {
       page = 1
     } = req.query;
 
-    // Validate and parse limit and page
-    const pageNumber = Math.max(1, parseInt(page) || 1);
-    const limitNumber = Math.min(100, Math.max(1, parseInt(limit) || 30)); // Cap at 100 for performance
-    
-    // Build filter object - only add filters if they have meaningful values
-    const filter = { status: 'published' }; // Always filter by published status
-    
-    if (category && category.trim() && category !== 'All' && category !== 'all') {
-      filter.category = category;
+    // Parse parameters with defaults
+    const pageNumber = parseInt(page) || 1;
+    const limitNumber = parseInt(limit) || 30;
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // Build query
+    let query = {};
+
+    if (category && category !== 'All' && category !== 'all') {
+      query.category = category;
     }
-    
-    if (city && city.trim() && city !== 'All Cities' && city !== 'all cities' && city !== 'all') {
-      filter.city = city;
+
+    if (city && city !== 'All Cities' && city !== 'all') {
+      query.city = city;
     }
-    
+
     if (featured === 'true') {
-      filter.featured = true;
+      query.featured = true;
     }
-    
+
     if (trending === 'true') {
-      filter.trending = true;
+      query.trending = true;
     }
-    
-    // Improved search functionality with better validation
+
     if (search && search.trim()) {
-      const searchRegex = { $regex: search.trim(), $options: 'i' };
-      filter.$or = [
-        { title: searchRegex },
-        { excerpt: searchRegex },
-        { characterName: searchRegex },
-        { city: searchRegex },
-        { tags: searchRegex }
+      query.$or = [
+        { title: { $regex: search.trim(), $options: 'i' } },
+        { excerpt: { $regex: search.trim(), $options: 'i' } },
+        { characterName: { $regex: search.trim(), $options: 'i' } },
+        { city: { $regex: search.trim(), $options: 'i' } }
       ];
     }
 
-    // Calculate skip for pagination
-    const skip = (pageNumber - 1) * limitNumber;
-    
-    // Get total count for pagination
-    const total = await Story.countDocuments(filter);
-    
-    // If no stories found, return empty response with proper structure
-    if (total === 0) {
-      return res.status(200).json({
-        success: true,
-        count: 0,
-        total: 0,
-        totalPages: 0,
-        currentPage: pageNumber,
-        data: [],
-        featured: [],
-        hasRecentStories: false,
-        message: "No stories found"
-      });
-    }
+    // Get total count
+    const total = await Story.countDocuments(query);
 
-    let stories = [];
-    let hasRecentStories = false;
+    // Build base query for stories
+    let storiesQuery = Story.find(query)
+      .select('-content_en.story -content_hi.story')
+      .skip(skip)
+      .limit(limitNumber);
 
-    // Only fetch recent stories for first page and if not searching/filtering heavily
-    const isFirstPage = pageNumber === 1;
-    const hasNoFilters = Object.keys(filter).length === 1; // Only has 'status'
-    const hasSearchOrCategoryFilter = search || category;
-
-    if (isFirstPage && !hasSearchOrCategoryFilter) {
-      // For first page without specific searches: Get 5 most recent stories
-      const recentStories = await Story.find(filter)
+    // Apply sorting: First page gets special treatment
+    if (pageNumber === 1 && !search && !category && !city) {
+      // First page: Get 5 newest, then random
+      const newestStories = await Story.find(query)
         .sort({ createdAt: -1 })
         .limit(5)
         .select('-content_en.story -content_hi.story')
         .lean();
 
-      // Shuffle recent stories
-      const shuffledRecentStories = [...recentStories].sort(() => Math.random() - 0.5);
+      const newestIds = newestStories.map(story => story._id);
       
-      // Get IDs to exclude
-      const recentStoryIds = shuffledRecentStories.map(story => story._id);
+      // Get random stories excluding newest ones
+      const randomStories = await Story.aggregate([
+        { $match: { ...query, _id: { $nin: newestIds } } },
+        { $sample: { size: limitNumber - newestStories.length } },
+        { $project: { 
+          content_en: { story: 0 },
+          content_hi: { story: 0 }
+        }}
+      ]);
+
+      const stories = [...newestStories, ...randomStories];
       
-      // Calculate remaining stories needed
-      const remainingLimit = limitNumber - shuffledRecentStories.length;
-      
-      let randomStories = [];
-      
-      if (remainingLimit > 0) {
-        // Get random stories excluding recent ones
-        randomStories = await Story.aggregate([
-          { $match: { ...filter, _id: { $nin: recentStoryIds } } },
-          { $sample: { size: Math.min(remainingLimit, total - recentStoryIds.length) } },
-          { $project: { 'content_en.story': 0, 'content_hi.story': 0 } }
-        ]);
-      }
-      
-      stories = [...shuffledRecentStories, ...randomStories];
-      hasRecentStories = shuffledRecentStories.length > 0;
-    } else {
-      // For other pages or when searching: Use normal pagination
-      stories = await Story.find(filter)
-        .sort({ 
-          featured: -1,
-          trending: -1,
-          readCount: -1,
-          createdAt: -1 
-        })
-        .skip(skip)
-        .limit(limitNumber)
+      // Get featured stories
+      const featuredStories = await Story.find({ featured: true })
+        .limit(4)
         .select('-content_en.story -content_hi.story')
         .lean();
-    }
 
-    // Ensure we always have the requested number of stories
-    if (stories.length < limitNumber && isFirstPage) {
-      // If we need more stories on first page, get additional ones
-      const storyIds = stories.map(s => s._id);
-      const additionalNeeded = limitNumber - stories.length;
-      
-      if (additionalNeeded > 0) {
-        const additionalStories = await Story.find({
-          ...filter,
-          _id: { $nin: storyIds }
-        })
-          .sort({ createdAt: -1 })
-          .limit(additionalNeeded)
+      return res.json({
+        success: true,
+        count: stories.length,
+        total,
+        totalPages: Math.ceil(total / limitNumber),
+        currentPage: pageNumber,
+        data: stories,
+        featured: featuredStories,
+        hasRecentStories: newestStories.length > 0
+      });
+    } else {
+      // Other pages: Just use createdAt sort
+      storiesQuery = storiesQuery.sort({ createdAt: -1 });
+      const stories = await storiesQuery.lean();
+
+      // Get featured stories only for first page
+      let featuredStories = [];
+      if (pageNumber === 1) {
+        featuredStories = await Story.find({ featured: true })
+          .limit(4)
           .select('-content_en.story -content_hi.story')
           .lean();
-        
-        stories = [...stories, ...additionalStories];
       }
+
+      return res.json({
+        success: true,
+        count: stories.length,
+        total,
+        totalPages: Math.ceil(total / limitNumber),
+        currentPage: pageNumber,
+        data: stories,
+        featured: featuredStories,
+        hasRecentStories: false
+      });
     }
 
-    // Get featured stories (capped at 4)
-    let featuredStories = [];
-    if (!featured || featured !== 'true') { // Don't fetch if already filtering by featured
-      featuredStories = await Story.find({ 
-        featured: true,
-        status: 'published'
-      })
-        .limit(4)
-        .sort({ readCount: -1, createdAt: -1 })
-        .select('-content_en.story -content_hi.story')
-        .lean();
-    }
-
-    // Shuffle final array for better variety (only on first page)
-    if (isFirstPage && !hasSearchOrCategoryFilter) {
-      stories = [...stories].sort(() => Math.random() - 0.5);
-    }
-
-    res.status(200).json({
-      success: true,
-      count: stories.length,
-      total,
-      totalPages: Math.ceil(total / limitNumber),
-      currentPage: pageNumber,
-      data: stories,
-      featured: featuredStories,
-      hasRecentStories,
-      filtersApplied: {
-        category: !!category,
-        city: !!city,
-        search: !!(search && search.trim()),
-        featured: featured === 'true',
-        trending: trending === 'true'
-      }
-    });
   } catch (error) {
-    console.error("Error fetching stories:", error);
+    console.error("Error:", error);
     res.status(500).json({
       success: false,
       message: "Error fetching stories",
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: error.message
     });
   }
 };
