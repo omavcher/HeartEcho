@@ -239,17 +239,65 @@ exports.getAllStories = async (req, res) => {
     // Get total count for pagination
     const total = await Story.countDocuments(filter);
     
-    // Get stories
-    const stories = await Story.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit))
-      .select('-content_en.story -content_hi.story'); // Don't send full story content in list
+    // Determine if we should send new ones to top (1/2 or 1/3 probability)
+    const shouldShuffleWithNewOnTop = Math.random() < 0.33; // 1/3 probability
+    
+    let stories;
+    let pipeline = [];
+    
+    // Match stage for filtering
+    pipeline.push({ $match: filter });
+    
+    // Add projection to exclude story content
+    pipeline.push({ 
+      $project: { 
+        'content_en.story': 0, 
+        'content_hi.story': 0 
+      } 
+    });
+    
+    if (shouldShuffleWithNewOnTop) {
+      // 1/3 of the time: New ones on top, then random
+      const now = new Date();
+      const threeDaysAgo = new Date(now.getTime() - (3 * 24 * 60 * 60 * 1000));
+      
+      pipeline.push({
+        $addFields: {
+          isNew: { $gte: ["$createdAt", threeDaysAgo] }
+        }
+      });
+      
+      // Sort new stories to the top (by createdAt desc), then random for the rest
+      pipeline.push({
+        $addFields: {
+          sortOrder: {
+            $cond: [
+              { $eq: ["$isNew", true] },
+              { $subtract: [0, { $toLong: "$createdAt" }] }, // Negative timestamp for descending
+              { $multiply: [Math.random(), 1000000] } // Random number for mixing
+            ]
+          }
+        }
+      });
+      
+      pipeline.push({ $sort: { sortOrder: 1 } });
+    } else {
+      // 2/3 of the time: Completely random order
+      pipeline.push({ $sample: { size: parseInt(limit) + skip } });
+    }
+    
+    // Apply pagination
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: parseInt(limit) });
+    
+    // Execute aggregation
+    stories = await Story.aggregate(pipeline);
 
     // Get featured stories separately
     const featuredStories = await Story.find({ featured: true })
       .limit(4)
-      .sort({ readCount: -1 });
+      .sort({ readCount: -1 })
+      .select('-content_en.story -content_hi.story');
 
     res.status(200).json({
       success: true,
@@ -258,7 +306,8 @@ exports.getAllStories = async (req, res) => {
       totalPages: Math.ceil(total / limit),
       currentPage: parseInt(page),
       data: stories,
-      featured: featuredStories
+      featured: featuredStories,
+      shuffleType: shouldShuffleWithNewOnTop ? "new_on_top_then_random" : "completely_random"
     });
   } catch (error) {
     console.error("Error fetching stories:", error);
