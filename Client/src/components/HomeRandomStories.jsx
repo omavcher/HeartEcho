@@ -142,16 +142,6 @@ export default function HomeStoriesSection() {
                   <span className="stat-icon">📍</span>
                   <span className="stat-label">{featuredStory.city}</span>
                 </div>
-                <div className="stat">
-                  <span className="stat-icon">👁️</span>
-                  <span className="stat-label">
-                    {formatReadCount(featuredStory.readCount || 0)} reads
-                  </span>
-                </div>
-                <div className="stat">
-                  <span className="stat-icon">⭐</span>
-                  <span className="stat-label">4.8</span>
-                </div>
               </div>
 
               <div className="featured-actions">
@@ -294,21 +284,7 @@ function StoryCard({ story }) {
               <div className="character-age">{story.characterAge || '25'} years</div>
             </div>
           </div>
-          
-          <div className="story-stats">
-            <div className="stat">
-              <span className="stat-icon">👁️</span>
-              <span>{formatReadCount(story.readCount || 0)}</span>
-            </div>
-            <div className="stat">
-              <span className="stat-icon">⭐</span>
-              <span>{story.rating || '4.5'}</span>
-            </div>
-            <div className="stat">
-              <span className="stat-icon">💬</span>
-              <span>Chat</span>
-            </div>
-          </div>
+         
         </div>
       </Link>
     </div>

@@ -392,21 +392,10 @@ app.get("/api", (req, res) => {
 app.get("/api/v1/api/server-status", (req, res) => {
   res.json({
     success: true,
-    message: "✅ Server is running with 100% automated management",
-    status: "Operational",
-    automatedSchedule: {
-      "00:00 IST": "Midnight safety check",
-      "00:05 IST": "Free user daily quota reset",
-      "00:10 IST": "Subscriber daily usage reset",
-      "01:00 IST": "Expired subscription check",
-      "02:00 IST": "System health check",
-      "Every minute": "Cron heartbeat"
-    },
-    timezone: "Asia/Kolkata (IST)",
-    serverTime: new Date(),
-    istTime: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+    message: "Server is running",
   });
 });
+
 
 // Import and use routes
 app.use("/api/v1/api/auth", require("./routes/authRoutes"));

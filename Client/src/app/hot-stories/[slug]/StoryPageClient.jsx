@@ -229,8 +229,6 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
              
               <Stat label="Category" value={transformedStory.category} />
               <Stat label="City" value={transformedStory.city} />
-              <Stat label="Rating" value={transformedStory.rating} />
-              <Stat label="Reads" value={formatReadCount(transformedStory.readCount)} />
               
               <button 
                 className="ctaButton-cwdw4x" 
