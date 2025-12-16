@@ -4,10 +4,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
-
-const api = {
-  Url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
-};
+import api from '../../config/api';
 
 export function HotStoriesClient({ 
   initialStories, 
