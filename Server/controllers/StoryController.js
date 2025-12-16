@@ -239,59 +239,74 @@ exports.getAllStories = async (req, res) => {
     // Get total count for pagination
     const total = await Story.countDocuments(filter);
     
-    // Determine if we should send new ones to top (1/2 or 1/3 probability)
-    const shouldShuffleWithNewOnTop = Math.random() < 0.33; // 1/3 probability
+    // Always get 5 most recent stories first
+    const recentStories = await Story.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select('-content_en.story -content_hi.story');
     
-    let stories;
-    let pipeline = [];
+    // Shuffle the 5 recent stories
+    const shuffledRecentStories = recentStories
+      .map(story => story.toObject())
+      .sort(() => Math.random() - 0.5);
     
-    // Match stage for filtering
-    pipeline.push({ $match: filter });
+    // Get IDs of recent stories to exclude from random pool
+    const recentStoryIds = recentStories.map(story => story._id);
     
-    // Add projection to exclude story content
-    pipeline.push({ 
-      $project: { 
-        'content_en.story': 0, 
-        'content_hi.story': 0 
-      } 
-    });
+    // Calculate how many more stories we need
+    const remainingLimit = parseInt(limit) - shuffledRecentStories.length;
     
-    if (shouldShuffleWithNewOnTop) {
-      // 1/3 of the time: New ones on top, then random
-      const now = new Date();
-      const threeDaysAgo = new Date(now.getTime() - (3 * 24 * 60 * 60 * 1000));
-      
-      pipeline.push({
-        $addFields: {
-          isNew: { $gte: ["$createdAt", threeDaysAgo] }
-        }
-      });
-      
-      // Sort new stories to the top (by createdAt desc), then random for the rest
-      pipeline.push({
-        $addFields: {
-          sortOrder: {
-            $cond: [
-              { $eq: ["$isNew", true] },
-              { $subtract: [0, { $toLong: "$createdAt" }] }, // Negative timestamp for descending
-              { $multiply: [Math.random(), 1000000] } // Random number for mixing
-            ]
-          }
-        }
-      });
-      
-      pipeline.push({ $sort: { sortOrder: 1 } });
-    } else {
-      // 2/3 of the time: Completely random order
-      pipeline.push({ $sample: { size: parseInt(limit) + skip } });
+    let randomStories = [];
+    
+    if (remainingLimit > 0) {
+      // Get random stories excluding the recent ones
+      // For better performance with large datasets
+      if (skip === 0) {
+        // First page: Get random stories
+        randomStories = await Story.aggregate([
+          { $match: { ...filter, _id: { $nin: recentStoryIds } } },
+          { $sample: { size: remainingLimit } },
+          { $project: { 'content_en.story': 0, 'content_hi.story': 0 } }
+        ]);
+      } else {
+        // For subsequent pages, just use normal query with random sorting
+        const excludeFilter = { ...filter, _id: { $nin: recentStoryIds } };
+        
+        // Count remaining stories
+        const remainingTotal = await Story.countDocuments(excludeFilter);
+        
+        // Get random stories using skip/limit
+        // For random order on subsequent pages, we can use a random seed
+        const randomStoriesQuery = await Story.find(excludeFilter)
+          .select('-content_en.story -content_hi.story')
+          .skip(skip - Math.min(skip, shuffledRecentStories.length))
+          .limit(remainingLimit);
+        
+        // Shuffle the results
+        randomStories = randomStoriesQuery
+          .map(story => story.toObject())
+          .sort(() => Math.random() - 0.5);
+      }
     }
     
-    // Apply pagination
-    pipeline.push({ $skip: skip });
-    pipeline.push({ $limit: parseInt(limit) });
+    // Combine recent shuffled stories with random stories
+    const stories = [...shuffledRecentStories, ...randomStories];
     
-    // Execute aggregation
-    stories = await Story.aggregate(pipeline);
+    // If we're on page 2+, we might not have recent stories
+    // In that case, just show random stories
+    let finalStories = stories;
+    if (skip > 0 && stories.length < parseInt(limit)) {
+      // Get more random stories to fill the page
+      const additionalNeeded = parseInt(limit) - stories.length;
+      if (additionalNeeded > 0) {
+        const additionalStories = await Story.aggregate([
+          { $match: { ...filter, _id: { $nin: stories.map(s => s._id) } } },
+          { $sample: { size: additionalNeeded } },
+          { $project: { 'content_en.story': 0, 'content_hi.story': 0 } }
+        ]);
+        finalStories = [...stories, ...additionalStories];
+      }
+    }
 
     // Get featured stories separately
     const featuredStories = await Story.find({ featured: true })
@@ -301,13 +316,13 @@ exports.getAllStories = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      count: stories.length,
+      count: finalStories.length,
       total,
       totalPages: Math.ceil(total / limit),
       currentPage: parseInt(page),
-      data: stories,
+      data: finalStories,
       featured: featuredStories,
-      shuffleType: shouldShuffleWithNewOnTop ? "new_on_top_then_random" : "completely_random"
+      hasRecentStories: skip === 0 && shuffledRecentStories.length > 0
     });
   } catch (error) {
     console.error("Error fetching stories:", error);
