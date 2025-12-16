@@ -21,7 +21,7 @@ export function HotStoriesClient({
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedCity, setSelectedCity] = useState('All Cities');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('popularity');
+  const [sortBy, setSortBy] = useState('newest');
   const [activeFilters, setActiveFilters] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [showScrollTop, setShowScrollTop] = useState(false);
