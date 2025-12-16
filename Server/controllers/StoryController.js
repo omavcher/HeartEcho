@@ -199,7 +199,7 @@ exports.getAllStories = async (req, res) => {
       featured,
       trending,
       search,
-      limit = 10,
+      limit = 30,
       page = 1
     } = req.query;
 
