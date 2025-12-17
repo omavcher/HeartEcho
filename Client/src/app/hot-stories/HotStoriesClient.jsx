@@ -1,4 +1,4 @@
-// app/hot-stories/HotStoriesClient.jsx hi
+// app/hot-stories/HotStoriesClient.jsx
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
