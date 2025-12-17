@@ -138,6 +138,14 @@ export default function RootLayout({ children }) {
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8343501385468147"
           crossOrigin="anonymous"
         />
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4W14R3SYMY"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-4W14R3SYMY');
+</script>
       </head>
       <body>
         <ClientLayout>{children}</ClientLayout>
