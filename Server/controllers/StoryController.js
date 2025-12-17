@@ -79,20 +79,78 @@ exports.createNewStory = async (req, res) => {
       });
     }
 
-    // Generate slug from title
-    const slug = title
-      .toLowerCase()
-      .replace(/[^a-zA-Z0-9]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
+    // Generate SEO-friendly slug from title
+    const generateSlug = (title) => {
+      // Step 1: Define stop words to remove
+      const stopWords = ['the', 'is', 'and', 'of', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'with', 'by', 'from', 'without', 'how', 'what', 'when', 'where', 'why'];
+      
+      // Step 2: Clean and split title
+      const words = title
+        .toLowerCase()
+        .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special characters
+        .split(/\s+/) // Split by whitespace
+        .filter(word => word.length > 0); // Remove empty strings
+      
+      // Step 3: Remove stop words (but keep first word)
+      const filteredWords = words.filter((word, index) => 
+        index === 0 || !stopWords.includes(word)
+      );
+      
+      // Step 4: Take first 3-5 words (optimized for SEO)
+      const seoWords = filteredWords.slice(0, 5); // Max 5 words
+      
+      // Step 5: Join with hyphens and ensure length 30-60 chars
+      let slug = seoWords.join('-');
+      
+      // If slug is too short (<30 chars), add category or city
+      if (slug.length < 30 && seoWords.length < 5) {
+        const additionalWords = [category, city]
+          .filter(Boolean)
+          .map(word => word.toLowerCase().replace(/[^a-zA-Z0-9]/g, ''))
+          .filter(word => word.length > 0 && !slug.includes(word));
+        
+        for (const word of additionalWords) {
+          if (slug.length < 60) {
+            slug += '-' + word;
+          }
+        }
+      }
+      
+      // Truncate if too long (>60 chars) but keep complete words
+      if (slug.length > 60) {
+        slug = slug.substring(0, 60);
+        // Don't end with hyphen, find last complete word
+        const lastHyphenIndex = slug.lastIndexOf('-');
+        if (lastHyphenIndex > 40) { // Keep at least 40 chars
+          slug = slug.substring(0, lastHyphenIndex);
+        }
+      }
+      
+      return slug
+        .replace(/-+/g, '-') // Remove multiple hyphens
+        .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+    };
+
+    // Generate slug
+    const slug = generateSlug(title);
 
     // Check if slug already exists
     const existingStory = await Story.findOne({ slug });
     if (existingStory) {
-      return res.status(400).json({
-        success: false,
-        message: "Story with this title already exists"
-      });
+      // Add timestamp if slug exists (rare case for same titles)
+      const timestamp = Date.now().toString().slice(-4);
+      const uniqueSlug = `${slug}-${timestamp}`;
+      
+      // Use unique slug if it doesn't exist
+      const checkUnique = await Story.findOne({ slug: uniqueSlug });
+      if (!checkUnique) {
+        slug = uniqueSlug;
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: "Story with this title already exists"
+        });
+      }
     }
 
     // Verify character exists if characterId is provided
