@@ -492,7 +492,6 @@ export default function Footer() {
               <ul className="footer-nav-list">
                 <li><Link href="/about">About Us</Link></li>
                 <li><Link href="/contact">Contact Support</Link></li>
-                <li><Link href="/careers">Careers</Link></li>
               </ul>
             </div>
 

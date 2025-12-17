@@ -34,7 +34,7 @@ export async function generateStoryMetadata({ params }) {
       openGraph: {
         title: `${transformedStory.title} - ${transformedStory.characterName}'s Story`,
         description: transformedStory.seoDescription,
-        url: `https://heartecho.com/hot-stories/${slug}`,
+        url: `https://heartecho.in/hot-stories/${slug}`,
         siteName: 'HeartEcho',
         images: transformedStory.seoImages,
         locale: 'en_US',
@@ -58,7 +58,7 @@ export async function generateStoryMetadata({ params }) {
         },
       },
       alternates: {
-        canonical: `https://heartecho.com/hot-stories/${slug}`,
+        canonical: `https://heartecho.in/hot-stories/${slug}`,
       },
       other: {
         'og:locale:alternate': 'hi_IN',

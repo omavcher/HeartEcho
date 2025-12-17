@@ -95,7 +95,7 @@ export async function generateMetadata({ params }) {
       openGraph: {
         title: `${story.title} - ${story.characterName}'s Story`,
         description: description,
-        url: `https://heartecho.com/hot-stories/${slug}`,
+        url: `https://heartecho.in/hot-stories/${slug}`,
         siteName: 'HeartEcho',
         images: [
           {
@@ -126,7 +126,7 @@ export async function generateMetadata({ params }) {
         },
       },
       alternates: {
-        canonical: `https://heartecho.com/hot-stories/${slug}`,
+        canonical: `https://heartecho.in/hot-stories/${slug}`,
       },
     };
     

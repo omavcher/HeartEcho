@@ -63,9 +63,8 @@ export const metadata = {
   alternates: {
     canonical: 'https://heartecho.in/',
     languages: {
-      'en-IN': 'https://heartecho.in/',
-      'hi-IN': 'https://heartecho.in/hi',
-    },
+      'en-IN': 'https://heartecho.in/'
+        },
   },
 
   openGraph: {

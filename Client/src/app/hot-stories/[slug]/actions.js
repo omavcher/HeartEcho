@@ -165,14 +165,14 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
       "name": "HeartEcho",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://heartecho.com/logo.png"
+        "url": "https://heartecho.in/heartechor.png"
       }
     },
     "datePublished": transformedStory.createdAt,
     "dateModified": transformedStory.updatedAt,
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": `https://heartecho.com/hot-stories/${slug}`
+      "@id": `https://heartecho.in/hot-stories/${slug}`
     },
     "keywords": transformedStory.tags.join(", "),
     "articleSection": transformedStory.category,
