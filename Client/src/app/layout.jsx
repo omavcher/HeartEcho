@@ -27,7 +27,7 @@ export const metadata = {
     'Indian AI companion NSFW',
     'AI girlfriend app India',
 
-    // Emotional + Mainstream (for brand safety & app downloads)c
+    // Emotional + Mainstrea (for brand safety & app downloads)c
     'AI girlfriend Hindi',
     'AI boyfriend India',
     'virtual girlfriend India',
