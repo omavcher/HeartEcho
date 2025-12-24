@@ -1,6 +1,6 @@
 import './globals.css';
 import ClientLayout from './layout_client';
-
+///csc
 export const metadata = {
   title: {
     default: 'HeartEcho AI - AI Girlfriend India | NSFW Chat, Hot Stories & Roleplay in Hindi',
