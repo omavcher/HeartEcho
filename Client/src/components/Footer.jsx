@@ -1,6 +1,6 @@
 import React from 'react';
 
-// --- Mocks for Next.js specific components to ensure this runs in the preview ---
+// --- Mocks for Next.js components to ensure this runs in the preview ---
 const Link = ({ href, children, className }) => (
   <a href={href} className={className}>{children}</a>
 );
