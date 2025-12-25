@@ -126,32 +126,30 @@ exports.createNewStory = async (req, res) => {
         }
       }
       
-      return slug
+      // Generate 5-character random string
+      const generateRandomString = (length) => {
+        const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+          result += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return result;
+      };
+      
+      const randomSuffix = generateRandomString(5);
+      
+      let finalSlug = slug
         .replace(/-+/g, '-') // Remove multiple hyphens
         .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+      
+      // Add random suffix to the end
+      finalSlug = `${finalSlug}-${randomSuffix}`;
+      
+      return finalSlug;
     };
 
-    // Generate slug
+    // Generate slug with random suffix
     const slug = generateSlug(title);
-
-    // Check if slug already exists
-    const existingStory = await Story.findOne({ slug });
-    if (existingStory) {
-      // Add timestamp if slug exists (rare case for same titles)
-      const timestamp = Date.now().toString().slice(-4);
-      const uniqueSlug = `${slug}-${timestamp}`;
-      
-      // Use unique slug if it doesn't exist
-      const checkUnique = await Story.findOne({ slug: uniqueSlug });
-      if (!checkUnique) {
-        slug = uniqueSlug;
-      } else {
-        return res.status(400).json({
-          success: false,
-          message: "Story with this title already exists"
-        });
-      }
-    }
 
     // Verify character exists if characterId is provided
     if (characterId) {
@@ -219,13 +217,98 @@ exports.createNewStory = async (req, res) => {
   } catch (error) {
     console.error("Error creating story:", error);
     
-    // Handle duplicate key error
+    // Handle duplicate key error (now very unlikely with random suffix, but still possible)
     if (error.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        message: "Duplicate field value entered",
-        error: error.keyValue
-      });
+      // Regenerate with new random suffix and try again
+      const retrySlug = async (title) => {
+        const generateRandomString = (length) => {
+          const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+          let result = '';
+          for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * characters.length));
+          }
+          return result;
+        };
+        
+        const words = title
+          .toLowerCase()
+          .replace(/[^a-zA-Z0-9\s]/g, '')
+          .split(/\s+/)
+          .filter(word => word.length > 0);
+        
+        const stopWords = ['the', 'is', 'and', 'of', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'with', 'by', 'from', 'without', 'how', 'what', 'when', 'where', 'why'];
+        
+        const filteredWords = words.filter((word, index) => 
+          index === 0 || !stopWords.includes(word)
+        );
+        
+        const seoWords = filteredWords.slice(0, 5);
+        let slug = seoWords.join('-');
+        
+        // Clean the slug
+        slug = slug
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '');
+        
+        // Add new random suffix
+        const randomSuffix = generateRandomString(5);
+        return `${slug}-${randomSuffix}`;
+      };
+      
+      try {
+        // Update the story with new slug
+        const newSlug = await retrySlug(req.body.title);
+        
+        // Create story with new slug
+        const story = await Story.create({
+          ...req.body,
+          slug: newSlug,
+          description: req.body.description || req.body.excerpt,
+          characterPersonality: req.body.characterPersonality || `${req.body.characterName} is a ${req.body.characterOccupation} from ${req.body.city}`,
+          content_en: {
+            story: req.body.content_en.story,
+            cliffhanger: req.body.content_en.cliffhanger,
+            teaserChat: req.body.content_en.teaserChat,
+            cta: req.body.content_en.cta || 'Start Chat'
+          },
+          content_hi: req.body.content_hi ? {
+            story: req.body.content_hi.story || req.body.content_en.story,
+            cliffhanger: req.body.content_hi.cliffhanger || req.body.content_en.cliffhanger,
+            teaserChat: req.body.content_hi.teaserChat || req.body.content_en.teaserChat,
+            cta: req.body.content_hi.cta || 'चैट शुरू करें'
+          } : {
+            story: req.body.content_en.story,
+            cliffhanger: req.body.content_en.cliffhanger,
+            teaserChat: req.body.content_en.teaserChat,
+            cta: 'चैट शुरू करें'
+          },
+          backgroundImage: req.body.backgroundImage || '/api/placeholder/1200/675',
+          characterAvatar: req.body.characterAvatar || '/api/placeholder/400/711',
+          tags: req.body.tags || [],
+          readCount: 0
+        });
+        
+        // If characterId exists, update the PrebuiltAIFriend with story reference
+        if (req.body.characterId) {
+          await PrebuiltAIFriend.findByIdAndUpdate(
+            req.body.characterId,
+            { $push: { stories: story._id } },
+            { new: true }
+          );
+        }
+        
+        return res.status(201).json({
+          success: true,
+          message: "Story created successfully (regenerated slug due to conflict)",
+          data: story
+        });
+      } catch (retryError) {
+        return res.status(400).json({
+          success: false,
+          message: "Duplicate field value entered, failed to regenerate unique slug",
+          error: error.keyValue
+        });
+      }
     }
 
     // Handle validation errors
