@@ -124,14 +124,45 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
       return <ReactMarkdown components={MarkdownComponents}>{storyText}</ReactMarkdown>;
     }
 
-    // Calculate image insertion points based on content length and number of images
-    // Distribute images evenly throughout the content
-    const imageCount = Math.min(images.length, Math.max(1, paragraphs.length - 1)); // Don't insert at the very end
-    const interval = Math.max(1, Math.floor(paragraphs.length / (imageCount + 1)));
+    // Show ALL images - distribute them evenly throughout the content
+    const imageCount = images.length; // Total number of images to show
+    const totalInsertionPoints = Math.max(1, paragraphs.length - 1); // Don't insert after last paragraph
+    
+    // Calculate where to insert each image (distribute evenly, ensuring all images are shown)
+    const insertionMap = new Map(); // Map of paragraph index -> array of images to insert
+    
+    if (imageCount > 0 && totalInsertionPoints > 0) {
+      if (imageCount <= totalInsertionPoints) {
+        // We have enough insertion points for all images - distribute evenly
+        const step = totalInsertionPoints / (imageCount + 1);
+        for (let i = 0; i < imageCount; i++) {
+          const position = Math.floor((i + 1) * step);
+          if (position >= 1 && position <= totalInsertionPoints) {
+            if (!insertionMap.has(position)) {
+              insertionMap.set(position, []);
+            }
+            insertionMap.get(position).push(i);
+          }
+        }
+      } else {
+        // More images than insertion points - distribute as evenly as possible
+        // Each insertion point will get at least one image
+        const imagesPerPoint = Math.floor(imageCount / totalInsertionPoints);
+        const remainder = imageCount % totalInsertionPoints;
+        
+        let imageIdx = 0;
+        for (let pos = 1; pos <= totalInsertionPoints; pos++) {
+          const imagesForThisPoint = imagesPerPoint + (pos <= remainder ? 1 : 0);
+          insertionMap.set(pos, []);
+          for (let j = 0; j < imagesForThisPoint && imageIdx < imageCount; j++) {
+            insertionMap.get(pos).push(imageIdx++);
+          }
+        }
+      }
+    }
     
     const result = [];
-    let imageIndex = 0;
-    const usedImages = [...images]; // Use images in order
+    const usedImages = [...images]; // Use all images in order
 
     paragraphs.forEach((paragraph, index) => {
       // Add paragraph
@@ -141,27 +172,28 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
         </ReactMarkdown>
       );
 
-      // Insert image at calculated intervals (but not after the last paragraph)
-      const shouldInsertImage = imageIndex < imageCount && 
-                                (index + 1) % interval === 0 && 
-                                index < paragraphs.length - 1;
-      
-      if (shouldInsertImage) {
-        const currentImage = usedImages[imageIndex % usedImages.length];
-        result.push(
-          <div key={`img-${index}`} className="story-album-image-container-cwdw4x">
-            <img 
-              src={currentImage} 
-              alt={`${transformedStory.characterName} - Image ${imageIndex + 1}`}
-              className="story-album-image-cwdw4x"
-              loading="lazy"
-              onError={(e) => {
-                e.target.src = '/api/placeholder/800/600';
-              }}
-            />
-          </div>
-        );
-        imageIndex++;
+      // Insert images at this position if any
+      const paragraphNumber = index + 1; // 1-indexed
+      if (index < paragraphs.length - 1 && insertionMap.has(paragraphNumber)) {
+        const imageIndices = insertionMap.get(paragraphNumber);
+        imageIndices.forEach((imgIdx) => {
+          if (imgIdx < usedImages.length) {
+            const currentImage = usedImages[imgIdx];
+            result.push(
+              <div key={`img-${index}-${imgIdx}`} className="story-album-image-container-cwdw4x">
+                <img 
+                  src={currentImage} 
+                  alt={`${transformedStory.characterName} - Image ${imgIdx + 1}`}
+                  className="story-album-image-cwdw4x"
+                  loading="lazy"
+                  onError={(e) => {
+                    e.target.src = '/api/placeholder/800/600';
+                  }}
+                />
+              </div>
+            );
+          }
+        });
       }
     });
 
