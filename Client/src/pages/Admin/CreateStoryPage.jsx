@@ -25,6 +25,7 @@ const CreateStoryPage = () => {
     backgroundImage: '',
     characterAvatar: '',
     tags: '',
+    imageAlbum: [],
     content_en: {
       story: '',
       cliffhanger: '',
@@ -55,8 +56,10 @@ const CreateStoryPage = () => {
   // Cloudinary upload state
   const [uploadingBackground, setUploadingBackground] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingAlbum, setUploadingAlbum] = useState(false);
   const [backgroundPreview, setBackgroundPreview] = useState('');
   const [avatarPreview, setAvatarPreview] = useState('');
+  const [imageAlbum, setImageAlbum] = useState([]);
 
   // Categories and cities
   const categories = [
@@ -259,6 +262,47 @@ const CreateStoryPage = () => {
   const removeAvatarImage = () => {
     setFormData(prev => ({ ...prev, characterAvatar: '' }));
     setAvatarPreview('');
+    setImageAlbum([]);
+  };
+
+  // Image Album handlers
+  const handleAlbumUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    try {
+      setUploadingAlbum(true);
+      setError('');
+      
+      const uploadPromises = files.map(file => {
+        // Validate file type
+        if (!file.type.match('image.*')) {
+          throw new Error('Please select image files only');
+        }
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          throw new Error('Image size should be less than 5MB');
+        }
+        return uploadToCloudinary(file, 'album');
+      });
+
+      const imageUrls = await Promise.all(uploadPromises);
+      const newAlbum = [...imageAlbum, ...imageUrls];
+      setImageAlbum(newAlbum);
+      setFormData(prev => ({ ...prev, imageAlbum: newAlbum }));
+      
+    } catch (err) {
+      console.error('Album upload error:', err);
+      setError(err.message || 'Failed to upload album images');
+    } finally {
+      setUploadingAlbum(false);
+    }
+  };
+
+  const removeAlbumImage = (index) => {
+    const newAlbum = imageAlbum.filter((_, i) => i !== index);
+    setImageAlbum(newAlbum);
+    setFormData(prev => ({ ...prev, imageAlbum: newAlbum }));
   };
 
   // Handle form input changes
@@ -307,6 +351,7 @@ const CreateStoryPage = () => {
       const storyData = {
         ...formData,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        imageAlbum: imageAlbum,
         characterAge: parseInt(formData.characterAge),
         content_en: {
           ...formData.content_en,
@@ -343,6 +388,7 @@ const CreateStoryPage = () => {
           backgroundImage: '',
           characterAvatar: '',
           tags: '',
+          imageAlbum: [],
           content_en: {
             story: '',
             cliffhanger: '',
@@ -359,6 +405,7 @@ const CreateStoryPage = () => {
         setSelectedCharacter(null);
         setBackgroundPreview('');
         setAvatarPreview('');
+        setImageAlbum([]);
 
         // Clear success message after 5 seconds
         setTimeout(() => setSuccess(false), 5000);
@@ -639,6 +686,60 @@ const CreateStoryPage = () => {
                       <div className="upload-progress">
                         <div className="upload-spinner"></div>
                         <span>Uploading to Cloudinary...</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Image Album Upload */}
+                <div className="form-group full-width">
+                  <label htmlFor="imageAlbum">Image Album (Multiple Images)</label>
+                  <small className="form-help-text">Upload multiple images that will be displayed within the story content</small>
+                  <div className="upload-container">
+                    {imageAlbum.length > 0 && (
+                      <div className="album-preview-grid">
+                        {imageAlbum.map((imageUrl, index) => (
+                          <div key={index} className="album-image-item">
+                            <img 
+                              src={imageUrl}
+                              alt={`Album image ${index + 1}`}
+                              className="album-preview-image"
+                            />
+                            <button 
+                              type="button"
+                              className="remove-album-image-btn"
+                              onClick={() => removeAlbumImage(index)}
+                              disabled={uploadingAlbum}
+                              title="Remove image"
+                            >
+                              ✕
+                            </button>
+                            <span className="album-image-number">{index + 1}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <label className="upload-area album-upload-area" htmlFor="album-upload">
+                      <div className="upload-icon">📸</div>
+                      <div className="upload-text">
+                        <p className="upload-title">Add Images to Album</p>
+                        <p className="upload-subtitle">Click to select multiple images</p>
+                        <p className="upload-requirements">JPG, PNG, WebP • Max 5MB each • {imageAlbum.length} images added</p>
+                      </div>
+                      <input
+                        type="file"
+                        id="album-upload"
+                        accept="image/*"
+                        multiple
+                        onChange={handleAlbumUpload}
+                        className="upload-input"
+                        disabled={uploadingAlbum}
+                      />
+                    </label>
+                    {uploadingAlbum && (
+                      <div className="upload-progress">
+                        <div className="upload-spinner"></div>
+                        <span>Uploading images to Cloudinary...</span>
                       </div>
                     )}
                   </div>

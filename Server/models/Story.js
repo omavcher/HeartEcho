@@ -134,6 +134,12 @@ const storySchema = new mongoose.Schema({
     trim: true
   }],
   
+  // Image Album - Multiple images for the story
+  imageAlbum: [{
+    type: String,
+    trim: true
+  }],
+  
   // Timestamps
   createdAt: {
     type: Date,

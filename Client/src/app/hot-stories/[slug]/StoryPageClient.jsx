@@ -91,6 +91,7 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
     characterPersonality: story.characterPersonality,
     backgroundImage: story.backgroundImage || '/api/placeholder/1200/675',
     characterAvatar: story.characterAvatar || '/api/placeholder/400/711',
+    imageAlbum: story.imageAlbum || [],
     content_en: story.content_en || { 
       story: story.description || '# Story', 
       cliffhanger: '', 
@@ -109,6 +110,63 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
   };
 
   const content = lang === 'en' ? transformedStory.content_en : transformedStory.content_hi;
+
+  // Function to render story content with images inserted at intervals
+  const renderStoryWithImages = (storyText, images) => {
+    if (!images || images.length === 0) {
+      return <ReactMarkdown components={MarkdownComponents}>{storyText}</ReactMarkdown>;
+    }
+
+    // Split content by paragraphs (double newlines)
+    const paragraphs = storyText.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+    
+    if (paragraphs.length === 0) {
+      return <ReactMarkdown components={MarkdownComponents}>{storyText}</ReactMarkdown>;
+    }
+
+    // Calculate image insertion points based on content length and number of images
+    // Distribute images evenly throughout the content
+    const imageCount = Math.min(images.length, Math.max(1, paragraphs.length - 1)); // Don't insert at the very end
+    const interval = Math.max(1, Math.floor(paragraphs.length / (imageCount + 1)));
+    
+    const result = [];
+    let imageIndex = 0;
+    const usedImages = [...images]; // Use images in order
+
+    paragraphs.forEach((paragraph, index) => {
+      // Add paragraph
+      result.push(
+        <ReactMarkdown key={`para-${index}`} components={MarkdownComponents}>
+          {paragraph.trim()}
+        </ReactMarkdown>
+      );
+
+      // Insert image at calculated intervals (but not after the last paragraph)
+      const shouldInsertImage = imageIndex < imageCount && 
+                                (index + 1) % interval === 0 && 
+                                index < paragraphs.length - 1;
+      
+      if (shouldInsertImage) {
+        const currentImage = usedImages[imageIndex % usedImages.length];
+        result.push(
+          <div key={`img-${index}`} className="story-album-image-container-cwdw4x">
+            <img 
+              src={currentImage} 
+              alt={`${transformedStory.characterName} - Image ${imageIndex + 1}`}
+              className="story-album-image-cwdw4x"
+              loading="lazy"
+              onError={(e) => {
+                e.target.src = '/api/placeholder/800/600';
+              }}
+            />
+          </div>
+        );
+        imageIndex++;
+      }
+    });
+
+    return <>{result}</>;
+  };
 
   // Add structured data for SEO
   const jsonLd = {
@@ -248,9 +306,7 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
           </h2>
          
           <div className="storyText-cwdw4x">
-            <ReactMarkdown components={MarkdownComponents}>
-              {content.story}
-            </ReactMarkdown>
+            {renderStoryWithImages(content.story, transformedStory.imageAlbum)}
           </div>
           
           {content.cliffhanger && (

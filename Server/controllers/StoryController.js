@@ -197,6 +197,7 @@ exports.createNewStory = async (req, res) => {
       backgroundImage: backgroundImage || '/api/placeholder/1200/675',
       characterAvatar: characterAvatar || '/api/placeholder/400/711',
       tags,
+      imageAlbum: req.body.imageAlbum || [],
       readCount: 0
     });
 
@@ -285,6 +286,7 @@ exports.createNewStory = async (req, res) => {
           backgroundImage: req.body.backgroundImage || '/api/placeholder/1200/675',
           characterAvatar: req.body.characterAvatar || '/api/placeholder/400/711',
           tags: req.body.tags || [],
+          imageAlbum: req.body.imageAlbum || [],
           readCount: 0
         });
         
