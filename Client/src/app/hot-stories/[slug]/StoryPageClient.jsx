@@ -1,11 +1,12 @@
 // app/hot-stories/[slug]/StoryPageClient.jsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import './StoryPage.css'
+
 // Markdown components configuration
 const MarkdownComponents = {
   h1: ({ node, ...props }) => <h1 className="markdown-h1-cwdw4x" {...props} />,
@@ -39,6 +40,16 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
   const [lang, setLang] = useState('en');
   const [story] = useState(initialStory);
   const [relatedStories] = useState(initialRelatedStories);
+
+  useEffect(() => {
+    // Initialize ads after component mounts
+    if (window.adsbyjuicy) {
+      window.adsbyjuicy.push({ adzone: 1108412 });
+      window.adsbyjuicy.push({ adzone: 1108413 });
+      window.adsbyjuicy.push({ adzone: 1108414 });
+      window.adsbyjuicy.push({ adzone: 1108415 });
+    }
+  }, []);
 
   const handleStartChat = () => {
     if (!story) return;
@@ -238,7 +249,18 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
+      {/* AD SCRIPTS - Load once at the top */}
+      <script type="text/javascript" data-cfasync="false" async src="https://poweredby.jads.co/js/jads.js"></script>
+
       <div className="container-cwdw4x">
+        {/* TOP BANNER AD - High visibility, above the fold */}
+        <div className="ad-container top-banner-ad">
+          <ins id="1108412" data-width="300" data-height="50"></ins>
+          <script type="text/javascript" data-cfasync="false" async>
+            (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108412});
+          </script>
+        </div>
+
         {/* Breadcrumb Navigation */}
         <nav className="breadcrumb-cwdw4x" aria-label="Breadcrumb">
           <ol>
@@ -331,6 +353,14 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
           </div>
         </div>
 
+        {/* IN-ARTICLE AD - Between hero and story content */}
+        <div className="ad-container in-article-ad">
+          <ins id="1108413" data-width="300" data-height="100"></ins>
+          <script type="text/javascript" data-cfasync="false" async>
+            (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108413});
+          </script>
+        </div>
+
         {/* STORY CONTENT */}
         <article className="storySection-cwdw4x">
           <h2 className="sectionHeading-cwdw4x">
@@ -339,6 +369,14 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
          
           <div className="storyText-cwdw4x">
             {renderStoryWithImages(content.story, transformedStory.imageAlbum)}
+          </div>
+          
+          {/* MID-ARTICLE AD - After story content, before cliffhanger */}
+          <div className="ad-container mid-article-ad">
+            <ins id="1108414" data-width="108" data-height="140"></ins>
+            <script type="text/javascript" data-cfasync="false" async>
+              (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108414});
+            </script>
           </div>
           
           {content.cliffhanger && (
@@ -379,6 +417,14 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
             {content.cta} →
           </button>
         </aside>
+
+        {/* BOTTOM BANNER AD - Before related stories */}
+        <div className="ad-container bottom-banner-ad">
+          <ins id="1108415" data-width="178" data-height="46"></ins>
+          <script type="text/javascript" data-cfasync="false" async>
+            (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108415});
+          </script>
+        </div>
 
         {/* RELATED STORIES */}
         {relatedStories.length > 0 && (
@@ -434,6 +480,56 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
           ))}
         </div>
       </div>
+
+      {/* Add CSS for ad containers */}
+      <style jsx>{`
+        .ad-container {
+          margin: 2rem 0;
+          text-align: center;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 50px;
+          background-color: transparent;
+        }
+        
+        .top-banner-ad {
+          margin-top: 1rem;
+          margin-bottom: 2rem;
+        }
+        
+        .in-article-ad {
+          margin: 2.5rem 0;
+          padding: 1rem 0;
+          border-top: 1px solid #eee;
+          border-bottom: 1px solid #eee;
+        }
+        
+        .mid-article-ad {
+          margin: 2rem 0;
+          float: right;
+          margin-left: 2rem;
+          clear: both;
+        }
+        
+        .bottom-banner-ad {
+          margin: 2.5rem 0;
+          padding: 1.5rem 0;
+          border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 768px) {
+          .mid-article-ad {
+            float: none;
+            margin: 2rem auto;
+            text-align: center;
+          }
+          
+          .ad-container {
+            margin: 1.5rem 0;
+          }
+        }
+      `}</style>
     </>
   );
 }

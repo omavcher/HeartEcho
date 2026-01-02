@@ -1061,3 +1061,96 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* AD CONTAINER STYLES */
+.ad-container {
+  margin: 2rem auto;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50px;
+  background-color: transparent;
+  width: 100%;
+  max-width: 100%;
+}
+
+.top-banner-ad {
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+.in-article-ad {
+  margin: 2.5rem 0;
+  padding: 1rem 0;
+  border-top: 1px solid var(--medium-gray);
+  border-bottom: 1px solid var(--medium-gray);
+}
+
+.grid-ad {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: rgba(255, 45, 149, 0.05);
+  border: 1px solid rgba(255, 45, 149, 0.2);
+  border-radius: var(--border-radius);
+  grid-column: 1 / -1 !important;
+}
+
+.bottom-banner-ad {
+  margin: 3rem 0;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--medium-gray);
+  border-bottom: 1px solid var(--medium-gray);
+}
+
+/* Ensure ads don't break the layout */
+ins[data-width="300"][data-height="50"],
+ins[data-width="300"][data-height="100"],
+ins[data-width="108"][data-height="140"],
+ins[data-width="178"][data-height="46"],
+ins[data-width="728"][data-height="90"] {
+  display: inline-block;
+  overflow: hidden;
+}
+
+/* Responsive adjustments for ads */
+@media (max-width: 768px) {
+  .ad-container {
+    margin: 1.5rem auto;
+  }
+  
+  .grid-ad {
+    margin: 1rem 0;
+    padding: 1rem;
+  }
+  
+  ins[data-width="728"][data-height="90"] {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  ins[data-width="300"][data-height="100"] {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  .grid-ad {
+    margin: 2rem 0;
+  }
+  
+  .in-article-ad {
+    margin: 3rem 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .top-banner-ad {
+    margin: 1.5rem auto 3rem;
+  }
+  
+  .bottom-banner-ad {
+    margin: 4rem auto;
+  }
+}

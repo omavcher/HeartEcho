@@ -1953,3 +1953,70 @@ script[type="application/ld+json"] {
     break-inside: avoid;
   }
 }
+
+
+
+/* AD CONTAINER STYLES */
+.ad-container {
+  margin: 2rem 0;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50px;
+  background-color: transparent;
+}
+
+.top-banner-ad {
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+.in-article-ad {
+  margin: 2.5rem 0;
+  padding: 1rem 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.mid-article-ad {
+  margin: 2rem 0;
+  float: right;
+  margin-left: 2rem;
+  clear: both;
+}
+
+.bottom-banner-ad {
+  margin: 2.5rem 0;
+  padding: 1.5rem 0;
+  border-top: 1px solid #eee;
+}
+
+@media (max-width: 768px) {
+  .mid-article-ad {
+    float: none;
+    margin: 2rem auto;
+    text-align: center;
+  }
+  
+  .ad-container {
+    margin: 1.5rem 0;
+  }
+}
+
+/* Ensure ads don't break the layout */
+ins[data-width="300"][data-height="50"],
+ins[data-width="300"][data-height="100"],
+ins[data-width="108"][data-height="140"],
+ins[data-width="178"][data-height="46"] {
+  display: inline-block;
+  overflow: hidden;
+}
+
+/* Responsive adjustments for ads */
+@media (max-width: 768px) {
+  .in-article-ad ins[data-width="300"][data-height="100"] {
+    max-width: 100%;
+    height: auto;
+  }
+}

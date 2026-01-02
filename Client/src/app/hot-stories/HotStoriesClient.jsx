@@ -35,6 +35,16 @@ export function HotStoriesClient({
     setRecentlyViewed(viewed);
   }, []);
 
+  // Initialize ads after component mounts
+  useEffect(() => {
+    if (window.adsbyjuicy) {
+      window.adsbyjuicy.push({ adzone: 1108412 });
+      window.adsbyjuicy.push({ adzone: 1108413 });
+      window.adsbyjuicy.push({ adzone: 1108414 });
+      window.adsbyjuicy.push({ adzone: 1108415 });
+    }
+  }, []);
+
   // Scroll listener for back-to-top button
   useEffect(() => {
     const handleScroll = () => {
@@ -163,6 +173,17 @@ export function HotStoriesClient({
 
   return (
     <>
+      {/* AD SCRIPT - Load once */}
+      <script type="text/javascript" data-cfasync="false" async src="https://poweredby.jads.co/js/jads.js"></script>
+
+      {/* TOP BANNER AD - High visibility */}
+      <div className="ad-container top-banner-ad">
+        <ins id="1108412" data-width="300" data-height="50"></ins>
+        <script type="text/javascript" data-cfasync="false" async>
+          (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108412});
+        </script>
+      </div>
+
       {/* Enhanced Search Box */}
       <section className="search-section" ref={filterSectionRef}>
         <div className="search-box">
@@ -279,6 +300,14 @@ export function HotStoriesClient({
         </div>
       )}
 
+      {/* IN-ARTICLE AD - After filters, before content */}
+      <div className="ad-container in-article-ad">
+        <ins id="1108413" data-width="300" data-height="100"></ins>
+        <script type="text/javascript" data-cfasync="false" async>
+          (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108413});
+        </script>
+      </div>
+
       {/* Story Count and Sort Mobile */}
       <div className="mobile-stats-bar">
         <span className="story-count-badge">
@@ -297,6 +326,77 @@ export function HotStoriesClient({
               {filteredStories.map((story, index) => {
                 const readCount = story.readCount || Math.floor(Math.random() * 50000) + 1000;
                 const rating = story.rating || (4.0 + Math.random() * 0.9).toFixed(1);
+                
+                // Insert ad after every 4 stories
+                if (index > 0 && index % 4 === 0) {
+                  return (
+                    <React.Fragment key={`ad-${index}`}>
+                      {/* MID-GRID AD - Inserted after every 4 stories */}
+                      <div className="ad-container grid-ad" style={{ gridColumn: '1 / -1' }}>
+                        <ins id="1108414" data-width="728" data-height="90"></ins>
+                        <script type="text/javascript" data-cfasync="false" async>
+                          (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108414});
+                        </script>
+                      </div>
+                      <Link 
+                        href={`/hot-stories/${story.slug || story.id}`}
+                        onClick={() => handleStoryClick(story)} 
+                        key={story.id || story._id || index} 
+                        className="story-card"
+                        prefetch={false}
+                      >
+                        <div className="card-header">
+                          <div className="story-image-container">
+                            <img 
+                              src={story.backgroundImage || story.image || `/api/placeholder/400/225?text=${encodeURIComponent(story.city || 'Story')}`} 
+                              alt={story.title}
+                              className="story-background-image"
+                              loading="lazy"
+                            />
+                            <div className="image-overlay">
+                              <div className="city-badge">
+                                <span className="city-icon">📍</span>
+                                {story.city}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="card-content">
+                          <div className="card-title-wrapper">
+                            <h3 className="story-title">{story.title}</h3>
+                            <div className="category-badge">
+                              {story.category}
+                            </div>
+                          </div>
+                          
+                          <p className="story-excerpt">
+                            {story.excerpt || 'An interactive story where your choices matter...'}
+                          </p>
+                          
+                          <div className="story-meta">
+                            <div className="meta-item">
+                              <span className="meta-icon">👤</span>
+                              <span>{story.characterName || 'Character'}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="card-actions">
+                            <Link 
+                              href={`/hot-stories/${story.slug || story.id}`}
+                              className="action-button read-button"
+                              onClick={() => handleStoryClick(story)}
+                              prefetch={false}
+                            >
+                              <span className="button-icon">📖</span>
+                              Read
+                            </Link>
+                          </div>
+                        </div>
+                      </Link>
+                    </React.Fragment>
+                  );
+                }
                 
                 return (
                   <Link 
@@ -371,6 +471,14 @@ export function HotStoriesClient({
         )}
       </section>
 
+      {/* BOTTOM BANNER AD - After stories grid */}
+      <div className="ad-container bottom-banner-ad">
+        <ins id="1108415" data-width="178" data-height="46"></ins>
+        <script type="text/javascript" data-cfasync="false" async>
+          (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108415});
+        </script>
+      </div>
+
       {/* All Indian Cities Section - Optimized grid */}
       <section className="all-cities-section">
         <div className="section-header">
@@ -383,7 +491,7 @@ export function HotStoriesClient({
         </div>
         
         <div className="all-cities-grid">
-          {allIndianCities.map((city) => {
+          {allIndianCities.map((city, index) => {
             const cityData = cityInfo[city.key] || {
               image: `/api/placeholder/400/225?text=${encodeURIComponent(city.name)}`
             };
@@ -446,6 +554,64 @@ export function HotStoriesClient({
           ↑
         </button>
       )}
+
+      {/* Add CSS for ad containers */}
+      <style jsx>{`
+        .ad-container {
+          margin: 2rem auto;
+          text-align: center;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 50px;
+          background-color: transparent;
+          width: 100%;
+          max-width: 100%;
+        }
+        
+        .top-banner-ad {
+          margin-top: 1rem;
+          margin-bottom: 2rem;
+        }
+        
+        .in-article-ad {
+          margin: 2.5rem 0;
+          padding: 1rem 0;
+          border-top: 1px solid var(--medium-gray);
+          border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .grid-ad {
+          margin: 2rem 0;
+          padding: 1.5rem;
+          background: rgba(255, 45, 149, 0.05);
+          border: 1px solid rgba(255, 45, 149, 0.2);
+          border-radius: var(--border-radius);
+        }
+        
+        .bottom-banner-ad {
+          margin: 3rem 0;
+          padding: 1.5rem 0;
+          border-top: 1px solid var(--medium-gray);
+          border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        @media (max-width: 768px) {
+          .ad-container {
+            margin: 1.5rem auto;
+          }
+          
+          .grid-ad {
+            margin: 1rem 0;
+            padding: 1rem;
+          }
+          
+          ins[data-width="728"][data-height="90"] {
+            max-width: 100%;
+            height: auto;
+          }
+        }
+      `}</style>
     </>
   );
 }
