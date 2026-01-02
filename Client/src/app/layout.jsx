@@ -133,6 +133,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        
         <script 
           async 
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8343501385468147"
@@ -149,6 +150,7 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
+        <meta name="juicyads-site-verification" content="64f68c1fc158eef9d3b6e6fa4d432117"/>
       </head>
       <body>
         <ClientLayout>{children}</ClientLayout>
