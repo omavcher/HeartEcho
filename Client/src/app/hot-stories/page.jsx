@@ -6,7 +6,6 @@ import { fetchStoriesData } from './actions';
 import { HotStoriesClient } from './HotStoriesClient';
 import Loading from './loading';
 
-// City images data
 const cityInfo = {
   delhi: {
     title: "Delhi - The Heart of India",
