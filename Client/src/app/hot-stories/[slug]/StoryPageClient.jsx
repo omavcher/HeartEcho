@@ -530,7 +530,7 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
           }
         }
       `}</style>
-      <script src="https://pl28398860.effectivegatecpm.com/f3/38/78/f338783a7118091801e84da870f616b1.js"></script>
+      
     </>
   );
 }
