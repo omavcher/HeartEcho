@@ -26,7 +26,7 @@ app.use(
       "https://www.desistory.fun",
       "http://desistory.fun",
       "http://www.desistory.fun",
-      "http://localhost:3000",//
+      "http://localhost:3000",///
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],

@@ -471,7 +471,6 @@ export function HotStoriesClient({
         )}
       </section>
 
-      {/* BOTTOM BANNER AD - After stories grid */}
       <div className="ad-container bottom-banner-ad">
         <ins id="1108415" data-width="178" data-height="46"></ins>
         <script type="text/javascript" data-cfasync="false" async>
