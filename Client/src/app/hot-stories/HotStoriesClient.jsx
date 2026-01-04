@@ -1,9 +1,10 @@
 // app/hot-stories/HotStoriesClient.jsx
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Add React import here
 import Link from 'next/link';
 import axios from 'axios';
+import Script from 'next/script'; // Don't forget to import Script
 import api from '../../config/api';
 
 export function HotStoriesClient({ 
