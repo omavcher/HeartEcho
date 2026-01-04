@@ -176,13 +176,7 @@ export function HotStoriesClient({
       {/* AD SCRIPT - Load once */}
       <script type="text/javascript" data-cfasync="false" async src="https://poweredby.jads.co/js/jads.js"></script>
 
-      {/* TOP BANNER AD - High visibility */}
-      <div className="ad-container top-banner-ad">
-        <ins id="1108412" data-width="300" data-height="50"></ins>
-        <script type="text/javascript" data-cfasync="false" async>
-          (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108412});
-        </script>
-      </div>
+  
 
       {/* Enhanced Search Box */}
       <section className="search-section" ref={filterSectionRef}>
@@ -300,13 +294,7 @@ export function HotStoriesClient({
         </div>
       )}
 
-      {/* IN-ARTICLE AD - After filters, before content */}
-      <div className="ad-container in-article-ad">
-        <ins id="1108413" data-width="300" data-height="100"></ins>
-        <script type="text/javascript" data-cfasync="false" async>
-          (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108413});
-        </script>
-      </div>
+   
 
       {/* Story Count and Sort Mobile */}
       <div className="mobile-stats-bar">
@@ -331,13 +319,19 @@ export function HotStoriesClient({
                 if (index > 0 && index % 4 === 0) {
                   return (
                     <React.Fragment key={`ad-${index}`}>
-                      {/* MID-GRID AD - Inserted after every 4 stories */}
-                      <div className="ad-container grid-ad" style={{ gridColumn: '1 / -1' }}>
-                        <ins id="1108414" data-width="728" data-height="90"></ins>
-                        <script type="text/javascript" data-cfasync="false" async>
-                          (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108414});
-                        </script>
-                      </div>
+                       {/* MID-GRID AD - Inserted after every 4 stories */}
+        <div className="ad-container grid-ad" style={{ gridColumn: '1 / -1' }}>
+          <ins id="1108414" data-width="728" data-height="90"></ins>
+          <Script
+            id={`grid-ad-script-${index}`}
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108414});
+              `,
+            }}
+          />
+        </div>
                       <Link 
                         href={`/hot-stories/${story.slug || story.id}`}
                         onClick={() => handleStoryClick(story)} 
@@ -472,12 +466,17 @@ export function HotStoriesClient({
       </section>
 
       <div className="ad-container bottom-banner-ad">
-        <ins id="1108415" data-width="178" data-height="46"></ins>
-        <script type="text/javascript" data-cfasync="false" async>
-          (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108415});
-        </script>
-      </div>
-
+  <ins id="1108415" data-width="178" data-height="46"></ins>
+  <Script
+    id="bottom-banner-ad-script-1108415"
+    strategy="afterInteractive"
+    dangerouslySetInnerHTML={{
+      __html: `
+        (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108415});
+      `,
+    }}
+  />
+</div>
       {/* All Indian Cities Section - Optimized grid */}
       <section className="all-cities-section">
         <div className="section-header">
