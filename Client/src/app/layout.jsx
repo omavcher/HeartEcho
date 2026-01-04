@@ -1,3 +1,4 @@
+import AutoNotification from '../components/AutoNotification';
 import './globals.css';
 import ClientLayout from './layout_client';
 ///csc
@@ -154,6 +155,7 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <ClientLayout>{children}</ClientLayout>
+        <AutoNotification />
         <script src="https://pl28398860.effectivegatecpm.com/f3/38/78/f338783a7118091801e84da870f616b1.js"></script>
       </body>
     </html>

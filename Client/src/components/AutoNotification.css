@@ -1,0 +1,167 @@
+.android-notification-wrapper {
+    position: fixed;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%); /* Centered at top like real Android notifications */
+    z-index: 10000;
+    width: 95%;
+    max-width: 400px;
+    pointer-events: none; /* Allows clicking things behind the wrapper */
+  }
+  
+  .android-notification-card {
+    pointer-events: auto;
+    background: rgba(28, 28, 30, 0.85); /* Semi-transparent Dark Grey */
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 28px; /* Android Modern Pill style */
+    padding: 16px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+    cursor: pointer;
+    animation: androidDrop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  
+  /* App Name/Header */
+  .android-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .app-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .app-icon-mini {
+    font-size: 12px;
+    background: #ff2d55;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+  
+  .app-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: #a1a1a6;
+    text-transform: lowercase;
+  }
+  
+  .android-close {
+    background: none;
+    border: none;
+    color: #a1a1a6;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  
+  /* Body */
+  .android-body {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .android-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .android-text {
+    flex: 1;
+  }
+  
+  .android-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #ffffff;
+  }
+  
+  .android-msg {
+    margin: 2px 0 0;
+    font-size: 14px;
+    color: #d1d1d6;
+    line-height: 1.4;
+  }
+  
+  /* Actions */
+  .android-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    padding-left: 63px; /* Align buttons with the text, not the avatar */
+  }
+  
+  .action-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .action-btn.primary {
+    color: #0a84ff; /* Android Blue link color */
+    background: rgba(10, 132, 255, 0.1);
+  }
+  
+  .action-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  /* Dropdown Animation */
+  @keyframes androidDrop {
+    from {
+      transform: translateY(-120%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  /* Responsive */
+  @media (max-width: 480px) {
+    .android-notification-wrapper {
+      top: 10px;
+      width: 92%;
+    }
+    
+    .android-actions {
+      padding-left: 0;
+      justify-content: flex-end;
+    }
+  }
+
+  
+  /* Smooth Slide out */
+  .slide-out {
+    animation: androidExit 0.4s ease-in forwards;
+  }
+  
+  @keyframes androidExit {
+    from {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateY(-150%);
+      opacity: 0;
+    }
+  }

@@ -4,6 +4,9 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
+router.post('/auto-notifications', authMiddleware, controller.autoNotificationsGen);
+
+
 router.get("/get-user", authMiddleware, controller.getProfile);
 router.post("/verify-user", authMiddleware, controller.verifyUser);
 router.put("/update-profile", authMiddleware, controller.updateProfile );
