@@ -247,10 +247,6 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
       />
 
       <div className="container-cwdw4x">
-        {/* TOP BANNER AD - High visibility, above the fold */}
-        <div className="ad-container top-banner-ad">
-          <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
-        </div>
 
         {/* Breadcrumb Navigation */}
         <nav className="breadcrumb-cwdw4x" aria-label="Breadcrumb">
