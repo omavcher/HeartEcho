@@ -170,10 +170,7 @@ export function HotStoriesClient({
         src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"
       ></script>
 
-      {/* TOP BANNER AD */}
-      <div className="ad-container top-banner-ad">
-        <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
-      </div>
+    
 
       {/* Enhanced Search Box */}
       <section className="search-section" ref={filterSectionRef}>
