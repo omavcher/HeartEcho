@@ -155,7 +155,6 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <ClientLayout>{children}</ClientLayout>
-        <AutoNotification />
       </body>
     </html>
   );
