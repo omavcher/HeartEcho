@@ -45,8 +45,6 @@ const UsersAdmin = () => {
 
   useEffect(() => { fetchAllData(); }, [fetchAllData]);
 
-  // --- BUSINESS INTELLIGENCE CALCULATIONS ---
-
   const intelligence = useMemo(() => {
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
@@ -63,15 +61,13 @@ const UsersAdmin = () => {
       if (joinDate === yesterdayStr) joinedYesterday++;
     });
 
-    // Calculate Growth %
     let growth = 0;
     if (joinedYesterday > 0) {
       growth = ((joinedToday - joinedYesterday) / joinedYesterday) * 100;
     } else if (joinedToday > 0) {
-      growth = 100; // First growth spike
+      growth = 100;
     }
 
-    // Top Users by Message Usage Today
     const powerUsers = [...users]
       .sort((a, b) => (b.messagesUsedToday || 0) - (a.messagesUsedToday || 0))
       .slice(0, 8)
@@ -84,7 +80,6 @@ const UsersAdmin = () => {
     return { joinedToday, growth, powerUsers };
   }, [users]);
 
-  // General Trend Data (Monthly)
   const trendData = useMemo(() => {
     const counts = {};
     users.forEach(u => {
@@ -115,14 +110,14 @@ const UsersAdmin = () => {
       <header className="dex-header-3244f">
         <div className="header-text-3244f">
           <h1 className="dex-main-title-3244f">Admin Insight</h1>
-          <p className="dex-status-3244f"><FaCircle className="status-online-3244f" /> System Online: {users.length} Users</p>
+          <p className="dex-status-3244f"><FaCircle className="status-online-3244f" /> {users.length} Nodes</p>
         </div>
         <div className="header-actions-3244f">
           <button className={`btn-sync-3244f ${refreshing ? 'spinning-3244f' : ''}`} onClick={fetchAllData}><FaSync /></button>
         </div>
       </header>
 
-      {/* Dynamic Intelligence Cards */}
+      {/* KPI Cards */}
       <section className="dex-kpi-grid-3244f">
         <div className="kpi-card-3244f">
           <div className="kpi-icon-wrapper-3244f blue-bg-3244f"><FaUserPlus /></div>
@@ -136,7 +131,7 @@ const UsersAdmin = () => {
             {intelligence.growth >= 0 ? <FaArrowUp /> : <FaArrowDown />}
           </div>
           <div className="kpi-val-group-3244f">
-            <span>Growth vs Yesterday</span>
+            <span>Growth</span>
             <strong className={intelligence.growth >= 0 ? 'text-green-3244f' : 'text-red-3244f'}>
               {intelligence.growth.toFixed(1)}%
             </strong>
@@ -145,25 +140,25 @@ const UsersAdmin = () => {
         <div className="kpi-card-3244f">
           <div className="kpi-icon-wrapper-3244f purple-bg-3244f"><FaRobot /></div>
           <div className="kpi-val-group-3244f">
-            <span>Power Sessions</span>
-            <strong>{users.filter(u => u.messagesUsedToday > 5).length} Users</strong>
+            <span>Power Users</span>
+            <strong>{users.filter(u => u.messagesUsedToday > 5).length}</strong>
           </div>
         </div>
       </section>
 
-      {/* Analytics Visualization */}
+      {/* Charts Grid */}
       <section className="dex-visuals-grid-3244f">
         <div className="visual-card-3244f">
-          <h3>Activity Leaderboard (Today's Usage)</h3>
-          <ResponsiveContainer width="100%" height={250}>
+          <h3>Daily Top Usage</h3>
+          <ResponsiveContainer width="100%" height={220}>
             <BarChart data={intelligence.powerUsers}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2c2c2e" />
-              <XAxis dataKey="name" stroke="#8e8e93" fontSize={11} tickLine={false} axisLine={false} />
+              <XAxis dataKey="name" stroke="#8e8e93" fontSize={10} tickLine={false} axisLine={false} />
               <Tooltip 
                 cursor={{fill: '#2c2c2e'}} 
                 contentStyle={{backgroundColor: '#1c1c1e', border: '1px solid #38383a', borderRadius: '10px'}} 
               />
-              <Bar dataKey="usage" radius={[5, 5, 0, 0]} barSize={30}>
+              <Bar dataKey="usage" radius={[4, 4, 0, 0]} barSize={25}>
                 {intelligence.powerUsers.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={index === 0 ? '#30D158' : '#0A84FF'} />
                 ))}
@@ -174,7 +169,7 @@ const UsersAdmin = () => {
 
         <div className="visual-card-3244f">
           <h3>Onboarding Trend</h3>
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={trendData}>
               <defs>
                 <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
@@ -182,9 +177,9 @@ const UsersAdmin = () => {
                   <stop offset="95%" stopColor="#BF5AF2" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <XAxis dataKey="name" stroke="#8e8e93" fontSize={11} tickLine={false} axisLine={false} />
+              <XAxis dataKey="name" stroke="#8e8e93" fontSize={10} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={{backgroundColor: '#1c1c1e', border: '1px solid #38383a'}} />
-              <Area type="monotone" dataKey="value" stroke="#BF5AF2" fillOpacity={1} fill="url(#colorVal)" strokeWidth={3} />
+              <Area type="monotone" dataKey="value" stroke="#BF5AF2" fillOpacity={1} fill="url(#colorVal)" strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -195,12 +190,12 @@ const UsersAdmin = () => {
         <div className="table-controls-3244f">
           <div className="search-box-3244f">
             <FaSearch />
-            <input type="text" placeholder="Identity search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+            <input type="text" placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
           <select className="filter-select-3244f" onChange={e => setFilterType(e.target.value)}>
-            <option value="all">Full Access</option>
-            <option value="free">Free Tier</option>
-            <option value="subscriber">Subscribers</option>
+            <option value="all">Tiers</option>
+            <option value="free">Free</option>
+            <option value="subscriber">Pro</option>
           </select>
         </div>
 
@@ -219,8 +214,8 @@ const UsersAdmin = () => {
                 
                 <div className="mini-quota-3244f">
                   <div className="mini-quota-labels-3244f">
-                    <span>Usage Index</span>
-                    <span>{user.messagesUsedToday} / {user.messageQuota}</span>
+                    <span>Quota</span>
+                    <span>{user.messagesUsedToday}/{user.messageQuota}</span>
                   </div>
                   <div className="mini-quota-track-3244f">
                     <div className="mini-quota-fill-3244f" style={{width: `${Math.min((user.messagesUsedToday/user.messageQuota)*100, 100)}%`}}></div>
@@ -229,18 +224,20 @@ const UsersAdmin = () => {
 
                 <div className="user-pro-tags-3244f">
                   <div className="tag-3244f"><FaRobot /> {user.ai_friends?.length}</div>
-                  <div className={`tag-3244f ${user.twofactor ? 'active-tag-3244f' : ''}`}><FaShieldAlt /> 2FA</div>
-                  <div className={`tag-3244f ${user.hasUsedReferral ? 'active-tag-3244f' : ''}`}><FaUserPlus /> Ref</div>
+                  <div className={`tag-3244f ${user.twofactor ? 'active-tag-3244f' : ''}`}><FaShieldAlt /></div>
+                  <div className={`tag-3244f ${user.hasUsedReferral ? 'active-tag-3244f' : ''}`}><FaUserPlus /></div>
                 </div>
               </div>
-             
+              <div className="user-pro-actions-3244f">
+                <button className="edit-btn-3244f"><FaEdit /></button>
+                <button className="del-btn-3244f"><FaTrash /></button>
+              </div>
             </div>
           ))}
         </div>
 
         <div className="pagination-3244f">
-          <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Back</button>
-          <span>Cluster {currentPage} of {Math.ceil(filteredUsers.length / usersPerPage)}</span>
+          <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Prev</button>
           <button disabled={currentPage >= Math.ceil(filteredUsers.length / usersPerPage)} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
         </div>
       </section>
