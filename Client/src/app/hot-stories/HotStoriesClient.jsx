@@ -4,7 +4,6 @@
 import React, { useState, useEffect, useRef } from 'react'; // Add React import here
 import Link from 'next/link';
 import axios from 'axios';
-import Script from 'next/script'; // Don't forget to import Script
 import api from '../../config/api';
 
 export function HotStoriesClient({ 
@@ -34,16 +33,6 @@ export function HotStoriesClient({
   useEffect(() => {
     const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
     setRecentlyViewed(viewed);
-  }, []);
-
-  // Initialize ads after component mounts
-  useEffect(() => {
-    if (window.adsbyjuicy) {
-      window.adsbyjuicy.push({ adzone: 1108412 });
-      window.adsbyjuicy.push({ adzone: 1108413 });
-      window.adsbyjuicy.push({ adzone: 1108414 });
-      window.adsbyjuicy.push({ adzone: 1108415 });
-    }
   }, []);
 
   // Scroll listener for back-to-top button
@@ -175,9 +164,16 @@ export function HotStoriesClient({
   return (
     <>
       {/* AD SCRIPT - Load once */}
-      <script type="text/javascript" data-cfasync="false" async src="https://poweredby.jads.co/js/jads.js"></script>
+      <script 
+        async="async" 
+        data-cfasync="false" 
+        src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"
+      ></script>
 
-  
+      {/* TOP BANNER AD */}
+      <div className="ad-container top-banner-ad">
+        <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
+      </div>
 
       {/* Enhanced Search Box */}
       <section className="search-section" ref={filterSectionRef}>
@@ -295,7 +291,10 @@ export function HotStoriesClient({
         </div>
       )}
 
-   
+      {/* IN-ARTICLE AD */}
+      <div className="ad-container in-article-ad">
+        <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
+      </div>
 
       {/* Story Count and Sort Mobile */}
       <div className="mobile-stats-bar">
@@ -320,19 +319,10 @@ export function HotStoriesClient({
                 if (index > 0 && index % 4 === 0) {
                   return (
                     <React.Fragment key={`ad-${index}`}>
-                       {/* MID-GRID AD - Inserted after every 4 stories */}
-        <div className="ad-container grid-ad" style={{ gridColumn: '1 / -1' }}>
-          <ins id="1108414" data-width="728" data-height="90"></ins>
-          <Script
-            id={`grid-ad-script-${index}`}
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `
-                (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108414});
-              `,
-            }}
-          />
-        </div>
+                      {/* MID-GRID AD - Inserted after every 4 stories */}
+                      <div className="ad-container grid-ad" style={{ gridColumn: '1 / -1' }}>
+                        <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
+                      </div>
                       <Link 
                         href={`/hot-stories/${story.slug || story.id}`}
                         onClick={() => handleStoryClick(story)} 
@@ -466,18 +456,11 @@ export function HotStoriesClient({
         )}
       </section>
 
+      {/* BOTTOM BANNER AD */}
       <div className="ad-container bottom-banner-ad">
-  <ins id="1108415" data-width="178" data-height="46"></ins>
-  <Script
-    id="bottom-banner-ad-script-1108415"
-    strategy="afterInteractive"
-    dangerouslySetInnerHTML={{
-      __html: `
-        (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108415});
-      `,
-    }}
-  />
-</div>
+        <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
+      </div>
+
       {/* All Indian Cities Section - Optimized grid */}
       <section className="all-cities-section">
         <div className="section-header">
@@ -586,6 +569,7 @@ export function HotStoriesClient({
           background: rgba(255, 45, 149, 0.05);
           border: 1px solid rgba(255, 45, 149, 0.2);
           border-radius: var(--border-radius);
+          grid-column: 1 / -1;
         }
         
         .bottom-banner-ad {
@@ -604,14 +588,8 @@ export function HotStoriesClient({
             margin: 1rem 0;
             padding: 1rem;
           }
-          
-          ins[data-width="728"][data-height="90"] {
-            max-width: 100%;
-            height: auto;
-          }
         }
       `}</style>
-      
     </>
   );
 }
