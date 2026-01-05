@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
+import Script from 'next/script'; // Added import for Script component
 import './StoryPage.css'
 
 // Markdown components configuration
@@ -250,22 +251,17 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
       />
 
       {/* AD SCRIPTS - Load once at the top */}
-      <script type="text/javascript" data-cfasync="false" async src="https://poweredby.jads.co/js/jads.js"></script>
+      <Script
+        strategy="afterInteractive"
+        data-cfasync="false"
+        src="https://poweredby.jads.co/js/jads.js"
+      />
 
       <div className="container-cwdw4x">
         {/* TOP BANNER AD - High visibility, above the fold */}
-<div className="ad-container top-banner-ad">
-  <ins id="1108412" data-width="300" data-height="50"></ins>
-  <Script
-    id="top-banner-ad-script-1108412"
-    strategy="afterInteractive"
-    dangerouslySetInnerHTML={{
-      __html: `
-        (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108412});
-      `,
-    }}
-  />
-</div>
+        <div className="ad-container top-banner-ad">
+          <ins id="1108412" data-width="300" data-height="50"></ins>
+        </div>
 
         {/* Breadcrumb Navigation */}
         <nav className="breadcrumb-cwdw4x" aria-label="Breadcrumb">
@@ -359,19 +355,10 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
           </div>
         </div>
 
-       {/* IN-ARTICLE AD - Between hero and story content */}
-<div className="ad-container in-article-ad">
-  <ins id="1108413" data-width="300" data-height="100"></ins>
-  <Script
-    id="in-article-ad-script-1108413"
-    strategy="afterInteractive"
-    dangerouslySetInnerHTML={{
-      __html: `
-        (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108413});
-      `,
-    }}
-  />
-</div>
+        {/* IN-ARTICLE AD - Between hero and story content */}
+        <div className="ad-container in-article-ad">
+          <ins id="1108413" data-width="300" data-height="100"></ins>
+        </div>
 
         {/* STORY CONTENT */}
         <article className="storySection-cwdw4x">
@@ -383,19 +370,16 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
             {renderStoryWithImages(content.story, transformedStory.imageAlbum)}
           </div>
           
-     {/* MID-ARTICLE AD - After story content, before cliffhanger */}
-<div className="ad-container mid-article-ad">
-  <ins id="1108414" data-width="108" data-height="140"></ins>
-  <Script
-    id="mid-article-ad-script-1108414"
-    strategy="afterInteractive"
-    dangerouslySetInnerHTML={{
-      __html: `
-        (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108414});
-      `,
-    }}
-  />
-</div>
+          {/* MID-ARTICLE AD - After story content, before cliffhanger */}
+          <div className="ad-container mid-article-ad">
+            {/* Alternative ad script */}
+            <script 
+              async 
+              data-cfasync="false" 
+              src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"
+            />
+            <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
+          </div>
           
           {content.cliffhanger && (
             <div className="cliffhanger-cwdw4x">
@@ -437,16 +421,8 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
         </aside>
 
         <div className="ad-container bottom-banner-ad">
-  <ins id="1108415" data-width="178" data-height="46"></ins>
-  <div
-    dangerouslySetInnerHTML={{
-      __html: `
-       <script async="async" data-cfasync="false" src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"></script>
-<div id="container-192103d6879cc843368e47e4d3546f8f"></div>
-      `,
-    }}
-  />
-</div>
+          <ins id="1108415" data-width="178" data-height="46"></ins>
+        </div>
 
         {/* RELATED STORIES */}
         {relatedStories.length > 0 && (
@@ -552,6 +528,18 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
           }
         }
       `}</style>
+
+      {/* Script to initialize ads */}
+      <Script id="init-ads" strategy="afterInteractive">
+        {`
+          if (typeof window !== 'undefined' && window.adsbyjuicy) {
+            window.adsbyjuicy.push({ adzone: 1108412 });
+            window.adsbyjuicy.push({ adzone: 1108413 });
+            window.adsbyjuicy.push({ adzone: 1108414 });
+            window.adsbyjuicy.push({ adzone: 1108415 });
+          }
+        `}
+      </Script>
     </>
   );
 }
