@@ -5,7 +5,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
-import Script from 'next/script'; // Added import for Script component
 import './StoryPage.css'
 
 // Markdown components configuration
@@ -41,16 +40,6 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
   const [lang, setLang] = useState('en');
   const [story] = useState(initialStory);
   const [relatedStories] = useState(initialRelatedStories);
-
-  useEffect(() => {
-    // Initialize ads after component mounts
-    if (window.adsbyjuicy) {
-      window.adsbyjuicy.push({ adzone: 1108412 });
-      window.adsbyjuicy.push({ adzone: 1108413 });
-      window.adsbyjuicy.push({ adzone: 1108414 });
-      window.adsbyjuicy.push({ adzone: 1108415 });
-    }
-  }, []);
 
   const handleStartChat = () => {
     if (!story) return;
@@ -250,17 +239,17 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* AD SCRIPTS - Load once at the top */}
-      <Script
-        strategy="afterInteractive"
-        data-cfasync="false"
-        src="https://poweredby.jads.co/js/jads.js"
+      {/* AD SCRIPT - Load once at the top */}
+      <script 
+        async 
+        data-cfasync="false" 
+        src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"
       />
 
       <div className="container-cwdw4x">
         {/* TOP BANNER AD - High visibility, above the fold */}
         <div className="ad-container top-banner-ad">
-          <ins id="1108412" data-width="300" data-height="50"></ins>
+          <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
         </div>
 
         {/* Breadcrumb Navigation */}
@@ -357,7 +346,7 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
 
         {/* IN-ARTICLE AD - Between hero and story content */}
         <div className="ad-container in-article-ad">
-          <ins id="1108413" data-width="300" data-height="100"></ins>
+          <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
         </div>
 
         {/* STORY CONTENT */}
@@ -372,12 +361,6 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
           
           {/* MID-ARTICLE AD - After story content, before cliffhanger */}
           <div className="ad-container mid-article-ad">
-            {/* Alternative ad script */}
-            <script 
-              async 
-              data-cfasync="false" 
-              src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"
-            />
             <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
           </div>
           
@@ -420,8 +403,9 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
           </button>
         </aside>
 
+        {/* BOTTOM BANNER AD */}
         <div className="ad-container bottom-banner-ad">
-          <ins id="1108415" data-width="178" data-height="46"></ins>
+          <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
         </div>
 
         {/* RELATED STORIES */}
@@ -489,6 +473,7 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
           align-items: center;
           min-height: 50px;
           background-color: transparent;
+          width: 100%;
         }
         
         .top-banner-ad {
@@ -528,18 +513,6 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
           }
         }
       `}</style>
-
-      {/* Script to initialize ads */}
-      <Script id="init-ads" strategy="afterInteractive">
-        {`
-          if (typeof window !== 'undefined' && window.adsbyjuicy) {
-            window.adsbyjuicy.push({ adzone: 1108412 });
-            window.adsbyjuicy.push({ adzone: 1108413 });
-            window.adsbyjuicy.push({ adzone: 1108414 });
-            window.adsbyjuicy.push({ adzone: 1108415 });
-          }
-        `}
-      </Script>
     </>
   );
 }
