@@ -441,9 +441,8 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
   <div
     dangerouslySetInnerHTML={{
       __html: `
-        <script type="text/javascript" data-cfasync="false" async>
-          (adsbyjuicy = window.adsbyjuicy || []).push({'adzone':1108415});
-        </script>
+       <script async="async" data-cfasync="false" src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"></script>
+<div id="container-192103d6879cc843368e47e4d3546f8f"></div>
       `,
     }}
   />
@@ -553,7 +552,6 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
           }
         }
       `}</style>
-      <script src="https://pl28398860.effectivegatecpm.com/f3/38/78/f338783a7118091801e84da870f616b1.js"></script>
     </>
   );
 }
