@@ -436,7 +436,6 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
           </button>
         </aside>
 
-      {/* AD */}
         <div className="ad-container bottom-banner-ad">
   <ins id="1108415" data-width="178" data-height="46"></ins>
   <div
