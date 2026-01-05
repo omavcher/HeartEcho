@@ -157,7 +157,7 @@
 .edit-btn-3244f { background: #3a3a3c; }
 .del-btn-3244f { background: rgba(255, 69, 58, 0.1); color: var(--neon-red); }
 
-.pagination-3244f { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 30px; }
+.pagination-3244f { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 30px; margin-bottom: 80px;}
 .pagination-3244f button { padding: 8px 20px; background: var(--surface-bright); border: 1px solid var(--border); color: white; border-radius: 8px; cursor: pointer; }
 
 /* Responsive Media Queries */
