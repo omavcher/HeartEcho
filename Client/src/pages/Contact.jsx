@@ -1,7 +1,7 @@
 import React from 'react';
 import '../styles/Policy.css';
 import Footer from '../components/Footer';
-
+//
 function Contact() {
   return (
     <>
