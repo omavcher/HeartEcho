@@ -287,7 +287,7 @@ exports.UserALLDtaa = async (req,res) =>{
 exports.aiAllModelData = async (req,res) =>{
     try {
       const aiusers = await PrebuiltAIFriend.find({});
-  
+
        return res.status(200).json({
         aiusers
           });
@@ -1588,3 +1588,6 @@ exports.processPayout = async (req, res) => {
     });
   }
 };
+
+
+
