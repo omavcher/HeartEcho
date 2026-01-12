@@ -1439,3 +1439,4 @@ export const blogPosts = [
   "alt": "A comparison chart showing HeartEcho ranking higher than other AI girlfriend apps in features like memory and visuals."
 }
 ];
+//
