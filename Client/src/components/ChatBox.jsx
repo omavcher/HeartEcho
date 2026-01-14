@@ -713,125 +713,187 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
     }
   }, [token, chatId]);
 
-  const initializeChatData = useCallback(async () => {
-    setIsLoading(true);
-    setLoadingProgress(0);
-    setIsInitialLoad(true);
+// IN ChatBox.js - Update the initializeChatData function:
+const initializeChatData = useCallback(async () => {
+  setIsLoading(true);
+  setLoadingProgress(0);
+  setIsInitialLoad(true);
+  
+  try {
+    const progressInterval = setInterval(() => {
+      setLoadingProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return 90;
+        }
+        return prev + 10;
+      });
+    }, 200);
+
+    // FIRST: Get AI Friend details using chatId (which is actually AI friend ID)
+    const aiResponse = await axios.get(`${api.Url}/ai/detials/${chatId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      timeout: 10000
+    });
     
-    try {
-      const progressInterval = setInterval(() => {
-        setLoadingProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 200);
+    setUserProfile(aiResponse.data?.AiInfo || {});
+    setLoadingProgress(30);
 
-      await Promise.all([
-        fetchChatData(),
-        fetchAiModelDetails()
-      ]);
+    // SECOND: Now get the actual Chat using AI friend ID
+    // You need to find the chat that has this AI friend as a participant
+    const chatResponse = await axios.get(`${api.Url}/ai/chats/by-ai/${chatId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      timeout: 10000
+    });
 
-      clearInterval(progressInterval);
+    const chatData = chatResponse.data?.chat;
+    if (chatData?.messages) {
+      const transformedMessages = chatData.messages.map(msg => ({
+        _id: msg._id,
+        sender: msg.senderModel === "User" ? "me" : "ai",
+        senderModel: msg.senderModel,
+        text: msg.text,
+        time: msg.time,
+        mediaType: msg.mediaType,
+        imgUrl: msg.imgUrl,
+        videoUrl: msg.videoUrl,
+        visibility: msg.visibility,
+        accessLevel: msg.accessLevel,
+        status: msg.status,
+        quotaInfo: msg.quotaInfo,
+        isBotMessage: msg.isBotMessage || false
+      }));
+
+      setMessages(transformedMessages);
+      setLoadingProgress(70);
+    } else {
+      // No chat exists yet, create empty messages
+      setMessages([]);
+      setLoadingProgress(70);
+    }
+    
+    // THIRD: Get user quota status
+    const quotaResponse = await axios.get(`${api.Url}/ai/quota/status`, {
+      headers: { Authorization: `Bearer ${token}` },
+      timeout: 10000
+    });
+    
+    setRemainingQuota(quotaResponse.data?.remainingQuota || 20);
+    setIsSubscribed(quotaResponse.data?.isSubscriber || false);
+    setLoadingProgress(90);
+
+    clearInterval(progressInterval);
+    setLoadingProgress(100);
+    setTimeout(() => setIsLoading(false), 300);
+    
+  } catch (error) {
+    console.error("Error initializing chat data:", error);
+    
+    // If 404, it means no chat exists yet - this is normal for new conversations
+    if (error.response?.status === 404) {
+      setMessages([]);
       setLoadingProgress(100);
       setTimeout(() => setIsLoading(false), 300);
-      
-    } catch (error) {
-      console.error("Error initializing chat data:", error);
+    } else {
       showNotification("Failed to load chat. Please try again.", "error");
       setIsLoading(false);
     }
-  }, [token, chatId, fetchChatData, fetchAiModelDetails, showNotification]);
+  }
+}, [token, chatId, fetchChatData, fetchAiModelDetails, showNotification]);
 
   // More Event Handlers
   const handleScrollDownClick = useCallback(() => {
     scrollToBottom();
   }, [scrollToBottom]);
 
-  const handleSendMessage = useCallback(async (customText = null) => {
-    const textToSend = customText || newMessage;
-    if (!textToSend.trim()) return;
+const handleSendMessage = useCallback(async (customText = null) => {
+  const textToSend = customText || newMessage;
+  if (!textToSend.trim()) return;
 
-    if (!canSendMessage) {
-      showNotification("You don't have enough tokens to send messages.", "error");
-      return;
+  if (!canSendMessage) {
+    showNotification("You don't have enough tokens to send messages.", "error");
+    return;
+  }
+
+  // Update last activity time
+  setLastActivityTime(Date.now());
+
+  // Create user message object
+  messageCounter.current += 1;
+  const userMsg = {
+    _id: `user-${messageCounter.current}-${Date.now()}`,
+    sender: "me",
+    senderModel: "User",
+    text: textToSend,
+    time: new Date().toISOString(),
+    mediaType: "text",
+    isTemp: true
+  };
+
+  // Add to temporary messages
+  setTempMessages(prev => [...prev, userMsg]);
+  setNewMessage("");
+  setIsTyping(true);
+
+  try {
+    // IMPORTANT: Use the correct endpoint - chatId here is actually AI friend ID
+    const response = await axios.post(
+      `${api.Url}/ai/${chatId}/send`, // This should be AI friend ID
+      { text: textToSend },
+      { 
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 30000
+      }
+    );
+
+    if (response.data.remainingQuota !== undefined) {
+      setRemainingQuota(response.data.remainingQuota);
     }
 
-    // Update last activity time
-    setLastActivityTime(Date.now());
-
-    // Create user message object
-    messageCounter.current += 1;
-    const userMsg = {
-      _id: `user-${messageCounter.current}-${Date.now()}`,
-      sender: "me",
-      senderModel: "User",
-      text: textToSend,
-      time: new Date().toISOString(),
-      mediaType: "text",
-      isTemp: true
-    };
-
-    // Add to temporary messages
-    setTempMessages(prev => [...prev, userMsg]);
-    setNewMessage("");
-    setIsTyping(true);
-
-    try {
-      const response = await axios.post(
-        `${api.Url}/ai/${chatId}/send`,
-        { text: textToSend },
-        { 
-          headers: { Authorization: `Bearer ${token}` },
-          timeout: 30000
-        }
-      );
-
-      if (response.data.remainingQuota !== undefined) {
-        setRemainingQuota(response.data.remainingQuota);
-      }
-
-      // Remove the temporary user message
-      setTempMessages(prev => prev.filter(msg => msg._id !== userMsg._id));
-      
-      // Fetch updated chat data
-      await fetchChatData();
-      
-      onSendMessage();
-      setIsTyping(false);
-
-      // Reset bot message timer after user message
-      if (botMessageTimeoutRef.current) {
-        clearTimeout(botMessageTimeoutRef.current);
-      }
-      
-      // Schedule next bot message
-      const responseDelay = getRandomDelay(8000, 20000);
-      botMessageTimeoutRef.current = setTimeout(() => {
-        checkAndSendBotMessage();
-      }, responseDelay);
-
-    } catch (error) {
-      console.error("Error sending message:", error);
-      setIsTyping(false);
-      
-      setTempMessages(prev => prev.filter(msg => msg._id !== userMsg._id));
-      
-      if (error.response?.status === 403) {
-        const errorMessage = error.response.data?.message || "Your daily token quota is over. Try again tomorrow!";
-        showNotification(errorMessage, "error");
-        setRemainingQuota(0);
+    // Remove the temporary user message
+    setTempMessages(prev => prev.filter(msg => msg._id !== userMsg._id));
     
-        setTimeout(() => {
-          router.push("/subscribe?re=quotaover");
-        }, 2000); 
-      } else {
-        showNotification("Failed to get a response. Try again.", "error");
-      }
+    // Fetch updated chat data
+    await initializeChatData(); // Call this instead of fetchChatData
+    
+    onSendMessage();
+    setIsTyping(false);
+
+    // Reset bot message timer after user message
+    if (botMessageTimeoutRef.current) {
+      clearTimeout(botMessageTimeoutRef.current);
     }
-  }, [newMessage, canSendMessage, token, chatId, fetchChatData, onSendMessage, router, showNotification, checkAndSendBotMessage]);
+    
+    // Schedule next bot message
+    const responseDelay = getRandomDelay(8000, 20000);
+    botMessageTimeoutRef.current = setTimeout(() => {
+      checkAndSendBotMessage();
+    }, responseDelay);
+
+  } catch (error) {
+    console.error("Error sending message:", error);
+    setIsTyping(false);
+    
+    setTempMessages(prev => prev.filter(msg => msg._id !== userMsg._id));
+    
+    if (error.response?.status === 403) {
+      const errorMessage = error.response.data?.message || "Your daily token quota is over. Try again tomorrow!";
+      showNotification(errorMessage, "error");
+      setRemainingQuota(0);
+  
+      setTimeout(() => {
+        router.push("/subscribe?re=quotaover");
+      }, 2000); 
+    } else if (error.response?.status === 404) {
+      // Chat doesn't exist yet - this is normal for first message
+      setTempMessages(prev => prev.filter(msg => msg._id !== userMsg._id));
+      // Refresh to get new chat
+      await initializeChatData();
+    } else {
+      showNotification("Failed to get a response. Try again.", "error");
+    }
+  }
+}, [newMessage, canSendMessage, token, chatId, initializeChatData, onSendMessage, router, showNotification, checkAndSendBotMessage]);
 
   const handleDeleteMessage = useCallback(async (messageId) => {
     try {

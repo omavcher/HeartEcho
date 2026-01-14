@@ -1562,3 +1562,39 @@ exports.FALLBACK_VIDEOS = FALLBACK_VIDEOS;
 exports.getGenderSpecificFallback = getGenderSpecificFallback;
 exports.getFallbackStats = getFallbackStats;
 exports.resetFallbackUsage = resetFallbackUsage;
+
+
+// Add this to aiController.js
+exports.getChatByAiFriend = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { aiFriendId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(aiFriendId)) {
+      return res.status(400).json({ message: "Invalid AI Friend ID" });
+    }
+
+    // Find chat where user is participant and AI friend is aiParticipant
+    const chat = await Chat.findOne({
+      participants: userId,
+      aiParticipants: aiFriendId,
+      isActive: true
+    }).populate('messages');
+
+    if (!chat) {
+      // Return 404 with a message that no chat exists yet
+      return res.status(404).json({ 
+        message: "No chat history found. Start a new conversation!",
+        chat: null 
+      });
+    }
+
+    res.json({ 
+      chat: chat,
+      messageCount: chat.messages.length 
+    });
+  } catch (error) {
+    console.error("Error fetching chat by AI friend:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
