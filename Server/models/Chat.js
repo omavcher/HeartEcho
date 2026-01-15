@@ -75,7 +75,7 @@ const chatSchema = new mongoose.Schema({
     compressMedia: { type: Boolean, default: true },
   },
   
-  // ✅ Chat Statistics kj
+  // ✅ Chat Statistica
   statistics: {
     totalMessages: { type: Number, default: 0 },
     totalImages: { type: Number, default: 0 },
