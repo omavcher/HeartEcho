@@ -75,7 +75,7 @@ const EditStoryPage = () => {
     const fetchStory = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${api.Url}/story/${storyId}`);
+        const response = await axios.get(`${api.Url}/story/getbyid/${storyId}`);
         
         if (response.data.success) {
           const story = response.data.data;
