@@ -341,10 +341,8 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
         </div>
 
         {/* IN-ARTICLE AD - Between hero and story content */}
-        <div className="ad-container in-article-ad">
-          {/* BOTTOM BANNER AD */}
-<div className="ad-container bottom-banner-ad">
-  <div 
+        <div className="ad-container in-article-ad"> 
+           <div 
     ref={(el) => {
       if (el && !el.hasChildNodes()) {
         const conf = document.createElement('script');
@@ -366,7 +364,6 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
       }
     }}
   />
-</div>
         </div>
 
         {/* STORY CONTENT */}
