@@ -355,15 +355,35 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
             {renderStoryWithImages(content.story, transformedStory.imageAlbum)}
           </div>
           
-          {/* MID-ARTICLE AD - After story content, before cliffhanger */}
-           <script 
-        async 
-        data-cfasync="false" 
-        src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"
-      />
-          <div className="ad-container mid-article-ad">
-            <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
-          </div>
+         {/* MID-ARTICLE AD - After story content, before cliffhanger */}
+<div className="ad-container mid-article-ad">
+  <div 
+    ref={(el) => {
+      if (el && !el.hasChildNodes()) {
+        try {
+          // Define atOptions on the window object
+          window.atOptions = {
+            'key': '3ba9d6fe50db5f6e3520294fe7a1ae20',
+            'format': 'iframe',
+            'height': 300,
+            'width': 160,
+            'params': {}
+          };
+          
+          // Create the script element
+          const script = document.createElement('script');
+          script.type = 'text/javascript';
+          script.src = `https://www.highperformanceformat.com/3ba9d6fe50db5f6e3520294fe7a1ae20/invoke.js`;
+          
+          // Append to this specific container
+          el.appendChild(script);
+        } catch (e) {
+          console.error("Ad loading failed:", e);
+        }
+      }
+    }}
+  />
+</div>
           
           {content.cliffhanger && (
             <div className="cliffhanger-cwdw4x">
@@ -405,11 +425,6 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
         </aside>
 
         {/* BOTTOM BANNER AD */}
-         <script 
-        async 
-        data-cfasync="false" 
-        src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"
-      />
         <div className="ad-container bottom-banner-ad">
           <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
         </div>
