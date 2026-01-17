@@ -4,11 +4,12 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import "./UsersAdmin.css";
 import {
   FaUser, FaTrash, FaEdit, FaStar, FaSearch, FaSync, FaShieldAlt, 
-  FaUserPlus, FaRobot, FaCircle, FaArrowUp, FaArrowDown
+  FaUserPlus, FaRobot, FaCircle, FaArrowUp, FaArrowDown, FaPhone, 
+  FaIdBadge, FaCalendarAlt, FaTicketAlt, FaHistory
 } from "react-icons/fa";
 import {
   BarChart, Bar, AreaChart, Area, Tooltip, ResponsiveContainer,
-  XAxis, YAxis, CartesianGrid, Cell
+  XAxis, YAxis, CartesianGrid, Cell, Legend
 } from "recharts";
 import axios from "axios";
 import api from "../../config/api";
@@ -45,54 +46,52 @@ const UsersAdmin = () => {
 
   useEffect(() => { fetchAllData(); }, [fetchAllData]);
 
-  const intelligence = useMemo(() => {
+  // --- Advanced Intelligence & Statistics ---
+  const stats = useMemo(() => {
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
-    const yesterday = new Date();
-    yesterday.setDate(now.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    
+    const joinedToday = users.filter(u => u.joinedAt?.split('T')[0] === todayStr).length;
+    const premiumUsers = users.filter(u => u.user_type === 'subscriber').length;
+    const totalLogins = users.reduce((acc, u) => acc + (u.login_details?.length || 0), 0);
+    const avgAge = users.length > 0 
+      ? (users.reduce((acc, u) => acc + (u.age || 0), 0) / users.length).toFixed(1) 
+      : 0;
 
-    let joinedToday = 0;
-    let joinedYesterday = 0;
+    return { joinedToday, premiumUsers, totalLogins, avgAge };
+  }, [users]);
 
-    users.forEach(u => {
-      const joinDate = u.joinedAt?.split('T')[0];
-      if (joinDate === todayStr) joinedToday++;
-      if (joinDate === yesterdayStr) joinedYesterday++;
-    });
-
-    let growth = 0;
-    if (joinedYesterday > 0) {
-      growth = ((joinedToday - joinedYesterday) / joinedYesterday) * 100;
-    } else if (joinedToday > 0) {
-      growth = 100;
+  // --- Day-Wise Join Growth Chart ---
+  const growthTrendData = useMemo(() => {
+    const dailyCounts = {};
+    // Get last 14 days
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      dailyCounts[d.toISOString().split('T')[0]] = 0;
     }
 
-    const powerUsers = [...users]
-      .sort((a, b) => (b.messagesUsedToday || 0) - (a.messagesUsedToday || 0))
-      .slice(0, 8)
-      .map(u => ({
-        name: u.name.split(' ')[0],
-        usage: u.messagesUsedToday || 0,
-        fullName: u.name
-      }));
-
-    return { joinedToday, growth, powerUsers };
-  }, [users]);
-
-  const trendData = useMemo(() => {
-    const counts = {};
     users.forEach(u => {
-      const date = new Date(u.joinedAt).toLocaleDateString('en-US', { month: 'short' });
-      counts[date] = (counts[date] || 0) + 1;
+      const date = u.joinedAt?.split('T')[0];
+      if (dailyCounts[date] !== undefined) {
+        dailyCounts[date] += 1;
+      }
     });
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
+
+    return Object.entries(dailyCounts).map(([date, count]) => ({
+      date: new Date(date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
+      joins: count
+    }));
   }, [users]);
 
+  // --- Filter & Pagination ---
   const filteredUsers = useMemo(() => {
     return users.filter(u => {
-      const matchSearch = u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          u.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchSearch = 
+        u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u._id?.includes(searchTerm) ||
+        u.phone_number?.includes(searchTerm);
       const matchType = filterType === "all" || u.user_type === filterType;
       return matchSearch && matchType;
     });
@@ -103,118 +102,151 @@ const UsersAdmin = () => {
     return filteredUsers.slice(start, start + usersPerPage);
   }, [filteredUsers, currentPage]);
 
-  if (loading) return <div className="loading-state-3244f"><span></span><p>Syncing Neural Network...</p></div>;
+  if (loading) return <div className="loading-state-3244f"><span></span><p>Accessing Secure Database...</p></div>;
 
   return (
     <div className="dex-dark-root-3244f">
       <header className="dex-header-3244f">
         <div className="header-text-3244f">
-          <h1 className="dex-main-title-3244f">Admin Insight</h1>
-          <p className="dex-status-3244f"><FaCircle className="status-online-3244f" /> {users.length} Nodes</p>
+          <h1 className="dex-main-title-3244f">User Intelligence</h1>
+          <p className="dex-status-3244f">
+            <FaCircle className="status-online-3244f" /> System Live: {users.length} Total Registered Nodes
+          </p>
         </div>
         <div className="header-actions-3244f">
-          <button className={`btn-sync-3244f ${refreshing ? 'spinning-3244f' : ''}`} onClick={fetchAllData}><FaSync /></button>
+          <button className={`btn-sync-3244f ${refreshing ? 'spinning-3244f' : ''}`} onClick={fetchAllData}>
+            <FaSync />
+          </button>
         </div>
       </header>
 
-      {/* KPI Cards */}
+      {/* Primary KPI Grid */}
       <section className="dex-kpi-grid-3244f">
         <div className="kpi-card-3244f">
           <div className="kpi-icon-wrapper-3244f blue-bg-3244f"><FaUserPlus /></div>
           <div className="kpi-val-group-3244f">
             <span>New Today</span>
-            <strong>{intelligence.joinedToday}</strong>
+            <strong>{stats.joinedToday}</strong>
           </div>
         </div>
         <div className="kpi-card-3244f">
-          <div className="kpi-icon-wrapper-3244f green-bg-3244f">
-            {intelligence.growth >= 0 ? <FaArrowUp /> : <FaArrowDown />}
-          </div>
+          <div className="kpi-icon-wrapper-3244f green-bg-3244f"><FaStar /></div>
           <div className="kpi-val-group-3244f">
-            <span>Growth</span>
-            <strong className={intelligence.growth >= 0 ? 'text-green-3244f' : 'text-red-3244f'}>
-              {intelligence.growth.toFixed(1)}%
-            </strong>
+            <span>Premium Tier</span>
+            <strong>{stats.premiumUsers}</strong>
           </div>
         </div>
         <div className="kpi-card-3244f">
-          <div className="kpi-icon-wrapper-3244f purple-bg-3244f"><FaRobot /></div>
+          <div className="kpi-icon-wrapper-3244f purple-bg-3244f"><FaHistory /></div>
           <div className="kpi-val-group-3244f">
-            <span>Power Users</span>
-            <strong>{users.filter(u => u.messagesUsedToday > 5).length}</strong>
+            <span>System Logins</span>
+            <strong>{stats.totalLogins}</strong>
+          </div>
+        </div>
+        <div className="kpi-card-3244f">
+          <div className="kpi-icon-wrapper-3244f yellow-bg-3244f"><FaUser /></div>
+          <div className="kpi-val-group-3244f">
+            <span>Average Age</span>
+            <strong>{stats.avgAge}</strong>
           </div>
         </div>
       </section>
 
-      {/* Charts Grid */}
+      {/* Growth Visualization */}
       <section className="dex-visuals-grid-3244f">
-        <div className="visual-card-3244f">
-          <h3>Daily Top Usage</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={intelligence.powerUsers}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2c2c2e" />
-              <XAxis dataKey="name" stroke="#8e8e93" fontSize={10} tickLine={false} axisLine={false} />
-              <Tooltip 
-                cursor={{fill: '#2c2c2e'}} 
-                contentStyle={{backgroundColor: '#1c1c1e', border: '1px solid #38383a', borderRadius: '10px'}} 
-              />
-              <Bar dataKey="usage" radius={[4, 4, 0, 0]} barSize={25}>
-                {intelligence.powerUsers.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={index === 0 ? '#30D158' : '#0A84FF'} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="visual-card-3244f">
-          <h3>Onboarding Trend</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={trendData}>
+        <div className="visual-card-3244f full-width-visual-3244f">
+          <div className="visual-header-3244f">
+            <h3>User Join Growth (Day-Wise)</h3>
+            <p>Registration metrics for the last 14 days</p>
+          </div>
+          <ResponsiveContainer width="100%" height={280}>
+            <AreaChart data={growthTrendData}>
               <defs>
-                <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#BF5AF2" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#BF5AF2" stopOpacity={0}/>
+                <linearGradient id="growthGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#0A84FF" stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor="#0A84FF" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <XAxis dataKey="name" stroke="#8e8e93" fontSize={10} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={{backgroundColor: '#1c1c1e', border: '1px solid #38383a'}} />
-              <Area type="monotone" dataKey="value" stroke="#BF5AF2" fillOpacity={1} fill="url(#colorVal)" strokeWidth={2} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2c2c2e" />
+              <XAxis dataKey="date" stroke="#8e8e93" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis stroke="#8e8e93" fontSize={11} tickLine={false} axisLine={false} />
+              <Tooltip 
+                contentStyle={{backgroundColor: '#1c1c1e', border: '1px solid #38383a', borderRadius: '12px'}} 
+                itemStyle={{color: '#0A84FF'}}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="joins" 
+                stroke="#0A84FF" 
+                fillOpacity={1} 
+                fill="url(#growthGradient)" 
+                strokeWidth={3} 
+                animationDuration={1500}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       </section>
 
-      {/* User Management Section */}
+      {/* User Management */}
       <section className="dex-table-section-3244f">
         <div className="table-controls-3244f">
           <div className="search-box-3244f">
             <FaSearch />
-            <input type="text" placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+            <input 
+              type="text" 
+              placeholder="Search Name, Email, Phone or ID..." 
+              value={searchTerm} 
+              onChange={e => setSearchTerm(e.target.value)} 
+            />
           </div>
           <select className="filter-select-3244f" onChange={e => setFilterType(e.target.value)}>
-            <option value="all">Tiers</option>
-            <option value="free">Free</option>
-            <option value="subscriber">Pro</option>
+            <option value="all">All Tiers</option>
+            <option value="free">Free Users</option>
+            <option value="subscriber">Subscribers</option>
           </select>
         </div>
 
         <div className="user-grid-3244f">
           {paginatedUsers.map(user => (
             <div key={user._id} className="user-pro-card-3244f">
+              {/* Card Header */}
               <div className="user-pro-top-3244f">
-                <img src={user.profile_picture || 'https://via.placeholder.com/150'} alt="" />
-                <span className={`badge-3244f ${user.user_type === 'subscriber' ? 'subscriber-3244f' : ''}`}>
-                  {user.user_type}
-                </span>
+                <div className="avatar-wrapper-3244f">
+                  <img src={user.profile_picture || 'https://via.placeholder.com/150'} alt="" />
+                  <div className={`status-indicator-3244f ${user.messagesUsedToday > 0 ? 'online' : ''}`}></div>
+                </div>
+                <div className="header-badges-3244f">
+                   <span className={`badge-3244f ${user.user_type === 'subscriber' ? 'subscriber-3244f' : ''}`}>
+                    {user.user_type}
+                  </span>
+                </div>
               </div>
+
+              {/* Main Info */}
               <div className="user-pro-body-3244f">
                 <h4>{user.name}</h4>
                 <p className="email-label-3244f">{user.email}</p>
                 
+                <div className="detailed-info-grid-3244f">
+                   <div className="detail-item-3244f">
+                      <FaIdBadge title="User ID" />
+                      <span>{user._id.slice(-8).toUpperCase()}...</span>
+                   </div>
+                   <div className="detail-item-3244f">
+                      <FaPhone title="Phone" />
+                      <span>{user.phone_number || 'N/A'}</span>
+                   </div>
+                   <div className="detail-item-3244f">
+                      <FaCalendarAlt title="Age" />
+                      <span>{user.age} Years • {user.gender}</span>
+                   </div>
+                </div>
+
+                {/* Usage Quota */}
                 <div className="mini-quota-3244f">
                   <div className="mini-quota-labels-3244f">
-                    <span>Quota</span>
+                    <span>Daily Quota</span>
                     <span>{user.messagesUsedToday}/{user.messageQuota}</span>
                   </div>
                   <div className="mini-quota-track-3244f">
@@ -222,12 +254,19 @@ const UsersAdmin = () => {
                   </div>
                 </div>
 
+                {/* Activity Tags */}
                 <div className="user-pro-tags-3244f">
-                  <div className="tag-3244f"><FaRobot /> {user.ai_friends?.length}</div>
-                  <div className={`tag-3244f ${user.twofactor ? 'active-tag-3244f' : ''}`}><FaShieldAlt /></div>
-                  <div className={`tag-3244f ${user.hasUsedReferral ? 'active-tag-3244f' : ''}`}><FaUserPlus /></div>
+                  <div className="tag-3244f" title="AI Companions"><FaRobot /> {user.ai_friends?.length || 0}</div>
+                  <div className="tag-3244f" title="Support Tickets"><FaTicketAlt /> {user.tickets?.length || 0}</div>
+                  <div className={`tag-3244f ${user.twofactor ? 'active-tag-3244f' : ''}`} title="2FA Status"><FaShieldAlt /></div>
+                </div>
+                
+                <div className="joined-date-footer-3244f">
+                   Joined: {new Date(user.joinedAt).toLocaleDateString()}
                 </div>
               </div>
+
+              {/* Actions */}
               <div className="user-pro-actions-3244f">
                 <button className="edit-btn-3244f"><FaEdit /></button>
                 <button className="del-btn-3244f"><FaTrash /></button>
@@ -236,8 +275,10 @@ const UsersAdmin = () => {
           ))}
         </div>
 
+        {/* Pagination */}
         <div className="pagination-3244f">
-          <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Prev</button>
+          <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</button>
+          <span className="page-indicator-3244f">Page {currentPage} of {Math.ceil(filteredUsers.length / usersPerPage)}</span>
           <button disabled={currentPage >= Math.ceil(filteredUsers.length / usersPerPage)} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
         </div>
       </section>
