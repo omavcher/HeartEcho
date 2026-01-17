@@ -342,22 +342,23 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
 
         {/* IN-ARTICLE AD - Between hero and story content */}
         <div className="ad-container in-article-ad"> 
-           <div 
+  <div 
     ref={(el) => {
       if (el && !el.hasChildNodes()) {
         const conf = document.createElement('script');
+        conf.type = 'text/javascript';
         conf.innerHTML = `
           atOptions = {
-            'key' : 'ee88502d31ebf3555868244246216d22',
+            'key' : '3ba9d6fe50db5f6e3520294fe7a1ae20',
             'format' : 'iframe',
-            'height' : 250,
-            'width' : 300,
+            'height' : 300,
+            'width' : 160,
             'params' : {}
           };
         `;
         const script = document.createElement('script');
         script.type = 'text/javascript';
-        script.src = "https://bankergracestool.com/ee88502d31ebf3555868244246216d22/invoke.js";
+        script.src = "https://bankergracestool.com/3ba9d6fe50db5f6e3520294fe7a1ae20/invoke.js";
         
         el.appendChild(conf);
         el.appendChild(script);
