@@ -318,8 +318,29 @@ export function HotStoriesClient({
                     <React.Fragment key={`ad-${index}`}>
                       {/* MID-GRID AD - Inserted after every 4 stories */}
                       <div className="ad-container grid-ad" style={{ gridColumn: '1 / -1' }}>
-                        <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
-                      </div>
+<div 
+    ref={(el) => {
+      if (el && !el.hasChildNodes()) {
+        const conf = document.createElement('script');
+        conf.type = 'text/javascript';
+        conf.innerHTML = `
+          atOptions = {
+            'key' : '3ba9d6fe50db5f6e3520294fe7a1ae20',
+            'format' : 'iframe',
+            'height' : 300,
+            'width' : 160,
+            'params' : {}
+          };
+        `;
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = "https://bankergracestool.com/3ba9d6fe50db5f6e3520294fe7a1ae20/invoke.js";
+        
+        el.appendChild(conf);
+        el.appendChild(script);
+      }
+    }}
+  />                      </div>
                       <Link 
                         href={`/hot-stories/${story.slug || story.id}`}
                         onClick={() => handleStoryClick(story)} 
@@ -455,8 +476,29 @@ export function HotStoriesClient({
 
       {/* BOTTOM BANNER AD */}
       <div className="ad-container bottom-banner-ad">
-        <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
-      </div>
+<div 
+    ref={(el) => {
+      if (el && !el.hasChildNodes()) {
+        const conf = document.createElement('script');
+        conf.type = 'text/javascript';
+        conf.innerHTML = `
+          atOptions = {
+            'key' : '3ba9d6fe50db5f6e3520294fe7a1ae20',
+            'format' : 'iframe',
+            'height' : 300,
+            'width' : 160,
+            'params' : {}
+          };
+        `;
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = "https://bankergracestool.com/3ba9d6fe50db5f6e3520294fe7a1ae20/invoke.js";
+        
+        el.appendChild(conf);
+        el.appendChild(script);
+      }
+    }}
+  />      </div>
 
       {/* All Indian Cities Section - Optimized grid */}
       <section className="all-cities-section">
