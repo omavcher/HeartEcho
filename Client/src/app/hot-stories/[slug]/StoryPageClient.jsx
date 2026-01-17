@@ -356,6 +356,11 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
           </div>
           
           {/* MID-ARTICLE AD - After story content, before cliffhanger */}
+           <script 
+        async 
+        data-cfasync="false" 
+        src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"
+      />
           <div className="ad-container mid-article-ad">
             <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
           </div>
@@ -400,6 +405,11 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
         </aside>
 
         {/* BOTTOM BANNER AD */}
+         <script 
+        async 
+        data-cfasync="false" 
+        src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"
+      />
         <div className="ad-container bottom-banner-ad">
           <div id="container-192103d6879cc843368e47e4d3546f8f"></div>
         </div>

@@ -156,6 +156,11 @@ export default function RootLayout({ children }) {
       <body>
         <ClientLayout>{children}</ClientLayout>
       </body>
+       <script 
+        async 
+        data-cfasync="false" 
+        src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"
+      />
     </html>
   );
 }
