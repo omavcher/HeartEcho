@@ -1,4 +1,4 @@
-// components/AdminLayout.jsx
+// components/AdminLayout.js
 import PropTypes from 'prop-types';
 import AdminPanel from '../../pages/AdminPanel';
 
