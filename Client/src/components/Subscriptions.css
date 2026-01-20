@@ -1,375 +1,206 @@
-/* Mobile-Optimized CSS with Pure Black Theme and Enhanced Styling */
-.seh3d3-subscription-container {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 1.5rem 1rem;
+/* RESET & CORE */
+.seh-page-wrapper {
+    background-color: #000;
     color: #fff;
-    font-family: 'Inter', sans-serif;
-    background-color: #000000;
+    font-family: 'Inter', -apple-system, sans-serif;
+    min-height: 100vh;
 }
 
-/* Limited Offer Banner */
-.seh3d3-limited-offer-banner {
-    background: linear-gradient(90deg, #e74c9a, #ce4085); /* Brighter gradient */
-    padding: 0.8rem;
+/* TOP URGENCY TICKER */
+.seh-top-bar {
+    background: #ce4085;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* FOMO POPUP - Mobile Optimized */
+.seh-fomo {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(150%);
+    background: #1a1a1a;
+    width: 90%;
+    max-width: 350px;
+    padding: 12px 15px;
     border-radius: 12px;
-    margin-bottom: 2rem;
+    border: 1px solid #ce4085;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
     align-items: center;
-    gap: 0.8rem;
-    font-size: 1rem;
+    gap: 10px;
+    transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1000;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.seh-fomo.active { transform: translateX(-50%) translateY(0); }
+.seh-fomo p { margin: 0; font-size: 13px; color: #eee; }
+.seh-fomo span { color: #ce4085; font-weight: bold; }
+.seh-fomo-dot { width: 8px; height: 8px; background: #4cd964; border-radius: 50%; }
+
+/* CONTAINER */
+.seh-container {
+    padding: 20px 15px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* HERO SECTION */
+.seh-hero {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.seh-title {
+    font-size: 28px;
+    font-weight: 900;
+    margin-bottom: 10px;
+}
+.seh-subtitle {
+    font-size: 15px;
+    color: #aaa;
+    line-height: 1.4;
+}
+.seh-live-counter {
+    background: rgba(206,64,133,0.1);
+    color: #ce4085;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 15px;
+}
+
+/* PRICING CARDS */
+.seh-grid {
+    display: flex;
+    flex-direction: column; /* Mobile Default */
+    gap: 20px;
+}
+
+.seh-card {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 20px;
+    padding: 25px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.seh-featured {
+    border: 2px solid #ce4085;
+    background: #161616;
+    order: -1; /* Puts Yearly on top for mobile */
+}
+
+.seh-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ce4085;
+    color: white;
+    font-size: 11px;
+    font-weight: 900;
+    padding: 4px 15px;
+    border-radius: 10px;
+}
+
+.seh-plan-name { font-size: 18px; margin-bottom: 15px; }
+
+.seh-pricing { display: flex; align-items: baseline; gap: 8px; }
+.seh-main-price { font-size: 36px; font-weight: 900; color: #fff; }
+.seh-old-price { text-decoration: line-through; color: #555; font-size: 18px; }
+.seh-per { color: #aaa; font-size: 14px; }
+
+.seh-daily-tag {
+    background: rgba(76, 217, 100, 0.1);
+    color: #4cd964;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin: 15px 0;
+    font-weight: 600;
+    text-align: center;
+}
+
+.seh-features {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    font-size: 14px;
+}
+.seh-features li { margin-bottom: 10px; color: #ddd; }
+
+/* BUTTONS */
+.seh-btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 16px;
+    cursor: pointer;
+    background: #333;
+    color: white;
+    transition: 0.3s;
+}
+.seh-btn-pink {
+    background: linear-gradient(135deg, #ce4085, #e74c9a);
     box-shadow: 0 4px 15px rgba(206, 64, 133, 0.4);
 }
 
-.seh3d3-offer-tag {
-    background: #000;
-    color: #fff;
-    padding: 0.3rem 1rem;
-    border-radius: 25px;
-    font-weight: 800;
-    font-size: 0.9rem;
-    letter-spacing: 0.5px;
-}
-
-.seh3d3-countdown-timer {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 700;
-}
-
-.seh3d3-timer-digit {
-    background: rgba(0, 0, 0, 0.5);
-    padding: 0.2rem 0.6rem;
-    border-radius: 6px;
-    min-width: 30px;
-    display: inline-block;
+/* TRUST SECTION */
+.seh-trust-section {
     text-align: center;
-    font-size: 1rem;
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #222;
 }
-
-.seh3d3-subscription-hero {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.seh3d3-subscription-title {
-    font-size: 2.2rem;
-    font-weight: 800;
-    margin-bottom: 0.5rem;
-    color: #fff;
-}
-
-.seh3d3-heart-pulse {
-    color: #ce4085;
-    animation: seh3d3-pulse 1.5s infinite;
-}
-
-.seh3d3-subscription-subtitle {
-    font-size: 1.1rem;
-    color: rgba(255, 255, 255, 0.7);
-    max-width: 600px;
-    margin: 0.5rem auto 2rem;
-}
-
-/* Quota Message */
-.seh3d3-quota-message {
-    background: linear-gradient(135deg, #ce4085, #9d2c66);
-    color: white;
-    padding: 1rem;
-    border-radius: 10px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    font-size: 1rem;
-    font-weight: 600;
-    max-width: 500px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-}
-
-/* Plans Grid */
-.seh3d3-plans-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    margin: 1.5rem 0 3rem;
-}
-
-.seh3d3-plan-card {
-    background: #111111;
-    border-radius: 15px;
-    padding: 1.5rem;
-    position: relative;
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-}
-
-.seh3d3-plan-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.7);
-}
-
-.seh3d3-premium-plan {
-    border-color: #ce4085;
-}
-
-/* Best Value Highlight for Yearly Plan */
-.seh3d3-ultimate-plan.seh3d3-best-value {
-    background: #1c1c1c; /* Slightly darker to stand out */
-    border-color: #fff;
-    box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-}
-
-.seh3d3-plan-header {
-    margin-bottom: 1.2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.seh3d3-plan-card h3 {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-    font-weight: 700;
-    color: white;
-}
-
-.seh3d3-price-container {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    gap: 0.5rem;
-}
-
-.seh3d3-price {
-    font-size: 2.2rem;
-    font-weight: 800;
-    color: #ce4085;
-}
-
-.seh3d3-duration {
-    font-size: 1rem;
-    color: rgba(255, 255, 255, 0.6);
-    margin-bottom: 0.3rem;
-}
-
-.seh3d3-original-price {
-    text-decoration: line-through;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 0.9rem;
-    width: 100%;
-    margin-top: 0.5rem;
-}
-
-.seh3d3-discount-tag {
-    background: #ce4085;
-    color: white;
-    padding: 0.2rem 0.6rem;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-}
-
-/* Monthly Equivalent for Yearly Plan */
-.seh3d3-monthly-equivalent {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #4cd964; /* Green for savings */
-    margin-top: 0.5rem;
-    padding: 0.3rem 0;
-    border-top: 1px dashed rgba(255, 255, 255, 0.1);
-}
-
-/* Badges */
-.seh3d3-popular-badge {
-    position: absolute;
-    top: -12px;
-    right: 15px;
-    background: linear-gradient(135deg, #e74c9a, #ce4085);
-    color: white;
-    padding: 0.3rem 0.8rem;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-}
-
-/* Features List */
-.seh3d3-features-list {
-    list-style: none;
-    padding: 0;
-    margin: 1rem 0 1.5rem;
-}
-
-.seh3d3-features-list li {
-    margin-bottom: 0.8rem;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.95rem;
-    font-weight: 500;
-}
-
-/* Icons for features */
-.seh3d3-icon-check {
-    color: #4cd964; /* Green for included features */
-    font-weight: bold;
-    font-size: 1.1rem;
-}
-
-.seh3d3-icon-x {
-    color: #ff3b30; /* Red for disabled/excluded features */
-    font-weight: bold;
-    font-size: 1.1rem;
-}
-
-.seh3d3-feature-disabled {
-    color: rgba(255, 255, 255, 0.4) !important;
-}
-
-/* Buttons */
-.seh3d3-plan-button {
-    width: 100%;
-    padding: 1rem;
-    border: none;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 1rem;
-    cursor: pointer;
-    margin-top: 1rem;
-    transition: background-color 0.3s ease, transform 0.2s;
-    text-transform: uppercase;
-}
-
-.seh3d3-plan-button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-}
-
-.seh3d3-free-button {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-}
-
-.seh3d3-premium-button {
-    background: linear-gradient(135deg, #ce4085, #e74c9a);
-    color: white;
-}
-
-.seh3d3-ultimate-button {
-    background: #fff; /* White button for best value */
-    color: #ce4085;
-    font-weight: 800;
-}
-
-.seh3d3-plan-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* UPI Payment Section */
-.seh3d3-payment-info-container {
-    text-align: center;
-    margin: 3rem 0;
-    padding: 1.5rem;
-    background: #1a1a1a;
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.seh3d3-payment-title {
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-    color: #fff;
-    font-weight: 700;
-}
-
-.seh3d3-payment-methods {
+.seh-trust-icons {
     display: flex;
     justify-content: center;
-    gap: 1.5rem;
-    margin-bottom: 1rem;
+    gap: 15px;
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 10px;
 }
+.seh-secure-text { font-size: 10px; color: #444; }
 
-.seh3d3-upi-payment-option {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-direction: column;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #4cd964;
-}
-
-.seh3d3-payment-note {
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.6);
-    margin-top: 0.5rem;
-}
-
-/* Testimonial Section */
-.seh3d3-testimonial-section {
-    margin: 3rem 0;
-    /* Styles for the Testimonials component will go here */
-}
-
-.seh3d3-testimonials-placeholder {
-    padding: 2rem;
-    background: #111;
-    border-radius: 10px;
-    text-align: center;
-    border: 1px dashed rgba(255, 255, 255, 0.2);
-}
-
-/* Footer */
-.seh3d3-subscription-footer {
-    text-align: center;
-    margin-top: 2rem;
-}
-
-.seh3d3-guarantee-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: rgba(76, 217, 100, 0.1);
-    color: #4cd964;
-    padding: 0.6rem 1rem;
-    border-radius: 25px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    border: 1px solid rgba(76, 217, 100, 0.3);
-}
-
-/* Animations */
-@keyframes seh3d3-pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-/* Tablet and Desktop Responsive */
+/* TABLET & DESKTOP */
 @media (min-width: 768px) {
-    .seh3d3-subscription-container {
-        padding: 2.5rem 2rem;
+    .seh-grid {
+        flex-direction: row;
+        align-items: flex-start;
     }
+    .seh-card { flex: 1; }
+    .seh-featured { transform: scale(1.05); }
+    .seh-title { font-size: 42px; }
+    .seh-fomo { left: 30px; transform: translateX(0) translateY(150%); }
+    .seh-fomo.active { transform: translateX(0) translateY(0); }
+}
 
-    .seh3d3-plans-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 2rem;
-    }
-
-    .seh3d3-plan-card {
-        padding: 2rem;
-    }
-
-    .seh3d3-ultimate-plan.seh3d3-best-value {
-        transform: scale(1.05); /* Make it stand out more */
-    }
+/* ANIMATIONS */
+.seh-pulse {
+    width: 8px;
+    height: 8px;
+    background: #4cd964;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    box-shadow: 0 0 0 rgba(76, 217, 100, 0.4);
+    animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 217, 100, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(76, 217, 100, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 217, 100, 0); }
 }

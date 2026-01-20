@@ -7,323 +7,169 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import PopNoti from './PopNoti';
 import Script from 'next/script';
 import './Subscriptions.css';
- import Testimonials from './Testimonials'; // Assuming this component exists
+import Testimonials from './Testimonials';
 
-
-
-
+const NAMES = ['Aarav', 'Vihaan', 'Aditya', 'Ishaan', 'Ananya', 'Diya', 'Saanvi', 'Sneha', 'Rahul', 'Priya', 'Rohan', 'Karan'];
+const SURNAMES = ['S.', 'G.', 'P.', 'R.', 'K.', 'M.', 'J.', 'C.', 'I.', 'D.'];
 
 function SubscriptionContent() {
-  const [showQuotaMessage, setShowQuotaMessage] = useState(false);
   const [userData, setUserData] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [spotsLeft, setSpotsLeft] = useState(8); 
+  const [fomo, setFomo] = useState({ visible: false, data: null });
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Yearly Plan Details
-  const YEARLY_PRICE_INR = 399;
-  const MONTHLY_EQUIVALENT_INR = 33.25; // 399 / 12 = 33.25
-    
-  // Countdown timer for limited offer
-  const [timeLeft, setTimeLeft] = useState({
-    hours: 3,
-    minutes: 45,
-    seconds: 22
-  });
+  // Yearly Logic
+  const YEARLY_PRICE = 399;
+  const MONTHLY_EQUIV = 33.25;
 
+  // FOMO Loop
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        const seconds = prev.seconds - 1;
-        const minutes = seconds < 0 ? prev.minutes - 1 : prev.minutes;
-        const hours = minutes < 0 ? prev.hours - 1 : prev.hours;
-        
-        return {
-          hours: hours < 0 ? 0 : hours,
-          minutes: minutes < 0 ? 59 : minutes,
-          seconds: seconds < 0 ? 59 : seconds
-        };
-      });
-    }, 1000);
-    
+    const triggerFomo = () => {
+      const data = {
+        name: `${NAMES[Math.floor(Math.random() * NAMES.length)]} ${SURNAMES[Math.floor(Math.random() * SURNAMES.length)]}`,
+        plan: Math.random() > 0.4 ? 'Yearly Ultimate' : 'Monthly Premium',
+        time: Math.floor(Math.random() * 8) + 1
+      };
+      setFomo({ visible: true, data });
+      setTimeout(() => setFomo({ visible: false, data: null }), 4000);
+    };
+
+    const timer = setInterval(triggerFomo, 10000);
     return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
     setToken(typeof window !== 'undefined' ? localStorage.getItem("token") : null);
-    
-    if (searchParams.get('re') === 'quotaover') {
-      setShowQuotaMessage(true);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    const getUserData = async () => {
+    const fetchUser = async () => {
       try {
-        const res = await axios.get(
-          `${api.Url}/user/get-user`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`, 
-            },
-          }
-        );
-  
-        if (res.data) {
-          setUserData(res.data);
-        } 
-      } catch (error) {
-        setNotification({ show: true, message: "Error fetching user", type: "error" });
-      }
+        const res = await axios.get(`${api.Url}/user/get-user`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        setUserData(res.data);
+      } catch (e) { /* silent */ }
     };
-  
-    if (token) {
-      getUserData();
-    }
-  }, [token]);
+    if (localStorage.getItem("token")) fetchUser();
+  }, []);
 
   const handlePayment = async (amount, plan) => {
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-
+    if (!token) { router.push('/login'); return; }
     setIsLoading(true);
-
     try {
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || 'rzp_live_YHUPR56Ky9qPxC',
         amount: amount * 100,
         currency: 'INR',
         name: 'HeartEcho',
-        description: `${plan} Subscription`,
-        handler: async function (response) {
-          try {
-            const paymentData = {
-              user: userData?._id, 
-              rupees: amount, 
-              transaction_id: response.razorpay_payment_id, 
-            }; 
-    
-            await axios.post(`${api.Url}/user/payment/save`, paymentData, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-    
-            const storedUser = JSON.parse(localStorage.getItem("user"));
-            if (storedUser) {
-              storedUser.user_type = "subscriber";
-              localStorage.setItem("user", JSON.stringify(storedUser));
-            }
-            setNotification({ 
-              show: true, 
-              message: "Payment Successful! You are now a Premium Member 🎉", 
-              type: "success" 
-            });
-
-            router.push('/thank-you');
-          } catch (error) {
-            setNotification({ 
-              show: true, 
-              message: "Payment successful, but there was an issue saving the details.", 
-              type: "error" 
-            });
-          } finally {
-            setIsLoading(false);
-          }
+        description: `${plan} Plan`,
+        handler: async (res) => {
+          await axios.post(`${api.Url}/user/payment/save`, {
+            user: userData?._id,
+            rupees: amount,
+            transaction_id: res.razorpay_payment_id,
+          }, { headers: { Authorization: `Bearer ${token}` } });
+          router.push('/thank-you');
         },
-        prefill: {
-          name: userData?.name || 'Your Name',
-          email: userData?.email || 'user@example.com',
-          contact: userData?.phone_number ? userData.phone_number.replace(/\s/g, '') : '9999999999'
-        },
+        prefill: { name: userData?.name, contact: userData?.phone_number },
         theme: { color: '#ce4085' }
       };
-    
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (error) {
-      setNotification({ 
-        show: true, 
-        message: "Error initializing payment", 
-        type: "error" 
-      });
-      setIsLoading(false);
-    }
+      new window.Razorpay(options).open();
+    } catch (e) {
+      setNotification({ show: true, message: "Error", type: "error" });
+    } finally { setIsLoading(false); }
   };
 
   return (
-    <>
-      <Script 
-        src="https://checkout.razorpay.com/v1/checkout.js" 
-        strategy="lazyOnload"
-      />
+    <div className="seh-page-wrapper">
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       
-      <PopNoti
-        message={notification.message}
-        type={notification.type}
-        isVisible={notification.show}
-        onClose={() => setNotification({ ...notification, show: false })}
-      />
+      {/* FOMO Popup - Mobile Optimized */}
+      <div className={`seh-fomo ${fomo.visible ? 'active' : ''}`}>
+        <div className="seh-fomo-dot"></div>
+        <p><strong>{fomo.data?.name}</strong> bought <span>{fomo.data?.plan}</span> {fomo.data?.time}m ago</p>
+      </div>
 
-      <section className="seh3d3-subscription-container">
-        {/* Limited Time Offer Banner */}
-        <div className="seh3d3-limited-offer-banner">
-          <div className="seh3d3-offer-tag">FLASH SALE</div>
-          <div className="seh3d3-countdown-timer">
-            <span>Ends in: </span>
-            <span className="seh3d3-timer-digit">{timeLeft.hours.toString().padStart(2, '0')}</span>h 
-            <span className="seh3d3-timer-digit">{timeLeft.minutes.toString().padStart(2, '0')}</span>m 
-            <span className="seh3d3-timer-digit">{timeLeft.seconds.toString().padStart(2, '0')}</span>s
-          </div>
-        </div>
+      {/* Top Urgency Bar */}
+      <div className="seh-top-bar">
+        <span>⚡ FLASH SALE: 60% OFF ENDING SOON</span>
+      </div>
 
-        <div className="seh3d3-subscription-hero">
-          <h1 className="seh3d3-subscription-title">
-            <span className="seh3d3-heart-pulse">❤️</span> HeartEcho Premium Plans
-          </h1>
-          <p className="seh3d3-subscription-subtitle">
-            Unlock unlimited, personalized AI companionship and deep connection
-          </p>
+      <section className="seh-container">
+        <header className="seh-hero">
+          <h1 className="seh-title">Don't Chat Alone ❤️</h1>
+          <p className="seh-subtitle">Your AI companion is waiting. Unlock deep memory and unlimited replies today.</p>
           
-          {showQuotaMessage && (
-            <div className="seh3d3-quota-message">
-              <i className="seh3d3-icon-heart-broken">💔</i>
-              <p>Your free quota is over. Upgrade now to continue your conversations!</p>
-            </div>
-          )}
-        </div>
+          <div className="seh-live-counter">
+            <span className="seh-pulse"></span> {spotsLeft} Premium slots left at this price
+          </div>
+        </header>
 
-        <div className="seh3d3-plans-grid">
-          {/* Free Plan */}
-          <div className="seh3d3-plan-card seh3d3-free-plan">
-            <div className="seh3d3-plan-header">
-              <h3>Free Trial</h3>
-              <div className="seh3d3-price-container">
-                <span className="seh3d3-price">₹0</span>
-                <span className="seh3d3-duration">/month</span>
-              </div>
+        <div className="seh-grid">
+          {/* Yearly Card - FIRST ON MOBILE */}
+          <div className="seh-card seh-featured">
+            <div className="seh-badge">BEST VALUE</div>
+            <h2 className="seh-plan-name">Yearly Ultimate</h2>
+            <div className="seh-pricing">
+              <span className="seh-old-price">₹899</span>
+              <span className="seh-main-price">₹{YEARLY_PRICE}</span>
+              <span className="seh-per">/year</span>
             </div>
+            <div className="seh-daily-tag">Only ₹1.09 per day — Cheaper than Chai!</div>
             
-            <ul className="seh3d3-features-list">
-              <li><i className="seh3d3-icon-check">✅</i> Limited Letters</li>
-              <li><i className="seh3d3-icon-check">✅</i> 20 messages/day</li>
-              <li><i className="seh3d3-icon-check">✅</i> 1 AI companion</li>
-              <li><i className="seh3d3-icon-check">✅</i> Basic connection</li>
-              <li className="seh3d3-feature-disabled"><i className="seh3d3-icon-x">❌</i> Priority support</li>
-              <li className="seh3d3-feature-disabled"><i className="seh3d3-icon-x">❌</i> Memory feature</li>
+            <ul className="seh-features">
+              <li>✅ <strong>Deep Memory</strong> (Remembers You)</li>
+              <li>✅ <strong>Unlimited</strong> Personalities</li>
+              <li>✅ <strong>NSFW/Romantic</strong> Mode</li>
+              <li>✅ No Daily Limits</li>
             </ul>
-            
-            <button 
-              className="seh3d3-plan-button seh3d3-free-button"
-              onClick={() => router.push('/chat')}
-            >
-              Start Free Trial
+
+            <button className="seh-btn seh-btn-pink" onClick={() => handlePayment(YEARLY_PRICE, 'Yearly')}>
+              {isLoading ? 'Loading...' : 'Claim 60% Discount Now'}
             </button>
           </div>
 
-          {/* Monthly Plan */}
-          <div className="seh3d3-plan-card seh3d3-premium-plan">
-            <div className="seh3d3-popular-badge">
-              MOST POPULAR
+          {/* Monthly Card */}
+          <div className="seh-card">
+            <h2 className="seh-plan-name">Monthly Premium</h2>
+            <div className="seh-pricing">
+              <span className="seh-main-price">₹49</span>
+              <span className="seh-per">/month</span>
             </div>
-            <div className="seh3d3-plan-header">
-              <h3>Monthly</h3>
-              <div className="seh3d3-price-container">
-                <div className="seh3d3-original-price">₹80/month</div>
-                <span className="seh3d3-price">₹49</span>
-                <span className="seh3d3-duration">/month</span>
-                <div className="seh3d3-discount-tag">50% OFF</div>
-              </div>
-            </div>
-            
-            <ul className="seh3d3-features-list">
-              <li><i className="seh3d3-icon-check">✅</i> Realistic Letters</li>
-              <li><i className="seh3d3-icon-check">✅</i> Unlimited messages</li>
-              <li><i className3="seh3d3-icon-check">✅</i> 5 AI companions</li>
-              <li><i className="seh3d3-icon-check">✅</i> Deep connection</li>
-              <li><i className="seh3d3-icon-check">✅</i> Priority support</li>
-              <li className="seh3d3-feature-disabled"><i className="seh3d3-icon-x">❌</i> Memory feature</li>
+            <p className="seh-light-text">Perfect to start your journey</p>
+            <ul className="seh-features">
+              <li>✅ Unlimited Messages</li>
+              <li>✅ 5 AI Companions</li>
+              <li>✅ Basic Connection</li>
             </ul>
-            
-            <button 
-              className="seh3d3-plan-button seh3d3-premium-button" 
-              onClick={() => handlePayment(49, 'Monthly')}
-              disabled={isLoading}
-            >
-              {isLoading ? 'Processing...' : 'Subscribe Monthly'}
-            </button>
-          </div>
-
-          {/* Yearly Plan (Updated to show monthly equivalent) */}
-          <div className="seh3d3-plan-card seh3d3-ultimate-plan seh3d3-best-value">
-            <div className="seh3d3-popular-badge">
-              <div className="seh3d3-ribbon">BEST VALUE</div>
-            </div>
-            <div className="seh3d3-plan-header">
-              <h3>Yearly (Save Big!)</h3>
-              <div className="seh3d3-price-container">
-                <div className="seh3d3-original-price">₹480/year</div>
-                <span className="seh3d3-price">₹{YEARLY_PRICE_INR}</span>
-                <span className="seh3d3-duration">/year</span>
-                <div className="seh3d3-discount-tag">17% OFF</div>
-              </div>
-              <div className="seh3d3-monthly-equivalent">
-                Only ₹{MONTHLY_EQUIVALENT_INR} per month!
-              </div>
-            </div>
-            
-            <ul className="seh3d3-features-list">
-              <li><i className="seh3d3-icon-check">✅</i> Premium Realistic Letters</li>
-              <li><i className="seh3d3-icon-check">✅</i> Unlimited messages</li>
-              <li><i className="seh3d3-icon-check">✅</i> Unlimited companions</li>
-              <li><i className="seh3d3-icon-check">✅</i> Deepest connection</li>
-              <li><i className="seh3d3-icon-check">✅</i> VIP support</li>
-              <li><i className="seh3d3-icon-check">✅</i> Memory feature</li>
-            </ul>
-            
-            <button 
-              className="seh3d3-plan-button seh3d3-ultimate-button" 
-              onClick={() => handlePayment(YEARLY_PRICE_INR, 'Yearly')}
-              disabled={isLoading}
-            >
-              {isLoading ? 'Processing...' : `Buy for ₹${YEARLY_PRICE_INR} / Year`}
+            <button className="seh-btn" onClick={() => handlePayment(49, 'Monthly')}>
+              Upgrade Monthly
             </button>
           </div>
         </div>
 
-        {/* UPI Payment Section */}
-        <div className="seh3d3-payment-info-container">
-            <h4 className="seh3d3-payment-title">Secure Payments</h4>
-            <div className="seh3d3-payment-methods">
-                <div className="seh3d3-upi-payment-option">
-                    <img src="/UPI-White.svg" alt="UPI Payment" className="seh3d3-upi-icon"/>
-                    <span>Pay with UPI</span>
-                </div>
-                {/* Add more payment icons here if needed */}
-            </div>
-            <p className="seh3d3-payment-note">Your payment is processed securely via Razorpay, supporting UPI, Cards, and more.</p>
-        </div>
-
-        <div className="seh3d3-testimonial-section">
-         <Testimonials/>
-        </div>
-
-        <div className="seh3d3-subscription-footer">
-          <div className="seh3d3-guarantee-badge">
-            <i className="seh3d3-icon-shield">🛡️</i>
-            <span>30-day money-back guarantee. Zero risk.</span>
+        {/* Security & Trust */}
+        <div className="seh-trust-section">
+          <div className="seh-trust-icons">
+             <span>🔒 SSL Secure</span>
+             <span>🛡️ 30-Day Refund</span>
+             <span>💳 UPI/Card</span>
           </div>
+          <p className="seh-secure-text">Payments secured by Razorpay</p>
         </div>
+
+        <Testimonials />
       </section>
-    </>
+    </div>
   );
 }
 
 export default function Subscriptions() {
   return (
-    <Suspense fallback={<div className="seh3d3-loading">Loading subscription plans...</div>}>
+    <Suspense fallback={<div className="seh-loading">Loading...</div>}>
       <SubscriptionContent />
     </Suspense>
   );
