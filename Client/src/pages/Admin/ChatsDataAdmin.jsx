@@ -61,4 +61,4 @@ function ChatsDataAdmin() {
     );
 }
 
-export default ChatsData;
+export default ChatsDataAdmin;
