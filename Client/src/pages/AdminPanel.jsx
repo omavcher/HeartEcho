@@ -146,7 +146,7 @@ const renderContent = () => {
     '/admin/complaints': <Complaints />,
     '/admin/referral': <Referral />,
     '/admin/create-story': <CreateStoryPage/>,
-    '/admin/chat-data': <ChatsDataAdmin/>,
+    '/admin/chats': <ChatsDataAdmin/>,
 
   };
   return contentMap[pathname] || <Dashboard />;
