@@ -1118,3 +1118,405 @@
     height: 45px;
   }
 }
+
+
+/* Add these styles to your existing CSS */
+
+/* Upload Section Styles */
+.fif-upload-section {
+  margin-bottom: 16px;
+}
+
+.fif-upload-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.fif-upload-input {
+  flex: 1;
+  padding: 10px 12px;
+  background: var(--secondary-bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: var(--transition);
+}
+
+.fif-upload-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.1);
+}
+
+.fif-upload-button {
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: var(--transition);
+  min-width: 40px;
+  height: 40px;
+}
+
+.fif-upload-button:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.fif-uploading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.loading-spinner.small {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+.fif-upload-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.fif-upload-file {
+  background: var(--success-color);
+}
+
+.fif-upload-file:hover {
+  background: #20c753;
+}
+
+/* Update array item styles for upload support */
+.fif-array-item .fif-upload-group {
+  width: 100%;
+}
+
+.fif-array-remove {
+  flex-shrink: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .fif-upload-group {
+    flex-direction: column;
+  }
+  
+  .fif-upload-input {
+    width: 100%;
+  }
+  
+  .fif-upload-button {
+    width: 100%;
+    height: 40px;
+  }
+  
+  .fif-upload-actions {
+    flex-direction: column;
+  }
+  
+  .fif-array-add,
+  .fif-upload-file {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Add these styles to your existing CSS */
+
+/* Batch Upload Styles */
+.fif-batch-upload {
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--secondary-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.fif-batch-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.fif-batch-header h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.fif-batch-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fif-batch-progress {
+  margin: 16px 0;
+}
+
+.fif-progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.fif-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--border-light);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.fif-progress-fill {
+  height: 100%;
+  background: var(--accent-color);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* Preview Grid */
+.fif-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.fif-gallery-item,
+.fif-batch-preview {
+  background: var(--card-bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  transition: var(--transition);
+}
+
+.fif-gallery-item:hover,
+.fif-batch-preview:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.fif-preview-content {
+  position: relative;
+  width: 100%;
+  height: 100px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.fif-preview-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.fif-preview-thumbnail:hover {
+  transform: scale(1.05);
+}
+
+.fif-preview-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.fif-preview-play:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.fif-gallery-remove,
+.fif-preview-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--danger-color);
+  border: none;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.fif-gallery-remove:hover,
+.fif-preview-remove:hover {
+  background: #ff1a1a;
+  transform: scale(1.1);
+}
+
+.fif-preview-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fif-preview-name {
+  font-size: 11px;
+  color: var(--text-primary);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fif-preview-size {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.fif-gallery-url {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 11px;
+  background: var(--secondary-bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  margin-top: 8px;
+}
+
+/* Upload Status */
+.fif-upload-status {
+  margin-top: 8px;
+}
+
+.fif-upload-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.fif-upload-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--success-color);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Gallery List */
+.fif-gallery-list {
+  margin-bottom: 20px;
+}
+
+.fif-gallery-list h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+}
+
+/* Single URL Section */
+.fif-single-url {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+}
+
+/* Spinner Animation */
+.fa-spinner.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Preview Container */
+.fif-preview-container {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin-top: 12px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .fif-preview-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+  }
+  
+  .fif-batch-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .fif-batch-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .fif-preview-content {
+    height: 80px;
+  }
+  
+  .fif-preview-container {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .fif-preview-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+  
+  .fif-preview-content {
+    height: 70px;
+  }
+  
+  .fif-preview-container {
+    width: 70px;
+    height: 70px;
+  }
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import "./AIFriendsAdmin.css";
 import { 
   FaRobot, 
@@ -15,7 +15,13 @@ import {
   FaPlay,
   FaTimes,
   FaImage,
-  FaVideo
+  FaVideo,
+  FaUpload,
+  FaCloudUploadAlt,
+  FaFileImage,
+  FaFileVideo,
+  FaCheck,
+  FaSpinner
 } from "react-icons/fa";
 import {
   PieChart,
@@ -39,6 +45,40 @@ const AIFriendsAdmin = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [previewMedia, setPreviewMedia] = useState({ type: null, url: null });
+  const [uploading, setUploading] = useState({ 
+    status: 'idle', // 'idle', 'uploading', 'completed', 'error'
+    type: null, // 'single' or 'batch'
+    field: null,
+    index: null,
+    progress: 0,
+    total: 0,
+    completed: 0,
+    errors: []
+  });
+
+  // Batch upload states
+  const [batchUploadFiles, setBatchUploadFiles] = useState({
+    images: [],
+    videos: []
+  });
+  const [batchUploadPreviews, setBatchUploadPreviews] = useState({
+    images: [],
+    videos: []
+  });
+
+  const fileInputRef = useRef({
+    avatar: null,
+    motionVideo: null,
+    images: null,
+    videos: null
+  });
+
+  // Cloudinary configuration
+  const cloudinaryConfig = {
+    cloudName: 'dieklmzt6', // Replace with your Cloudinary cloud name
+    uploadPreset: 'heartec_ai_compins_data_bolOm', // Replace with your upload preset
+    apiUrl: 'https://api.cloudinary.com/v1_1'
+  };
 
   // Memoized colors for charts
   const colors = useMemo(() => [
@@ -53,6 +93,334 @@ const AIFriendsAdmin = () => {
     }
     return "";
   }, []);
+
+  // Cloudinary upload function
+  const uploadToCloudinary = async (file, type = 'image', onProgress = null) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+    formData.append('cloud_name', cloudinaryConfig.cloudName);
+    
+    try {
+      const xhr = new XMLHttpRequest();
+      
+      return new Promise((resolve, reject) => {
+        xhr.upload.addEventListener('progress', (event) => {
+          if (onProgress && event.lengthComputable) {
+            const percentComplete = Math.round((event.loaded / event.total) * 100);
+            onProgress(percentComplete);
+          }
+        });
+
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const data = JSON.parse(xhr.responseText);
+            resolve(data.secure_url);
+          } else {
+            reject(new Error('Upload failed'));
+          }
+        });
+
+        xhr.addEventListener('error', () => {
+          reject(new Error('Upload failed'));
+        });
+
+        xhr.open('POST', `${cloudinaryConfig.apiUrl}/${cloudinaryConfig.cloudName}/${type === 'image' ? 'image' : 'video'}/upload`);
+        xhr.send(formData);
+      });
+    } catch (error) {
+      console.error('Cloudinary upload error:', error);
+      throw error;
+    }
+  };
+
+  // Batch upload function
+  const uploadMultipleFiles = async (files, type) => {
+    const urls = [];
+    const errors = [];
+    
+    setUploading({
+      status: 'uploading',
+      type: 'batch',
+      field: type === 'image' ? 'img_gallery' : 'video_gallery',
+      index: null,
+      progress: 0,
+      total: files.length,
+      completed: 0,
+      errors: []
+    });
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        const url = await uploadToCloudinary(file, type, (progress) => {
+          // Calculate overall progress
+          const overallProgress = Math.round(((i) / files.length) * 100 + (progress / files.length));
+          setUploading(prev => ({
+            ...prev,
+            progress: overallProgress,
+            completed: i
+          }));
+        });
+        
+        urls.push(url);
+        
+        // Update progress
+        setUploading(prev => ({
+          ...prev,
+          completed: i + 1,
+          progress: Math.round(((i + 1) / files.length) * 100)
+        }));
+      } catch (error) {
+        errors.push({
+          fileName: file.name,
+          error: error.message
+        });
+        console.error(`Failed to upload ${file.name}:`, error);
+      }
+    }
+
+    setUploading(prev => ({
+      ...prev,
+      status: errors.length > 0 ? 'error' : 'completed',
+      errors
+    }));
+
+    return { urls, errors };
+  };
+
+  // Handle batch file selection
+  const handleBatchFileSelect = (type, event) => {
+    const files = Array.from(event.target.files);
+    
+    // Validate files
+    const validFiles = files.filter(file => {
+      const isValidType = type === 'image' 
+        ? file.type.startsWith('image/')
+        : file.type.startsWith('video/');
+      
+      const maxSize = type === 'image' ? 10 * 1024 * 1024 : 50 * 1024 * 1024;
+      const isValidSize = file.size <= maxSize;
+      
+      return isValidType && isValidSize;
+    });
+
+    // Create previews
+    const previews = validFiles.map(file => ({
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      url: URL.createObjectURL(file)
+    }));
+
+    if (type === 'image') {
+      setBatchUploadFiles(prev => ({
+        ...prev,
+        images: [...prev.images, ...validFiles]
+      }));
+      setBatchUploadPreviews(prev => ({
+        ...prev,
+        images: [...prev.images, ...previews]
+      }));
+    } else {
+      setBatchUploadFiles(prev => ({
+        ...prev,
+        videos: [...prev.videos, ...validFiles]
+      }));
+      setBatchUploadPreviews(prev => ({
+        ...prev,
+        videos: [...prev.videos, ...previews]
+      }));
+    }
+
+    // Reset file input
+    event.target.value = '';
+  };
+
+  // Remove batch file
+  const removeBatchFile = (type, index) => {
+    if (type === 'image') {
+      // Revoke object URL
+      URL.revokeObjectURL(batchUploadPreviews.images[index].url);
+      
+      setBatchUploadFiles(prev => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== index)
+      }));
+      setBatchUploadPreviews(prev => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== index)
+      }));
+    } else {
+      URL.revokeObjectURL(batchUploadPreviews.videos[index].url);
+      
+      setBatchUploadFiles(prev => ({
+        ...prev,
+        videos: prev.videos.filter((_, i) => i !== index)
+      }));
+      setBatchUploadPreviews(prev => ({
+        ...prev,
+        videos: prev.videos.filter((_, i) => i !== index)
+      }));
+    }
+  };
+
+  // Upload batch files
+  const handleBatchUpload = async (type) => {
+    const files = type === 'image' ? batchUploadFiles.images : batchUploadFiles.videos;
+    
+    if (files.length === 0) {
+      alert(`Please select ${type} files to upload`);
+      return;
+    }
+
+    const { urls, errors } = await uploadMultipleFiles(files, type);
+
+    if (urls.length > 0) {
+      // Add URLs to the appropriate gallery
+      if (type === 'image') {
+        setEditFriend(prev => ({
+          ...prev,
+          img_gallery: [...(prev.img_gallery || []), ...urls]
+        }));
+      } else {
+        setEditFriend(prev => ({
+          ...prev,
+          video_gallery: [...(prev.video_gallery || []), ...urls]
+        }));
+      }
+
+      // Clear batch files
+      if (type === 'image') {
+        // Revoke all image preview URLs
+        batchUploadPreviews.images.forEach(preview => {
+          URL.revokeObjectURL(preview.url);
+        });
+        
+        setBatchUploadFiles(prev => ({ ...prev, images: [] }));
+        setBatchUploadPreviews(prev => ({ ...prev, images: [] }));
+      } else {
+        batchUploadPreviews.videos.forEach(preview => {
+          URL.revokeObjectURL(preview.url);
+        });
+        
+        setBatchUploadFiles(prev => ({ ...prev, videos: [] }));
+        setBatchUploadPreviews(prev => ({ ...prev, videos: [] }));
+      }
+    }
+
+    if (errors.length > 0) {
+      alert(`Failed to upload ${errors.length} file(s). Check console for details.`);
+    }
+  };
+
+  // Clear batch upload
+  const clearBatchUpload = (type) => {
+    if (type === 'image') {
+      batchUploadPreviews.images.forEach(preview => {
+        URL.revokeObjectURL(preview.url);
+      });
+      setBatchUploadFiles(prev => ({ ...prev, images: [] }));
+      setBatchUploadPreviews(prev => ({ ...prev, images: [] }));
+    } else {
+      batchUploadPreviews.videos.forEach(preview => {
+        URL.revokeObjectURL(preview.url);
+      });
+      setBatchUploadFiles(prev => ({ ...prev, videos: [] }));
+      setBatchUploadPreviews(prev => ({ ...prev, videos: [] }));
+    }
+  };
+
+  // Single file upload handler
+  const handleFileUpload = async (event, field, index = null) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+    
+    if (!isImage && !isVideo) {
+      alert('Please upload only image or video files');
+      return;
+    }
+
+    const maxSize = isImage ? 10 * 1024 * 1024 : 50 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert(`File size too large. Maximum size: ${isImage ? '10MB' : '50MB'}`);
+      return;
+    }
+
+    setUploading({
+      status: 'uploading',
+      type: 'single',
+      field,
+      index,
+      progress: 0,
+      total: 1,
+      completed: 0,
+      errors: []
+    });
+
+    try {
+      const uploadUrl = await uploadToCloudinary(file, isImage ? 'image' : 'video', (progress) => {
+        setUploading(prev => ({ ...prev, progress }));
+      });
+      
+      if (field === 'avatar_img') {
+        setEditFriend(prev => ({ ...prev, [field]: uploadUrl }));
+      } else if (field === 'avatar_motion_video') {
+        setEditFriend(prev => ({ ...prev, [field]: uploadUrl }));
+      } else if (field === 'img_gallery' && index !== null) {
+        updateImageGalleryItem(index, uploadUrl);
+      } else if (field === 'video_gallery' && index !== null) {
+        updateVideoGalleryItem(index, uploadUrl);
+      }
+
+      setUploading(prev => ({ ...prev, status: 'completed', progress: 100 }));
+      
+      // Reset uploading state after 2 seconds
+      setTimeout(() => {
+        setUploading({
+          status: 'idle',
+          type: null,
+          field: null,
+          index: null,
+          progress: 0,
+          total: 0,
+          completed: 0,
+          errors: []
+        });
+      }, 2000);
+    } catch (error) {
+      setUploading(prev => ({
+        ...prev,
+        status: 'error',
+        errors: [{ fileName: file.name, error: error.message }]
+      }));
+      alert('Failed to upload file. Please try again.');
+    }
+  };
+
+  // Trigger file input
+  const triggerFileInput = (type, field, index = null) => {
+    const inputKey = field === 'avatar_img' ? 'avatar' 
+                   : field === 'avatar_motion_video' ? 'motionVideo'
+                   : field === 'img_gallery' ? 'images'
+                   : 'videos';
+    
+    if (fileInputRef.current[inputKey]) {
+      fileInputRef.current[inputKey].click();
+    }
+  };
+
+  // Format file size
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   // Data fetching
   const fetchAIFriends = useCallback(async () => {
@@ -83,6 +451,11 @@ const AIFriendsAdmin = () => {
 
   useEffect(() => {
     fetchAllData();
+    // Clean up preview URLs on unmount
+    return () => {
+      batchUploadPreviews.images.forEach(preview => URL.revokeObjectURL(preview.url));
+      batchUploadPreviews.videos.forEach(preview => URL.revokeObjectURL(preview.url));
+    };
   }, [fetchAllData]);
 
   // Statistics
@@ -205,6 +578,10 @@ const AIFriendsAdmin = () => {
       img_gallery: friend.img_gallery || [],
       video_gallery: friend.video_gallery || []
     });
+    
+    // Clear any existing batch uploads
+    clearBatchUpload('image');
+    clearBatchUpload('video');
   };
 
   const handleEditSubmit = async (e) => {
@@ -713,7 +1090,12 @@ const AIFriendsAdmin = () => {
               <h3>Edit AI Friend</h3>
               <button 
                 className="fif-modal-close"
-                onClick={() => setEditFriend(null)}
+                onClick={() => {
+                  // Clean up preview URLs
+                  clearBatchUpload('image');
+                  clearBatchUpload('video');
+                  setEditFriend(null);
+                }}
               >
                 ×
               </button>
@@ -824,91 +1206,445 @@ const AIFriendsAdmin = () => {
                   />
                 </div>
 
+                {/* Avatar Image Section */}
                 <div className="form-group full-width">
-                  <label>Avatar URL</label>
-                  <input
-                    type="text"
-                    value={editFriend.avatar_img}
-                    onChange={(e) => setEditFriend({ ...editFriend, avatar_img: e.target.value })}
-                    required
-                  />
+                  <div className="fif-upload-section">
+                    <label>Avatar Image</label>
+                    <div className="fif-upload-group">
+                      <input
+                        type="text"
+                        value={editFriend.avatar_img}
+                        onChange={(e) => setEditFriend({ ...editFriend, avatar_img: e.target.value })}
+                        required
+                        className="fif-upload-input"
+                        placeholder="Avatar URL or upload image"
+                      />
+                      <input
+                        ref={el => fileInputRef.current.avatar = el}
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileUpload(e, 'avatar_img')}
+                        style={{ display: 'none' }}
+                      />
+                      <button
+                        type="button"
+                        className="fif-upload-button"
+                        onClick={() => triggerFileInput('image', 'avatar_img')}
+                      >
+                        <FaUpload />
+                      </button>
+                    </div>
+                    {uploading.field === 'avatar_img' && uploading.type === 'single' && (
+                      <div className="fif-upload-status">
+                        {uploading.status === 'uploading' && (
+                          <div className="fif-upload-progress">
+                            <div className="fif-progress-bar">
+                              <div 
+                                className="fif-progress-fill" 
+                                style={{ width: `${uploading.progress}%` }}
+                              ></div>
+                            </div>
+                            <span>{uploading.progress}%</span>
+                          </div>
+                        )}
+                        {uploading.status === 'completed' && (
+                          <div className="fif-upload-success">
+                            <FaCheck /> Uploaded successfully!
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {editFriend.avatar_img && (
+                      <div className="fif-preview-container">
+                        <img 
+                          src={editFriend.avatar_img} 
+                          alt="Avatar preview" 
+                          className="fif-preview-thumbnail"
+                          onClick={() => handleImagePreview(editFriend.avatar_img)}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
+                {/* Motion Video Section */}
                 <div className="form-group full-width">
-                  <label>Motion Video URL</label>
-                  <input
-                    type="text"
-                    value={editFriend.avatar_motion_video || ""}
-                    onChange={(e) => setEditFriend({ ...editFriend, avatar_motion_video: e.target.value })}
-                    placeholder="https://example.com/motion-video.mp4"
-                  />
+                  <div className="fif-upload-section">
+                    <label>Motion Video</label>
+                    <div className="fif-upload-group">
+                      <input
+                        type="text"
+                        value={editFriend.avatar_motion_video || ""}
+                        onChange={(e) => setEditFriend({ ...editFriend, avatar_motion_video: e.target.value })}
+                        placeholder="Motion video URL or upload video"
+                        className="fif-upload-input"
+                      />
+                      <input
+                        ref={el => fileInputRef.current.motionVideo = el}
+                        type="file"
+                        accept="video/*"
+                        onChange={(e) => handleFileUpload(e, 'avatar_motion_video')}
+                        style={{ display: 'none' }}
+                      />
+                      <button
+                        type="button"
+                        className="fif-upload-button"
+                        onClick={() => triggerFileInput('video', 'avatar_motion_video')}
+                      >
+                        <FaVideo />
+                      </button>
+                    </div>
+                    {uploading.field === 'avatar_motion_video' && uploading.type === 'single' && (
+                      <div className="fif-upload-status">
+                        {uploading.status === 'uploading' && (
+                          <div className="fif-upload-progress">
+                            <div className="fif-progress-bar">
+                              <div 
+                                className="fif-progress-fill" 
+                                style={{ width: `${uploading.progress}%` }}
+                              ></div>
+                            </div>
+                            <span>{uploading.progress}%</span>
+                          </div>
+                        )}
+                        {uploading.status === 'completed' && (
+                          <div className="fif-upload-success">
+                            <FaCheck /> Uploaded successfully!
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {editFriend.avatar_motion_video && (
+                      <div className="fif-preview-container">
+                        <video 
+                          src={editFriend.avatar_motion_video} 
+                          className="fif-preview-thumbnail"
+                          onClick={() => handleVideoPreview(editFriend.avatar_motion_video)}
+                        />
+                        <button 
+                          className="fif-preview-play"
+                          onClick={() => handleVideoPreview(editFriend.avatar_motion_video)}
+                        >
+                          <FaPlay />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Image Gallery Section */}
                 <div className="form-group full-width">
-                  <div className="fif-array-section">
-                    <label>Image Gallery URLs</label>
-                    <div className="fif-array-items">
-                      {editFriend.img_gallery?.map((url, index) => (
-                        <div key={index} className="fif-array-item">
+                  <div className="fif-upload-section">
+                    <label>Image Gallery</label>
+                    
+                    {/* Existing Images */}
+                    {editFriend.img_gallery?.length > 0 && (
+                      <div className="fif-gallery-list">
+                        <h4>Existing Images ({editFriend.img_gallery.length})</h4>
+                        <div className="fif-preview-grid">
+                          {editFriend.img_gallery.map((url, index) => (
+                            <div key={`existing-img-${index}`} className="fif-gallery-item">
+                              <div className="fif-gallery-preview">
+                                <img 
+                                  src={url} 
+                                  alt={`Gallery ${index + 1}`}
+                                  className="fif-preview-thumbnail"
+                                  onClick={() => handleImagePreview(url)}
+                                />
+                                <button
+                                  type="button"
+                                  className="fif-gallery-remove"
+                                  onClick={() => removeImageGalleryItem(index)}
+                                >
+                                  <FaTimes />
+                                </button>
+                              </div>
+                              <input
+                                type="text"
+                                value={url}
+                                onChange={(e) => updateImageGalleryItem(index, e.target.value)}
+                                className="fif-gallery-url"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Batch Image Upload */}
+                    <div className="fif-batch-upload">
+                      <div className="fif-batch-header">
+                        <h4>Upload Multiple Images</h4>
+                        <div className="fif-batch-actions">
                           <input
-                            type="text"
-                            value={url}
-                            onChange={(e) => updateImageGalleryItem(index, e.target.value)}
-                            placeholder="https://example.com/image.jpg"
-                            className="fif-array-input"
+                            ref={el => fileInputRef.current.images = el}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => handleBatchFileSelect('image', e)}
+                            style={{ display: 'none' }}
                           />
                           <button
                             type="button"
-                            className="fif-array-remove"
-                            onClick={() => removeImageGalleryItem(index)}
+                            className="fif-action-button"
+                            onClick={() => fileInputRef.current.images?.click()}
                           >
-                            <FaTimes />
+                            <FaPlus /> Select Images
                           </button>
+                          {batchUploadPreviews.images.length > 0 && (
+                            <>
+                              <button
+                                type="button"
+                                className="fif-action-button fif-save"
+                                onClick={() => handleBatchUpload('image')}
+                                disabled={uploading.status === 'uploading'}
+                              >
+                                {uploading.status === 'uploading' && uploading.field === 'img_gallery' ? (
+                                  <>
+                                    <FaSpinner className="spinner" /> Uploading...
+                                  </>
+                                ) : (
+                                  <>
+                                    <FaCloudUploadAlt /> Upload All ({batchUploadPreviews.images.length})
+                                  </>
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                className="fif-action-button fif-cancel"
+                                onClick={() => clearBatchUpload('image')}
+                              >
+                                <FaTimes /> Clear
+                              </button>
+                            </>
+                          )}
                         </div>
-                      ))}
+                      </div>
+
+                      {/* Batch Upload Progress */}
+                      {uploading.field === 'img_gallery' && uploading.type === 'batch' && (
+                        <div className="fif-batch-progress">
+                          <div className="fif-progress-info">
+                            <span>Uploading {uploading.completed}/{uploading.total} files</span>
+                            <span>{uploading.progress}%</span>
+                          </div>
+                          <div className="fif-progress-bar">
+                            <div 
+                              className="fif-progress-fill" 
+                              style={{ width: `${uploading.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Image Previews */}
+                      {batchUploadPreviews.images.length > 0 && (
+                        <div className="fif-preview-grid">
+                          {batchUploadPreviews.images.map((preview, index) => (
+                            <div key={`batch-img-${index}`} className="fif-batch-preview">
+                              <div className="fif-preview-content">
+                                <img 
+                                  src={preview.url} 
+                                  alt={preview.name}
+                                  className="fif-preview-thumbnail"
+                                />
+                                <button
+                                  type="button"
+                                  className="fif-preview-remove"
+                                  onClick={() => removeBatchFile('image', index)}
+                                >
+                                  <FaTimes />
+                                </button>
+                              </div>
+                              <div className="fif-preview-info">
+                                <span className="fif-preview-name" title={preview.name}>
+                                  {preview.name.length > 15 ? preview.name.substring(0, 15) + '...' : preview.name}
+                                </span>
+                                <span className="fif-preview-size">
+                                  {formatFileSize(preview.size)}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Add Single URL */}
+                      <div className="fif-single-url">
+                        <button
+                          type="button"
+                          className="fif-action-button"
+                          onClick={addImageGalleryItem}
+                        >
+                          <FaPlus /> Add Single Image URL
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      className="fif-array-add"
-                      onClick={addImageGalleryItem}
-                    >
-                      <FaPlus /> Add Image URL
-                    </button>
                   </div>
                 </div>
 
                 {/* Video Gallery Section */}
                 <div className="form-group full-width">
-                  <div className="fif-array-section">
-                    <label>Video Gallery URLs</label>
-                    <div className="fif-array-items">
-                      {editFriend.video_gallery?.map((url, index) => (
-                        <div key={index} className="fif-array-item">
+                  <div className="fif-upload-section">
+                    <label>Video Gallery</label>
+                    
+                    {/* Existing Videos */}
+                    {editFriend.video_gallery?.length > 0 && (
+                      <div className="fif-gallery-list">
+                        <h4>Existing Videos ({editFriend.video_gallery.length})</h4>
+                        <div className="fif-preview-grid">
+                          {editFriend.video_gallery.map((url, index) => (
+                            <div key={`existing-video-${index}`} className="fif-gallery-item">
+                              <div className="fif-gallery-preview">
+                                <video 
+                                  src={url}
+                                  className="fif-preview-thumbnail"
+                                  onClick={() => handleVideoPreview(url)}
+                                />
+                                <button
+                                  type="button"
+                                  className="fif-preview-play"
+                                  onClick={() => handleVideoPreview(url)}
+                                >
+                                  <FaPlay />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="fif-gallery-remove"
+                                  onClick={() => removeVideoGalleryItem(index)}
+                                >
+                                  <FaTimes />
+                                </button>
+                              </div>
+                              <input
+                                type="text"
+                                value={url}
+                                onChange={(e) => updateVideoGalleryItem(index, e.target.value)}
+                                className="fif-gallery-url"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Batch Video Upload */}
+                    <div className="fif-batch-upload">
+                      <div className="fif-batch-header">
+                        <h4>Upload Multiple Videos</h4>
+                        <div className="fif-batch-actions">
                           <input
-                            type="text"
-                            value={url}
-                            onChange={(e) => updateVideoGalleryItem(index, e.target.value)}
-                            placeholder="https://example.com/video.mp4"
-                            className="fif-array-input"
+                            ref={el => fileInputRef.current.videos = el}
+                            type="file"
+                            accept="video/*"
+                            multiple
+                            onChange={(e) => handleBatchFileSelect('video', e)}
+                            style={{ display: 'none' }}
                           />
                           <button
                             type="button"
-                            className="fif-array-remove"
-                            onClick={() => removeVideoGalleryItem(index)}
+                            className="fif-action-button"
+                            onClick={() => fileInputRef.current.videos?.click()}
                           >
-                            <FaTimes />
+                            <FaPlus /> Select Videos
                           </button>
+                          {batchUploadPreviews.videos.length > 0 && (
+                            <>
+                              <button
+                                type="button"
+                                className="fif-action-button fif-save"
+                                onClick={() => handleBatchUpload('video')}
+                                disabled={uploading.status === 'uploading'}
+                              >
+                                {uploading.status === 'uploading' && uploading.field === 'video_gallery' ? (
+                                  <>
+                                    <FaSpinner className="spinner" /> Uploading...
+                                  </>
+                                ) : (
+                                  <>
+                                    <FaCloudUploadAlt /> Upload All ({batchUploadPreviews.videos.length})
+                                  </>
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                className="fif-action-button fif-cancel"
+                                onClick={() => clearBatchUpload('video')}
+                              >
+                                <FaTimes /> Clear
+                              </button>
+                            </>
+                          )}
                         </div>
-                      ))}
+                      </div>
+
+                      {/* Batch Upload Progress */}
+                      {uploading.field === 'video_gallery' && uploading.type === 'batch' && (
+                        <div className="fif-batch-progress">
+                          <div className="fif-progress-info">
+                            <span>Uploading {uploading.completed}/{uploading.total} files</span>
+                            <span>{uploading.progress}%</span>
+                          </div>
+                          <div className="fif-progress-bar">
+                            <div 
+                              className="fif-progress-fill" 
+                              style={{ width: `${uploading.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Video Previews */}
+                      {batchUploadPreviews.videos.length > 0 && (
+                        <div className="fif-preview-grid">
+                          {batchUploadPreviews.videos.map((preview, index) => (
+                            <div key={`batch-video-${index}`} className="fif-batch-preview">
+                              <div className="fif-preview-content">
+                                <video 
+                                  src={preview.url}
+                                  className="fif-preview-thumbnail"
+                                />
+                                <button
+                                  type="button"
+                                  className="fif-preview-play"
+                                  onClick={() => {
+                                    setPreviewMedia({ type: 'video', url: preview.url });
+                                  }}
+                                >
+                                  <FaPlay />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="fif-preview-remove"
+                                  onClick={() => removeBatchFile('video', index)}
+                                >
+                                  <FaTimes />
+                                </button>
+                              </div>
+                              <div className="fif-preview-info">
+                                <span className="fif-preview-name" title={preview.name}>
+                                  {preview.name.length > 15 ? preview.name.substring(0, 15) + '...' : preview.name}
+                                </span>
+                                <span className="fif-preview-size">
+                                  {formatFileSize(preview.size)}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Add Single URL */}
+                      <div className="fif-single-url">
+                        <button
+                          type="button"
+                          className="fif-action-button"
+                          onClick={addVideoGalleryItem}
+                        >
+                          <FaPlus /> Add Single Video URL
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      className="fif-array-add"
-                      onClick={addVideoGalleryItem}
-                    >
-                      <FaPlus /> Add Video URL
-                    </button>
                   </div>
                 </div>
               </div>
@@ -920,7 +1656,11 @@ const AIFriendsAdmin = () => {
                 <button
                   type="button"
                   className="fif-action-button fif-cancel"
-                  onClick={() => setEditFriend(null)}
+                  onClick={() => {
+                    clearBatchUpload('image');
+                    clearBatchUpload('video');
+                    setEditFriend(null);
+                  }}
                 >
                   Cancel
                 </button>
