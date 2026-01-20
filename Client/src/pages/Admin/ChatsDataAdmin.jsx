@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import api from "../../config/api";
 
-function ChatsData() {
+function ChatsDataAdmin() {
     const [chatData, setChatData] = useState([]);
     const [timePeriod, setTimePeriod] = useState("all"); // Assuming you need this for the request
 

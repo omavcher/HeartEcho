@@ -16,7 +16,7 @@ import ReferralAdmin from "./Admin/ReferralAdmin.jsx";
 import CreateStoryPage from "./Admin/CreateStoryPage.jsx";
 import StoriesAdmin from "./Admin/AdminStoy.jsx";
 import EditStoryPage from "./Admin/EditStoryPage.jsx";
-import ChatsData from "./Admin/ChatsData.jsx";
+import ChatsDataAdmin from "./Admin/ChatsDataAdmin.jsx";
 
 const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
   const pathname = usePathname();
