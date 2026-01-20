@@ -16,7 +16,7 @@ function ChatsDataAdmin() {
             try {
                 const token = getToken();
                 // Axios GET requests take params in a config object, not as a second argument
-                const response = await axios.get(`${api.Url}/admin/dashboard-data`, {
+                const response = await axios.get(`${api.Url}/admin/chats-data`, {
                     params: { timePeriod }, 
                     headers: { Authorization: `Bearer ${token}` },
                     timeout: 10000
