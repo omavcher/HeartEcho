@@ -146,7 +146,7 @@ const renderContent = () => {
     '/admin/complaints': <Complaints />,
     '/admin/referral': <Referral />,
     '/admin/create-story': <CreateStoryPage/>,
-    '/admin/chat-data': <ChatsData/>,
+    '/admin/chat-data': <ChatsDataAdmin/>,
 
   };
   return contentMap[pathname] || <Dashboard />;
@@ -195,7 +195,7 @@ const Referral = () => (
 
 const ChatsData = () => (
   <div className="content">
-    <ChatsData />
+    <ChatsDataAdmin />
   </div>
 );
 
