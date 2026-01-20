@@ -1591,82 +1591,71 @@ exports.processPayout = async (req, res) => {
 
 
 
-
-
 exports.getAllChatsData = async (req, res) => {
   try {
-    // 1. Fetch all chats and populate the participants (User data)
-    const chats = await Chat.find()
-      .populate("participants") 
-      .sort({ createdAt: -1 })
-      .lean(); // Use lean for faster processing
+    // Fetch all active chats
+    const chats = await Chat.find({ isActive: true })
+      .populate("participants")
+      .sort({ updatedAt: -1 })
+      .lean();
 
     const userMap = {};
 
     for (const chat of chats) {
-      // 2. Identify the User vs the AI from the participants array
-      // (Assuming the User has an email field and the AI ID does not exist in User DB)
-      const userDetails = chat.participants.find(p => p && p.email);
-      
-      // Find the ID of the AI (the participant that is NOT the user)
-      const aiId = chat.participants.find(p => p && !p.email)?._id;
+      // Find the actual human user (the one with an email in the participants array)
+      const humanUser = chat.participants.find(p => p && p.email);
+      if (!humanUser) continue; 
 
-      if (!userDetails) continue; // Skip if no user found in chat
+      const userId = humanUser._id.toString();
 
-      const userId = userDetails._id.toString();
+      // Find the AI ID used in this specific chat from the messages
+      const aiMsg = chat.messages.find(m => m.senderModel === "PrebuiltAIFriend");
+      const aiId = aiMsg ? aiMsg.sender : null;
 
-      // 3. Initialize the user group if it doesn't exist
+      // Grouping logic
       if (!userMap[userId]) {
         userMap[userId] = {
           user: {
-            id: userDetails._id,
-            name: userDetails.name,
-            email: userDetails.email,
-            profile_picture: userDetails.profile_picture,
-            gender: userDetails.gender,
-            user_type: userDetails.user_type
+            id: userId,
+            name: humanUser.name,
+            email: humanUser.email,
+            profile_picture: humanUser.profile_picture,
+            user_type: humanUser.user_type,
+            joinedAt: humanUser.joinedAt
           },
           aiInteractions: []
         };
       }
 
-      // 4. Fetch AI Details from the PrebuiltAIFriend collection
+      // Fetch AI details for this specific interaction
       let aiDetails = null;
       if (aiId) {
-        aiDetails = await PrebuiltAIFriend.findById(aiId).lean();
+        aiDetails = await PrebuiltAIFriend.findById(aiId).select("name avatar_img relationship").lean();
       }
 
-      // 5. Filter messages: Only keep "User" messages (as per your requirement)
-      // This removes messages where senderModel is "PrebuiltAIFriend"
-      const filteredMessages = chat.messages.filter(
-        (msg) => msg.senderModel === "User"
-      );
+      // Filter only user messages for analysis
+      const userMessages = chat.messages
+        .filter(m => m.senderModel === "User")
+        .map(m => ({
+          text: m.text,
+          time: m.time,
+          _id: m._id
+        }));
 
-      // 6. Club the data: Add this specific chat/AI info to the user's list
       userMap[userId].aiInteractions.push({
         chatId: chat._id,
         aiFriend: aiDetails,
-        messages: filteredMessages, // Only user messages
-        statistics: chat.statistics,
-        createdAt: chat.createdAt
+        messageCount: userMessages.length,
+        messages: userMessages,
+        lastActive: chat.updatedAt
       });
     }
 
-    // Convert the map back to an array for the response
-    const formattedData = Object.values(userMap);
-
     res.status(200).json({
       success: true,
-      count: formattedData.length,
-      data: formattedData
+      data: Object.values(userMap)
     });
-
   } catch (error) {
-    console.error("Error fetching grouped chat data:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-      error: error.message,
-    });
+    res.status(500).json({ success: false, error: error.message });
   }
 };

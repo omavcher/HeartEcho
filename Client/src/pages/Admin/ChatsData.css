@@ -1,0 +1,176 @@
+.pureBlackBodyjdndm3 {
+    background-color: #000;
+    color: #fff;
+    min-height: 100vh;
+    padding: 25px;
+    font-family: 'Inter', sans-serif;
+}
+
+.statsHeaderjdndm3 {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 40px;
+    border-bottom: 1px solid #1a1a1a;
+    padding-bottom: 20px;
+}
+
+.neonTextjdndm3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+.miniStatsjdndm3 {
+    font-size: 11px;
+    color: #666;
+    display: flex;
+    gap: 15px;
+    margin-top: 5px;
+}
+
+.miniStatsjdndm3 b { color: #00ff88; }
+
+.searchInpjdndm3 {
+    background: #0a0a0a;
+    border: 1px solid #222;
+    padding: 10px 15px;
+    color: white;
+    border-radius: 6px;
+    width: 300px;
+}
+
+/* Strategy Analytics Section */
+.strategyRowjdndm3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.personaChartBoxjdndm3, .personaTableBoxjdndm3 {
+    background: #080808;
+    border: 1px solid #1a1a1a;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.personaChartBoxjdndm3 h3, .personaTableBoxjdndm3 h3 {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+}
+
+.strategyTablejdndm3 {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.strategyTablejdndm3 th {
+    text-align: left;
+    color: #444;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #1a1a1a;
+}
+
+.strategyTablejdndm3 td {
+    padding: 12px 0;
+    border-bottom: 1px solid #0f0f0f;
+}
+
+.aiNameTdjdndm3 { font-weight: bold; color: #fff; }
+.highlightTextjdndm3 { color: #00ff88; font-family: monospace; }
+
+/* User Grid */
+.gridAnalyticsjdndm3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 20px;
+}
+
+.userCardjdndm3 {
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.cardHeaderjdndm3 {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.userImgjdndm3 {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.userMeta h3 { margin: 0; font-size: 15px; }
+.userMeta span { font-size: 12px; color: #555; }
+
+.tagjdndm3 {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-top: 5px;
+    display: inline-block;
+}
+
+.subscriberjdndm3 { background: #f59e0b; color: #000; }
+.freejdndm3 { background: #222; color: #888; }
+
+.aiScrolljdndm3 {
+    max-height: 350px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Custom Scrollbar */
+.aiScrolljdndm3::-webkit-scrollbar { width: 4px; }
+.aiScrolljdndm3::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+
+.aiSessionjdndm3 {
+    background: #0d0d0d;
+    border: 1px solid #151515;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.aiLabeljdndm3 {
+    background: #111;
+    padding: 8px 12px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #777;
+}
+
+.smallAvjdndm3 { width: 18px; height: 18px; border-radius: 50%; }
+
+.messageStreamjdndm3 { padding: 10px; }
+
+.bubblejdndm3 {
+    border-left: 2px solid #222;
+    padding-left: 10px;
+    margin-bottom: 10px;
+}
+
+.bubblejdndm3 small { color: #444; font-size: 9px; display: block; }
+.bubblejdndm3 p { margin: 3px 0 0 0; font-size: 13px; color: #ccc; line-height: 1.4; }
+
+.loaderjdndm3 {
+    background: #000;
+    color: #00ff88;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: monospace;
+}
