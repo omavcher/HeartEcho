@@ -32,6 +32,7 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
     { path: "/admin/referral", label: "Referral Program", icon: <FaUserPlus /> },
     { path: "/admin/create-story", label: "Create Story", icon: <MdHistoryEdu /> },
     { path: "/admin/stories/edit/:id", label: "Edit Story", icon: <CiEdit /> },
+    { path: "/admin/chats-data", label: "Chats", icon: <FaRobot /> },
 
   ];
 
@@ -189,6 +190,12 @@ const Complaints = () => (
 const Referral = () => (
   <div className="content">
     <ReferralAdmin />
+  </div>
+);
+
+const ChatsData = () => (
+  <div className="content">
+    <ChatsData />
   </div>
 );
 
