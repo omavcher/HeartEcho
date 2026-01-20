@@ -1591,3 +1591,23 @@ exports.processPayout = async (req, res) => {
 
 
 
+
+
+
+exports.getAllChatsData = async (req, res) => {
+  try {
+    const chats = await Chat.find().sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: chats
+    });
+  } catch (error) {
+    console.error("Error fetching chats data:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};

@@ -16,7 +16,7 @@ import ReferralAdmin from "./Admin/ReferralAdmin.jsx";
 import CreateStoryPage from "./Admin/CreateStoryPage.jsx";
 import StoriesAdmin from "./Admin/AdminStoy.jsx";
 import EditStoryPage from "./Admin/EditStoryPage.jsx";
-
+import ChatsData from "./Admin/ChatsData.jsx";
 
 const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
   const pathname = usePathname();
@@ -145,6 +145,7 @@ const renderContent = () => {
     '/admin/complaints': <Complaints />,
     '/admin/referral': <Referral />,
     '/admin/create-story': <CreateStoryPage/>,
+    '/admin/chat-data': <ChatsData/>,
 
   };
   return contentMap[pathname] || <Dashboard />;
