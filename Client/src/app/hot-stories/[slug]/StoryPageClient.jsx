@@ -340,7 +340,6 @@ export default function StoryPageClient({ initialStory, initialRelatedStories, s
           </div>
         </div>
 
-   {/*  */}
         <article className="storySection-cwdw4x">
           <h2 className="sectionHeading-cwdw4x">
             {lang === 'en' ? 'The Scenario' : 'कहानी की शुरुआत'}
