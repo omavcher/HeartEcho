@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Search, Crown, MessageSquare, AlertCircle, X } from "lucide-react";
+import { Search, Crown, MessageSquare, AlertCircle, X, Check, CheckCheck } from "lucide-react";
 import api from "../config/api";
 
 // Mock Notification Component
@@ -24,15 +24,17 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
-useEffect(() => {
+
+  useEffect(() => {
     // Check subscription status from localStorage
     if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem("token");
+      setToken(storedToken);
+
       const subscriptionData = localStorage.getItem('subscribed');
-      
       if (subscriptionData) {
         try {
           const parsedData = JSON.parse(subscriptionData);
-          // Check if user is subscribed based on your data structure
           if (parsedData.isSubscribed === true || parsedData.userType === 'subscriber') {
             setIsSubscribed(true);
           }
@@ -42,6 +44,7 @@ useEffect(() => {
       }
     }
   }, []);
+
   // --- STYLES INJECTION ---
   const styles = `
     :root {
@@ -51,9 +54,10 @@ useEffect(() => {
       --primary-dark: #9d2f63;
       --text-main: #ffffff;
       --text-muted: #a1a1a1;
-      --glass-bg: rgba(20, 20, 20, 0.7);
+      --glass-bg: rgba(20, 20, 20, 0.85);
       --glass-border: rgba(255, 255, 255, 0.08);
-      --online: #00e676;
+      --online: #25D366; /* WhatsApp Green */
+      --unread: #cf4185;
     }
 
     .chats-people-container {
@@ -64,11 +68,11 @@ useEffect(() => {
       color: var(--text-main);
       display: flex;
       flex-direction: column;
-      font-family: 'Inter', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       overflow: hidden;
       background-image: 
-        radial-gradient(circle at 0% 0%, rgba(207, 65, 133, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 100% 100%, rgba(65, 105, 225, 0.08) 0%, transparent 40%);
+        radial-gradient(circle at 0% 0%, rgba(207, 65, 133, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 100% 100%, rgba(65, 105, 225, 0.05) 0%, transparent 40%);
     }
 
     /* --- NOTIFICATION --- */
@@ -81,241 +85,232 @@ useEffect(() => {
       animation: slideDown 0.3s ease-out;
     }
     .pop-noti.error { background: #ff4d4d; color: white; }
-    .pop-noti.success { background: #00e676; color: black; }
+    .pop-noti.success { background: #25D366; color: black; }
     .pop-noti button { background: none; border: none; cursor: pointer; color: inherit; display: flex; }
 
-    /* --- HEADER --- */
+    /* --- HEADER (WhatsApp Style) --- */
     .chats-header {
-      padding: 20px;
+      padding: 15px 16px;
       background: var(--glass-bg);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--glass-border);
       z-index: 10;
-    }
-
-    .header-content {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
     .chats-header h1 {
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       font-weight: 700;
       margin: 0;
-      letter-spacing: -0.5px;
+      color: #fff;
     }
 
     .premium-btn {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: white;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(207, 65, 133, 0.2);
+      color: var(--primary);
+      border: 1px solid var(--primary);
       border-radius: 20px;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 600;
-      text-decoration: none;
-      transition: transform 0.2s;
-      border: none;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(207, 65, 133, 0.3);
     }
 
-    .premium-btn:hover { transform: translateY(-2px); }
-
-    /* --- SEARCH --- */
+    /* --- SEARCH (Instagram Style) --- */
     .search-container {
-      padding: 15px 20px;
-      border-bottom: 1px solid var(--glass-border);
+      padding: 10px 16px;
     }
 
     .search-input-wrapper {
       position: relative;
       display: flex;
       align-items: center;
+      background-color: #262626;
+      border-radius: 12px;
+      padding: 0 12px;
     }
 
     .search-icon {
-      position: absolute;
-      left: 15px;
-      color: var(--text-muted);
+      color: #8e8e8e;
       width: 18px; height: 18px;
     }
 
     .search-input-wrapper input {
       width: 100%;
-      padding: 12px 12px 12px 45px;
-      border: 1px solid var(--glass-border);
-      border-radius: 12px;
-      background-color: rgba(255,255,255,0.05);
+      padding: 10px 10px;
+      border: none;
+      background: transparent;
       color: var(--text-main);
-      font-size: 0.95rem;
+      font-size: 1rem;
       outline: none;
-      transition: all 0.2s;
+    }
+    
+    .search-input-wrapper input::placeholder {
+      color: #8e8e8e;
     }
 
-    .search-input-wrapper input:focus {
-      background-color: rgba(255,255,255,0.08);
-      border-color: var(--primary);
-    }
-
-    /* --- LIST --- */
+    /* --- LIST (WhatsApp Layout) --- */
     .chats-list-container {
       flex-grow: 1;
       overflow-y: auto;
-      padding: 10px;
+      padding-bottom: 80px; /* Space for bottom nav */
     }
 
     .chat-item {
       display: flex;
       align-items: center;
-      padding: 12px;
+      padding: 12px 16px;
       gap: 15px;
       cursor: pointer;
-      border-radius: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
       transition: background 0.2s;
-      margin-bottom: 5px;
     }
 
-    .chat-item:hover {
+    .chat-item:active {
       background-color: rgba(255,255,255,0.05);
     }
 
-    /* --- 9:16 AVATAR STYLING --- */
-    .avatar-container {
-      position: relative;
-      flex-shrink: 0;
-      width: 48px; 
-      aspect-ratio: 9/16; /* Key 9:16 Ratio */
-      border-radius: 8px; /* Rounded rectangle */
-      overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      border: 1px solid var(--glass-border);
+    /* --- AVATAR (Instagram Story Style) --- */
+    .avatar-wrapper {
+        position: relative;
     }
+
+    .avatar-container {
+      width: 55px; 
+      height: 55px;
+      border-radius: 50%; /* Circle like WhatsApp */
+      overflow: hidden;
+      background: #333;
+      border: 2px solid var(--bg-dark); /* Separation border */
+    }
+    
+    /* Optional: If you want 9:16 vertical styling specifically */
+    /*
+    .avatar-container {
+      width: 45px; 
+      aspect-ratio: 9/16;
+      border-radius: 8px;
+    }
+    */
 
     .user-avatar {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      display: block;
-      transition: transform 0.3s;
-    }
-    
-    .chat-item:hover .user-avatar {
-        transform: scale(1.1);
     }
 
     .online-badge {
       position: absolute;
       bottom: 2px;
       right: 2px;
-      width: 8px;
-      height: 8px;
+      width: 12px;
+      height: 12px;
       background-color: var(--online);
       border-radius: 50%;
-      border: 1px solid black;
+      border: 2px solid var(--bg-dark);
       z-index: 2;
     }
 
-    /* --- CONTENT --- */
+    /* --- CHAT CONTENT --- */
     .chat-content {
       flex-grow: 1;
       min-width: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 4px;
+      gap: 2px;
     }
 
-    .chat-header-row {
+    .top-row {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: baseline;
     }
 
     .user-name {
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 600;
-      margin: 0;
       color: #fff;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70%;
     }
 
     .message-time {
       font-size: 0.75rem;
-      color: var(--text-muted);
+      color: var(--text-muted); /* Green if unread, typically */
       white-space: nowrap;
     }
+    
+    .chat-item.unread .message-time {
+        color: var(--online);
+        font-weight: 500;
+    }
 
-    .message-preview-row {
+    .bottom-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
     .message-text {
-      font-size: 0.85rem;
-      color: var(--text-muted);
+      font-size: 0.9rem;
+      color: #8e8e8e;
       margin: 0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 80%;
+      max-width: 85%;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .unread-badge {
-      background: var(--primary);
-      color: white;
-      font-size: 0.65rem;
+      background: var(--online); /* WhatsApp Green */
+      color: black;
+      font-size: 0.75rem;
       font-weight: 700;
-      min-width: 18px;
-      height: 18px;
+      min-width: 20px;
+      height: 20px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0 4px;
+      padding: 0 5px;
     }
 
-    /* --- SKELETON & EMPTY --- */
+    /* --- LOADING & EMPTY --- */
     .loading-skeleton {
+      padding: 10px 16px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 15px;
     }
     
     .chat-item-skeleton {
       display: flex;
       align-items: center;
-      padding: 12px;
       gap: 15px;
     }
     
     .avatar-skeleton {
-      width: 48px; 
-      aspect-ratio: 9/16;
+      width: 55px; height: 55px;
+      border-radius: 50%;
       background: rgba(255,255,255,0.05);
-      border-radius: 8px;
       animation: pulse 1.5s infinite;
     }
     
-    .content-skeleton { 
-      flex: 1; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 8px; 
-    }
-    
-    .line-skeleton { 
-      height: 12px; 
-      background: rgba(255,255,255,0.05); 
-      border-radius: 4px; 
-      animation: pulse 1.5s infinite; 
-    }
-    
-    .w-60 { width: 60%; } 
-    .w-40 { width: 40%; }
+    .content-skeleton { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .line-skeleton { height: 12px; background: rgba(255,255,255,0.05); border-radius: 4px; animation: pulse 1.5s infinite; }
+    .w-60 { width: 60%; } .w-40 { width: 40%; }
 
     .empty-state {
       height: 60vh;
@@ -329,9 +324,7 @@ useEffect(() => {
     }
 
     @keyframes pulse { 
-      0% { opacity: 1; } 
-      50% { opacity: 0.5; } 
-      100% { opacity: 1; } 
+      0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } 
     }
     
     @keyframes slideDown { 
@@ -339,10 +332,6 @@ useEffect(() => {
       to { transform: translate(-50%, 0); opacity: 1; } 
     }
   `;
-
-  useEffect(() => {
-    setToken(typeof window !== 'undefined' ? localStorage.getItem("token") : null);
-  }, []);
 
   useEffect(() => {
     const getUserFriendsToChat = async () => {
@@ -360,15 +349,17 @@ useEffect(() => {
 
         const chatData = Array.isArray(res.data) ? res.data : [];
         
-        // Transform the data to match our frontend structure
+        // Transform the data
         const transformedChats = chatData.map(chat => ({
           _id: chat._id,
-          name: chat.name || "AI Companion",
+          name: chat.name || "Friend",
           avatar: chat.avatar || "/default-avatar.png",
           isOnline: chat.isOnline || false,
-          lastMessage: chat.lastMessage || "Start a conversation",
+          lastMessage: chat.lastMessage || "Start chatting",
           lastMessageTime: chat.lastMessageTime || new Date().toISOString(),
-          unreadCount: chat.unreadCount || 0
+          unreadCount: chat.unreadCount || 0,
+          isSentByMe: chat.isSentByMe || false, // Add logic if backend supports it
+          isRead: chat.isRead || false
         }));
 
         setChats(transformedChats);
@@ -376,7 +367,7 @@ useEffect(() => {
         console.error("Error fetching chats:", error);
         setNotification({ 
           show: true, 
-          message: "Error fetching conversations. Please try again.", 
+          message: "Unable to load chats", 
           type: "error" 
         });
         setChats([]);
@@ -394,9 +385,9 @@ useEffect(() => {
     ? chats.filter(chat => chat.name.toLowerCase().includes(searchTerm.toLowerCase()))
     : chats;
 
+  // WhatsApp Style Date Formatting
   const formatTime = (timestamp) => {
     if (!timestamp) return "";
-    
     try {
       const now = new Date();
       const messageDate = new Date(timestamp);
@@ -406,14 +397,10 @@ useEffect(() => {
         return messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       } else if (diffDays === 1) {
         return 'Yesterday';
-      } else if (diffDays < 7) {
-        return messageDate.toLocaleDateString([], { weekday: 'short' });
       } else {
-        return messageDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        return messageDate.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: '2-digit' });
       }
-    } catch (error) {
-      return "";
-    }
+    } catch (error) { return ""; }
   };
 
   return (
@@ -428,18 +415,16 @@ useEffect(() => {
       />
 
       <header className="chats-header">
-        <div className="header-content">
-          <h1>Conversations</h1>
-          {!isSubscribed && (
+        <h1>Chats</h1>
+        {!isSubscribed && (
           <button 
             className='premium-btn' 
             onClick={() => window.location.href = '/subscribe'}
           >
-            <Crown size={16} />
-            <span>Go Premium</span>
+            <Crown size={14} />
+            <span>Premium</span>
           </button>
-          )}
-        </div>
+        )}
       </header>
 
       <div className="search-container">
@@ -447,7 +432,7 @@ useEffect(() => {
           <Search className="search-icon" />
           <input
             type="text"
-            placeholder="Search conversations..."
+            placeholder="Search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -457,7 +442,7 @@ useEffect(() => {
       <div className="chats-list-container">
         {isLoading ? (
           <div className="loading-skeleton">
-            {[...Array(5)].map((_, index) => (
+            {[...Array(6)].map((_, index) => (
               <div key={index} className="chat-item-skeleton">
                 <div className="avatar-skeleton"></div>
                 <div className="content-skeleton">
@@ -471,36 +456,39 @@ useEffect(() => {
           filteredChats.map((chat) => (
             <div
               key={chat._id}
-              className="chat-item"
+              className={`chat-item ${chat.unreadCount > 0 ? 'unread' : ''}`}
               onClick={() => {
                 onChatSelect(chat._id);
                 onBackBTNSelect(false);
               }}
             >
-              <div className="avatar-container">
-                <img 
-                  src={chat.avatar || "/default-avatar.png"} 
-                  alt={chat.name} 
-                  className="user-avatar"
-                  onError={(e) => {
-                    e.target.src = "/default-avatar.png";
-                  }}
-                />
+              <div className="avatar-wrapper">
+                <div className="avatar-container">
+                  <img 
+                    src={chat.avatar || "/default-avatar.png"} 
+                    alt={chat.name} 
+                    className="user-avatar"
+                    onError={(e) => { e.target.src = "/default-avatar.png"; }}
+                  />
+                </div>
                 {chat.isOnline && <span className="online-badge"></span>}
               </div>
               
               <div className="chat-content">
-                <div className="chat-header-row">
+                <div className="top-row">
                   <h3 className="user-name">{chat.name}</h3>
                   <span className="message-time">{formatTime(chat.lastMessageTime)}</span>
                 </div>
                 
-                <div className="message-preview-row">
+                <div className="bottom-row">
                   <p className="message-text">
+                    {/* Add Double Ticks if it's your message */}
+                    {chat.isSentByMe && (
+                         chat.isRead ? <CheckCheck size={16} color="#34b7f1" /> : <Check size={16} color="gray" />
+                    )}
                     {chat.lastMessage
-                      ? chat.lastMessage.split(" ").slice(0, 8).join(" ") + 
-                        (chat.lastMessage.split(" ").length > 8 ? "..." : "")
-                      : "Start a conversation"}
+                      ? (chat.lastMessage.length > 30 ? chat.lastMessage.substring(0, 30) + '...' : chat.lastMessage)
+                      : "Tap to chat"}
                   </p>
                   
                   {chat.unreadCount > 0 && (
@@ -513,8 +501,8 @@ useEffect(() => {
         ) : (
           <div className="empty-state">
             <MessageSquare size={48} style={{marginBottom: 10}} />
-            <h3>No conversations found</h3>
-            <p>{searchTerm ? "Try a different search" : "Start a new conversation"}</p>
+            <h3>No chats yet</h3>
+            <p>Start a conversation to see it here</p>
           </div>
         )}
       </div>

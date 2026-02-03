@@ -2,7 +2,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import "../styles/MobileMenu.css";
 
 function MobileMenu() {
   const pathname = usePathname();
@@ -10,10 +9,10 @@ function MobileMenu() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Set initial active item based on current path
     setActiveItem(pathname);
-    // Trigger entrance animation
-    setIsVisible(true);
+    // Small delay for entrance animation
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
   }, [pathname]);
 
   const menuItems = [
@@ -28,7 +27,7 @@ function MobileMenu() {
     },
     {
       href: '/discover',
-      label: 'Friends',
+      label: 'Friends', // Updated label to match your previous request
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M17 2H13V1H11V2H7C5.34315 2 4 3.34315 4 5V8C4 10.7614 6.23858 13 9 13H15C17.7614 13 20 10.7614 20 8V5C20 3.34315 18.6569 2 17 2ZM11 7.5C11 8.32843 10.3284 9 9.5 9C8.67157 9 8 8.32843 8 7.5C8 6.67157 8.67157 6 9.5 6C10.3284 6 11 6.67157 11 7.5ZM16 7.5C16 8.32843 15.3284 9 14.5 9C13.6716 9 13 8.32843 13 7.5C13 6.67157 13.6716 6 14.5 6C15.3284 6 16 6.67157 16 7.5ZM4 22C4 17.5817 7.58172 14 12 14C16.4183 14 20 17.5817 20 22H4Z"></path>
@@ -55,28 +54,162 @@ function MobileMenu() {
     }
   ];
 
+  const styles = `
+    /* Container */
+    .mobile-menu-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      padding-bottom: env(safe-area-inset-bottom);
+      background: rgba(9, 9, 11, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      transform: translateY(100%);
+      transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    .mobile-menu-container.visible {
+      transform: translateY(0);
+    }
+
+    /* Navigation Grid */
+    .mobile-nav {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      height: 70px; /* Comfortable height */
+      position: relative;
+    }
+
+    /* Nav Item */
+    .nav-item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      width: 64px;
+      height: 100%;
+      color: rgba(255, 255, 255, 0.5);
+      transition: all 0.3s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Icon Styling */
+    .icon-box {
+      position: relative;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      margin-bottom: 4px;
+    }
+
+    .nav-item svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+    }
+
+    /* Label Styling */
+    .nav-label {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      opacity: 0.7;
+      transition: all 0.3s ease;
+    }
+
+    /* ACTIVE STATE */
+    .nav-item.active {
+      color: #fff;
+    }
+
+    .nav-item.active .icon-box {
+      transform: translateY(-2px);
+    }
+
+    .nav-item.active svg {
+      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
+    }
+
+    .nav-item.active .nav-label {
+      opacity: 1;
+      font-weight: 600;
+    }
+
+    /* Active Indicator Dot */
+    .active-dot {
+      position: absolute;
+      top: -1px; /* Floating above */
+      width: 30px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #fff, transparent);
+      border-radius: 4px;
+      opacity: 0;
+      transform: scaleX(0);
+      transition: all 0.4s ease;
+      box-shadow: 0 2px 10px rgba(255, 255, 255, 0.5);
+    }
+
+    .nav-item.active .active-dot {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+
+    /* Touch Feedback (Ripple/Scale) */
+    .nav-item:active .icon-box {
+      transform: scale(0.9);
+    }
+
+    /* Media Query for iPhone Home Bar Area */
+    @media (min-height: 800px) {
+      .mobile-nav {
+        height: 65px;
+        padding-bottom: 5px;
+      }
+    }
+
+    /* Tablet/Desktop Hide */
+    @media (min-width: 768px) {
+      .mobile-menu-container {
+        display: none;
+      }
+    }
+  `;
+
   return (
-    <div className={`mobile-menu ${isVisible ? 'visible' : ''}`}>
-      <div className="menu-background">
-        <div className="menu-blur"></div>
+    <>
+      <style jsx>{styles}</style>
+      <div className={`mobile-menu-container ${isVisible ? 'visible' : ''}`}>
+        <nav className="mobile-nav">
+          {menuItems.map((item) => {
+            const isActive = activeItem === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`nav-item ${isActive ? 'active' : ''}`}
+                onClick={() => setActiveItem(item.href)}
+              >
+                <div className="active-dot"></div>
+                <div className="icon-box">
+                  {item.icon}
+                </div>
+                <span className="nav-label">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
       </div>
-      
-      {menuItems.map((item, index) => (
-        <Link 
-          key={item.href}
-          className={`mobile-menu-item ${activeItem === item.href ? 'active' : ''}`}
-          href={item.href}
-          style={{ animationDelay: `${index * 0.1}s` }}
-        >
-          <div className="menu-icon-wrapper">
-            {item.icon}
-            <div className="active-indicator"></div>
-          </div>
-          <span className="menu-label">{item.label}</span>
-        </Link>
-      ))}
-      
-      </div>
+    </>
   );
 }
 
