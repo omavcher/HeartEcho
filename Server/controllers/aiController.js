@@ -1579,23 +1579,33 @@ exports.getFallbackStats = getFallbackStats;
 exports.resetFallbackUsage = resetFallbackUsage;
 
 
-// Add this to aiController.js
 exports.getChatByAiFriend = async (req, res) => {
   try {
     const userId = req.user.id;
     const { aiFriendId } = req.params;
 
+    console.log(
+      "Fetching chat for User ID:",
+      userId,
+      "AI Friend ID:",
+      aiFriendId
+    );
+
     if (!mongoose.Types.ObjectId.isValid(aiFriendId)) {
       return res.status(400).json({ message: "Invalid AI Friend ID" });
     }
 
-    // ✅ Find chat by (User + AI Friend)
+    // ✅ STEP 1: FIND CHAT (BACKWARD-COMPATIBLE)
     const chat = await Chat.findOne({
       participants: userId,
-      aiParticipants: aiFriendId,
-      isActive: true
+      isActive: true,
+      $or: [
+        { aiParticipants: aiFriendId }, // ✅ new correct structure
+        { participants: aiFriendId }    // ⚠️ old broken structure
+      ]
     });
 
+    // ❌ IF STILL NOT FOUND
     if (!chat) {
       return res.status(404).json({
         message: "No chat history found. Start a new conversation!",
@@ -1603,10 +1613,37 @@ exports.getChatByAiFriend = async (req, res) => {
       });
     }
 
+    // ======================================================
+    // ✅ STEP 2: AUTO-FIX LEGACY CHAT (⬅️ ADD THIS HERE)
+    // ======================================================
+    if (
+      chat.aiParticipants.length === 0 &&
+      chat.participants.some(
+        id => id.toString() === aiFriendId.toString()
+      )
+    ) {
+      console.log("🔧 Auto-fixing legacy chat:", chat._id);
+
+      // Remove AI ID from participants
+      chat.participants = chat.participants.filter(
+        id => id.toString() !== aiFriendId.toString()
+      );
+
+      // Add AI ID to aiParticipants
+      chat.aiParticipants = [aiFriendId];
+
+      await chat.save(); // 🔥 one-time silent fix
+    }
+    // ======================================================
+    // ✅ AUTO-FIX ENDS HERE
+    // ======================================================
+
+    // ✅ STEP 3: RETURN CHAT
     res.json({
       chat,
       messageCount: chat.messages.length
     });
+
   } catch (error) {
     console.error("Error fetching chat by AI friend:", error);
     res.status(500).json({
@@ -1615,3 +1652,4 @@ exports.getChatByAiFriend = async (req, res) => {
     });
   }
 };
+
