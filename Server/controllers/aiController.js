@@ -1653,3 +1653,35 @@ exports.getChatByAiFriend = async (req, res) => {
   }
 };
 
+
+
+exports.getAiQuotaStatus = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    const userInfo = await User.findById(userId);
+    if (!userInfo) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    userInfo.resetDailyQuota();
+    await userInfo.save();
+
+    const quotaStatus = userInfo.getQuotaStatus();
+    
+    res.json({
+      success: true,
+      quotaStatus: quotaStatus,
+      remainingQuota: userInfo.messageQuota - userInfo.messagesUsedToday,
+      usedToday: userInfo.messagesUsedToday,
+      dailyQuota: userInfo.messageQuota,
+      isSubscriber: userInfo.user_type === "subscriber",
+      isSubscriptionActive: userInfo.isSubscriptionActive(),
+      subscriptionExpiry: userInfo.subscriptionExpiry,
+      quotaCosts: QUOTA_COSTS
+    });
+  } catch (error) {
+    console.error("Error getting AI quota status:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
