@@ -1142,24 +1142,39 @@ exports.AiFriendResponse = async (req, res) => {
       return res.status(404).json({ message: "AI Friend not found." });
     }
 
-    let chat = await Chat.findById(chatId);
-    let isNewChat = false;
+    // 🔑 IMPORTANT: chatId is actually aiFriendId
+const aiFriendId = chatId;
 
-    if (!chat) {
-      isNewChat = true;
-      chat = new Chat({
-        _id: chatId,
-        participants: [userId, AiInfo._id],
-        messages: [],
-        statistics: {
-          totalMessages: 0,
-          totalImages: 0,
-          totalVideos: 0,
-          lastMediaSent: null
-        }
-      });
-      await chat.save();
-    }
+// ✅ Find chat uniquely by (User + AI Friend)
+let chat = await Chat.findOne({
+  participants: userId,
+  aiParticipants: AiInfo._id,
+  isActive: true
+});
+
+let isNewChat = false;
+
+// ✅ Create chat ONLY if it doesn't exist
+if (!chat) {
+  isNewChat = true;
+
+  chat = new Chat({
+    participants: [userId],        // ✅ ONLY USER
+    aiParticipants: [AiInfo._id],  // ✅ ONLY AI FRIEND
+    messages: [],
+    statistics: {
+      totalMessages: 0,
+      totalImages: 0,
+      totalVideos: 0,
+      lastMediaSent: null
+    },
+    isActive: true,
+    archived: false
+  });
+
+  await chat.save();
+}
+
 
     const userMessage = {
       sender: userId,
@@ -1574,27 +1589,29 @@ exports.getChatByAiFriend = async (req, res) => {
       return res.status(400).json({ message: "Invalid AI Friend ID" });
     }
 
-    // Find chat where user is participant and AI friend is aiParticipant
+    // ✅ Find chat by (User + AI Friend)
     const chat = await Chat.findOne({
       participants: userId,
       aiParticipants: aiFriendId,
       isActive: true
-    }).populate('messages');
+    });
 
     if (!chat) {
-      // Return 404 with a message that no chat exists yet
-      return res.status(404).json({ 
+      return res.status(404).json({
         message: "No chat history found. Start a new conversation!",
-        chat: null 
+        chat: null
       });
     }
 
-    res.json({ 
-      chat: chat,
-      messageCount: chat.messages.length 
+    res.json({
+      chat,
+      messageCount: chat.messages.length
     });
   } catch (error) {
     console.error("Error fetching chat by AI friend:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({
+      message: "Server error",
+      error: error.message
+    });
   }
 };
