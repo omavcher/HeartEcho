@@ -187,7 +187,7 @@
     .seh-fomo { left: 30px; transform: translateX(0) translateY(150%); }
     .seh-fomo.active { transform: translateX(0) translateY(0); }
 }
-
+/*  */
 .seh-pulse {
     width: 8px;
     height: 8px;
