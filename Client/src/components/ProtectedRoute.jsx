@@ -1,13 +1,14 @@
 import axios from "axios";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import api from "../config/api";
 import { useEffect, useState } from "react";
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
+  const location = useLocation();
   const token = localStorage.getItem("token");
   const [isVerified, setIsVerified] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-// 
+
   useEffect(() => {
     const verifyUser = async () => {
       try {
@@ -46,6 +47,8 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   }
 
   if (!isVerified || (adminOnly && !isAdmin)) {
+    // Store the current path in localStorage for redirection after login
+    localStorage.setItem('redirectAfterLogin', location.pathname + location.search);
     return <Navigate to="/login" replace />;
   }
 

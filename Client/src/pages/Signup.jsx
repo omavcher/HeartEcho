@@ -69,6 +69,58 @@ function Signup() {
 
   const googleClientId = "273920667679-85i343d6q2eibbc7e597ougsflo7u6c0.apps.googleusercontent.com";
 
+  // Function to get redirect URL from cookies, localStorage, or URL params
+  const getRedirectUrl = () => {
+    if (typeof window === 'undefined') return '/';
+    
+    // First check cookies (for Next.js middleware redirects)
+    const cookies = document.cookie.split(';');
+    const redirectCookie = cookies.find(cookie => cookie.trim().startsWith('redirectUrl='));
+    
+    if (redirectCookie) {
+      const encodedUrl = redirectCookie.split('=')[1];
+      // Clear the cookie
+      document.cookie = 'redirectUrl=; max-age=0; path=/';
+      try {
+        return decodeURIComponent(encodedUrl);
+      } catch (error) {
+        console.error('Error decoding redirect URL:', error);
+        return '/';
+      }
+    }
+    
+    // Then check localStorage (for React Router redirects)
+    const storedUrl = localStorage.getItem('redirectAfterLogin');
+    if (storedUrl) {
+      localStorage.removeItem('redirectAfterLogin');
+      try {
+        // If it's a full URL with protocol, extract just the path
+        if (storedUrl.includes('http')) {
+          const urlObj = new URL(storedUrl);
+          return urlObj.pathname + urlObj.search;
+        }
+        return storedUrl;
+      } catch (error) {
+        console.error('Error parsing stored URL:', error);
+        return '/';
+      }
+    }
+    
+    // Then check URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromParam = urlParams.get('from');
+    if (fromParam) {
+      try {
+        return decodeURIComponent(fromParam);
+      } catch (error) {
+        console.error('Error decoding from parameter:', error);
+        return '/';
+      }
+    }
+    
+    return '/'; // Default to home page
+  };
+
   // Get referral code from URL or local storage (client-side only)
   const getInitialReferralCode = () => {
     if (typeof window === 'undefined') return "";
@@ -92,6 +144,17 @@ function Signup() {
     const ref = searchParams.get('ref');
     if (ref) {
       setReferralCodeFromUrl(ref);
+    }
+    
+    // Check for redirect parameter from login page
+    const from = searchParams.get('from');
+    if (from) {
+      try {
+        const decodedUrl = decodeURIComponent(from);
+        localStorage.setItem('redirectAfterLogin', decodedUrl);
+      } catch (error) {
+        console.error('Error decoding redirect URL:', error);
+      }
     }
   }, [searchParams]);
 
@@ -388,7 +451,13 @@ function Signup() {
       }
 
       setNotification({ show: true, message: "Signup successful!", type: "success" });
-      router.push("/");
+      
+      // Redirect to original URL (with query params) or home
+      const redirectUrl = getRedirectUrl();
+      setTimeout(() => {
+        router.push(redirectUrl);
+      }, 1000);
+      
     } catch (err) {
       setNotification({ show: true, message: err.response?.data?.message || "Signup failed!", type: "error" });
     }
@@ -439,7 +508,13 @@ function Signup() {
           localStorage.setItem("user", JSON.stringify(checkUser.data.user));
         }
         setNotification({ show: true, message: "Login successful!", type: "success" });
-        router.push('/');
+        
+        // Redirect to original URL (with query params) or home
+        const redirectUrl = getRedirectUrl();
+        setTimeout(() => {
+          router.push(redirectUrl);
+        }, 1000);
+        
       } else {
         setIsGoogleSignup(true);
         setGoogleUserData(userData);
@@ -509,7 +584,13 @@ function Signup() {
       }
 
       setNotification({ show: true, message: "Signup successful!", type: "success" });
-      router.push("/");
+      
+      // Redirect to original URL (with query params) or home
+      const redirectUrl = getRedirectUrl();
+      setTimeout(() => {
+        router.push(redirectUrl);
+      }, 1000);
+      
     } catch (err) {
       setNotification({ show: true, message: err.response?.data?.message || "Signup failed!", type: "error" });
     }

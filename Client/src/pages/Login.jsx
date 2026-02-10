@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import '../styles/Signup.css';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import Link from 'next/link';
@@ -14,6 +14,7 @@ import Cookies from 'js-cookie';
 
 function Login() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
@@ -22,10 +23,76 @@ function Login() {
   const [coordinates, setCoordinates] = useState(null);
   const [platform, setPlatform] = useState(typeof window !== 'undefined' ? navigator.platform : '');
   const [locationUser, setLocationUser] = useState(null);
+  const [isClient, setIsClient] = useState(false);
 
   const googleClientId = "273920667679-85i343d6q2eibbc7e597ougsflo7u6c0.apps.googleusercontent.com";
 
+  // Function to get redirect URL from cookies, localStorage, or URL params
+  const getRedirectUrl = () => {
+    if (typeof window === 'undefined') return '/';
+    
+    // First check cookies (for Next.js middleware redirects)
+    const cookies = document.cookie.split(';');
+    const redirectCookie = cookies.find(cookie => cookie.trim().startsWith('redirectUrl='));
+    
+    if (redirectCookie) {
+      const encodedUrl = redirectCookie.split('=')[1];
+      // Clear the cookie
+      document.cookie = 'redirectUrl=; max-age=0; path=/';
+      try {
+        return decodeURIComponent(encodedUrl);
+      } catch (error) {
+        console.error('Error decoding redirect URL:', error);
+        return '/';
+      }
+    }
+    
+    // Then check localStorage (for React Router redirects)
+    const storedUrl = localStorage.getItem('redirectAfterLogin');
+    if (storedUrl) {
+      localStorage.removeItem('redirectAfterLogin');
+      try {
+        // If it's a full URL with protocol, extract just the path
+        if (storedUrl.includes('http')) {
+          const urlObj = new URL(storedUrl);
+          return urlObj.pathname + urlObj.search;
+        }
+        return storedUrl;
+      } catch (error) {
+        console.error('Error parsing stored URL:', error);
+        return '/';
+      }
+    }
+    
+    // Then check URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromParam = urlParams.get('from');
+    if (fromParam) {
+      try {
+        return decodeURIComponent(fromParam);
+      } catch (error) {
+        console.error('Error decoding from parameter:', error);
+        return '/';
+      }
+    }
+    
+    return '/'; // Default to home page
+  };
+
   useEffect(() => {
+    setIsClient(true);
+    
+    // Check for redirect parameter
+    const from = searchParams.get('from');
+    if (from && typeof window !== 'undefined') {
+      try {
+        const decodedUrl = decodeURIComponent(from);
+        localStorage.setItem('redirectAfterLogin', decodedUrl);
+      } catch (error) {
+        console.error('Error decoding redirect URL:', error);
+      }
+    }
+
     if (typeof window !== 'undefined') {
       fetch("https://api.ipify.org?format=json")
         .then((response) => response.json())
@@ -40,7 +107,7 @@ function Login() {
         })
         .catch((error) => console.error("Error fetching location:", error));
     }
-  }, []);
+  }, [searchParams]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -75,7 +142,10 @@ function Login() {
       }
   
       setNotification({ show: true, message: "Login successful!", type: "success" });
-      setTimeout(() => router.push('/'), 1500);
+      
+      // Redirect to original URL (with query params) or home
+      const redirectUrl = getRedirectUrl();
+      setTimeout(() => router.push(redirectUrl), 1500);
     } catch (error) {
       setNotification({ show: true, message: error.response?.data?.msg || "Login failed", type: "error" });
     }
@@ -92,6 +162,7 @@ function Login() {
       if (res.data.token) {
         Cookies.set("token", res.data.token, { expires: 7 });
         localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
 
         if (ip && coordinates) {
           await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform, locationUser }, {
@@ -100,17 +171,27 @@ function Login() {
         }
   
         setNotification({ show: true, message: "Google Login Successful!", type: "success" });
-        setTimeout(() => router.push('/'), 1500);
+        
+        // Redirect to original URL (with query params) or home
+        const redirectUrl = getRedirectUrl();
+        setTimeout(() => router.push(redirectUrl), 1500);
       }
 
       if (res.data.user === null && res.data.message === "New user, please complete registration") {
         setNotification({ show: true, message: res.data.message, type: "info" });
-        setTimeout(() => router.push('/signup'), 1000);
-      }
-      else {
-        setTimeout(() => router.push('/login'), 1000);
+        setTimeout(() => {
+          // Pass the current redirect URL to signup page with proper encoding
+          const redirectUrl = getRedirectUrl();
+          try {
+            router.push(`/signup?from=${encodeURIComponent(redirectUrl)}`);
+          } catch (error) {
+            console.error('Error encoding redirect URL:', error);
+            router.push('/signup');
+          }
+        }, 1000);
       }
     } catch (error) {
+      setNotification({ show: true, message: "Google Login Failed!", type: "error" });
     }
     setIsLogin(false);
   };
@@ -119,6 +200,18 @@ function Login() {
     console.error("Google Login Failed:", error);
     setNotification({ show: true, message: "Google Login Failed!", type: "error" });
   };
+
+  // Don't render anything until client-side to avoid hydration issues
+  if (!isClient) {
+    return (
+      <div className="signup-container">
+        <div className="signup-loading">
+          <div className="loader-signin"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="signup-container">

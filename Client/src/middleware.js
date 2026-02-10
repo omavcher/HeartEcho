@@ -1,28 +1,35 @@
 import { NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
-const JWT_SECRET = 'yourSecretKey'; 
+const JWT_SECRET = 'yourSecretKey';
 const encoder = new TextEncoder();
 
-const protectedRoutes = ['/chatbox', '/profile', '/admin' , '/subscribe', '/thank-you'];
+const protectedRoutes = ['/chatbox', '/profile', '/admin', '/subscribe', '/thank-you'];
 
 export async function middleware(request) {
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
+  const fullUrl = pathname + search; // This includes query parameters
   const token = request.cookies.get('token')?.value;
 
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+  
   if (!isProtectedRoute) {
     return NextResponse.next();
   }
 
   if (!token) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    // Store the FULL URL (with query params) in a cookie before redirecting
+    const response = NextResponse.redirect(new URL('/login', request.url));
+    response.cookies.set('redirectUrl', fullUrl, {
+      maxAge: 60 * 5, // 5 minutes
+      path: '/',
+      encode: (value) => encodeURIComponent(value), // Encode the URL
+    });
+    return response;
   }
 
   try {
     const { payload } = await jwtVerify(token, encoder.encode(JWT_SECRET));
-console.log(payload);
-
 
     // Check admin access
     if (pathname.startsWith('/admin') && payload.email !== 'omawchar07@gmail.com') {
@@ -32,10 +39,18 @@ console.log(payload);
     return NextResponse.next();
   } catch (err) {
     console.error('JWT verification failed:', err.message);
-    return NextResponse.redirect(new URL('/login', request.url));
+    // Clear invalid token
+    const response = NextResponse.redirect(new URL('/login', request.url));
+    response.cookies.delete('token');
+    response.cookies.set('redirectUrl', fullUrl, {
+      maxAge: 60 * 5,
+      path: '/',
+      encode: (value) => encodeURIComponent(value),
+    });
+    return response;
   }
 }
 
 export const config = {
-  matcher: ['/chatbox/:path*', '/profile/:path*', '/admin/:path*', '/subscribe:path*' , '/thank-you:path*'],
+  matcher: ['/chatbox/:path*', '/profile/:path*', '/admin/:path*', '/subscribe/:path*', '/thank-you/:path*'],
 };
