@@ -5,7 +5,7 @@ import "./UsersAdmin.css";
 import {
   FaUser, FaTrash, FaEdit, FaStar, FaSearch, FaSync, FaShieldAlt, 
   FaUserPlus, FaRobot, FaCircle, FaArrowUp, FaArrowDown, FaPhone, 
-  FaIdBadge, FaCalendarAlt, FaTicketAlt, FaHistory
+  FaIdBadge, FaCalendarAlt, FaTicketAlt, FaHistory, FaDownload, FaEnvelope
 } from "react-icons/fa";
 import {
   BarChart, Bar, AreaChart, Area, Tooltip, ResponsiveContainer,
@@ -21,6 +21,7 @@ const UsersAdmin = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [exportFilter, setExportFilter] = useState("all"); // "all", "today", "lastWeek", "lastMonth"
   const usersPerPage = 8;
 
   const getToken = useCallback(() => {
@@ -45,6 +46,69 @@ const UsersAdmin = () => {
   }, [getToken]);
 
   useEffect(() => { fetchAllData(); }, [fetchAllData]);
+
+  // --- Email Promotion Export Function ---
+  const exportUsersForEmail = () => {
+    const now = new Date();
+    let filteredUsers = [];
+
+    switch(exportFilter) {
+      case "today":
+        const todayStr = now.toISOString().split('T')[0];
+        filteredUsers = users.filter(user => 
+          user.joinedAt?.split('T')[0] === todayStr
+        );
+        break;
+      case "lastWeek":
+        const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        filteredUsers = users.filter(user => {
+          const userDate = new Date(user.joinedAt);
+          return userDate >= lastWeek && userDate <= now;
+        });
+        break;
+      case "lastMonth":
+        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        filteredUsers = users.filter(user => {
+          const userDate = new Date(user.joinedAt);
+          return userDate >= lastMonth && userDate <= now;
+        });
+        break;
+      default:
+        filteredUsers = users;
+    }
+
+    // Format data for export
+    const exportData = filteredUsers.map(user => ({
+      name: user.name || "N/A",
+      email: user.email || "N/A",
+      age: user.age || "N/A",
+      gender: user.gender || "N/A",
+      user_type: user.user_type || "free",
+    }));
+
+    // Create and trigger download
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    
+    // Generate filename based on filter
+    let filename = "users_";
+    switch(exportFilter) {
+      case "today": filename += "today_"; break;
+      case "lastWeek": filename += "last_week_"; break;
+      case "lastMonth": filename += "last_month_"; break;
+      default: filename += "all_";
+    }
+    filename += `${new Date().toISOString().split('T')[0]}.json`;
+    
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   // --- Advanced Intelligence & Statistics ---
   const stats = useMemo(() => {
@@ -148,6 +212,42 @@ const UsersAdmin = () => {
           <div className="kpi-val-group-3244f">
             <span>Average Age</span>
             <strong>{stats.avgAge}</strong>
+          </div>
+        </div>
+      </section>
+
+      {/* Email Promotion Export Section */}
+      <section className="email-export-section-3244f">
+        <div className="export-card-3244f">
+          <div className="export-header-3244f">
+            <FaEnvelope className="export-icon-3244f" />
+            <h3>Email Promotion Data Export</h3>
+            <p>Download user data for email marketing campaigns</p>
+          </div>
+          <div className="export-controls-3244f">
+            <div className="export-filter-group-3244f">
+              <label>Export Users:</label>
+              <select 
+                className="export-select-3244f" 
+                value={exportFilter}
+                onChange={(e) => setExportFilter(e.target.value)}
+              >
+                <option value="all">All Users</option>
+                <option value="today">Joined Today</option>
+                <option value="lastWeek">Joined Last Week</option>
+                <option value="lastMonth">Joined Last Month</option>
+              </select>
+            </div>
+            <button 
+              className="export-btn-3244f"
+              onClick={exportUsersForEmail}
+            >
+              <FaDownload /> Download JSON
+            </button>
+          </div>
+          <div className="export-info-3244f">
+            <p><strong>Data includes:</strong> Name, Email, Age, Gender, Phone, User Type, Interests, Join Date</p>
+            <p><strong>File format:</strong> JSON (Compatible with most email marketing tools)</p>
           </div>
         </div>
       </section>

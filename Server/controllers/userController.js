@@ -332,48 +332,146 @@ exports.userType = async (req, res) => {
 
 exports.chatFriends = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = new mongoose.Types.ObjectId(req.user.id);
 
-    // Fetch user data
-    const userData = await User.findById(userId);
-    if (!userData) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    const chatFriends = await Chat.aggregate([
+      // Stage 1: Find ONLY chats that have messages
+      {
+        $match: {
+          participants: userId,
+          isActive: true,
+          messages: { $exists: true, $not: { $size: 0 } } // Must have messages
+        }
+      },
+      
+      // Stage 2: Sort to get most recent chats first
+      { $sort: { updatedAt: -1 } },
+      
+      // Stage 3: Get last message
+      {
+        $addFields: {
+          lastMessage: { $arrayElemAt: ["$messages", -1] }
+        }
+      },
+      
+      // Stage 4: Lookup AI friend from AIFriend collection
+      {
+        $lookup: {
+          from: "aifriends",
+          localField: "aiParticipants",
+          foreignField: "_id",
+          as: "aiFriend"
+        }
+      },
+      
+      // Stage 5: Lookup AI friend from PrebuiltAIFriend collection
+      {
+        $lookup: {
+          from: "prebuiltaifriends",
+          localField: "aiParticipants",
+          foreignField: "_id",
+          as: "prebuiltAIFriend"
+        }
+      },
+      
+      // Stage 6: Combine AI friend data (whichever exists)
+      {
+        $addFields: {
+          friendData: {
+            $cond: {
+              if: { $gt: [{ $size: "$aiFriend" }, 0] },
+              then: { $arrayElemAt: ["$aiFriend", 0] },
+              else: { $arrayElemAt: ["$prebuiltAIFriend", 0] }
+            }
+          }
+        }
+      },
+      
+      // Stage 7: Filter out chats without AI friend data
+      {
+        $match: {
+          friendData: { $ne: null }
+        }
+      },
+      
+      // Stage 8: Count unread messages
+      {
+        $addFields: {
+          unreadCount: {
+            $size: {
+              $filter: {
+                input: "$messages",
+                as: "msg",
+                cond: {
+                  $and: [
+                    { $ne: ["$$msg.sender", userId] },
+                    { $ne: ["$$msg.status.read", true] }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      
+      // Stage 9: Format the response
+      {
+        $project: {
+          _id: "$friendData._id",
+          name: "$friendData.name",
+          avatar: "$friendData.avatar_img",
+          lastMessage: {
+            $cond: {
+              if: { $eq: ["$lastMessage.mediaType", "text"] },
+              then: "$lastMessage.text",
+              else: { $concat: ["[", "$lastMessage.mediaType", "]"] }
+            }
+          },
+          lastMessageTime: "$lastMessage.time",
+          chatId: "$_id",
+          unreadCount: 1
+        }
+      },
+      
+      // Stage 10: Sort by last message time
+      {
+        $sort: { lastMessageTime: -1 }
+      }
+    ]);
 
-    // Fetch AI Friends from both AIFriend and PrebuiltAIFriend collections
-    const aiFriends = await AIFriend.find({ _id: { $in: userData.ai_friends } });
-    const prebuiltAIFriends = await PrebuiltAIFriend.find({ _id: { $in: userData.ai_friends } });
-
-    // Combine both AI friend lists
-    const allFriends = [...aiFriends, ...prebuiltAIFriends];
-
-    // Fetch the last AI-sent message for each AI friend
-    const chatDetails = await Promise.all(
-      allFriends.map(async (friend) => {
-        const lastMessageData = await Chat.findOne({
-          participants: userId, // Ensure user is in the chat
-          "messages.sender": friend._id, // Ensure messages from this AI friend
-        })
-          .sort({ "messages.time": -1 }) // Get the latest message
-          .select("messages") // Select only messages
-          .lean();
+    // FILTER FUNCTION: Remove entries with "No messages yet" or null lastMessageTime
+    const filterChatFriends = (friends) => {
+      return friends.filter(friend => {
+        // Check if lastMessage exists and is not "No messages yet"
+        if (!friend.lastMessage || friend.lastMessage === "No messages yet") {
+          return false;
+        }
         
-        // Get last message from either AIFriend or PrebuiltAIFriend
-        const lastAIMsg = lastMessageData?.messages
-          .filter((msg) => msg.senderModel === "AIFriend" || msg.senderModel === "PrebuiltAIFriend")
-          .pop();
+        // Check if lastMessageTime exists
+        if (!friend.lastMessageTime) {
+          return false;
+        }
+        
+        // Check if lastMessage is a meaningful message (not empty/placeholder)
+        const meaninglessMessages = [
+          "No messages yet",
+          "Message",
+          "[text]",
+          ""
+        ];
+        
+        if (meaninglessMessages.includes(friend.lastMessage.trim())) {
+          return false;
+        }
+        
+        return true;
+      });
+    };
 
-        return {
-          _id: friend._id,
-          name: friend.name,
-          avatar: friend.avatar_img,
-          lastMessage: lastAIMsg ? lastAIMsg.text : "No messages yet",
-          lastMessageTime: lastAIMsg ? lastAIMsg.time : null,
-        };
-      })
-    );
+    // Apply the filter
+    const filteredChatFriends = filterChatFriends(chatFriends);
 
-    res.status(200).json(chatDetails);
+    res.status(200).json(filteredChatFriends);
   } catch (error) {
     console.error("Error fetching chat friends:", error);
     res.status(500).json({ error: "Internal server error" });
