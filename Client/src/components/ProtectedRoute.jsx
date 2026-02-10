@@ -7,7 +7,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   const token = localStorage.getItem("token");
   const [isVerified, setIsVerified] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-
+// 
   useEffect(() => {
     const verifyUser = async () => {
       try {

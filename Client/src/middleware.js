@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
-const JWT_SECRET = 'yourSecretKey'; // Replace with your real secret
+const JWT_SECRET = 'yourSecretKey'; 
 const encoder = new TextEncoder();
 
 const protectedRoutes = ['/chatbox', '/profile', '/admin' , '/subscribe', '/thank-you'];
