@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import '../styles/Signup.css';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import Link from 'next/link';
@@ -14,7 +14,6 @@ import Cookies from 'js-cookie';
 
 function Login() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
@@ -47,7 +46,7 @@ function Login() {
       }
     }
     
-    // Then check localStorage (for React Router redirects)
+    // Then check localStorage (for React Router redirects) - this is set by RedirectHandler
     const storedUrl = localStorage.getItem('redirectAfterLogin');
     if (storedUrl) {
       localStorage.removeItem('redirectAfterLogin');
@@ -64,15 +63,17 @@ function Login() {
       }
     }
     
-    // Then check URL params
-    const urlParams = new URLSearchParams(window.location.search);
-    const fromParam = urlParams.get('from');
-    if (fromParam) {
-      try {
-        return decodeURIComponent(fromParam);
-      } catch (error) {
-        console.error('Error decoding from parameter:', error);
-        return '/';
+    // Then check URL params directly from window
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const fromParam = urlParams.get('from');
+      if (fromParam) {
+        try {
+          return decodeURIComponent(fromParam);
+        } catch (error) {
+          console.error('Error decoding from parameter:', error);
+          return '/';
+        }
       }
     }
     
@@ -81,25 +82,16 @@ function Login() {
 
   useEffect(() => {
     setIsClient(true);
-    
-    // Check for redirect parameter
-    const from = searchParams.get('from');
-    if (from && typeof window !== 'undefined') {
-      try {
-        const decodedUrl = decodeURIComponent(from);
-        localStorage.setItem('redirectAfterLogin', decodedUrl);
-      } catch (error) {
-        console.error('Error decoding redirect URL:', error);
-      }
-    }
 
+    // Fetch IP and location data
     if (typeof window !== 'undefined') {
       fetch("https://api.ipify.org?format=json")
         .then((response) => response.json())
         .then((data) => setIp(data.ip))
         .catch((error) => console.error("Error fetching IP:", error));
 
-      fetch("http://ip-api.com/json")
+      // Use HTTPS to avoid mixed content warnings
+      fetch("https://ip-api.com/json")
         .then((response) => response.json())
         .then((data) => {
           setCoordinates({ lat: data.lat, lon: data.lon });
@@ -107,7 +99,7 @@ function Login() {
         })
         .catch((error) => console.error("Error fetching location:", error));
     }
-  }, [searchParams]);
+  }, []); // Removed searchParams dependency
 
   const handleChange = (e) => {
     const { name, value } = e.target;
