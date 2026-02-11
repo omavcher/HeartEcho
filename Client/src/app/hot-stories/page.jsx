@@ -193,20 +193,7 @@ export default async function HotStoriesPage() {
           </ul>
         </div>
 
-        {/* Live Updates Banner */}
-        <div className="live-updates-banner">
-          <span className="live-dot"></span>
-          <span className="live-text">{initialStories.length} stories available</span>
-          <button className="explore-button">
-            Explore
-          </button>
-        </div>
-
-        {/* Mobile Header */}
-        <header className="mobile-header">
-          <h1 className="mobile-title">HeartEcho Stories</h1>
-          <p className="mobile-subtitle">Explore stories from cities across India</p>
-        </header>
+      
 
         {/* Client Component with Suspense */}
         <Suspense fallback={<Loading />}>

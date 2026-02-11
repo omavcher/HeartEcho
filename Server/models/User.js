@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
   // Message quota system
   messageQuota: { 
     type: Number, 
-    default: 20,
+    default: 5,
     min: 0,
     max: 999
   },
@@ -58,9 +58,9 @@ const userSchema = new mongoose.Schema({
 
 // Pre-save middleware to ensure quota consistency
 userSchema.pre('save', function(next) {
-  // Ensure free users always have messageQuota of 20
-  if (this.user_type === 'free' && this.messageQuota !== 20) {
-    this.messageQuota = 20;
+  // Ensure free users always have messageQuota of 5
+  if (this.user_type === 'free' && this.messageQuota !== 5) {
+    this.messageQuota = 5;
   }
   
   // Ensure subscribers have high quota
@@ -95,7 +95,7 @@ userSchema.methods.resetDailyQuota = function () {
     
     // Ensure free users have 20 messages
     if (this.user_type === 'free') {
-      this.messageQuota = 20;
+      this.messageQuota = 5;
     }
     
     console.log(`[User ${this.email}] Quota reset. New day detected.`);
@@ -244,7 +244,7 @@ userSchema.statics.checkExpiredSubscriptions = async function () {
       $set: { 
         user_type: "free",
         subscriptionExpiry: null,
-        messageQuota: 20,
+        messageQuota:5,
         messagesUsedToday: 0
       }
     }
@@ -261,7 +261,7 @@ userSchema.statics.resetAllFreeUsersQuota = async function () {
       $set: { 
         messagesUsedToday: 0,
         lastQuotaReset: new Date(),
-        messageQuota: 20
+        messageQuota: 5
       }
     }
   );

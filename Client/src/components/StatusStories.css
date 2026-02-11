@@ -1,0 +1,329 @@
+/* StatusStories.css */
+
+:root {
+  --primary-color-3stus37: #cf4185;
+  --text-white-3stus37: #ffffff;
+  --bg-dark-3stus37: #000000;
+  --glass-bg-3stus37: rgba(20, 20, 20, 0.9);
+  /* Instagram-like Gradient */
+  --gradient-ring-3stus37: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  --gray-ring-3stus37: #555555;
+  /* Requested Font Family */
+  --font-family-3stus37: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+/* --- Status Bar Scroll Section --- */
+.status-bar-container-3stus37 {
+  width: 100%;
+  padding: 12px 0 12px 16px;
+  background: transparent;
+  overflow-x: auto;
+  white-space: nowrap;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+  display: flex;
+  gap: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
+  /* Apply font here for the list */
+  font-family: var(--font-family-3stus37);
+}
+
+.status-bar-container-3stus37::-webkit-scrollbar {
+  display: none;
+}
+
+/* Wrapper for individual item */
+.status-item-wrapper-3stus37 {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  /* Fixed width prevents squashing */
+  width: 72px; 
+  flex-shrink: 0; /* Crucial: stops items from shrinking on small screens */
+  transition: opacity 0.2s;
+}
+
+.status-item-wrapper-3stus37:active {
+  opacity: 0.7;
+}
+
+/* --- Rings (Fixed Dimensions) --- */
+.status-ring-3stus37 {
+  width: 68px;   /* Fixed Outer Size */
+  height: 68px;  /* Fixed Outer Size */
+  border-radius: 50%;
+  padding: 2px; /* Thickness of the ring gap */
+  background: var(--gradient-ring-3stus37);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* Never shrink */
+}
+
+/* Gray ring if viewed */
+.status-ring-3stus37.viewed-3stus37 {
+  background: var(--gray-ring-3stus37); 
+}
+
+.status-avatar-img-3stus37 {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--bg-dark-3stus37); /* Creates the black gap between ring and image */
+  background-color: #222;
+  display: block;
+}
+
+.status-username-3stus37 {
+  font-size: 0.75rem; /* 12px */
+  color: var(--text-white-3stus37);
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-family-3stus37);
+  font-weight: 400;
+}
+
+.status-item-wrapper-3stus37.viewed-item-3stus37 .status-username-3stus37 {
+  color: #999;
+}
+
+/* --- Full Screen Story Viewer Modal --- */
+.story-modal-overlay-3stus37 {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh; /* Mobile viewport fix */
+  background: #000;
+  z-index: 999999; /* Increased z-index */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  font-family: var(--font-family-3stus37); /* Apply font to modal wrapper */
+}
+
+.story-content-wrapper-3stus37 {
+  width: 100%;
+  height: 100%;
+  /* Desktop Optimization: Limit width to resemble a phone */
+  max-width: 480px; 
+  position: relative;
+  background: #111;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  overflow: hidden;
+  font-family: var(--font-family-3stus37); /* Redundant safety for content */
+}
+
+/* --- Progress Bars --- */
+.progress-bar-container-3stus37 {
+  position: absolute;
+  top: 12px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  z-index: 30;
+  pointer-events: none; /* Let clicks pass through */
+}
+
+.progress-segment-3stus37 {
+  height: 2px;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill-3stus37 {
+  height: 100%;
+  background: #fff;
+  width: 0%;
+  transition: none; /* Default: Instant reset */
+}
+
+.progress-fill-3stus37.active-3stus37 {
+  width: 100%;
+  transition: width 10s linear; /* The timer animation */
+}
+
+.progress-fill-3stus37.completed-3stus37 {
+  width: 100%;
+  transition: none !important; /* Force instant fill */
+}
+
+/* --- Header --- */
+.story-header-3stus37 {
+  position: absolute;
+  top: 28px; /* Below progress bar */
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 30;
+}
+
+.header-avatar-3stus37 {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.3);
+  object-fit: cover;
+}
+
+.header-info-3stus37 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+.header-name-3stus37 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.1;
+  font-family: var(--font-family-3stus37);
+}
+
+.header-time-3stus37 {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  font-weight: 400;
+  font-family: var(--font-family-3stus37);
+}
+
+.close-btn-3stus37 {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 8px; /* Larger touch target */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- Main Image --- */
+.story-image-container-3stus37 {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-story-image-3stus37 {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Ensures full image is seen */
+  display: block;
+}
+
+/* --- Navigation Tap Areas --- */
+.nav-left-3stus37, .nav-right-3stus37 {
+  position: absolute;
+  top: 70px; /* Below header */
+  bottom: 120px; /* Above buttons */
+  width: 35%;
+  z-index: 20;
+}
+.nav-left-3stus37 { left: 0; }
+.nav-right-3stus37 { right: 0; }
+
+/* --- Bottom Actions Overlay --- */
+.story-bottom-overlay-3stus37 {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
+  padding: 40px 16px 30px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.tags-container-3stus37 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.hashtag-pill-3stus37 {
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-shadow: 0 1px 2px black;
+  background: rgba(0,0,0,0.3);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: var(--font-family-3stus37);
+}
+
+.btn-group-3stus37 {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+}
+
+.action-btn-3stus37 {
+  flex: 1;
+  height: 44px; /* Fixed touch friendly height */
+  border-radius: 22px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  max-width: 180px;
+  transition: transform 0.1s;
+  font-family: var(--font-family-3stus37);
+}
+
+.action-btn-3stus37:active {
+  transform: scale(0.96);
+}
+
+.btn-chat-3stus37 {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.btn-read-3stus37 {
+  background: white;
+  color: black;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* --- Mobile Specific Tweaks --- */
+@media (max-width: 380px) {
+  .status-ring-3stus37 { width: 60px; height: 60px; }
+  .status-item-wrapper-3stus37 { width: 64px; }
+  .action-btn-3stus37 { font-size: 0.85rem; height: 40px; }
+}

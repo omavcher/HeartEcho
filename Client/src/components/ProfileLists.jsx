@@ -8,65 +8,74 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 
-function ProfileLists({ handleSettindSelection, onBackSBTNSelect }) {
+function ProfileLists({ handleSettindSelection, onBackSBTNSelect, selectedId }) {
+  // State Management
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otp, setOtp] = useState("");
   const [maskedEmail, setMaskedEmail] = useState("");
-  const [deleteing, setDeleting] = useState(false);
-  const [submiting, setSubmiting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [userData, setUserData] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
   const [token, setToken] = useState(null);
   const [twoFactor, setTwoFactor] = useState(false);
   const router = useRouter();
 
-  // Initialize user data from localStorage if available
-  const initializeUserData = () => {
+  // --- 1. Initialization ---
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedToken = localStorage.getItem("token");
-      const storedUserData = localStorage.getItem("userProfileData");
-      
       setToken(storedToken);
       
+      const storedUserData = localStorage.getItem("userProfileData");
       if (storedUserData) {
         try {
           const parsedData = JSON.parse(storedUserData);
           setUserData(parsedData);
           setTwoFactor(parsedData.twofactor || false);
         } catch (error) {
-          console.error("Error parsing stored user data:", error);
-          localStorage.removeItem("userProfileData");
+          console.error("Data parse error", error);
         }
       }
+    }
+  }, []);
+
+  // --- 2. Data Fetching ---
+  const fetchUserData = async () => {
+    if (!token) return;
+    try {
+      const res = await axios.get(`${api.Url}/user/get-user`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.data) {
+        setUserData(res.data);
+        setTwoFactor(res.data.twofactor);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("userProfileData", JSON.stringify(res.data));
+        }
+      }
+    } catch (error) {
+      console.warn("Using cached data due to fetch error");
     }
   };
 
   useEffect(() => {
-    initializeUserData();
-  }, []);
+    fetchUserData();
+  }, [token]);
 
-  // Update localStorage whenever userData changes
-  useEffect(() => {
-    if (userData && typeof window !== 'undefined') {
-      localStorage.setItem("userProfileData", JSON.stringify(userData));
-    }
-  }, [userData]);
-
+  // --- 3. Handlers ---
   const handleDeleteClick = () => {
     const email = userData?.email || "";
-    const masked = email.replace(/(.{3}).+(@.+)/, "$1**********$2");
-    setMaskedEmail(masked);
+    setMaskedEmail(email.replace(/(.{3}).+(@.+)/, "$1**********$2"));
     setShowDeleteConfirm(true);
   };
 
   const handleConfirmDelete = async () => {
-    setDeleting(true);
+    setIsDeleting(true);
     try {
       const res = await axios.post(`${api.Url}/user/send-otp-destroy`, { email: userData.email }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.data.success) {
         setNotification({ show: true, message: "OTP sent successfully!", type: "success" });
@@ -76,351 +85,234 @@ function ProfileLists({ handleSettindSelection, onBackSBTNSelect }) {
     } catch (error) {
       setNotification({ show: true, message: "Error sending OTP", type: "error" });
     }
-    setDeleting(false);
+    setIsDeleting(false);
   };
 
   const handleVerifyOtp = async () => {
-    setSubmiting(true);
+    setIsSubmitting(true);
     try {
       const res = await axios.post(`${api.Url}/user/verify-otp-destroy`, { email: userData.email, otp }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.data.success) {
         await axios.delete(`${api.Url}/user/delete-account`, { headers: { Authorization: `Bearer ${token}` } });
-        alert("Account deleted successfully.");
-        
-        // Clear all stored data
-        if (typeof window !== 'undefined') {
-          localStorage.clear();
-        }
+        if (typeof window !== 'undefined') localStorage.clear();
         Cookies.remove('token');
-        
         router.push("/login");
       } else {
-        setNotification({ show: true, message: "Invalid OTP. Please try again.", type: "error" });
+        setNotification({ show: true, message: "Invalid OTP.", type: "error" });
       }
     } catch (error) {
-      setNotification({ show: true, message: "Error verifying OTP", type: "error" });
+      setNotification({ show: true, message: "Verification failed", type: "error" });
     }
-    setSubmiting(false);
+    setIsSubmitting(false);
   };
-
-  const fetchUserData = async () => {
-    try {
-      const res = await axios.get(
-        `${api.Url}/user/get-user`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (res.data) {
-        // Update both state and localStorage with fresh backend data
-        setUserData(res.data);
-        setTwoFactor(res.data.twofactor);
-        
-        // Store in localStorage for future use
-        if (typeof window !== 'undefined') {
-          localStorage.setItem("userProfileData", JSON.stringify(res.data));
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      setNotification({ 
-        show: true, 
-        message: "Error fetching user data. Using cached data.", 
-        type: "warning" 
-      });
-      
-      // If fetch fails, we still have the localStorage data as fallback
-    }
-  };
-
-  useEffect(() => {
-    if (token) {
-      // Always try to get fresh data from backend, but we have localStorage as fallback
-      fetchUserData();
-    }
-  }, [token]);
 
   const handleToggle2F = async () => {
     const newStatus = !twoFactor;
+    setTwoFactor(newStatus); 
     
-    // Optimistic update - update UI immediately
-    setTwoFactor(newStatus);
-    if (userData) {
-      const updatedUserData = { ...userData, twofactor: newStatus };
-      setUserData(updatedUserData);
-      
-      // Update localStorage immediately
-      if (typeof window !== 'undefined') {
-        localStorage.setItem("userProfileData", JSON.stringify(updatedUserData));
-      }
-    }
-
     try {
-      const response = await axios.post(`${api.Url}/user/twofactor`, { twofactor: newStatus }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      await axios.post(`${api.Url}/user/twofactor`, { twofactor: newStatus }, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
-      setNotification({
-        show: true,
-        message: "Two-factor authentication updated successfully",
-        type: "success",
-      });
-      
-      // Refresh data from backend to ensure consistency
-      fetchUserData();
-      
+      fetchUserData(); 
+      setNotification({ show: true, message: `2FA ${newStatus ? 'Enabled' : 'Disabled'}`, type: "success" });
     } catch (error) {
-      setNotification({
-        show: true,
-        message: error.response?.data?.message || "Error updating two-factor",
-        type: "error",
-      });
-      
-      // Revert on error
-      setTwoFactor(!newStatus);
-      if (userData) {
-        const revertedUserData = { ...userData, twofactor: !newStatus };
-        setUserData(revertedUserData);
-        
-        // Revert localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.setItem("userProfileData", JSON.stringify(revertedUserData));
-        }
-      }
+      setTwoFactor(!newStatus); 
+      setNotification({ show: true, message: "Failed to update 2FA", type: "error" });
     }
   };
 
   const handleLogout = () => {
-    // Clear all stored data
-    if (typeof window !== 'undefined') {
-      localStorage.clear();
-    }
+    if (typeof window !== 'undefined') localStorage.clear();
     Cookies.remove('token');
     router.push("/login");
   };
 
+  const navigateTo = (id) => {
+    handleSettindSelection(id);
+    onBackSBTNSelect(false);
+  };
+
+  // --- Render ---
   return (
     <>
       <PopNoti
-        message={notification.message}
-        type={notification.type}
+        {...notification}
         isVisible={notification.show}
         onClose={() => setNotification({ ...notification, show: false })}
       />
       
-      <div className='profile-top-bio-containe'>
-        <div className='profile-top-bio-contain-user-info'>
-          <img 
-            src={userData?.profile_picture || "/default-profile.png"} 
-            alt={`Profile-${userData?.name || "User"}`} 
-          />
-          <span>
-            <h2>{userData?.name }</h2>
-            <p>{userData?.email}</p>
-          </span>
-        </div>
-      </div>
-
-
-      <section className='main-setting-section'>
-        <div className='main-setting-list-q3' onClick={() => { handleSettindSelection(2); onBackSBTNSelect(false); }}>
-          <div className='main-list-info-cont'>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3.78307 2.82598L12 1L20.2169 2.82598C20.6745 2.92766 21 3.33347 21 3.80217V13.7889C21 15.795 19.9974 17.6684 18.3282 18.7812L12 23L5.6718 18.7812C4.00261 17.6684 3 15.795 3 13.7889V3.80217C3 3.33347 3.32553 2.92766 3.78307 2.82598ZM5 4.60434V13.7889C5 15.1263 5.6684 16.3752 6.7812 17.1171L12 20.5963L17.2188 17.1171C18.3316 16.3752 19 15.1263 19 13.7889V4.60434L12 3.04879L5 4.60434ZM12 11C10.6193 11 9.5 9.88071 9.5 8.5C9.5 7.11929 10.6193 6 12 6C13.3807 6 14.5 7.11929 14.5 8.5C14.5 9.88071 13.3807 11 12 11ZM7.52746 16C7.77619 13.75 9.68372 12 12 12C14.3163 12 16.2238 13.75 16.4725 16H7.52746Z"></path>
-            </svg>
-            <span>
-              <h3>My Account</h3>
-              <p>Make changes to your account.</p>
-            </span>
-          </div>
-          <svg className='main-setting-lisvg' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M16 12L10 18V6L16 12Z"></path>
-          </svg>
-        </div>
-
-        <div className='main-setting-list-q3' onClick={() => { handleSettindSelection(4); onBackSBTNSelect(false); }}>
-          <div className='main-list-info-cont'>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C10.298 22 8.69525 21.5748 7.29229 20.8248L2 22L3.17629 16.7097C2.42562 15.3063 2 13.7028 2 12C2 6.47715 6.47715 2 12 2ZM12 4C7.58172 4 4 7.58172 4 12C4 13.3347 4.32563 14.6181 4.93987 15.7664L5.28952 16.4201L4.63445 19.3663L7.58189 18.7118L8.23518 19.061C9.38315 19.6747 10.6659 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4ZM12 7C13.6569 7 15 8.34315 15 10V11H16V16H8V11H9V10C9 8.34315 10.3431 7 12 7ZM14 13H10V14H14V13ZM12 9C11.4477 9 11 9.45 11 10V11H13V10C13 9.44772 12.5523 9 12 9Z"></path>
-            </svg>
-            <span>
-              <h3>Chat Manage</h3>
-              <p>Control chat settings.</p>
-            </span>
-          </div>
-          <svg className='main-setting-lisvg' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M16 12L10 18V6L16 12Z"></path>
-          </svg>
-        </div>
-
-        <div className='main-setting-list-q3' onClick={() => { handleSettindSelection(6); onBackSBTNSelect(false); }}>
-          <div className='main-list-info-cont'>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M20 22H4C3.44772 22 3 21.5523 3 21V3C3 2.44772 3.44772 2 4 2H20C20.5523 2 21 2.44772 21 3V21C21 21.5523 20.5523 22 20 22ZM19 20V4H5V20H19ZM8 9H16V11H8V9ZM8 13H16V15H8V13Z"></path>
-            </svg>
-            <span>
-              <h3>Subscription & Billing</h3>
-              <p>Manage payments.</p>
-            </span>
-          </div>
-          <svg className='main-setting-lisvg' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M16 12L10 18V6L16 12Z"></path>
-          </svg>
-        </div>
-      </section>
-
-      <h1 className='h1-more3ess'>More</h1>
-
-      <section className='mores3-setting-section'>
-        <div className='main-setting-list-q3'>
-          <div className='main-list-info-cont'>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7.29117 20.8242L2 22L3.17581 16.7088C2.42544 15.3056 2 13.7025 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C10.2975 22 8.6944 21.5746 7.29117 20.8242ZM7.58075 18.711L8.23428 19.0605C9.38248 19.6745 10.6655 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 13.3345 4.32549 14.6175 4.93949 15.7657L5.28896 16.4192L4.63416 19.3658L7.58075 18.711ZM7 12H9C9 13.6569 10.3431 15 12 15C13.6569 15 15 13.6569 15 12H17C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12Z"></path>
-            </svg>
-            <span>
-              <h3>Security Alerts</h3>
-              <p>Get notified of risks.</p>
-            </span>
-          </div>
-          <label className="toggle-switch">
-            <input type="checkbox" checked={userData?.termsAccepted} readOnly />
-            <span className="slider"></span>
-          </label>
-        </div>
-
-        <div className='main-setting-list-q3'>
-          <div className='main-list-info-cont'>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6 10V20H19V10H6ZM18 8H20C20.5523 8 21 8.44772 21 9V21C21 21.5523 20.5523 22 20 22H4C3.44772 22 3 21.5523 3 21V9C3 8.44772 3.44772 8 4 8H6V7C6 3.68629 8.68629 1 12 1C15.3137 1 18 3.68629 18 7V8ZM16 8V7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7V8H16ZM7 11H9V13H7V11ZM7 14H9V16H7V14ZM7 17H9V19H7V17Z"></path>
-            </svg>
-            <span>
-              <h3>Enable 2FA</h3>
-              <p>Secure your account.</p>
-            </span>
-          </div>
-          <label className="toggle-switch">
-            <input
-              type="checkbox"
-              checked={twoFactor}
-              onChange={handleToggle2F}
+      {/* WRAPPER FOR CENTERING */}
+      <div className="profile-lists-wrapper">
+        
+        {/* User Bio Card */}
+        <div className='profile-top-bio-container'>
+          <div className='profile-user-info'>
+            <img 
+              src={userData?.profile_picture || "/default-profile.png"} 
+              alt="Profile" 
+              className='profile-avatar'
             />
-            <span className="slider"></span>
-          </label>
-        </div>
-
-        <div className='main-setting-list-q3'>
-          <div className='main-list-info-cont'>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM9 4V6H15V4H9ZM9 16V18H7V16H9ZM9 13V15H7V13H9ZM9 10V12H7V10H9ZM15 4H9V6H15V4Z"></path>
-            </svg>
-            <span>
-              <h3>Delete Account</h3>
-              <p>Remove your profile.</p>
-            </span>
+            <div className='profile-text'>
+              <h2>{userData?.name || "User"}</h2>
+              <p>{userData?.email}</p>
+            </div>
           </div>
-          <button className='main-setting-more-dele' onClick={handleDeleteClick}>Delete</button>
         </div>
 
-        {showDeleteConfirm && (
-          <div className="overlay-delete-confirm">
-            <div className="popup">
-              <h3>Are you sure?</h3>
-              <p>Do you want to delete your account?</p>
-              <div className='overlay-delect-nos-c'>
-                <button style={{ marginTop: '1rem' }} className="otp-btn-singr" onClick={handleConfirmDelete} disabled={deleteing}>
-                  {deleteing ? <span className="loader-signin"></span> : "Delete"}
-                </button>
-                <button style={{ marginTop: '1rem' }} className="otp-btn-singr" onClick={() => setShowDeleteConfirm(false)}>No</button>
+        {/* Account Settings */}
+        <div className='section-header'>Account</div>
+        <section className='settings-section'>
+          
+          <div className={`setting-item ${selectedId === 2 ? 'active' : ''}`} onClick={() => navigateTo(2)}>
+            <div className='setting-info'>
+              <svg className="setting-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+              <div className='setting-text'>
+                <h3>My Account</h3>
+                <p>Personal details & security</p>
               </div>
             </div>
+            <svg className='chevron-icon' viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </svg>
           </div>
-        )}
 
-        {showOtpInput && (
-          <div className="overlay-delete-confirm">
-            <div className="popup">
-              <h3>OTP Verification</h3>
-              <p>Enter the OTP sent to {maskedEmail}</p>
-              <input type="text" value={otp} onChange={(e) => setOtp(e.target.value)} />
-              <button style={{ marginTop: '1rem' }} className="otp-btn-singr" onClick={handleVerifyOtp} disabled={submiting}>
-                {submiting ? <span className="loader-signin"></span> : "Submit"}
+          <div className={`setting-item ${selectedId === 4 ? 'active' : ''}`} onClick={() => navigateTo(4)}>
+            <div className='setting-info'>
+              <svg className="setting-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+              </svg>
+              <div className='setting-text'>
+                <h3>Chat Settings</h3>
+                <p>Manage chat preferences</p>
+              </div>
+            </div>
+            <svg className='chevron-icon' viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+          </div>
+
+          <div className={`setting-item ${selectedId === 6 ? 'active' : ''}`} onClick={() => navigateTo(6)}>
+            <div className='setting-info'>
+              <svg className="setting-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+              </svg>
+              <div className='setting-text'>
+                <h3>Billing</h3>
+                <p>Subscription & payments</p>
+              </div>
+            </div>
+            <svg className='chevron-icon' viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+          </div>
+
+        </section>
+
+        {/* Security & Actions */}
+        <div className='section-header'>Security & Actions</div>
+        <section className='settings-section'>
+          
+          <div className='setting-item'>
+            <div className='setting-info'>
+              <svg className="setting-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+              </svg>
+              <div className='setting-text'>
+                <h3>Two-Factor Auth</h3>
+                <p>Extra layer of security</p>
+              </div>
+            </div>
+            <label className="toggle-switch">
+              <input type="checkbox" checked={twoFactor} onChange={handleToggle2F} />
+              <span className="slider"></span>
+            </label>
+          </div>
+
+          {/* <div className='setting-item'>
+            <div className='setting-info'>
+              <svg className="setting-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+              </svg>
+              <div className='setting-text'>
+                <h3>Delete Account</h3>
+                <p>Permanently remove data</p>
+              </div>
+            </div>
+            <button className='action-btn btn-danger' onClick={handleDeleteClick}>Delete</button>
+          </div> */}
+
+        </section>
+
+        {/* Support */}
+        <div className='section-header'>Support</div>
+        <section className='settings-section'>
+          <div className='setting-item' onClick={() => navigateTo(12)}>
+            <div className='setting-info'>
+              <svg className="setting-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 9h-2V5h2v6zm0 4h-2v-2h2v2z"/>
+              </svg>
+              <div className='setting-text'>
+                <h3>Help Center</h3>
+                <p>FAQ & Support tickets</p>
+              </div>
+            </div>
+            <button className='action-btn btn-primary'>Open</button>
+          </div>
+
+          <div className='setting-item'>
+            <div className='setting-info'>
+              <svg className="setting-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+              </svg>
+              <div className='setting-text'>
+                <h3>Log Out</h3>
+                <p>Sign out of your session</p>
+              </div>
+            </div>
+            <button className='action-btn btn-primary' onClick={handleLogout}>Logout</button>
+          </div>
+        </section>
+
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="overlay-backdrop">
+          <div className="modal-content">
+            <h3>Delete Account?</h3>
+            <p>This action is irreversible. All data will be lost.</p>
+            <div className='modal-actions'>
+              <button className="modal-btn btn-danger" onClick={handleConfirmDelete} disabled={isDeleting}>
+                {isDeleting ? <span className="loader-spinner"></span> : "Confirm Delete"}
               </button>
+              <button className="modal-btn btn-primary" onClick={() => setShowDeleteConfirm(false)}>Cancel</button>
             </div>
           </div>
-        )}
-      </section>
-
-      <h1 className='h1-more3ess'>Support</h1>
-
-      <section className='suppoedt-setting-section'>
-        <div className='main-setting-list-q3' onClick={() => { handleSettindSelection(10); onBackSBTNSelect(false); }}>
-          <div className='main-list-info-cont'>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7.29117 20.8242L2 22L3.17581 16.7088C2.42544 15.3056 2 13.7025 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C10.2975 22 8.6944 21.5746 7.29117 20.8242ZM7.58075 18.711L8.23428 19.0605C9.38248 19.6745 10.6655 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 13.3345 4.32549 14.6175 4.93949 15.7657L5.28896 16.4192L4.63416 19.3658L7.58075 18.711ZM7 12H9C9 13.6569 10.3431 15 12 15C13.6569 15 15 13.6569 15 12H17C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12Z"></path>
-            </svg>
-            <span>
-              <h3>Live Chat</h3>
-              <p>Instant support.</p>
-            </span>
-          </div>
-          <button className='main-setting-swx3'>Instant Support</button>
         </div>
+      )}
 
-        <div className='main-setting-list-q3' onClick={() => { handleSettindSelection(11); onBackSBTNSelect(false); }}>
-          <div className='main-list-info-cont'>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M17 2V4H20.0066C20.5552 4 21 4.44495 21 4.9934V21.0066C21 21.5552 20.5551 22 20.0066 22H3.9934C3.44476 22 3 21.5551 3 21.0066V4.9934C3 4.44476 3.44495 4 3.9934 4H7V2H17ZM7 6H5V20H19V6H17V8H7V6ZM9 16V18H7V16H9ZM9 13V15H7V13H9ZM9 10V12H7V10H9ZM15 4H9V6H15V4Z"></path>
-            </svg>
-            <span>
-              <h3>FAQ</h3>
-              <p>Find quick answers.</p>
-            </span>
+      {/* OTP Modal */}
+      {showOtpInput && (
+        <div className="overlay-backdrop">
+          <div className="modal-content">
+            <h3>Verify Identity</h3>
+            <p>Enter the code sent to {maskedEmail}</p>
+            <input 
+              type="text" 
+              value={otp} 
+              onChange={(e) => setOtp(e.target.value)} 
+              placeholder="Enter OTP"
+              autoFocus
+            />
+            <button className="modal-btn btn-danger" style={{width:'100%'}} onClick={handleVerifyOtp} disabled={isSubmitting}>
+              {isSubmitting ? <span className="loader-spinner"></span> : "Verify & Delete"}
+            </button>
           </div>
-          <button className='main-setting-swx3'>Quick Answers</button>
         </div>
-
-        <div className='main-setting-list-q3' onClick={() => { handleSettindSelection(12); onBackSBTNSelect(false); }}>
-          <div className='main-list-info-cont'>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M2.00488 9.49979V3.99979C2.00488 3.4475 2.4526 2.99979 3.00488 2.99979H21.0049C21.5572 2.99979 22.0049 3.4475 22.0049 3.99979V9.49979C20.6242 9.49979 19.5049 10.6191 19.5049 11.9998C19.5049 13.3805 20.6242 14.4998 22.0049 14.4998V19.9998C22.0049 20.5521 21.5572 20.9998 21.0049 20.9998H3.00488C3.44476 22 3 21.5551 3 21.0066V4.9934C3 4.44476 3.44495 4 3.9934 4H7V2H17ZM7 6H5V20H19V6H17V8H7V6ZM9 16V18H7V16H9ZM9 13V15H7V13H9ZM9 10V12H7V10H9ZM15 4H9V6H15V4Z"></path>
-            </svg>
-            <span>
-              <h3>Submit a Ticket</h3>
-              <p>Request help.</p>
-            </span>
-          </div>
-          <button className='main-setting-swx3'>Request Help</button>
-        </div>
-
-        <div className='main-setting-list-q3'>
-          <div className='main-list-info-cont'>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M5 22C4.44772 22 4 21.5523 4 21V3C4 2.44772 4.44772 2 5 2H19C19.5523 2 20 2.44772 20 3V6H18V4H6V20H18V18H20V21C20 21.5523 19.5523 22 19 22H5ZM18 16V13H11V11H18V8L23 12L18 16Z"></path>
-            </svg>
-            <span>
-              <h3>Come Back Soon!</h3>
-              <p>We hope to see you again soon.</p>
-            </span>
-          </div>
-          <button
-            className='main-setting-swx3'
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
-        </div>
-      </section>
+      )}
     </>
-  )
+  );
 }
 
 export default ProfileLists;

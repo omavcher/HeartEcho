@@ -1,29 +1,113 @@
-.friends-main-conatiner{
-    width: 100%;
-    height: auto;
-    margin-bottom: 5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: black;
-    
-}
-.friends-main-conatiner header{
-    width: 100%;
-    height: 3rem;
-    color: white;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-    padding: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-.ai-models-section-container{
-    width: 95%;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+/* Discover.css */
 
+:root {
+  --bg-black: #000000;
+  --text-white: #ffffff;
+  --glass-header: rgba(0, 0, 0, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --gold-gradient: linear-gradient(135deg, #FFD700, #FFA500, #B8860B);
+  --font-main: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
 }
 
+.discover-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--bg-black);
+  color: var(--text-white);
+  font-family: var(--font-main);
+  padding-bottom: 100px; /* Space for Mobile Menu */
+}
 
+/* --- Sticky Header --- */
+.discover-header {
+  width: 100%;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--glass-header);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--glass-border);
+}
 
+.discover-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  background: linear-gradient(to right, #fff, #ccc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+/* --- Gold Premium Button --- */
+.premium-gold-btn {
+  background: var(--gold-gradient);
+  color: #000;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+}
+
+.premium-gold-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+}
+
+.premium-gold-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* --- Sections --- */
+.discover-content-wrapper {
+  width: 100%;
+  max-width: 1200px; /* Constrain width on large screens */
+  display: flex;
+  flex-direction: column;
+  gap: 3rem; /* Breathing room between components */
+  padding-top: 2rem;
+}
+
+.ai-models-section-container {
+  width: 95%;
+  margin: 0 auto;
+}
+
+/* --- Mobile Optimization --- */
+@media (max-width: 768px) {
+  .discover-header {
+    padding: 0 16px;
+    height: 60px;
+  }
+
+  .discover-header h1 {
+    font-size: 1.3rem;
+  }
+
+  .premium-gold-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .discover-content-wrapper {
+    gap: 2rem;
+    padding-top: 1rem;
+  }
+}

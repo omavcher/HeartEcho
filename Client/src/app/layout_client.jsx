@@ -1,33 +1,29 @@
 'use client';
 
-import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
 import PropTypes from 'prop-types';
 import SideMenu from "../components/SideMenu";
 import MobileMenu from "../components/MobileMenu";
 import './globals.css';
 
 export default function ClientLayout({ children }) {
-  const [isMobile, setIsMobile] = useState(false);
-  const pathname = usePathname();
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   return (
-    <div className="main-container-d min-h-screen flex justify-center items-center bg-gray-100">
-      {!isMobile && <SideMenu />}
-      <div className="mainx-swdeer">
-        {children}
+    <div className="main-layout-wrapper">
+      
+      {/* Desktop Sidebar - Hidden on mobile via CSS */}
+      <div className="desktop-sidebar-wrapper">
+        <SideMenu />
       </div>
-      {isMobile && <MobileMenu />}
+
+      {/* Main Content */}
+      <main className="main-content-wrapper">
+        {children}
+      </main>
+
+      {/* Mobile Menu - Only shows on small screens via internal CSS of MobileMenu */}
+      <div className="mobile-nav-wrapper lg:hidden">
+        <MobileMenu />
+      </div>
+
     </div>
   );
 }

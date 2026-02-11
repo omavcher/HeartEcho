@@ -1,0 +1,343 @@
+/* HotStories.css */
+
+:root {
+  --accent-pink-hotde4: #cf4185;
+  --bg-deep-hotde4: #050505;
+  --glass-card-hotde4: rgba(20, 20, 20, 0.7);
+  --border-hotde4: rgba(255, 255, 255, 0.08);
+  --font-sf-hotde4: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+}
+
+.hot-stories-wrapper-hotde4 {
+  background-color: var(--bg-deep-hotde4);
+  min-height: 100vh;
+  color: white;
+  font-family: var(--font-sf-hotde4);
+  padding-bottom: 80px; /* Space for mobile nav */
+}
+
+/* --- HERO & SEARCH --- */
+.hero-section-hotde4 {
+  padding: 40px 16px 20px;
+}
+
+.title-box-hotde4 h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.title-box-hotde4 p {
+  color: #888;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+.controls-row-hotde4 {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.search-container-hotde4 {
+  flex: 1;
+  background: #161616;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border: 1px solid var(--border-hotde4);
+}
+
+.search-container-hotde4 input {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 12px 0;
+  width: 100%;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.filter-btn-hotde4 {
+  background: #161616;
+  border: 1px solid var(--border-hotde4);
+  color: white;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* --- RECENTLY VIEWED (Zeigarnik Effect) --- */
+.recent-section-hotde4 {
+  padding: 20px 0 10px 16px;
+}
+
+.recent-title-hotde4 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #666;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.recent-scroll-hotde4 {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-right: 16px;
+  scrollbar-width: none;
+}
+.recent-scroll-hotde4::-webkit-scrollbar { display: none; }
+
+.recent-item-hotde4 {
+  flex-shrink: 0;
+  width: 70px;
+  text-decoration: none;
+  text-align: center;
+}
+
+.recent-avatar-hotde4 {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  padding: 2px;
+  background: linear-gradient(45deg, var(--accent-pink-hotde4), #f09433);
+  margin-bottom: 6px;
+}
+
+.recent-avatar-hotde4 img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--bg-deep-hotde4);
+}
+
+.recent-name-hotde4 {
+  font-size: 0.7rem;
+  color: #bbb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* --- MAIN FEED GRID --- */
+.feed-container-hotde4 {
+  padding: 16px;
+}
+
+.feed-header-hotde4 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.feed-count-hotde4 { font-size: 0.75rem; color: #555; font-weight: 600; }
+
+.sort-chips-hotde4 {
+  display: flex;
+  background: #111;
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.sort-chips-hotde4 button {
+  background: transparent;
+  border: none;
+  color: #666;
+  padding: 6px 14px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.sort-chips-hotde4 button.active-hotde4 {
+  background: #252525;
+  color: white;
+}
+
+/* GRID LOGIC: 2 Items on Mobile, 4 on PC */
+.stories-grid-hotde4 {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 1024px) {
+  .stories-grid-hotde4 {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+}
+
+/* --- STORY CARD (Strict 16:9) --- */
+.card-hotde4 {
+  text-decoration: none;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease;
+}
+
+.card-hotde4:active { transform: scale(0.97); }
+
+.image-box-hotde4 {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9; /* Strictly enforced */
+  border-radius: 14px;
+  overflow: hidden;
+  background: #111;
+  border: 1px solid var(--border-hotde4);
+}
+
+.image-box-hotde4 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.badge-layer-hotde4 {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hot-label-hotde4 {
+  background: #ff4d4d;
+  color: white;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 6px;
+  border-radius: 4px;
+  width: fit-content;
+  text-transform: uppercase;
+}
+
+.city-label-hotde4 {
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  color: #ddd;
+  font-size: 9px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.content-info-hotde4 {
+  padding: 10px 4px 0;
+}
+
+.content-info-hotde4 h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0 0 6px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-meta-hotde4 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+}
+
+.category-tag-hotde4 {
+  color: var(--accent-pink-hotde4);
+  font-weight: 700;
+}
+
+.read-stat-hotde4 {
+  color: #666;
+}
+
+/* --- FILTER BOTTOM SHEET --- */
+.modal-overlay-hotde4 {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+}
+
+.modal-sheet-hotde4 {
+  background: #111;
+  width: 100%;
+  border-radius: 24px 24px 0 0;
+  padding: 24px;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp-hotde4 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes slideUp-hotde4 {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.modal-header-hotde4 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-body-hotde4 h5 {
+  font-size: 0.75rem;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 20px 0 12px;
+}
+
+.pill-grid-hotde4 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill-hotde4 {
+  background: #1a1a1a;
+  border: 1px solid var(--border-hotde4);
+  color: #ccc;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.pill-hotde4.active-hotde4 {
+  background: var(--accent-pink-hotde4);
+  border-color: var(--accent-pink-hotde4);
+  color: white;
+}
+
+.apply-btn-hotde4 {
+  width: 100%;
+  background: var(--accent-pink-hotde4);
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 14px;
+  font-weight: 700;
+  margin-top: 30px;
+  cursor: pointer;
+}

@@ -10,7 +10,7 @@
   --primary: #FF2D95;
   --primary-dark: #e6007a;
   --secondary: #6C63FF;
-  --dark: #0a0a0a;
+  --dark: #000000;
   --dark-gray: #1a1a1a;
   --medium-gray: #2a2a2a;
   --light-gray: #444;
@@ -1154,3 +1154,5 @@ ins[data-width="728"][data-height="90"] {
     margin: 4rem auto;
   }
 }
+
+

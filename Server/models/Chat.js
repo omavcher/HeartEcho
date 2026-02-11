@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
 const chatSchema = new mongoose.Schema({
-  participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  aiParticipants: [{ type: mongoose.Schema.Types.ObjectId, ref: "AIFriend" }],
+  participants: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  aiParticipants: { type: mongoose.Schema.Types.ObjectId, ref: "AIFriend" },
 
   messages: [
     {

@@ -3,9 +3,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import axios from "axios";
 import { 
-  ArrowLeft, X, MoreVertical, Send, Video, 
-  Image as ImageIcon, Info, Lock, Zap, 
-  Bot, Check, CheckCheck, Play
+  ArrowLeft, X, Send, Video, Image as ImageIcon, Info, Lock, Zap, 
+  Bot, Check, CheckCheck, Play, CreditCard
 } from "lucide-react";
 import api from "../config/api";
 import { useRouter } from 'next/navigation';
@@ -13,11 +12,13 @@ import { useRouter } from 'next/navigation';
 // --- CONFIGURATION ---
 const QUOTA_COSTS = { TEXT: 1, IMAGE: 15, VIDEO: 20 };
 
-// Simulates human behavior
 const BOT_BEHAVIOR = {
   TYPING_SPEED_MS: 30, 
   MIN_TYPING_TIME: 1500, 
   MAX_TYPING_TIME: 4000,
+  READ_RECEIPT_DELAY: 600, 
+  CONTINUOUS_REPLY_DELAY_MIN: 8000, 
+  CONTINUOUS_REPLY_DELAY_MAX: 50000,
 };
 
 // --- COMPONENTS ---
@@ -34,22 +35,22 @@ const PopNoti = ({ message, type, isVisible, onClose }) => {
 
 // --- PREMIUM LOCK UI ---
 const PremiumLockOverlay = ({ mediaType, cost, remainingQuota, onUnlock }) => {
-  const isQuotaExceeded = remainingQuota === 0;
+  const isQuotaExceeded = remainingQuota <= 0;
   return (
     <div className="premium-lock-backdrop">
       <div className="glass-lock-card">
         <div className="lock-icon-glow">
           <Lock size={20} color="#FFD700" />
         </div>
-        <h4>{isQuotaExceeded ? "Quota Limit" : "Premium Media"}</h4>
+        <h4>{isQuotaExceeded ? "Quota Limit Reached" : "Premium Media"}</h4>
         <p>
           {isQuotaExceeded 
-            ? "Daily limit reached." 
-            : `Unlock for ${cost} tokens.`}
+            ? "Subscribe to continue chatting." 
+            : `Subscribe to view private ${mediaType}.`}
         </p>
         <button className="unlock-btn-shine" onClick={onUnlock}>
           <Zap size={14} fill="black" /> 
-          <span>{isQuotaExceeded ? "Get Unlimited" : "Unlock Now"}</span>
+          <span>Unlock Now</span>
         </button>
       </div>
     </div>
@@ -60,14 +61,7 @@ const PremiumLockOverlay = ({ mediaType, cost, remainingQuota, onUnlock }) => {
 const MediaMessage = ({ message, isSubscribed, remainingQuota, onSubscribe }) => {
   const isImage = message.mediaType === "image" || !!message.imgUrl;
   const mediaUrl = isImage ? message.imgUrl : message.videoUrl;
-  
-  const hasAccess = useMemo(() => {
-    if (isSubscribed) return true;
-    if (message.visibility === "show") return true;
-    if (message.quotaInfo?.hasAccess) return true;
-    return false;
-  }, [isSubscribed, message.visibility, message.quotaInfo]);
-
+  const hasAccess = isSubscribed;
   const cost = isImage ? QUOTA_COSTS.IMAGE : QUOTA_COSTS.VIDEO;
 
   return (
@@ -91,29 +85,23 @@ const MediaMessage = ({ message, isSubscribed, remainingQuota, onSubscribe }) =>
           </div>
         )}
         
-        {/* Lock Overlay */}
         {!hasAccess && (
           <PremiumLockOverlay
-            mediaType={isImage ? 'image' : 'video'}
+            mediaType={isImage ? 'photo' : 'video'}
             cost={cost}
             remainingQuota={remainingQuota}
             onUnlock={onSubscribe}
           />
         )}
 
-        {/* Info Overlay (Time & Tokens) */}
         <div className="media-info-gradient">
            <span className="media-time-text">{formatTime(message.time)}</span>
-           {!isSubscribed && hasAccess && (
-             <span className="token-cost-badge">-{cost} 🪙</span>
-           )}
         </div>
       </div>
     </div>
   );
 };
 
-// Helper: Format Time
 const formatTime = (timeString) => {
   try {
     return new Date(timeString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -122,7 +110,6 @@ const formatTime = (timeString) => {
 
 // --- MAIN COMPONENT ---
 const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} }) => {
-  // --- STATE ---
   const [messages, setMessages] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
   const [newMessage, setNewMessage] = useState("");
@@ -133,18 +120,18 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
   const [isBotOnline, setIsBotOnline] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false); 
-  const [remainingQuota, setRemainingQuota] = useState(20);
+  const [remainingQuota, setRemainingQuota] = useState(5); 
   
-  // Restored for Old About Section functionality
+  // Logic Flags
   const [isBotMessageEnabled, setIsBotMessageEnabled] = useState(true);
   const overlayRef = useRef(null);
+  const continuousLoopRef = useRef(null); // Ref to hold the loop timeout
 
   // Refs
   const chatContainerRef = useRef(null);
   const lastMessageRef = useRef(null);
   const router = useRouter();
 
-  // Scroll logic
   const scrollToBottom = useCallback((instant = false) => {
     if (lastMessageRef.current) {
       lastMessageRef.current.scrollIntoView({ behavior: instant ? "instant" : "smooth", block: "end" });
@@ -155,28 +142,47 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     setToken(storedToken);
-    
     if (chatId && storedToken) {
       initializeChatData(storedToken);
     }
+    // Cleanup loop on unmount
+    return () => clearTimeout(continuousLoopRef.current);
   }, [chatId]);
 
-  // Scroll on new messages
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
+
+  // --- CONTINUOUS LOOP LOGIC ---
+  useEffect(() => {
+    if (!isBotMessageEnabled || messages.length === 0 || isLoading) return;
+
+    const lastMsg = messages[messages.length - 1];
+
+    if (lastMsg.sender === 'ai' && !lastMsg.isTemp) {
+      clearTimeout(continuousLoopRef.current);
+      const nextDelay = Math.floor(Math.random() * (BOT_BEHAVIOR.CONTINUOUS_REPLY_DELAY_MAX - BOT_BEHAVIOR.CONTINUOUS_REPLY_DELAY_MIN + 1) + BOT_BEHAVIOR.CONTINUOUS_REPLY_DELAY_MIN);
+      
+      continuousLoopRef.current = setTimeout(() => {
+        if (isBotMessageEnabled && !isTyping) {
+            triggerBotAutoMessage(localStorage.getItem("token"));
+        }
+      }, nextDelay);
+    }
+
+    return () => clearTimeout(continuousLoopRef.current);
+  }, [messages, isBotMessageEnabled, isLoading, isTyping]);
+
 
   // --- API LOGIC ---
   const initializeChatData = async (authToken) => {
     setIsLoading(true);
     try {
-      // 1. Get AI Details
       const aiRes = await axios.get(`${api.Url}/ai/detials/${chatId}`, {
         headers: { Authorization: `Bearer ${authToken}` }
       });
       setUserProfile(aiRes.data?.AiInfo || {});
 
-      // 2. Get Chat History
       try {
         const chatRes = await axios.get(`${api.Url}/ai/chats/by-ai/${chatId}`, {
           headers: { Authorization: `Bearer ${authToken}` }
@@ -185,22 +191,60 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
         if (chatRes.data?.chat?.messages) {
           const formattedMsgs = chatRes.data.chat.messages.map(formatMessageData);
           setMessages(formattedMsgs);
+        } else {
+          triggerBotAutoMessage(authToken);
         }
       } catch (err) {
-        if (err.response?.status === 404) setMessages([]);
+        if (err.response?.status === 404) {
+           setMessages([]);
+           triggerBotAutoMessage(authToken); 
+        }
       }
 
-      // 3. Get Subscription
       const quotaRes = await axios.get(`${api.Url}/ai/quota/status`, {
         headers: { Authorization: `Bearer ${authToken}` }
       });
-      setRemainingQuota(quotaRes.data?.remainingQuota || 0);
+      setRemainingQuota(quotaRes.data?.remainingQuota ?? 5);
       setIsSubscribed(quotaRes.data?.isSubscriber || false);
 
     } catch (error) {
       console.error("Init Error:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const triggerBotAutoMessage = async (authToken) => {
+    if (!authToken) return;
+    setIsTyping(true);
+    
+    try {
+      const res = await axios.post(`${api.Url}/bots/bots-message`, 
+        { aiFriendId: chatId },
+        { headers: { Authorization: `Bearer ${authToken}` } }
+      );
+
+      if (res.data?.success && res.data?.botMessage) {
+        const typingTime = Math.max(BOT_BEHAVIOR.MIN_TYPING_TIME, Math.random() * BOT_BEHAVIOR.MAX_TYPING_TIME);
+        
+        setTimeout(() => {
+          setIsTyping(false);
+          const newMsg = {
+            _id: `auto-${Date.now()}`,
+            sender: "ai",
+            text: res.data.botMessage,
+            time: new Date().toISOString(),
+            mediaType: "text",
+            isRead: true
+          };
+          setMessages(prev => [...prev, newMsg]);
+        }, typingTime);
+      } else {
+        setIsTyping(false);
+      }
+    } catch (error) {
+      console.error("Auto Message Fail:", error);
+      setIsTyping(false);
     }
   };
 
@@ -217,16 +261,30 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
 
   // --- SENDING LOGIC ---
   const handleSendMessage = async (customText = null) => {
+    clearTimeout(continuousLoopRef.current);
+
     const text = customText || newMessage;
     if (!text.trim()) return;
 
+    // --- QUOTA EXHAUSTED LOGIC ---
     if (!isSubscribed && remainingQuota <= 0) {
-      showNotification("You've run out of tokens.", "error");
-      setTimeout(() => router.push("/subscribe"), 2000);
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        const quotaExhaustedReply = {
+          _id: `quota-ai-${Date.now()}`,
+          sender: "ai",
+          text: "Quota khatam ho gaya aaj ka, kal milte hain daddy! Premium khareed le toh raat bhar pelunga 😏",
+          time: new Date().toISOString(),
+          mediaType: "text",
+          isRead: true,
+          isBold: true // Custom flag for bold rendering
+        };
+        setMessages(prev => [...prev, quotaExhaustedReply]);
+      }, 1000);
       return;
     }
 
-    // 1. Optimistic UI Update (Show user message immediately)
     const tempId = `temp-${Date.now()}`;
     const userMsg = {
       _id: tempId,
@@ -241,8 +299,16 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
     setMessages(prev => [...prev, userMsg]);
     setNewMessage("");
     
-    // 2. Trigger "Typing..." state immediately
-    setIsTyping(true);
+    if (!isSubscribed) {
+      setRemainingQuota(prev => Math.max(0, prev - 1));
+    }
+
+    setTimeout(() => {
+      setMessages(prev => prev.map(m => 
+        m._id === tempId ? { ...m, isRead: true } : m
+      ));
+      setIsTyping(true);
+    }, BOT_BEHAVIOR.READ_RECEIPT_DELAY);
 
     try {
       const response = await axios.post(
@@ -251,16 +317,14 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // 3. Handle Success
       if (response.data.remainingQuota !== undefined) {
         setRemainingQuota(response.data.remainingQuota);
       }
       
       setMessages(prev => prev.map(m => 
-        m._id === tempId ? { ...m, _id: response.data?.userMessage?._id || tempId, isRead: true, isTemp: false } : m
+        m._id === tempId ? { ...m, _id: response.data?.userMessage?._id || tempId, isTemp: false, isRead: true } : m
       ));
 
-      // 4. Force a refresh with random "human" delay
       const humanDelay = Math.max(BOT_BEHAVIOR.MIN_TYPING_TIME, Math.random() * BOT_BEHAVIOR.MAX_TYPING_TIME);
       
       setTimeout(async () => {
@@ -272,19 +336,22 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
       console.error("Send Error:", error);
       setIsTyping(false);
       setMessages(prev => prev.filter(m => m._id !== tempId)); 
-      showNotification("Failed to send. Check connection.", "error");
+      showNotification("Failed to send.", "error");
     }
   };
 
-  // --- TOGGLE LOGIC FOR OLD ABOUT SECTION ---
   const toggleBotMessages = () => {
     const newState = !isBotMessageEnabled;
     setIsBotMessageEnabled(newState);
-    if(newState) showNotification("Auto messages enabled", "success");
-    else showNotification("Auto messages disabled", "info");
+    if (newState) {
+      triggerBotAutoMessage(token);
+      showNotification("Auto conversation started", "success");
+    } else {
+      clearTimeout(continuousLoopRef.current);
+      showNotification("Auto conversation paused", "info");
+    }
   };
 
-  // --- UI HELPERS ---
   const showNotification = (msg, type) => {
     setNotification({ show: true, message: msg, type });
     setTimeout(() => setNotification(n => ({ ...n, show: false })), 3000);
@@ -346,86 +413,14 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
         </div>
       </div>
 
-      {/* YOUR ORIGINAL OLD ABOUT SECTION (PROFILE OVERLAY) */}
-      <div 
-        className={`profile-overlay-backdrop ${showOverlay ? 'active' : ''}`} 
-        ref={overlayRef} 
-        onClick={(e) => e.target === overlayRef.current && setShowOverlay(false)}
-      >
-        <div className={`profile-modal ${showOverlay ? 'slide-up' : ''}`}>
-          <button className="modal-close-btn" onClick={() => setShowOverlay(false)}>
-            <X size={24} />
-          </button>
-          <div className="modal-scroll-content">
-            <div className="portrait-image-wrapper">
-              <img 
-                src={userProfile?.avatar_img || "/heartecho_b.png"} 
-                alt="Full Portrait" 
-                className="portrait-image" 
-              />
-              <div className="portrait-gradient-overlay"></div>
-              <div className="portrait-name-overlay">
-                <h2>{userProfile?.name || "AI Companion"}</h2>
-                <span className="portrait-role">
-                  {userProfile?.relationship || "AI Assistant"}
-                  {isBotMessageEnabled && " • Auto Messages"}
-                </span>
-              </div>
-            </div>
-            <div className="profile-details-grid">
-              <div className="detail-card">
-                <span className="label">Age</span>
-                <span className="value">{userProfile?.age || "N/A"}</span>
-              </div>
-              <div className="detail-card">
-                <span className="label">Tokens</span>
-                <span className="value">{remainingQuota}</span>
-              </div>
-              <div className="detail-card full">
-                <span className="label">Auto Messages</span>
-                <div className="toggle-wrapper">
-                  <span className="value">{isBotMessageEnabled ? "Enabled" : "Disabled"}</span>
-                  <button 
-                    className={`toggle-btn ${isBotMessageEnabled ? 'active' : ''}`}
-                    onClick={toggleBotMessages}
-                  >
-                    <div className="toggle-slider"></div>
-                  </button>
-                </div>
-              </div>
-              <div className="detail-card full">
-                <span className="label">Interests</span>
-                <span className="value">
-                  {Array.isArray(userProfile?.interests)
-                    ? userProfile.interests.join(" • ")
-                    : userProfile?.interests || "Conversation, Assistance, Learning"}
-                </span>
-              </div>
-              <div className="detail-card full">
-                <span className="label">About</span>
-                <p className="bio-text">
-                  {userProfile?.description || "Your AI companion is here to help and chat with you."}
-                  {isBotMessageEnabled && (
-                    <span className="bot-message-note">
-                      <br />
-                      <Bot size={12} /> I'll send occasional messages to keep the conversation flowing.
-                    </span>
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* MESSAGES AREA */}
+      {/* MESSAGES */}
       <div className="chat-messages-area" ref={chatContainerRef}>
         {isLoading ? (
           <div className="loading-state">
             <div className="spinner"></div>
-            <p>Loading conversation...</p>
+            <p>Syncing...</p>
           </div>
-        ) : messages.length === 0 ? (
+        ) : messages.length === 0 && !isTyping ? (
           <div className="empty-state">
             <div className="empty-icon">👋</div>
             <h3>Say Hello!</h3>
@@ -461,7 +456,8 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
                 ) : (
                   <div className="message-bubble">
                     <div className="text-content">
-                      <p>{msg.text}</p>
+                      {/* SPECIFIC BOLD SUPPORT FOR QUOTA MESSAGE */}
+                      <p style={{ fontWeight: msg.isBold ? '800' : 'normal' }}>{msg.text}</p>
                       <div className="msg-meta">
                         <span className="time">{formatTime(msg.time)}</span>
                         {isMe && (
@@ -478,7 +474,6 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
           })
         )}
 
-        {/* TYPING INDICATOR */}
         {isTyping && (
           <div className="message-row received typing-row">
              <img 
@@ -498,14 +493,35 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
 
       {/* INPUT AREA */}
       <div className="chat-input-area glass-effect">
+        {!isSubscribed && (
+          <div className="quota-container">
+            <span className="quota-label">{remainingQuota} tokens remaining</span>
+            <div className="quota-track">
+              <div 
+                className={`quota-fill ${remainingQuota < 3 ? 'danger' : ''}`} 
+                style={{width: `${Math.min((remainingQuota/5)*100, 100)}%`}}
+              ></div>
+            </div>
+          </div>
+        )}
+
         <div className="input-container">
           <button 
             className="icon-btn" 
             onClick={() => handleSendMessage("/photo Send me a photo")}
             disabled={isTyping}
-            title="Request Image"
+            title="Request Photo (15 Tokens)"
           >
             <ImageIcon size={22} />
+          </button>
+
+          <button 
+            className="icon-btn" 
+            onClick={() => handleSendMessage("/video Send me a video")}
+            disabled={isTyping}
+            title="Request Video (20 Tokens)"
+          >
+            <Video size={22} />
           </button>
           
           <div className="input-wrapper">
@@ -514,24 +530,95 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={isSubscribed ? "Message..." : `Message... (${remainingQuota} tokens)`}
-              disabled={isTyping}
+              placeholder={
+                isSubscribed 
+                  ? "Message..." 
+                  : remainingQuota > 0 
+                    ? "Type a message..." 
+                    : "Out of tokens"
+              }
+              disabled={isTyping || (!isSubscribed && remainingQuota <= 0)}
             />
           </div>
 
-          <button 
-            className={`send-btn ${newMessage.trim() ? 'active' : ''}`}
-            onClick={() => handleSendMessage()}
-            disabled={!newMessage.trim() || isTyping}
-          >
-            <Send size={20} fill={newMessage.trim() ? "white" : "none"} />
-          </button>
+          {/* DYNAMIC BUTTON: Send or Subscribe */}
+          {!isSubscribed && remainingQuota <= 0 ? (
+            <button 
+                className="send-btn active" 
+                style={{ background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: 'black' }}
+                onClick={() => router.push("/subscribe")}
+            >
+                <Zap size={20} fill="black" />
+            </button>
+          ) : (
+            <button 
+                className={`send-btn ${newMessage.trim() ? 'active' : ''}`}
+                onClick={() => handleSendMessage()}
+                disabled={!newMessage.trim() || isTyping}
+            >
+                <Send size={20} fill={newMessage.trim() ? "white" : "none"} />
+            </button>
+          )}
         </div>
-        
-        {!isSubscribed && (
-          <div className="quota-bar" style={{width: `${(remainingQuota/20)*100}%`}}></div>
-        )}
       </div>
+
+      {/* PROFILE OVERLAY */}
+      <div 
+        className={`profile-overlay-backdrop ${showOverlay ? 'active' : ''}`} 
+        ref={overlayRef} 
+        onClick={(e) => e.target === overlayRef.current && setShowOverlay(false)}
+      >
+        <div className={`profile-modal ${showOverlay ? 'slide-up' : ''}`}>
+          <button className="modal-close-btn" onClick={() => setShowOverlay(false)}>
+            <X size={24} />
+          </button>
+          <div className="modal-scroll-content">
+            <div className="portrait-image-wrapper">
+              <img 
+                src={userProfile?.avatar_img || "/heartecho_b.png"} 
+                alt="Full Portrait" 
+                className="portrait-image" 
+              />
+              <div className="portrait-gradient-overlay"></div>
+              <div className="portrait-name-overlay">
+                <h2>{userProfile?.name || "AI Companion"}</h2>
+                <span className="portrait-role">
+                  {userProfile?.relationship || "AI Assistant"}
+                </span>
+              </div>
+            </div>
+            <div className="profile-details-grid">
+              <div className="detail-card">
+                <span className="label">Age</span>
+                <span className="value">{userProfile?.age || "N/A"}</span>
+              </div>
+              <div className="detail-card">
+                <span className="label">Tokens Left</span>
+                <span className="value quota-value">{isSubscribed ? "∞" : remainingQuota}</span>
+              </div>
+              <div className="detail-card full">
+                <span className="label">Auto Conversation</span>
+                <div className="toggle-wrapper">
+                  <span className="value">{isBotMessageEnabled ? "Active" : "Paused"}</span>
+                  <button 
+                    className={`toggle-btn ${isBotMessageEnabled ? 'active' : ''}`}
+                    onClick={toggleBotMessages}
+                  >
+                    <div className="toggle-slider"></div>
+                  </button>
+                </div>
+              </div>
+              <div className="detail-card full">
+                <span className="label">About</span>
+                <p className="bio-text">
+                  {userProfile?.description || "Your AI companion is here to help and chat with you."}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };
@@ -544,7 +631,7 @@ const STYLES = `
 
 :root {
   --bg-app: #09090b; 
-  --bg-header: rgba(9, 9, 11, 0.85);
+  --bg-header: rgba(9, 9, 11, 0.9);
   --accent: #ec4899; 
   --accent-grad: linear-gradient(135deg, #ec4899, #be185d);
   --msg-me: #3f3f46; 
@@ -561,6 +648,7 @@ const STYLES = `
 .chat-box-container {
   display: flex;
   flex-direction: column;
+  height: 100vh;
   height: 100dvh;
   background-color: var(--bg-app);
   color: var(--text);
@@ -571,10 +659,11 @@ const STYLES = `
 
 /* Glass Header */
 .chat-header {
-  height: 65px;
+  flex-shrink: 0;
+  height: 60px;
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 12px;
   justify-content: space-between;
   border-bottom: 1px solid rgba(255,255,255,0.06);
   z-index: 50;
@@ -582,33 +671,33 @@ const STYLES = `
   background: var(--bg-header);
 }
 
-.header-profile { display: flex; align-items: center; gap: 12px; cursor: pointer; flex: 1; margin-left: 8px; }
-.header-avatar-ring { position: relative; }
-.header-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); }
-.status-dot { position: absolute; bottom: 2px; right: 2px; width: 10px; height: 10px; background: var(--green-online); border-radius: 50%; border: 2px solid var(--bg-app); }
+.header-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; margin-left: 8px; }
+.header-avatar-ring { position: relative; flex-shrink: 0; }
+.header-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); }
+.status-dot { position: absolute; bottom: 1px; right: 1px; width: 10px; height: 10px; background: var(--green-online); border-radius: 50%; border: 2px solid var(--bg-app); }
 .status-dot.typing { background: var(--accent); animation: pulse 1s infinite; }
-.header-info h3 { margin: 0; font-size: 16px; font-weight: 600; }
-.status-text { font-size: 12px; color: var(--text-muted); }
+.header-info h3 { margin: 0; font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+.status-text { font-size: 11px; color: var(--text-muted); }
 .status-text.highlight { color: var(--accent); font-weight: 500; }
-.nav-btn { background: none; border: none; color: var(--text); padding: 8px; border-radius: 50%; cursor: pointer; }
+.nav-btn { background: none; border: none; color: var(--text); padding: 8px; border-radius: 50%; cursor: pointer; flex-shrink: 0; }
 .nav-btn:hover { background: rgba(255,255,255,0.1); }
 
 /* Messages Area */
 .chat-messages-area {
-  flex: 1; overflow-y: auto; padding: 20px 16px;
+  flex: 1; overflow-y: auto; padding: 16px 12px;
   display: flex; flex-direction: column; gap: 8px;
   background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 .message-row { display: flex; gap: 8px; max-width: 85%; align-items: flex-end; animation: slideIn 0.2s ease-out; }
 .message-row.sent { align-self: flex-end; flex-direction: row-reverse; }
-.chat-msg-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; margin-bottom: 4px; }
+.chat-msg-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; margin-bottom: 4px; flex-shrink: 0; }
 
 /* Text Bubble */
 .message-bubble { padding: 10px 14px; border-radius: 18px; position: relative; font-size: 15px; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
 .received .message-bubble { background: var(--msg-ai); border-bottom-left-radius: 4px; color: var(--text); border: 1px solid rgba(255,255,255,0.05); }
 .sent .message-bubble { background: var(--accent-grad); border-bottom-right-radius: 4px; color: white; }
-.text-content p { margin: 0; }
+.text-content p { margin: 0; word-wrap: break-word; }
 .msg-meta { display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 4px; opacity: 0.7; }
 .time { font-size: 10px; }
 .ticks .read { color: #87CEEB; }
@@ -617,18 +706,20 @@ const STYLES = `
 .media-bubble-container { width: 260px; max-width: 100%; border-radius: 18px; overflow: hidden; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); background: #111; }
 .media-wrapper { position: relative; width: 100%; height: 350px; }
 .media-content-img, .media-content-video { width: 100%; height: 100%; object-fit: cover; display: block; }
-.blurred { filter: blur(12px) brightness(0.5); transform: scale(1.1); }
+.blurred { filter: blur(20px) brightness(0.4); transform: scale(1.1); transition: filter 0.3s; }
 .video-wrapper { width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
 .play-overlay { position: absolute; z-index: 5; opacity: 0.7; }
 .media-info-gradient { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px 12px 10px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
 .media-time-text { color: rgba(255,255,255,0.8); font-size: 11px; font-weight: 500; }
-.token-cost-badge { background: rgba(255,255,255,0.2); backdrop-filter: blur(4px); padding: 2px 8px; border-radius: 10px; font-size: 10px; color: #fff; border: 1px solid rgba(255,255,255,0.1); }
-.premium-lock-backdrop { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 20; }
-.glass-lock-card { background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(10px); padding: 20px; border-radius: 20px; text-align: center; border: 1px solid rgba(255, 215, 0, 0.2); width: 80%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.lock-icon-glow { width: 40px; height: 40px; background: rgba(255, 215, 0, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); margin-bottom: 5px; }
+
+/* Premium Lock */
+.premium-lock-backdrop { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 20; background: rgba(0,0,0,0.2); }
+.glass-lock-card { background: rgba(20, 20, 20, 0.75); backdrop-filter: blur(10px); padding: 16px; border-radius: 20px; text-align: center; border: 1px solid rgba(255, 215, 0, 0.3); width: 85%; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.lock-icon-glow { width: 36px; height: 36px; background: rgba(255, 215, 0, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); margin-bottom: 4px; }
 .glass-lock-card h4 { margin: 0; color: #fff; font-size: 14px; font-weight: 700; }
-.glass-lock-card p { margin: 0; color: #ccc; font-size: 11px; margin-bottom: 10px; }
-.unlock-btn-shine { background: linear-gradient(135deg, #FFD700, #FFA500); border: none; padding: 8px 16px; border-radius: 20px; color: #000; font-weight: 700; font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3); transition: transform 0.2s; }
+.glass-lock-card p { margin: 0; color: #ccc; font-size: 11px; margin-bottom: 8px; }
+.unlock-btn-shine { background: linear-gradient(135deg, #FFD700, #FFA500); border: none; padding: 8px 14px; border-radius: 20px; color: #000; font-weight: 700; font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3); transition: transform 0.2s; }
+.unlock-btn-shine:active { transform: scale(0.95); }
 
 /* Typing */
 .typing-bubble { padding: 12px 16px !important; display: flex; align-items: center; width: fit-content; }
@@ -638,17 +729,23 @@ const STYLES = `
 .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
 
 /* Input Area */
-.chat-input-area { padding: 12px 16px; background: var(--bg-app); border-top: 1px solid rgba(255,255,255,0.06); }
-.input-container { display: flex; align-items: center; gap: 10px; }
-.input-wrapper { flex: 1; background: #27272a; border-radius: 24px; padding: 2px 16px; display: flex; align-items: center; border: 1px solid transparent; transition: border-color 0.2s; }
+.chat-input-area { flex-shrink: 0; padding: 12px 12px; background: var(--bg-app); border-top: 1px solid rgba(255,255,255,0.06); position: relative; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+.quota-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 0 4px; }
+.quota-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.quota-track { flex: 1; height: 4px; background: #27272a; border-radius: 4px; margin-left: 10px; overflow: hidden; }
+.quota-fill { height: 100%; background: var(--accent); transition: width 0.3s ease; }
+.quota-fill.danger { background: #ef4444; }
+
+.input-container { display: flex; align-items: center; gap: 8px; }
+.input-wrapper { flex: 1; background: #27272a; border-radius: 24px; padding: 2px 14px; display: flex; align-items: center; border: 1px solid transparent; transition: border-color 0.2s; }
 .input-wrapper:focus-within { border-color: var(--accent); }
-.input-wrapper input { width: 100%; background: transparent; border: none; color: white; padding: 12px 0; outline: none; font-size: 15px; }
-.icon-btn { background: none; border: none; color: var(--accent); padding: 8px; cursor: pointer; transition: transform 0.2s; }
+.input-wrapper input { width: 100%; background: transparent; border: none; color: white; padding: 10px 0; outline: none; font-size: 15px; }
+.icon-btn { background: none; border: none; color: var(--accent); padding: 8px; cursor: pointer; transition: transform 0.2s; flex-shrink: 0; }
 .icon-btn:hover { transform: scale(1.1); }
-.send-btn { width: 44px; height: 44px; border-radius: 50%; background: #27272a; border: none; color: #71717a; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+.send-btn { width: 40px; height: 40px; border-radius: 50%; background: #27272a; border: none; color: #71717a; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
 .send-btn.active { background: var(--accent); color: white; transform: scale(1.05); }
 
-/* --- PROFILE OVERLAY (Legacy Support) --- */
+/* Profile Overlay */
 .profile-overlay-backdrop { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: flex; align-items: center; justify-content: center; }
 .profile-overlay-backdrop.active { opacity: 1; pointer-events: auto; }
 .profile-modal { width: 100%; max-width: 420px; height: 100%; background: var(--bg-card); position: relative; display: flex; flex-direction: column; overflow: hidden; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 0 50px rgba(0,0,0,0.5); }
@@ -662,30 +759,24 @@ const STYLES = `
 .portrait-name-overlay { position: absolute; bottom: 25px; left: 20px; z-index: 10; }
 .portrait-name-overlay h2 { font-size: 2.2rem; margin: 0; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.5); line-height: 1.1; }
 .portrait-role { background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; margin-top: 8px; display: inline-block; box-shadow: 0 4px 10px rgba(207, 65, 133, 0.3); }
-.profile-details-grid { padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.profile-details-grid { padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 40px; }
 .detail-card { background: rgba(255,255,255,0.03); padding: 16px; border-radius: 16px; border: 1px solid var(--glass-border); backdrop-filter: blur(10px); }
 .detail-card.full { grid-column: span 2; }
 .detail-card .label { display: block; font-size: 0.7rem; color: var(--primary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
 .detail-card .value { font-size: 1.05rem; font-weight: 500; color: #fff; }
+.quota-value { color: #FFD700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
 .toggle-wrapper { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
 .toggle-btn { width: 44px; height: 24px; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); border-radius: 12px; position: relative; cursor: pointer; transition: all 0.3s; }
 .toggle-btn.active { background: #6366f1; border-color: #6366f1; }
 .toggle-slider { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: transform 0.3s; }
 .toggle-btn.active .toggle-slider { transform: translateX(20px); }
 .bio-text { margin: 0; line-height: 1.6; font-size: 0.95rem; color: #ddd; }
-.bot-message-note { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 0.85rem; color: #6366f1; }
 
-/* --- MOBILE SPECIFIC FIXES (Push Input Up) --- */
+/* Mobile Tweaks */
 @media (max-width: 768px) {
-  .chat-input-area {
-    padding-bottom: 100px; /* Pushes input up above the 84px Mobile Menu */
-  }
-  .chat-messages-area {
-    padding-bottom: 20px;
-  }
-  .profile-details-grid {
-    margin-bottom: 80px; /* Ensures profile content doesn't get hidden */
-  }
+  .chat-input-area { padding-bottom: 90px; }
+  .chat-messages-area { padding-bottom: 20px; }
+  .profile-details-grid { margin-bottom: 80px; }
 }
 
 /* Animations */

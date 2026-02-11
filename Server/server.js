@@ -107,15 +107,15 @@ cron.schedule(
         },
       );
 
-      // FIX LOGIC: Ensure free users have messageQuota = 20
+      // FIX LOGIC: Ensure free users have messageQuota = 5
       const fixResult = await User.updateMany(
         {
           user_type: "free",
-          messageQuota: { $ne: 20 },
+          messageQuota: { $ne: 5},
         },
         {
           $set: {
-            messageQuota: 20,
+            messageQuota: 5,
           },
         },
       );
@@ -280,11 +280,11 @@ cron.schedule(
         const fixResult = await User.updateMany(
           {
             user_type: "free",
-            messageQuota: { $ne: 20 },
+            messageQuota: { $ne: 5 },
           },
           {
             $set: {
-              messageQuota: 20,
+              messageQuota: 5,
               messagesUsedToday: 0,
             },
           },
@@ -335,14 +335,14 @@ cron.schedule(
         {
           user_type: "free",
           $or: [
-            { messageQuota: { $ne: 20 } },
-            { messagesUsedToday: { $gt: 20 } },
+            { messageQuota: { $ne: 5 } },
+            { messagesUsedToday: { $gt: 5 } },
           ],
         },
         {
           $set: {
-            messageQuota: 20,
-            messagesUsedToday: { $min: ["$messagesUsedToday", 20] },
+            messageQuota: 5,
+            messagesUsedToday: { $min: ["$messagesUsedToday", 5] },
           },
         },
       );
@@ -487,6 +487,7 @@ app.use("/api/v1/api/admin", require("./routes/adminRoutes"));
 app.use("/api/v1/api/letters", require("./routes/latterRoutes"));
 app.use("/api/v1/api/bots", require("./routes/botsRoutes"));
 app.use("/api/v1/api/story", require("./routes/storyRoutes"));
+app.use("/api/v1/api/status", require("./routes/statusRoutes"));
 
 // Start Server
 const PORT = process.env.PORT || 5000;

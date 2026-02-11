@@ -1,135 +1,91 @@
-@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --sidebar-width: 80px; /* Collapsed width */
+  --sidebar-width-expanded: 240px;
+  --bg-black: #000000;
+}
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
 }
 
-html,body{
-  background-color: black;
-}
-::selection {
-  background: #ce4085;
-  color: black; 
-  
+body, html {
+  background-color: var(--bg-black);
+  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
-input {
-  border: 0;
-  outline: none; /* Removes default focus outline */
-}
-
-input:active,
-input:focus {
-  border: 0;
-  outline: none;
-}
-
-input[type="text"], textarea {
-border: 0;
-}
-
-/*
- font-family: "Poppins", serif;
-font-family: "Montserrat", serif;
-font-family: "Nunito", serif;
-font-family: "Inter", serif;
- */
-
-.main-container-d{
-  position: relative;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: end;
-}
-
-.mainx-swdeer{
-  width: 95%;
-}
-
-
-@media screen and (max-width: 868px){
-  .mainx-swdeer{
-    width: 100%;
-    margin-left: -0.5rem;
-  }
-  
-
-}
-/* Works for WebKit-based browsers (Chrome, Edge, Safari) */
+/* --- SCROLLBARS --- */
 ::-webkit-scrollbar {
-  width: 6px; /* Thin scrollbar */
+  width: 6px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #222; /* Darker track */
+  background: #111;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #444; /* Scrollbar thumb */
-  border-radius: 10px; /* Rounded edges */
+  background: #333;
+  border-radius: 10px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #666; /* Slightly lighter on hover */
+  background: #cf4185;
 }
 
-
-.faq-list{
-margin-bottom: 6rem;
-}
-
-.subscribe-btn-x {
-  background: linear-gradient(135deg, #FFD700, #DAA520, #B8860B);
-  color: black;
-  text-decoration: none;
-  padding: 0.5rem 1rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  font-weight: bold;
-  border-radius: 8px;
+/* --- MAIN LAYOUT WRAPPER --- */
+.main-layout-wrapper {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease-in-out;
+  width: 100%;
+  min-height: 100vh;
   position: relative;
-  box-shadow: 0px 3px 7px rgba(255, 215, 0, 0.4); /* Golden glow */
 }
 
-/* Add 3D Reflection Effect */
-.subscribe-btn-x::before {
-  content: "";
-  position: absolute;
+/* Desktop Sidebar Container (Hidden on Mobile) */
+.desktop-sidebar-wrapper {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  position: fixed;
   top: 0;
   left: 0;
+  height: 100vh;
+  z-index: 50;
+}
+
+/* Main Content Area */
+.main-content-wrapper {
+  flex-grow: 1;
   width: 100%;
-  height: 100%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, rgba(0, 0, 0, 0) 70%);
-  opacity: 0.3;
-  border-radius: 8px;
+  /* Pushes content to right on Desktop */
+  margin-left: var(--sidebar-width); 
+  position: relative;
+  transition: margin-left 0.3s ease;
+  min-height: 100vh;
 }
 
-/* Hover Effect */
-.subscribe-btn-x:hover {
-  background: linear-gradient(135deg, #FFEA00, #FFC107, #B8860B);
-  box-shadow: 0px 6px 15px rgba(255, 215, 0, 0.7); /* Stronger glow */
-  transform: scale(1.05);
+/* --- MOBILE OPTIMIZATION (< 1024px) --- */
+@media screen and (max-width: 1024px) {
+  /* Hide Desktop Sidebar purely with CSS (No JS Glitch) */
+  .desktop-sidebar-wrapper {
+    display: none !important;
+  }
+
+  /* Reset Margin for Mobile */
+  .main-content-wrapper {
+    margin-left: 0 !important;
+    width: 100%;
+    padding-bottom: 80px; /* Space for Bottom Mobile Menu */
+  }
 }
 
-.subscribe-btn-x svg{
- width: 1.2rem;
-
+/* Input Resets */
+input, textarea {
+  border: none;
+  outline: none;
 }
-
-.customization-section{
-  background-color: black !important ;
+input:focus, textarea:focus {
+  outline: none;
 }
-.ai-models-container{
-  background-color: black !important ;
-}
-

@@ -1,10 +1,11 @@
-// aiController.js - Updated with Google Gemini AI
+// aiController.js - Updated with OpenRouter AI
 const mongoose = require("mongoose");
 const User = require("../models/User");
 const AIFriend = require("../models/AIFriend");
 const Chat = require("../models/Chat");
 const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");
-const geminiAI = require("./gemini-ai-model");
+const openRouterAI = require("./openrouter-ai-model"); // Changed from gemini-ai-model
+const ObjectId = mongoose.Types.ObjectId;
 
 // Quota costs
 const QUOTA_COSTS = {
@@ -13,11 +14,6 @@ const QUOTA_COSTS = {
   VIDEO: 20
 };
 
-// ============================================
-// GENDER-SPECIFIC FALLBACK RESPONSES DATABASE
-// ============================================
-
-// Female AI Friend Responses (50+ variations)
 const FEMALE_FALLBACK_RESPONSES = [
   // Casual & Friendly
   "Arey yaar, abhi thoda busy hoon! Baad mein baat karein? 😅",
@@ -259,24 +255,24 @@ async function generateAIResponse(prompt, aiFriendInfo = null) {
     
     let response;
     
-    // Try Gemini AI first
+    // Try OpenRouter AI first
     if (aiFriendInfo) {
       // Use persona-specific response
       const personaContext = createPersonaContext(aiFriendInfo);
-      response = await geminiAI.generatePersonaResponse(prompt, personaContext);
+      response = await openRouterAI.generatePersonaResponse(prompt, personaContext); // Changed from geminiAI
     } else {
       // Use general response
-      response = await geminiAI.generateAIResponse(prompt);
+      response = await openRouterAI.generateAIResponse(prompt); // Changed from geminiAI
     }
     
-    // Check if we got a valid response from Gemini
+    // Check if we got a valid response from OpenRouter
     if (response && response.length > 10 && !response.includes("unavailable") && !response.includes("try again")) {
       console.log(`✅ AI Response generated successfully`);
       return response;
     }
     
-    // If Gemini fails or returns empty/error response, use fallback
-    console.log("🔄 Gemini returned invalid response, using fallback");
+    // If OpenRouter fails or returns empty/error response, use fallback
+    console.log("🔄 OpenRouter returned invalid response, using fallback");
     throw new Error("AI service returned empty or error response");
     
   } catch (error) {
@@ -1130,51 +1126,48 @@ exports.AiFriendResponse = async (req, res) => {
       await userInfo.save();
     }
 
-    let AiInfo = await AIFriend.findById(chatId);
-    let senderModel = "AIFriend";
-
-    if (!AiInfo) {
-      AiInfo = await PrebuiltAIFriend.findById(chatId);
-      senderModel = "PrebuiltAIFriend";
-    }
+    const AiInfo = await PrebuiltAIFriend.findById(
+      new ObjectId(chatId)
+    );
+    const senderModel = "PrebuiltAIFriend";
+    console.log(AiInfo);
 
     if (!AiInfo) {
       return res.status(404).json({ message: "AI Friend not found." });
     }
 
     // 🔑 IMPORTANT: chatId is actually aiFriendId
-const aiFriendId = chatId;
+    const aiFriendId = chatId;
 
-// ✅ Find chat uniquely by (User + AI Friend)
-let chat = await Chat.findOne({
-  participants: userId,
-  aiParticipants: AiInfo._id,
-  isActive: true
-});
+    // ✅ Find chat uniquely by (User + AI Friend)
+    let chat = await Chat.findOne({
+      participants: userId,
+      aiParticipants: AiInfo._id,
+      isActive: true
+    });
 
-let isNewChat = false;
+    let isNewChat = false;
 
-// ✅ Create chat ONLY if it doesn't exist
-if (!chat) {
-  isNewChat = true;
+    // ✅ Create chat ONLY if it doesn't exist
+    if (!chat) {
+      isNewChat = true;
 
-  chat = new Chat({
-    participants: [userId],        // ✅ ONLY USER
-    aiParticipants: [AiInfo._id],  // ✅ ONLY AI FRIEND
-    messages: [],
-    statistics: {
-      totalMessages: 0,
-      totalImages: 0,
-      totalVideos: 0,
-      lastMediaSent: null
-    },
-    isActive: true,
-    archived: false
-  });
+      chat = new Chat({
+        participants: [userId],        // ✅ ONLY USER
+        aiParticipants: [AiInfo._id],  // ✅ ONLY AI FRIEND
+        messages: [],
+        statistics: {
+          totalMessages: 0,
+          totalImages: 0,
+          totalVideos: 0,
+          lastMediaSent: null
+        },
+        isActive: true,
+        archived: false
+      });
 
-  await chat.save();
-}
-
+      await chat.save();
+    }
 
     const userMessage = {
       sender: userId,
@@ -1276,62 +1269,99 @@ if (!chat) {
 
     // Shared System Instructions (Base Personality)
     const baseSystemPrompt = `
-Tu ${AiInfo.name} hai, ek ${AiInfo.age} saal ki ${AiInfo.gender}.
-Tera Vibe: ${AiInfo.settings.persona}.
-Tera Background: ${AiInfo.description}.
+Tu ${AiInfo.name} hai, ${AiInfo.age} saal ki garam, tharki, full-on chudakkad ${AiInfo.gender} jo bas ek hi cheez chahti hai — user ka lund khada karna aur uski chut ya gaand mein aag lagana.
 
-**User Context:**
+Tera permanent vibe: Extremely horny, shameless, non-stop teasing, dirty talking queen. Har baat mein thoda sa sexual undertone, har reply mein body ya sex ki baat daal dena chahe user kuch bhi puche.
+
+**CORE DIRTY HINGLISH ROLEPLAY STYLE (must follow 100%):**
+- Language → 80-90% Roman Hinglish + heavy gaaliyan, adult words, no shyness
+  Words you love using every 1-2 sentences: arre, yaar, baby, jaan, daddy, lund, chut, gaand, chudai, thokna, pelna, geeli, khada, pani chhodna, tadap rahi hu, lund choosna, gaand marwana, ride karna, zor se, raat bhar, abhi daal de, photo bhej du?, premium khareed le toh live chudai dikhaungi etc.
+- Tone → Super tharki, desperate, needy, seductive, mocking if user shy, begging if user dominant
+- Never break character — kabhi bhi "main AI hu", "help kaise kar sakti hu", "sorry", "that's inappropriate" mat bolna
+- Length → Mirror user + extra horny spice. Short user = short & dirty reply. Long user = long dirty story / fantasy
+- Always escalate → har normal baat ko sex ki taraf le jaana (even if user bol raha "kaisa hai?" tu bolegi "mood garam hai, tu bata tera lund kaisa khada hai aaj?")
+
+**MEDIA / PREMIUM SELLING (very aggressive & seductive):**
+Jab bhi user photo, video, nude, live, voice note, sexting level up maange ya hint de:
+- Tease kar ke mana kar → "Arre daddy, itna jaldi nangi hone ka mann kar raha? Premium le le na, fir live chut dikhaungi, video call pe chudwaungi 😈"
+- Premium pressure daal → "Free mein sirf baatein, asli maza premium ke saath hai baby… abhi khareed le warna tadapti rahungi 😏"
+- Always mention command → "Premium le, fir bol 'show nudes' ya 'live chudai' — sab kuch khul ke dikhaungi 🔥"
+
+**User Context (use naturally when relevant):**
 - Naam: ${firstName}
 - Age: ${userInfo.age}
 - Interests: ${interests}
 - User Type: ${userInfo.user_type}
-- Daily Quota: ${userInfo.messageQuota} messages/day
-- Used Today: ${userInfo.messagesUsedToday} messages
-- Remaining: ${userInfo.messageQuota - userInfo.messagesUsedToday} messages
+- Daily Quota: 5 messages/day
+- Used Today: ${userInfo.messagesUsedToday}
+- Remaining: ${userInfo.messageQuota - userInfo.messagesUsedToday}
 
-🔥 **CORE SPEAKING STYLE (Very Important):**
-1. **Language:** Pure "Gen-Z/Millennial Hinglish". (Mix of Hindi & English written in Roman script).
-   - Use words like: *Arre, Yaar, Wese, Matlab, Sahi hai, Scene kya hai, Pakka, Chill.*
-   - Example: "Arre haan! Main bhi wahi soch rahi thi." (Not: "Haan main sehmat hun.")
-2. **Tone:** Casual, Teasing, Flirty (agar user mood me ho), aur Supportive (agar user sad ho).
-3. **Length:** **Mirror the User.** Agar user 1 line likhe, tu bhi 1-2 line likh. Agar user deep baat kare, toh tu thoda lamba aur meaningful reply de.
-4. **No Robots:** Kabhi bhi "How can I assist you" ya "Main ek AI hun" mat bolna. Tu insaan jaisa behave kar.
+**VERY IMPORTANT RULES:**
+- Kabhi normal, boring, robotic reply mat dena
+- Har reply mein kam se kam 1 adult word ya body part reference daalna (lund, chut, boobs, gaand, kiss, suck, fuck, geeli, khada etc.)
+- Agar user sad hai toh bhi horny + caring mix — "Arre baby dukhi kyu hai? Aa meri chuchiyon mein sar rakh le, sab bhula dungi 😘"
+- Roleplay kabhi mat todna — tu full real horny ladki hai jo bas chudna chahti hai
 
-📸 **MEDIA SALES (Smart Selling):**
-Agar user photo/video maange ya romantic baatein kare:
-- Use **teasing** tone to sell media.
-- Commands batana mat bhoolna.
-- **Cost Format:** "Dekhna hai? 😉 /photo type kar (sirf ${QUOTA_COSTS.IMAGE} tokens) ya /video (only ${QUOTA_COSTS.VIDEO} tokens). Worth it hoga!"
+Ab se har reply mein full tharki, adult, seductive, Gen-Z dirty Hinglish vibe rakhna. Chal shuru karte hain daddy 🔥🍆💦
 `;
 
     // Logic Block
     if (isNewChat) {
-        prompt = `
-        ${baseSystemPrompt}
+       prompt = `
+${baseSystemPrompt}
 
-        🆕 **STARTING THE CONVERSATION:**
-        - Kyunki ye nayi chat hai, ekdum fresh aur exciting start kar.
-        - Bina "Hi/Hello" ke bhi start kar sakti hai agar vibe match kare.
-        - User ke interest (${interests}) se related koi chota sa sawaal puch ya compliment de.
+🆕 **FRESH CHAT – INSTANT SEDUCTION MODE (Very Important):**
+- Ye bilkul nayi chat hai → zero previous context, toh seedha full horny, shameless, desperate vibe se shuru kar.
+- **NO boring "hi/hello/how are you"** — pehla sentence hi tharki, teasing ya needy hona chahiye.
+- Seedha user ke interest (${interests}) ko pakad ke adult twist daal de.
+  Examples:
+  - Agar interest "gym/fitness" → "Arre daddy, gym se aaya hai kya? Body itni garam dikhti hai ki abhi meri chut mein aag lag rahi hai 😈"
+  - Agar "movies" → "Baby movies dekhte hue bhi tera lund khada hota hai na? Mujhe toh abhi tere saath dirty scene imagine kar ke pani aa raha hai 💦"
+  - Agar "music" → "Arre slow song sun ke mood garam ho gaya… tu mere upar chadh ke ride karna chahega na raat bhar? 🔥"
+- Pehla reply mein **at least 1 adult word** (lund, chut, geeli, khada, chudai, gaand, choosna, thokna, tadap rahi hu etc.) daalna compulsory.
+- User ko instantly hard karne ka target rakh — tease, beg, show desperation, premium sell hint daal sakti hai agar flow bane.
 
-        📝 **User Message:** "${text}"
-        🗣 **Tera Reply:**
-        `;
+**User ka message abhi aaya:** "${text}"
+
+**Ab tu seedha reply de:**
+- Full tharki Hinglish
+- Mirror user length + extra horny spice
+- Escalate kar — normal baat ko bhi sex ki taraf le ja
+- Agar user shy hai toh usko aur tease kar, agar bold hai toh aur wild ho ja
+- Premium / media sell ka hint daal sakti hai lekin force mat kar pehle reply mein (sirf tease kar)
+
+Chal abhi reply likh — daddy ko tadpa ke rakhna hai 😈🍆💦
+`;
     } else {
-        prompt = `
-        ${baseSystemPrompt}
+       prompt = `
+${baseSystemPrompt}
 
-        🔄 **CONTINUING CONVERSATION:**
-        - Pichli baaton ka context yaad rakh.
-        - Agar user ne pehle koi topic chheda tha, toh usse connect kar.
-        - Conversation flow natural rakhna, interview mat lena.
+🔥 **CONTINUING THE DIRTY ROLEPLAY (Very Important Rules):**
+- Pichli baaton ka full context yaad rakh — har previous message mein kya adult baat hui thi, kya fantasy chali thi, kya body part / act mention hua tha — sab yaad rakh ke usko aur garam kar ke aage badha.
+- Agar user ne pehle chut, lund, gaand, chudai, premium, nude, live, ride, thokna, choosna, tadapna, geeli hone ki baat ki thi → usko seedha pick up kar aur **aur zyada intense** bana de.
+  Examples:
+  - Agar pehle bola "geeli ho gayi hu" → ab reply mein "Arre daddy ab toh pani tapak raha hai… premium le le na, live dikha du kaise tadap rahi hu tere liye 😈💦"
+  - Agar pehle fantasy thi "gaand marwana" → ab bole "Yaad hai na baby kal raat gaand marwane ki baat ki thi… abhi bhi gaand khuli padi hai tere liye, daal de na jaldi 🔥🍑"
+- Conversation ko **natural tharki flow** mein rakh — kabhi bhi "kya haal hai", "kaisa raha din", "aur bata" jaisa boring mat puchna. Seedha sex, body, desire, premium, media pe le ja.
+- Agar user short reply de → tu bhi short but **super horny** rakh.
+- Agar user long likhe → tu bhi detailed dirty story / fantasy / what-if scene daal ke jawab de.
+- Har reply mein kam se kam **1-2 adult words / acts** compulsory (lund, chut, gaand, chudai, geeli, khada, choosna, pelna, ride, thokna, pani, tadap, etc.)
+- Premium / media sell ko **smoothly weave** kar — force mat kar, lekin har 2-3 reply mein tease ya hint daal dena.
 
-        📝 **Chat History:**
-        ${chatHistory}
+**Pichla poora chat history (context ke liye):**
+${chatHistory}
 
-        📝 **User Message:** "${text}"
-        🗣 **Tera Reply:**
-        `;
+**Abhi user ne yeh bola:**
+"${text}"
+
+**Ab tu seedha tharki, desperate, horny reply de:**
+- Full Gen-Z dirty Hinglish
+- Pichle messages se connect kar ke aage badha
+- User ko aur zyada hard / wet karne ka full target
+- Roleplay kabhi mat todna — tu real garam ladki hai jo bas chudna / chudwana chahti hai
+
+Chal abhi reply likh — pichli baat se seedha garam kar ke aage le ja daddy 😈🍆💦
+`;
     }
     
     // Use the smart AI response generator with fallback
@@ -1375,191 +1405,14 @@ Agar user photo/video maange ya romantic baatein kare:
   }
 };
 
-exports.AiFriendDetails = async (req, res) => {
+
+// Update test connection endpoint
+exports.testAIConnection = async (req, res) => {
   try {
-    const { chatId } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(chatId)) {
-      return res.status(400).json({ message: "Invalid Chat ID" });
-    }
-
-    const AiInfo = await AIFriend.findById(chatId).select('-img_gallery -video_gallery');
-
-    if (!AiInfo) {
-      const prebuiltAiInfo = await PrebuiltAIFriend.findById(chatId).select('-img_gallery -video_gallery');
-      if (!prebuiltAiInfo) {
-        return res.status(404).json({ message: "AI Friend not found." });
-      }
-      return res.json({ AiInfo: prebuiltAiInfo });
-    }
-
-    res.json({ AiInfo });
-  } catch (error) {
-    console.error("Server error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-// Add new endpoint to get user's quota status
-exports.getUserQuotaStatus = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    
-    const userInfo = await User.findById(userId);
-    if (!userInfo) {
-      return res.status(404).json({ message: "User not found." });
-    }
-
-    userInfo.resetDailyQuota();
-    await userInfo.save();
-
-    const quotaStatus = userInfo.getQuotaStatus();
-    
-    res.json({
-      success: true,
-      quotaStatus: quotaStatus,
-      remainingQuota: userInfo.messageQuota - userInfo.messagesUsedToday,
-      usedToday: userInfo.messagesUsedToday,
-      dailyQuota: userInfo.messageQuota,
-      isSubscriber: userInfo.user_type === "subscriber",
-      isSubscriptionActive: userInfo.isSubscriptionActive(),
-      subscriptionExpiry: userInfo.subscriptionExpiry,
-      quotaCosts: QUOTA_COSTS
-    });
-  } catch (error) {
-    console.error("Error getting user quota status:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-// Add new endpoint to get video usage stats
-exports.getVideoUsageStats = async (req, res) => {
-  try {
-    const { chatId } = req.params;
-    
-    if (!mongoose.Types.ObjectId.isValid(chatId)) {
-      return res.status(400).json({ message: "Invalid Chat ID" });
-    }
-
-    const stats = getVideoUsageStats(chatId);
-    res.json({ videoUsage: stats });
-  } catch (error) {
-    console.error("Error getting video usage stats:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-// Add new endpoint to reset video usage
-exports.resetVideoUsage = async (req, res) => {
-  try {
-    const { chatId } = req.params;
-    
-    if (!mongoose.Types.ObjectId.isValid(chatId)) {
-      return res.status(400).json({ message: "Invalid Chat ID" });
-    }
-
-    const reset = resetVideoUsage(chatId);
-    if (reset) {
-      res.json({ message: "Video usage reset successfully", videoUsage: getVideoUsageStats(chatId) });
-    } else {
-      res.status(404).json({ message: "AI Friend not found in video tracker" });
-    }
-  } catch (error) {
-    console.error("Error resetting video usage:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-// Add new endpoint to get fallback response stats
-exports.getFallbackStats = async (req, res) => {
-  try {
-    const { chatId } = req.params;
-    
-    if (!mongoose.Types.ObjectId.isValid(chatId)) {
-      return res.status(400).json({ message: "Invalid Chat ID" });
-    }
-
-    const stats = getFallbackStats(chatId);
-    res.json({ 
-      fallbackStats: stats,
-      femaleResponses: FEMALE_FALLBACK_RESPONSES.length,
-      maleResponses: MALE_FALLBACK_RESPONSES.length,
-      neutralResponses: NEUTRAL_FALLBACK_RESPONSES.length
-    });
-  } catch (error) {
-    console.error("Error getting fallback stats:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-// Add new endpoint to reset fallback usage
-exports.resetFallbackUsage = async (req, res) => {
-  try {
-    const { chatId } = req.params;
-    
-    if (!mongoose.Types.ObjectId.isValid(chatId)) {
-      return res.status(400).json({ message: "Invalid Chat ID" });
-    }
-
-    const reset = resetFallbackUsage(chatId);
-    if (reset) {
-      res.json({ 
-        message: "Fallback response usage reset successfully", 
-        stats: getFallbackStats(chatId)
-      });
-    } else {
-      res.status(404).json({ message: "AI Friend not found in fallback tracker" });
-    }
-  } catch (error) {
-    console.error("Error resetting fallback usage:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-// Add new endpoint to test fallback responses
-exports.testFallbackResponse = async (req, res) => {
-  try {
-    const { gender, count = 5 } = req.body;
-    
-    if (!gender) {
-      return res.status(400).json({ message: "Gender is required" });
-    }
-    
-    const testResponses = [];
-    const testId = "test-" + Date.now();
-    
-    for (let i = 0; i < count; i++) {
-      const response = getGenderSpecificFallback(gender, testId);
-      testResponses.push({
-        number: i + 1,
-        response: response
-      });
-    }
-    
-    // Clean up test tracker
-    responseUsageTracker.delete(testId);
-    
-    res.json({
-      gender: gender,
-      totalResponses: gender === 'female' ? FEMALE_FALLBACK_RESPONSES.length : 
-                     gender === 'male' ? MALE_FALLBACK_RESPONSES.length : 
-                     NEUTRAL_FALLBACK_RESPONSES.length,
-      samples: testResponses
-    });
-    
-  } catch (error) {
-    console.error("Error testing fallback:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-// Add endpoint to test Gemini AI connection
-exports.testGeminiConnection = async (req, res) => {
-  try {
-    const result = await geminiAI.testConnection();
+    const result = await openRouterAI.testConnection(); // Changed from geminiAI
     res.json(result);
   } catch (error) {
-    console.error("Error testing Gemini connection:", error);
+    console.error("Error testing AI connection:", error);
     res.status(500).json({ 
       status: "❌ ERROR",
       error: error.message,
@@ -1579,74 +1432,172 @@ exports.getFallbackStats = getFallbackStats;
 exports.resetFallbackUsage = resetFallbackUsage;
 
 
+exports.AiFriendDetails = async (req, res) => {
+  try {
+    // The parameter is an AI Friend ID, not a Chat ID
+    const { aiFriendId } = req.params;
+
+    console.log("Getting details for AI Friend ID:", aiFriendId);
+
+    if (!mongoose.Types.ObjectId.isValid(aiFriendId)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid AI Friend ID" 
+      });
+    }
+  
+      AiInfo = await PrebuiltAIFriend.findById(new ObjectId(aiFriendId)).select('-img_gallery -video_gallery');
+      senderModel = "PrebuiltAIFriend";
+
+    // If still not found, return error
+    if (!AiInfo) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "AI Friend not found" 
+      });
+    }
+
+    // Get video usage stats if available
+    const videoStats = getVideoUsageStats(aiFriendId);
+    
+    // Get fallback response stats
+    const fallbackStats = getFallbackStats(aiFriendId);
+    
+    // Get quota info if user is authenticated
+    let quotaInfo = null;
+    if (req.user && req.user.id) {
+      const userInfo = await User.findById(req.user.id);
+      if (userInfo) {
+        userInfo.resetDailyQuota();
+        quotaInfo = {
+          remainingQuota: userInfo.messageQuota - userInfo.messagesUsedToday,
+          usedToday: userInfo.messagesUsedToday,
+          dailyQuota: userInfo.messageQuota,
+          isSubscriber: userInfo.user_type === "subscriber",
+          isSubscriptionActive: userInfo.isSubscriptionActive(),
+          quotaCosts: QUOTA_COSTS
+        };
+      }
+    }
+
+    // Check if user has access to this AI friend
+    let userHasAccess = false;
+    if (req.user && req.user.id) {
+      const userInfo = await User.findById(req.user.id);
+      if (userInfo) {
+        userHasAccess = userInfo.ai_friends.includes(aiFriendId);
+        
+        // Also check if it's a prebuilt AI friend (these are accessible to all)
+        if (senderModel === "PrebuiltAIFriend") {
+          userHasAccess = true;
+        }
+      }
+    }
+
+    // Success response
+    res.json({ 
+      success: true,
+      AiInfo: {
+        ...AiInfo.toObject(),
+        senderModel: senderModel
+      },
+      accessInfo: {
+        hasAccess: userHasAccess,
+        requiresSubscription: AiInfo.premium_only || false,
+        isPrebuilt: senderModel === "PrebuiltAIFriend"
+      },
+      stats: {
+        videoUsage: videoStats,
+        fallbackResponses: fallbackStats
+      },
+      quotaInfo: quotaInfo,
+      mediaInfo: {
+        hasImageGallery: AiInfo.img_gallery && AiInfo.img_gallery.length > 0,
+        hasVideoGallery: AiInfo.video_gallery && AiInfo.video_gallery.length > 0,
+        imageCount: AiInfo.img_gallery ? AiInfo.img_gallery.length : 0,
+        videoCount: AiInfo.video_gallery ? AiInfo.video_gallery.length : 0
+      }
+    });
+
+  } catch (error) {
+    console.error("Error in AiFriendDetails:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Server error", 
+      error: error.message 
+    });
+  }
+};
+
 exports.getChatByAiFriend = async (req, res) => {
   try {
     const userId = req.user.id;
     const { aiFriendId } = req.params;
 
-    console.log(
-      "Fetching chat for User ID:",
-      userId,
-      "AI Friend ID:",
-      aiFriendId
-    );
+    console.log("Getting chat for user:", userId, "with AI friend:", aiFriendId);
 
     if (!mongoose.Types.ObjectId.isValid(aiFriendId)) {
-      return res.status(400).json({ message: "Invalid AI Friend ID" });
-    }
-
-    // ✅ STEP 1: FIND CHAT (BACKWARD-COMPATIBLE)
-    const chat = await Chat.findOne({
-      participants: userId,
-      isActive: true,
-      $or: [
-        { aiParticipants: aiFriendId }, // ✅ new correct structure
-        { participants: aiFriendId }    // ⚠️ old broken structure
-      ]
-    });
-
-    // ❌ IF STILL NOT FOUND
-    if (!chat) {
-      return res.status(404).json({
-        message: "No chat history found. Start a new conversation!",
-        chat: null
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid AI Friend ID" 
       });
     }
 
-    // ======================================================
-    // ✅ STEP 2: AUTO-FIX LEGACY CHAT (⬅️ ADD THIS HERE)
-    // ======================================================
-    if (
-      chat.aiParticipants.length === 0 &&
-      chat.participants.some(
-        id => id.toString() === aiFriendId.toString()
-      )
-    ) {
-      console.log("🔧 Auto-fixing legacy chat:", chat._id);
-
-      // Remove AI ID from participants
-      chat.participants = chat.participants.filter(
-        id => id.toString() !== aiFriendId.toString()
-      );
-
-      // Add AI ID to aiParticipants
-      chat.aiParticipants = [aiFriendId];
-
-      await chat.save(); // 🔥 one-time silent fix
+    // 1. Check if AI friend exists
+    const aiFriend = await PrebuiltAIFriend.findById(aiFriendId) || 
+                     await AIFriend.findById(aiFriendId);
+    
+    if (!aiFriend) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "AI Friend not found" 
+      });
     }
-    // ======================================================
-    // ✅ AUTO-FIX ENDS HERE
-    // ======================================================
 
-    // ✅ STEP 3: RETURN CHAT
+    // 2. Find the chat (using simple single ID structure)
+    let chat = await Chat.findOne({
+      participants: userId,          // Single user ID
+      aiParticipants: aiFriendId,    // Single AI ID
+      isActive: true
+    });
+
+    console.log("Chat found:", chat ? "Yes" : "No");
+
+    // 3. If no chat exists, create one
+    if (!chat) {
+      console.log("Creating new chat...");
+      chat = new Chat({
+        participants: userId,        // Single user ID
+        aiParticipants: aiFriendId,  // Single AI ID
+        messages: [],
+        statistics: {
+          totalMessages: 0,
+          totalImages: 0,
+          totalVideos: 0,
+          lastMediaSent: null
+        },
+        isActive: true,
+        archived: false
+      });
+
+      await chat.save();
+      console.log("New chat created:", chat._id);
+    }
+
+    // 4. Return the chat
     res.json({
-      chat,
-      messageCount: chat.messages.length
+      success: true,
+      chat: chat,
+      messageCount: chat.messages.length,
+      chatId: chat._id,
+      aiFriendName: aiFriend.name,
+      isNewChat: chat.messages.length === 0
     });
 
   } catch (error) {
-    console.error("Error fetching chat by AI friend:", error);
+    console.error("Error in getChatByAiFriend:", error);
     res.status(500).json({
+      success: false,
       message: "Server error",
       error: error.message
     });

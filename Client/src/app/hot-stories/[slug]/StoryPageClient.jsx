@@ -1,502 +1,154 @@
-// app/hot-stories/[slug]/StoryPageClient.jsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
-import './StoryPage.css'
+import { Share2, ArrowLeft, Zap, MessageSquare, MapPin } from 'lucide-react';
+import './StoryPage.css';
 
-// Markdown components configuration
 const MarkdownComponents = {
-  h1: ({ node, ...props }) => <h1 className="markdown-h1-cwdw4x" {...props} />,
-  h2: ({ node, ...props }) => <h2 className="markdown-h2-cwdw4x" {...props} />,
-  h3: ({ node, ...props }) => <h3 className="markdown-h3-cwdw4x" {...props} />,
   p: ({ node, ...props }) => <p className="markdown-p-cwdw4x" {...props} />,
-  ul: ({ node, ...props }) => <ul className="markdown-ul-cwdw4x" {...props} />,
-  ol: ({ node, ...props }) => <ol className="markdown-ol-cwdw4x" {...props} />,
-  li: ({ node, ...props }) => <li className="markdown-li-cwdw4x" {...props} />,
-  strong: ({ node, ...props }) => <strong className="markdown-strong-cwdw4x" {...props} />,
-  em: ({ node, ...props }) => <em className="markdown-em-cwdw4x" {...props} />,
-  blockquote: ({ node, ...props }) => <blockquote className="markdown-blockquote-cwdw4x" {...props} />,
-  code: ({ node, inline, ...props }) =>
-    inline ?
-      <code className="markdown-code-inline-cwdw4x" {...props} /> :
-      <code className="markdown-code-block-cwdw4x" {...props} />,
-  pre: ({ node, ...props }) => <pre className="markdown-pre-cwdw4x" {...props} />,
 };
 
-function Stat({ label, value }) {
-  return (
-    <div className="statItem-cwdw4x">
-      <span className="statLabel-cwdw4x">{label}</span>
-      <span className="statValue-cwdw4x">{value}</span>
-    </div>
-  );
-}
-
-export default function StoryPageClient({ initialStory, initialRelatedStories, slug }) {
+export default function StoryPageClient({ initialStory, initialRelatedStories }) {
   const router = useRouter();
   const [lang, setLang] = useState('en');
-  const [story] = useState(initialStory);
-  const [relatedStories] = useState(initialRelatedStories);
+  const [showSticky, setShowSticky] = useState(false);
+  const story = initialStory;
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Trigger sticky bar after scrolling 400px
+      setShowSticky(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  if (!story) return null;
 
   const handleStartChat = () => {
-    if (!story) return;
     const characterId = story.characterId || story._id;
-    const characterName = story.characterName || story.title || 'Character';
-    const url = `/chatbox?chatId=${characterId}&lang=${lang}&character=${encodeURIComponent(characterName)}`;
-    router.push(url);
+    router.push(`/chatbox?chatId=${characterId}&lang=${lang}&character=${encodeURIComponent(story.characterName)}`);
   };
 
-  const handleGoToDashboard = () => {
-    router.push('/hot-stories');
-  };
-
-  const formatReadCount = (count) => {
-    if (typeof count === 'number') {
-      if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
-      if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
-      return count.toString();
-    }
-    return '0';
-  };
-
-  if (!story) {
-    return (
-      <div className="container-cwdw4x">
-        <div className="error-container-djkei">
-          <p className="error-text-djkei">Story not found</p>
-          <button onClick={handleGoToDashboard} className="retry-button-djkei">
-            Back to Dashboard
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Transform story data
-  const transformedStory = {
-    id: story._id,
-    title: story.title || 'Untitled Story',
-    slug: story.slug,
-    excerpt: story.excerpt,
-    description: story.description,
-    category: story.category,
-    city: story.city,
-    readCount: story.readCount || 0,
-    rating: story.rating || '4.8',
-    characterName: story.characterName,
-    characterAge: story.characterAge,
-    characterOccupation: story.characterOccupation,
-    characterPersonality: story.characterPersonality,
-    backgroundImage: story.backgroundImage || '/api/placeholder/1200/675',
-    characterAvatar: story.characterAvatar || '/api/placeholder/400/711',
-    imageAlbum: story.imageAlbum || [],
-    content_en: story.content_en || { 
-      story: story.description || '# Story', 
-      cliffhanger: '', 
-      teaserChat: 'Hi', 
-      cta: 'Start Chat' 
-    },
-    content_hi: story.content_hi || { 
-      story: story.description || '# कहानी', 
-      cliffhanger: '', 
-      teaserChat: 'हाय', 
-      cta: 'चैट शुरू करें' 
-    },
-    createdAt: story.createdAt,
-    updatedAt: story.updatedAt,
-    tags: story.tags || []
-  };
-
-  const content = lang === 'en' ? transformedStory.content_en : transformedStory.content_hi;
-
-  // Function to render story content with images inserted at intervals
-  const renderStoryWithImages = (storyText, images) => {
-    if (!images || images.length === 0) {
-      return <ReactMarkdown components={MarkdownComponents}>{storyText}</ReactMarkdown>;
-    }
-
-    // Split content by paragraphs (double newlines)
-    const paragraphs = storyText.split(/\n\s*\n/).filter(p => p.trim().length > 0);
-    
-    if (paragraphs.length === 0) {
-      return <ReactMarkdown components={MarkdownComponents}>{storyText}</ReactMarkdown>;
-    }
-
-    // Show ALL images - distribute them evenly throughout the content
-    const imageCount = images.length; // Total number of images to show
-    const totalInsertionPoints = Math.max(1, paragraphs.length - 1); // Don't insert after last paragraph
-    
-    // Calculate where to insert each image (distribute evenly, ensuring all images are shown)
-    const insertionMap = new Map(); // Map of paragraph index -> array of images to insert
-    
-    if (imageCount > 0 && totalInsertionPoints > 0) {
-      if (imageCount <= totalInsertionPoints) {
-        // We have enough insertion points for all images - distribute evenly
-        const step = totalInsertionPoints / (imageCount + 1);
-        for (let i = 0; i < imageCount; i++) {
-          const position = Math.floor((i + 1) * step);
-          if (position >= 1 && position <= totalInsertionPoints) {
-            if (!insertionMap.has(position)) {
-              insertionMap.set(position, []);
-            }
-            insertionMap.get(position).push(i);
-          }
-        }
-      } else {
-        // More images than insertion points - distribute as evenly as possible
-        // Each insertion point will get at least one image
-        const imagesPerPoint = Math.floor(imageCount / totalInsertionPoints);
-        const remainder = imageCount % totalInsertionPoints;
-        
-        let imageIdx = 0;
-        for (let pos = 1; pos <= totalInsertionPoints; pos++) {
-          const imagesForThisPoint = imagesPerPoint + (pos <= remainder ? 1 : 0);
-          insertionMap.set(pos, []);
-          for (let j = 0; j < imagesForThisPoint && imageIdx < imageCount; j++) {
-            insertionMap.get(pos).push(imageIdx++);
-          }
-        }
+  const handleShare = async () => {
+    const shareData = {
+      title: story.title,
+      text: `Read ${story.characterName}'s story in ${story.city}!`,
+      url: window.location.href,
+    };
+    try {
+      if (navigator.share) await navigator.share(shareData);
+      else {
+        await navigator.clipboard.writeText(window.location.href);
+        alert("Link copied!");
       }
-    }
-    
+    } catch (err) { console.log(err); }
+  };
+
+  const images = story.imageAlbum || [];
+  const content = lang === 'en' ? story.content_en : story.content_hi;
+  const storyText = content?.story || story.description;
+
+  const renderStoryContent = () => {
+    const paragraphs = storyText.split(/\n\s*\n/).filter(p => p.trim());
     const result = [];
-    const usedImages = [...images]; // Use all images in order
-
-    paragraphs.forEach((paragraph, index) => {
-      // Add paragraph
-      result.push(
-        <ReactMarkdown key={`para-${index}`} components={MarkdownComponents}>
-          {paragraph.trim()}
-        </ReactMarkdown>
-      );
-
-      // Insert images at this position if any
-      const paragraphNumber = index + 1; // 1-indexed
-      if (index < paragraphs.length - 1 && insertionMap.has(paragraphNumber)) {
-        const imageIndices = insertionMap.get(paragraphNumber);
-        imageIndices.forEach((imgIdx) => {
-          if (imgIdx < usedImages.length) {
-            const currentImage = usedImages[imgIdx];
-            result.push(
-              <div key={`img-${index}-${imgIdx}`} className="story-album-image-container-cwdw4x">
-                <img 
-                  src={currentImage} 
-                  alt={`${transformedStory.characterName} - Image ${imgIdx + 1}`}
-                  className="story-album-image-cwdw4x"
-                  loading="lazy"
-                  onError={(e) => {
-                    e.target.src = '/api/placeholder/800/600';
-                  }}
-                />
-              </div>
-            );
-          }
-        });
+    paragraphs.forEach((p, i) => {
+      result.push(<ReactMarkdown key={i} components={MarkdownComponents}>{p}</ReactMarkdown>);
+      // Insert 9:16 Scene Images every 3 paragraphs
+      if ((i + 1) % 3 === 0 && images[Math.floor(i / 3)]) {
+        result.push(
+          <div key={`img-${i}`} className="story-album-image-container-cwdw4x">
+            <img src={images[Math.floor(i / 3)]} alt="Scene" className="story-album-image-cwdw4x" loading="lazy" />
+          </div>
+        );
       }
     });
-
-    return <>{result}</>;
-  };
-
-  // Add structured data for SEO
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": transformedStory.title,
-    "description": transformedStory.excerpt || transformedStory.description,
-    "image": transformedStory.backgroundImage,
-    "author": {
-      "@type": "Person",
-      "name": transformedStory.characterName || "Anonymous"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "HeartEcho",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://heartecho.in/heartecho_b.png"
-      }
-    },
-    "datePublished": transformedStory.createdAt,
-    "dateModified": transformedStory.updatedAt,
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": `https://heartecho.in/hot-stories/${slug}`
-    },
-    "keywords": transformedStory.tags.join(", "),
-    "articleSection": transformedStory.category,
-    "inLanguage": [lang === 'en' ? "en" : "hi"]
+    return result;
   };
 
   return (
-    <>
-      {/* Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-
-      {/* AD SCRIPT - Load once at the top */}
-      <script 
-        async 
-        data-cfasync="false" 
-        src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"
-      />
-
-      <div className="container-cwdw4x">
-
-        {/* Breadcrumb Navigation */}
-        <nav className="breadcrumb-cwdw4x" aria-label="Breadcrumb">
-          <ol>
-            <li><Link href="/">Home</Link></li>
-            <li><Link href="/hot-stories">Stories</Link></li>
-            <li><Link href={`/city/${transformedStory.city?.toLowerCase().replace(/\s+/g, '-')}`}>{transformedStory.city}</Link></li>
-            <li aria-current="page">{transformedStory.title}</li>
-          </ol>
-        </nav>
-
-        <div className="header-controls-cwdw4x">
-          <button onClick={handleGoToDashboard} className="dashboardButton-cwdw4x">
-            ← Back to Story Dashboard
-          </button>
-         
+    <div className="container-cwdw4x">
+      {/* HEADER CONTROLS */}
+      <div className="header-controls-cwdw4x" style={{paddingTop: '20px'}}>
+        <button onClick={() => router.push('/hot-stories')} className="dashboardButton-cwdw4x">
+          <ArrowLeft size={16} />
+        </button>
+        <div style={{display: 'flex', gap: '10px'}}>
+          <button onClick={handleShare} className="share-btn-cwdw4x"><Share2 size={18} /></button>
           <div className="langToggleContainer-cwdw4x">
-            <button
-              className={`langButton-cwdw4x ${lang === 'en' ? 'active-cwdw4x' : ''}`}
-              onClick={() => setLang('en')}
-            >
-              ENG
-            </button>
-            <button
-              className={`langButton-cwdw4x ${lang === 'hi' ? 'active-cwdw4x' : ''}`}
-              onClick={() => setLang('hi')}
-            >
-              हिंदी
-            </button>
+            <button className={lang === 'en' ? 'active-cwdw4x langButton-cwdw4x' : 'langButton-cwdw4x'} onClick={() => setLang('en')}>EN</button>
+            <button className={lang === 'hi' ? 'active-cwdw4x langButton-cwdw4x' : 'langButton-cwdw4x'} onClick={() => setLang('hi')}>हि</button>
           </div>
-        </div>
-
-        {/* HERO SECTION */}
-        <div className="hero-cwdw4x" role="banner">
-          <div className="backgroundImageContainer-cwdw4x">
-            <div className="backgroundImageWrapper-cwdw4x">
-              <img
-                src={transformedStory.backgroundImage}
-                alt={`${transformedStory.characterName} in ${transformedStory.city}`}
-                className="backgroundImage-cwdw4x"
-                loading="eager"
-                width={1200}
-                height={675}
-              />
-              <div className="imagePlaceholder-cwdw4x">
-                <div className="placeholderContent-cwdw4x">
-                  <span className="cityNamePlaceholder-cwdw4x">{transformedStory.city}</span>
-                  <span className="characterNamePlaceholder-cwdw4x">{transformedStory.characterName}</span>
-                </div>
-              </div>
-            </div>
-            <span className="cityBadge-cwdw4x">{transformedStory.city}</span>
-          </div>
-
-          <div className="heroContent-cwdw4x">
-            <h1 className="title-cwdw4x">{transformedStory.title}</h1>
-            <p className="story-excerpt-cwdw4x">{transformedStory.excerpt}</p>
-            
-            <div className="statsGrid-cwdw4x">
-              <div className="characterAvatarContainer-cwdw4x">
-                <div className="characterAvatarWrapper-cwdw4x">
-                  <img
-                    src={transformedStory.characterAvatar}
-                    alt={`Avatar of ${transformedStory.characterName}`}
-                    className="characterAvatar-cwdw4x"
-                    loading="lazy"
-                    width={80}
-                    height={80}
-                  />
-                  <div className="avatarFallback-cwdw4x">
-                    {transformedStory.characterName?.charAt(0) || 'C'}
-                  </div>
-                </div>
-                <div className="avatarInfo-cwdw4x">
-                  <h3 className="avatarName-cwdw4x">{transformedStory.characterName}</h3>
-                  <p className="avatarAge-cwdw4x">{transformedStory.characterAge} years old</p>
-                </div>
-              </div>
-             
-              <Stat label="Category" value={transformedStory.category} />
-              <Stat label="City" value={transformedStory.city} />
-              
-              <button 
-                className="ctaButton-cwdw4x" 
-                onClick={handleStartChat}
-                aria-label={`Start chat with ${transformedStory.characterName}`}
-              >
-                {content.cta} →
-              </button>
-            </div>
-          </div>
-        </div>
-{/*  */}
-        <article className="storySection-cwdw4x">
-          <h2 className="sectionHeading-cwdw4x">
-            {lang === 'en' ? 'The Scenario' : 'कहानी की शुरुआत'}
-          </h2>
-         
-          <div className="storyText-cwdw4x">
-            {renderStoryWithImages(content.story, transformedStory.imageAlbum)}
-          </div>
-          
-      
-        {/*  */}
-          {content.cliffhanger && (
-            <div className="cliffhanger-cwdw4x">
-              <span className="cliffhangerLabel-cwdw4x">
-                {lang === 'en' ? 'What Happens Next?' : 'आगे क्या होगा?'}
-              </span>
-              <div className="cliffhangerText-cwdw4x">
-                <ReactMarkdown components={MarkdownComponents}>
-                  {content.cliffhanger}
-                </ReactMarkdown>
-              </div>
-            </div>
-          )}
-        </article>
-
-        {/* CHAT TEASER */}
-        <aside className="interactiveSection-cwdw4x" aria-label="Interactive Chat">
-          <div className="chatHeader-cwdw4x">
-            <div className="avatarCircle-cwdw4x" aria-hidden="true">
-              {transformedStory.characterName?.charAt(0) || 'C'}
-            </div>
-            <div className="chatStatus-cwdw4x">
-              <h4>{transformedStory.characterName}</h4>
-              <span><div className="dot-cwdw4x"></div> Online</span>
-            </div>
-          </div>
-          <div className="chatBody-cwdw4x">
-            <div className="messageBubble-cwdw4x">
-              {content.teaserChat}
-            </div>
-          </div>
-          <button 
-            className="ctaButton-cwdw4x" 
-            onClick={handleStartChat}
-            aria-label={`Start interactive chat with ${transformedStory.characterName}`}
-          >
-            {content.cta} →
-          </button>
-        </aside>
-
-       
-
-        {/* RELATED STORIES */}
-        {relatedStories.length > 0 && (
-          <section className="relatedSection-cwdw4x" aria-label="Related Stories">
-            <h3 className="sectionHeading-cwdw4x">
-              {lang === 'en' ? 'More Stories You Might Like' : 'अन्य कहानियाँ'}
-            </h3>
-            <div className="grid-cwdw4x">
-              {relatedStories.map((relatedStory) => {
-                const storySlug = relatedStory.slug || relatedStory._id;
-                return (
-                  <Link 
-                    href={`/hot-stories/${storySlug}`} 
-                    key={storySlug} 
-                    className="card-cwdw4x"
-                    aria-label={`Read ${relatedStory.title}`}
-                  >
-                    <div className="relatedStoryImage-cwdw4x">
-                      <img 
-                        src={relatedStory.backgroundImage} 
-                        alt={relatedStory.title} 
-                        loading="lazy"
-                        width={400}
-                        height={225}
-                      />
-                      <div className="relatedStoryOverlay-cwdw4x">
-                        <span>Read Now →</span>
-                      </div>
-                    </div>
-                    <div className="cardContent-cwdw4x">
-                      <div className="category-badge-small-cwdw4x">{relatedStory.category}</div>
-                      <h4 className="relatedStoryTitle-cwdw4x">{relatedStory.title}</h4>
-                      <div className="character-info-small-cwdw4x">
-                        <span className="character-name-small-cwdw4x">{relatedStory.characterName}</span>
-                        <span className="character-age-small-cwdw4x">{relatedStory.characterAge} yrs</span>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* SEO TAGS */}
-        <div className="seoTags-cwdw4x" role="complementary">
-          <span className="tag-cwdw4x">{transformedStory.category} story</span>
-          <span className="tag-cwdw4x">{transformedStory.city} stories</span>
-          <span className="tag-cwdw4x">Interactive stories</span>
-          <span className="tag-cwdw4x">Indian stories</span>
-          {transformedStory.tags?.map((tag, index) => (
-            <span key={index} className="tag-cwdw4x">{tag}</span>
-          ))}
         </div>
       </div>
 
-      {/* Add CSS for ad containers */}
-      <style jsx>{`
-        .ad-container {
-          margin: 2rem 0;
-          text-align: center;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 50px;
-          background-color: transparent;
-          width: 100%;
-        }
-        
-        .top-banner-ad {
-          margin-top: 1rem;
-          margin-bottom: 2rem;
-        }
-        
-        .in-article-ad {
-          margin: 2.5rem 0;
-          padding: 1rem 0;
-          border-top: 1px solid #eee;
-          border-bottom: 1px solid #eee;
-        }
-        
-        .mid-article-ad {
-          margin: 2rem 0;
-          float: right;
-          margin-left: 2rem;
-          clear: both;
-        }
-        
-        .bottom-banner-ad {
-          margin: 2.5rem 0;
-          padding: 1.5rem 0;
-          border-top: 1px solid #eee;
-        }
-        
-        @media (max-width: 768px) {
-          .mid-article-ad {
-            float: none;
-            margin: 2rem auto;
-            text-align: center;
-          }
-          
-          .ad-container {
-            margin: 1.5rem 0;
-          }
-        }
-      `}</style>
-    </>
+      {/* HERO SECTION */}
+      <div className="hero-cwdw4x">
+        <div className="backgroundImageContainer-cwdw4x">
+          <img src={story.backgroundImage} alt="" className="backgroundImage-cwdw4x" />
+          <span className="cityBadge-cwdw4x"><MapPin size={12}/> {story.city}</span>
+        </div>
+        <div className="heroContent-cwdw4x">
+          <h1 className="title-cwdw4x">{story.title}</h1>
+          <div className="statsGrid-cwdw4x">
+            <div className="characterAvatarWrapper-cwdw4x">
+              <img src={story.characterAvatar} className="characterAvatar-cwdw4x" alt="" />
+            </div>
+            <div className="statItem-cwdw4x">
+              <span className="statLabel-cwdw4x">CHARACTER</span>
+              <span className="statValue-cwdw4x">{story.characterName}</span>
+            </div>
+            <button className="cta-button-glow-cwdw4x" onClick={handleStartChat}>
+               Chat Now <Zap size={16} fill="white"/>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* STORY BODY */}
+      <article className="storySection-cwdw4x">
+        <div className="storyText-cwdw4x">{renderStoryContent()}</div>
+        {content?.cliffhanger && (
+          <div className="cliffhanger-cwdw4x">
+            <h3 style={{fontSize:'0.8rem', color: 'var(--primary-pink)', marginBottom:10, fontWeight:900}}>STORY CONTINUES IN CHAT...</h3>
+            <ReactMarkdown>{content.cliffhanger}</ReactMarkdown>
+          </div>
+        )}
+      </article>
+
+      {/* STICKY CTA (LIFTED FOR BOTTOM NAV) */}
+      {showSticky && (
+        <div className="sticky-bottom-bar-cwdw4x">
+          <div className="sticky-profile-cwdw4x">
+            <img src={story.characterAvatar} className="sticky-avatar-cwdw4x" alt="" />
+            <div className="sticky-info-cwdw4x">
+              <h5 style={{margin:0}}>{story.characterName}</h5>
+              <span style={{fontSize:'0.65rem', color:'#25D366'}}>● Typing...</span>
+            </div>
+          </div>
+          <button className="cta-button-glow-cwdw4x" onClick={handleStartChat}>
+            Chat Now <Zap size={14} fill="white"/>
+          </button>
+        </div>
+      )}
+
+      {/* RELATED CONTENT */}
+      <section className="relatedSection-cwdw4x">
+        <h3 className="sectionHeading-cwdw4x">Hot Suggestions</h3>
+        <div className="grid-cwdw4x">
+          {initialRelatedStories.slice(0, 4).map((rel) => (
+            <Link href={`/hot-stories/${rel.slug}`} key={rel._id} className="card-cwdw4x">
+              <div className="relatedStoryImage-cwdw4x">
+                <img src={rel.backgroundImage} alt="" />
+              </div>
+              <div style={{padding: '8px'}}><h4 className="relatedStoryTitle-cwdw4x">{rel.title}</h4></div>
+            </Link>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }
