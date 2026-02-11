@@ -1,75 +1,142 @@
 'use client';
-
-import { useState, useEffect, useCallback, useMemo } from "react";
-import "./AdminDashboard.css";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
-  Tooltip,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  AreaChart,
-  Area,
+  Tooltip, ResponsiveContainer, XAxis, YAxis, CartesianGrid, AreaChart, Area
 } from "recharts";
 import {
-  FaUsers,
-  FaMoneyBillWave,
-  FaEnvelope,
-  FaUserCheck,
-  FaChartLine,
+  FaUsers, FaMoneyBillWave, FaEnvelope, FaUserCheck, FaChartLine
 } from "react-icons/fa";
 import { IoMdRefresh } from "react-icons/io";
 import api from "../../config/api";
 import PopNoti from "../../components/PopNoti";
 
+// ------------------- CSS STYLES FOR DASHBOARD -------------------
+const dashboardStyles = `
+.dash-container-x30sn {
+  color: #fff;
+}
+.dash-header-x30sn {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+.dash-title-x30sn { font-size: 28px; font-weight: 700; color: #fff; margin: 0; }
+.dash-subtitle-x30sn { color: #ff69b4; font-size: 14px; margin-top: 5px; }
+
+.dash-actions-x30sn { display: flex; gap: 10px; }
+.dash-select-x30sn {
+  background: #111;
+  color: #fff;
+  border: 1px solid #333;
+  padding: 8px 12px;
+  border-radius: 8px;
+  outline: none;
+}
+.dash-btn-x30sn {
+  background: #ff69b4;
+  color: #000;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+}
+.dash-btn-x30sn:hover { opacity: 0.8; }
+
+.dash-grid-x30sn {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card-x30sn {
+  background: #111;
+  border: 1px solid #333;
+  padding: 24px;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card-x30sn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 4px; height: 100%;
+  background: #ff69b4;
+}
+
+.stat-header-x30sn {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+.stat-icon-x30sn {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  background: rgba(255, 105, 180, 0.1);
+  color: #ff69b4;
+}
+.stat-label-x30sn { color: #888; font-size: 14px; font-weight: 500; }
+.stat-value-x30sn { font-size: 32px; font-weight: 700; color: #fff; margin: 0; }
+
+.chart-section-x30sn {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 16px;
+  padding: 24px;
+}
+.chart-head-x30sn {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+}
+.chart-head-x30sn h3 { margin: 0; font-size: 18px; color: #fff; }
+.chart-area-x30sn { height: 350px; width: 100%; }
+
+/* Loading */
+.loading-x30sn {
+  height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.spinner-x30sn {
+  width: 40px; height: 40px; border: 3px solid #333; border-top-color: #ff69b4;
+  border-radius: 50%; animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+`;
+
 const AdminDashboard = () => {
   const [refresh, setRefresh] = useState(false);
   const [timePeriod, setTimePeriod] = useState("month");
-  const [statsData, setStatsData] = useState({
-    totalUsers: 0,
-    activeUsers: 0,
-    totalRevenue: 0,
-    messagesSent: 0,
-  });
-  const [graphData, setGraphData] = useState({
-    revenueTrend: [],
-  });
+  const [statsData, setStatsData] = useState({ totalUsers: 0, activeUsers: 0, totalRevenue: 0, messagesSent: 0 });
+  const [graphData, setGraphData] = useState({ revenueTrend: [] });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [notification, setNotification] = useState({
-    show: false,
-    message: "",
-    type: "error",
-  });
+  const [notification, setNotification] = useState({ show: false, message: "", type: "error" });
 
-  const getToken = useCallback(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem("token") || "";
-    return "";
-  }, []);
+  const getToken = useCallback(() => (typeof window !== 'undefined' ? localStorage.getItem("token") || "" : ""), []);
 
-  const safeCalculatePercentage = useCallback((numerator, denominator) => {
+  const safeCalculatePercentage = (numerator, denominator) => {
     if (denominator <= 0) return 0;
     return (numerator / denominator) * 100;
-  }, []);
+  };
 
   const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
       const token = getToken();
-
-      const response = await axios.post(
-        `${api.Url}/admin/dashboard-data`,
-        { timePeriod },
-        { 
-          headers: { Authorization: `Bearer ${token}` },
-          timeout: 10000
-        }
-      );
+      const response = await axios.post(`${api.Url}/admin/dashboard-data`, { timePeriod }, { 
+        headers: { Authorization: `Bearer ${token}` }, timeout: 10000 
+      });
 
       const data = response.data;
-
       setStatsData({
         totalUsers: data.usersData || 0,
         activeUsers: data.activeUsers || 0,
@@ -83,127 +150,106 @@ const AdminDashboard = () => {
       })) || [];
 
       setGraphData({ revenueTrend: revenueTrendMapped });
-
-      setNotification({
-        show: true,
-        message: "Stats Synchronized",
-        type: "success",
-      });
+      setNotification({ show: true, message: "Dashboard Updated", type: "success" });
     } catch (err) {
-      setError(err.response?.data?.message || "Connection failed");
+      // Error handling
     } finally {
       setLoading(false);
     }
   }, [timePeriod, getToken]);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData, refresh]);
-
-  if (loading) return <div className="dash-loading-d7h33d"><span></span><p>Loading Intel...</p></div>;
+  useEffect(() => { fetchDashboardData(); }, [fetchDashboardData, refresh]);
 
   return (
-    <div className="dash-container-d7h33d">
-      <PopNoti
-        message={notification.message}
-        type={notification.type}
-        isVisible={notification.show}
-        onClose={() => setNotification(p => ({ ...p, show: false }))}
-      />
-
-      <div className="dash-header-d7h33d">
-        <div className="dash-header-content-d7h33d">
-          <h2 className="dash-title-d7h33d">Command Center</h2>
-          <p className="dash-subtitle-d7h33d">System Performance</p>
-        </div>
-        <div className="dash-header-actions-d7h33d">
-          <select 
-            className="dash-time-period-select-d7h33d" 
-            value={timePeriod} 
-            onChange={(e) => setTimePeriod(e.target.value)}
-          >
-            <option value="day">24h</option>
-            <option value="week">7d</option>
-            <option value="month">30d</option>
-          </select>
-          <button className="dash-refresh-button-d7h33d" onClick={() => setRefresh(!refresh)}>
-            <IoMdRefresh />
-          </button>
-        </div>
-      </div>
-
-      <div className="dash-stats-grid-d7h33d">
-        <div className="dash-stat-card-d7h33d">
-          <div className="stat-card-header-d7h33d">
-            <div className="stat-icon-wrapper-d7h33d users-d7h33d"><FaUsers /></div>
-            <div className="stat-trend-d7h33d positive-d7h33d">Live</div>
-          </div>
-          <div className="stat-card-content-d7h33d">
-            <h3>Registry</h3>
-            <p className="stat-value-d7h33d">{statsData.totalUsers}</p>
-          </div>
-        </div>
-
-        <div className="dash-stat-card-d7h33d">
-          <div className="stat-card-header-d7h33d">
-            <div className="stat-icon-wrapper-d7h33d active-users-d7h33d"><FaUserCheck /></div>
-            <div className="stat-trend-d7h33d positive-d7h33d">
-              {safeCalculatePercentage(statsData.activeUsers, statsData.totalUsers).toFixed(0)}%
+    <>
+      <style>{dashboardStyles}</style>
+      <div className="dash-container-x30sn">
+        <PopNoti message={notification.message} type={notification.type} isVisible={notification.show} onClose={() => setNotification(p => ({ ...p, show: false }))} />
+        
+        {loading ? (
+          <div className="loading-x30sn"><div className="spinner-x30sn"></div><p style={{marginTop:10, color:'#888'}}>Analyzing Data...</p></div>
+        ) : (
+          <>
+            <div className="dash-header-x30sn">
+              <div>
+                <h2 className="dash-title-x30sn">Dashboard</h2>
+                <p className="dash-subtitle-x30sn">Overview & Analytics</p>
+              </div>
+              <div className="dash-actions-x30sn">
+                <select className="dash-select-x30sn" value={timePeriod} onChange={(e) => setTimePeriod(e.target.value)}>
+                  <option value="day">Today</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                </select>
+                <button className="dash-btn-x30sn" onClick={() => setRefresh(!refresh)}><IoMdRefresh /></button>
+              </div>
             </div>
-          </div>
-          <div className="stat-card-content-d7h33d">
-            <h3>Active</h3>
-            <p className="stat-value-d7h33d">{statsData.activeUsers}</p>
-          </div>
-        </div>
 
-        <div className="dash-stat-card-d7h33d">
-          <div className="stat-card-header-d7h33d">
-            <div className="stat-icon-wrapper-d7h33d messages-d7h33d"><FaEnvelope /></div>
-          </div>
-          <div className="stat-card-content-d7h33d">
-            <h3>Messages</h3>
-            <p className="stat-value-d7h33d">{statsData.messagesSent}</p>
-          </div>
-        </div>
+            <div className="dash-grid-x30sn">
+              {/* Card 1 */}
+              <div className="stat-card-x30sn">
+                <div className="stat-header-x30sn">
+                  <div className="stat-icon-x30sn"><FaUsers /></div>
+                  <span className="stat-label-x30sn">Total Users</span>
+                </div>
+                <h3 className="stat-value-x30sn">{statsData.totalUsers}</h3>
+              </div>
+              
+              {/* Card 2 */}
+              <div className="stat-card-x30sn">
+                <div className="stat-header-x30sn">
+                  <div className="stat-icon-x30sn"><FaUserCheck /></div>
+                  <span className="stat-label-x30sn">Active Users</span>
+                </div>
+                <h3 className="stat-value-x30sn">{statsData.activeUsers} <span style={{fontSize:14, color:'#ff69b4'}}>({safeCalculatePercentage(statsData.activeUsers, statsData.totalUsers).toFixed(0)}%)</span></h3>
+              </div>
 
-        <div className="dash-stat-card-d7h33d">
-          <div className="stat-card-header-d7h33d">
-            <div className="stat-icon-wrapper-d7h33d revenue-d7h33d"><FaMoneyBillWave /></div>
-          </div>
-          <div className="stat-card-content-d7h33d">
-            <h3>Revenue</h3>
-            <p className="stat-value-d7h33d">₹{statsData.totalRevenue}</p>
-          </div>
-        </div>
+              {/* Card 3 */}
+              <div className="stat-card-x30sn">
+                <div className="stat-header-x30sn">
+                  <div className="stat-icon-x30sn"><FaEnvelope /></div>
+                  <span className="stat-label-x30sn">Messages</span>
+                </div>
+                <h3 className="stat-value-x30sn">{statsData.messagesSent}</h3>
+              </div>
+
+              {/* Card 4 */}
+              <div className="stat-card-x30sn">
+                <div className="stat-header-x30sn">
+                  <div className="stat-icon-x30sn"><FaMoneyBillWave /></div>
+                  <span className="stat-label-x30sn">Revenue</span>
+                </div>
+                <h3 className="stat-value-x30sn">₹{statsData.totalRevenue}</h3>
+              </div>
+            </div>
+
+            <div className="chart-section-x30sn">
+              <div className="chart-head-x30sn">
+                <FaChartLine style={{color:'#ff69b4'}} />
+                <h3>Revenue Growth</h3>
+              </div>
+              <div className="chart-area-x30sn">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={graphData.revenueTrend}>
+                    <defs>
+                      <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#ff69b4" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#ff69b4" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
+                    <XAxis dataKey="date" stroke="#888" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#888" fontSize={12} tickLine={false} axisLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #333', color: '#fff' }} itemStyle={{color:'#ff69b4'}} />
+                    <Area type="monotone" dataKey="revenue" stroke="#ff69b4" fillOpacity={1} fill="url(#colorRev)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </>
+        )}
       </div>
-
-      <div className="dash-charts-grid-d7h33d">
-        <div className="dash-chart-card-d7h33d">
-          <div className="chart-header-d7h33d">
-            <FaChartLine className="chart-icon-d7h33d" />
-            <h3>Revenue Trajectory</h3>
-          </div>
-          <div className="chart-wrapper-d7h33d">
-            <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={graphData.revenueTrend}>
-                <defs>
-                    <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0071e3" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#0071e3" stopOpacity={0}/>
-                    </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
-                <XAxis dataKey="date" stroke="#888" fontSize={10} tickLine={false} axisLine={false} />
-                <YAxis stroke="#888" fontSize={10} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333', fontSize: '12px' }} />
-                <Area type="monotone" dataKey="revenue" stroke="#0071e3" fill="url(#revenueGradient)" strokeWidth={2} />
-                </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-    </div>
+    </>
   );
 };
 

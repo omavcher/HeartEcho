@@ -2,10 +2,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FaUsers, FaRobot, FaExclamationCircle, FaChartBar, FaBars, FaTimes, FaChevronRight, FaUserPlus } from "react-icons/fa";
-import "./AdminPanel.css";
-import { MdHistoryEdu } from "react-icons/md";
+import { 
+  FaUsers, FaRobot, FaExclamationCircle, FaChartBar, FaBars, 
+  FaTimes, FaChevronRight, FaUserPlus, FaGem 
+} from "react-icons/fa";
+import { MdHistoryEdu, MdDashboard } from "react-icons/md";
 import { CiEdit } from "react-icons/ci";
+import "./AdminPanel.css";
 
 // Import your admin components
 import AdminDashboard from "./Admin/AdminDashboard.jsx";
@@ -24,16 +27,14 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
   const isActive = (path) => pathname === path;
 
   const navItems = [
-    { path: "/admin/dashboard", label: "Dashboard", icon: <FaChartBar /> },
+    { path: "/admin/dashboard", label: "Dashboard", icon: <MdDashboard /> },
     { path: "/admin/users", label: "Users", icon: <FaUsers /> },
-    { path: "/admin/stories", label: "Stories", icon: <MdHistoryEdu/> }, // Add this
+    { path: "/admin/stories", label: "Stories", icon: <MdHistoryEdu /> },
     { path: "/admin/ai-friends", label: "AI Friends", icon: <FaRobot /> },
     { path: "/admin/complaints", label: "Complaints", icon: <FaExclamationCircle /> },
     { path: "/admin/referral", label: "Referral Program", icon: <FaUserPlus /> },
-    { path: "/admin/create-story", label: "Create Story", icon: <MdHistoryEdu /> },
-    { path: "/admin/stories/edit/:id", label: "Edit Story", icon: <CiEdit /> },
-    { path: "/admin/chats", label: "Chats", icon: <FaRobot /> },
-
+    { path: "/admin/create-story", label: "Create Story", icon: <FaGem /> },
+    // { path: "/admin/chats", label: "Chats", icon: <FaRobot /> },
   ];
 
   return (
@@ -41,69 +42,69 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div 
-          className="mobile-overlay" 
+          className="mobile-overlay-x30sn" 
           onClick={() => setSidebarOpen(false)}
         />
       )}
       
       {/* Sidebar Navigation */}
-      <nav className={`sidebar ${sidebarOpen ? "sidebar-open" : ""}`}>
-        <div className="sidebar-header">
-          <div className="nav-logo">
-            <div className="logo-icon">⚡</div>
-            <span>Admin Panel</span>
+      <nav className={`sidebar-x30sn ${sidebarOpen ? "sidebar-open-x30sn" : ""}`}>
+        <div className="sidebar-header-x30sn">
+          <div className="nav-logo-x30sn">
+            <div className="logo-icon-x30sn">H</div>
+            <span>Admin<span className="text-pink-x30sn">Panel</span></span>
           </div>
           <button 
-            className="sidebar-close" 
+            className="sidebar-close-x30sn" 
             onClick={() => setSidebarOpen(false)}
           >
             <FaTimes />
           </button>
         </div>
 
-        <div className="nav-links">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              href={item.path}
-              className={`nav-item ${isActive(item.path) ? "active" : ""}`}
-              onClick={() => setSidebarOpen(false)}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <span className="nav-label">{item.label}</span>
-              <FaChevronRight className="nav-chevron" />
-            </Link>
-          ))}
+        <div className="nav-scroll-x30sn">
+            <div className="nav-links-x30sn">
+            {navItems.map((item) => (
+                <Link
+                key={item.path}
+                href={item.path}
+                className={`nav-item-x30sn ${isActive(item.path) ? "active-x30sn" : ""}`}
+                onClick={() => setSidebarOpen(false)}
+                >
+                <span className="nav-icon-x30sn">{item.icon}</span>
+                <span className="nav-label-x30sn">{item.label}</span>
+                {isActive(item.path) && <FaChevronRight className="nav-chevron-x30sn" />}
+                </Link>
+            ))}
+            </div>
         </div>
 
-        <div className="sidebar-footer">
-          <div className="user-info">
-            <div className="user-avatar">A</div>
-            <div className="user-details">
-              <span className="user-name">Admin User</span>
-              <span className="user-role">Administrator</span>
+        <div className="sidebar-footer-x30sn">
+          <div className="user-info-x30sn">
+            <div className="user-avatar-x30sn">OA</div>
+            <div className="user-details-x30sn">
+              <span className="user-name-x30sn">Om Avcher</span>
+              <span className="user-role-x30sn">Super Admin / Founder</span>
             </div>
           </div>
         </div>
       </nav>
 
       {/* Top Bar */}
-      <header className="top-bar">
-        <div className="top-bar-left">
+      <header className="top-bar-x30sn">
+        <div className="top-bar-left-x30sn">
           <button 
-            className="menu-toggle"
+            className="menu-toggle-x30sn"
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
             <FaBars />
           </button>
-          <div className="page-title">
+          <div className="page-title-x30sn">
             {navItems.find(item => item.path === pathname)?.label || "Dashboard"}
           </div>
         </div>
-        <div className="top-bar-right">
-          <div className="nav-logo-mobile">
-            <span>Admin</span>
-          </div>
+        <div className="top-bar-right-x30sn">
+          
         </div>
       </header>
     </>
@@ -115,88 +116,42 @@ const AdminPanel = () => {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Handle redirect from /admin to /admin/dashboard
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.pathname === '/admin') {
       router.push('/admin/dashboard');
     }
   }, [router]);
 
-  // Close sidebar on route change
   useEffect(() => {
     setSidebarOpen(false);
   }, [pathname]);
 
-  // Close sidebar on escape key
-  useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') setSidebarOpen(false);
+  const renderContent = () => {
+    const contentMap = {
+      '/admin/dashboard': <div className="content-wrapper-x30sn"><AdminDashboard /></div>,
+      '/admin/users': <div className="content-wrapper-x30sn"><UsersAdmin /></div>,
+      '/admin/stories': <div className="content-wrapper-x30sn"><StoriesAdmin/></div>,
+      '/admin/ai-friends': <div className="content-wrapper-x30sn"><AIFriendsAdmin/></div>,
+      '/admin/complaints': <div className="content-wrapper-x30sn"><ComplaintsAdmin /></div>,
+      '/admin/referral': <div className="content-wrapper-x30sn"><ReferralAdmin /></div>,
+      '/admin/create-story': <div className="content-wrapper-x30sn"><CreateStoryPage/></div>,
+      '/admin/chats': <div className="content-wrapper-x30sn"><ChatsDataAdmin /></div>,
     };
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, []);
-
-  // In AdminPanel.jsx
-const renderContent = () => {
-  const contentMap = {
-    '/admin/dashboard': <Dashboard />,
-    '/admin/users': <Users />,
-    '/admin/stories': <StoriesAdmin/>,
-    '/admin/ai-friends': <AIFriends />,
-    '/admin/complaints': <Complaints />,
-    '/admin/referral': <Referral />,
-    '/admin/create-story': <CreateStoryPage/>,
-    '/admin/chats': <ChatsDataAdmin/>,
-
+    // If the path matches edit story dynamic route
+    if (pathname?.startsWith('/admin/stories/edit/')) {
+        return <div className="content-wrapper-x30sn"><EditStoryPage /></div>;
+    }
+    return contentMap[pathname] || <div className="content-wrapper-x30sn"><AdminDashboard /></div>;
   };
-  return contentMap[pathname] || <Dashboard />;
-};
 
   return (
-    <div className="admin-container">
+    <div className="admin-container-x30sn">
       <Navbar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-      <main className="main-content">
+      <main className="main-content-x30sn">
         {renderContent()}
       </main>
     </div>
   );
 };
-
-// Content Components
-const Dashboard = () => (
-  <div className="content">
-    <AdminDashboard /> 
-  </div>
-);
-
-const Users = () => (
-  <div className="content">
-    <UsersAdmin />
-  </div>
-);
-
-const AIFriends = () => (
-  <div className="content">
-    <AIFriendsAdmin/>
-  </div>
-);
-
-const Complaints = () => (
-  <div className="content">
-    <ComplaintsAdmin />
-  </div>
-);
-
-const Referral = () => (
-  <div className="content">
-    <ReferralAdmin />
-  </div>
-);
-
-const ChatsData = () => (
-  <div className="content">
-    <ChatsDataAdmin />
-  </div>
-);
 
 export default AdminPanel;
