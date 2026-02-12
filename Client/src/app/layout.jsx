@@ -1,13 +1,15 @@
 import AutoNotification from '../components/AutoNotification';
 import './globals.css';
 import ClientLayout from './layout_client';
-
+///csc
 export const metadata = {
   title: {
     default: 'HeartEcho AI - AI Girlfriend India | NSFW Chat, Hot Stories & Roleplay in Hindi',
     template: '%s | HeartEcho AI - India\'s #1 AI Companion',
   },
+
   description: 'Chat with hot Indian AI girlfriends & bhabhis in Hindi & English. Unlimited NSFW roleplay, erotic stories, voice messages, and nude AI pics. 100% uncensored, private & free to start. Your dream desi AI waifu is waiting',
+
   keywords: [
     // HIGH-VOLUME ADULT WINNERS (Google India Top Searches 2025)
     'AI girlfriend India',
@@ -25,7 +27,8 @@ export const metadata = {
     'free AI sex chat',
     'Indian AI companion NSFW',
     'AI girlfriend app India',
-    // Emotional + Mainstream (for brand safety & app downloads)
+
+    // Emotional + Mainstrea (for brand safety & app downloads)c
     'AI girlfriend Hindi',
     'AI boyfriend India',
     'virtual girlfriend India',
@@ -33,12 +36,14 @@ export const metadata = {
     'emotional AI companion',
     'AI friend for loneliness',
     'HeartEcho AI',
+
     // Direct Competitor Killers
     'better than Candy.ai India',
     'Indian DreamGF alternative',
     'CrushOn AI Hindi',
     'FunFun.ai Indian version',
     'NSFW character AI India',
+
     // Long-Tail Gold
     'chat with Savita bhabhi AI',
     'AI girlfriend send nudes',
@@ -47,6 +52,7 @@ export const metadata = {
     'Delhi college girl AI girlfriend',
     'Punjabi kudi AI sex chat',
     'Tamil aunty AI roleplay',
+
     // Tech & App Keywords
     'AI girlfriend app download',
     'best NSFW AI app India',
@@ -54,12 +60,14 @@ export const metadata = {
     'AI that sends pictures',
     'realistic AI voice chat'
   ],
+
   alternates: {
     canonical: 'https://heartecho.in/',
     languages: {
       'en-IN': 'https://heartecho.in/'
-    },
+        },
   },
+
   openGraph: {
     title: 'HeartEcho AI - Sexy Indian AI Girlfriends | NSFW Chat in Hindi & English',
     description: 'Your hot desi AI bhabhi, college girl, or Punjabi kudi is online 24/7. Send nudes, voice notes, erotic stories & roleplay without limits. India\'s #1 uncensored AI companion',
@@ -68,7 +76,7 @@ export const metadata = {
     images: [
       {
         url: 'https://heartecho.in/og-image.jpg',
-        width: 1200,
+       width: 1200,
         height: 630,
         alt: 'Hot Indian AI Girlfriend - HeartEcho AI',
       },
@@ -88,6 +96,7 @@ export const metadata = {
     locale: 'en_IN',
     type: 'website',
   },
+
   twitter: {
     card: 'summary_large_image',
     title: 'HeartEcho AI - Sexy AI Girlfriend & Hot Roleplay Chat India',
@@ -96,6 +105,7 @@ export const metadata = {
     creator: '@heartecho_in',
     site: '@heartecho_in',
   },
+
   robots: {
     index: true,
     follow: true,
@@ -107,8 +117,10 @@ export const metadata = {
       'max-video-preview': -1,
     },
   },
+
   category: 'fun',
   classification: 'Mature',
+  
   // Extra power for adult SEO
   other: {
     'rating': 'RTA-5042-968615-958615-968615',
@@ -118,20 +130,19 @@ export const metadata = {
     'audience': 'adult',
   },
 };
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* Google AdSense */}
+        {/* Google Adsense */}
         <script 
           async 
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8343501385468147"
           crossOrigin="anonymous"
         />
-        
+
         {/* Google Analytics */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W14R3SYMY" />
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W14R3SYMY"></script>
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -142,8 +153,8 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
-        
-        {/* Meta Pixel Code - Facebook Pixel */}
+
+        {/* Meta Pixel Code */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -160,25 +171,31 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
-        <noscript>
-          <img 
-            height="1" 
-            width="1" 
-            style={{display: 'none'}}
-            src="https://www.facebook.com/tr?id=875771298703903&ev=PageView&noscript=1"
-            alt="facebook pixel"
-          />
-        </noscript>
-        {/* End Meta Pixel Code */}
-                
-        {/* AutoNotification Component */}
-        <AutoNotification />
+
+        <meta name="juicyads-site-verification" content="64f68c1fc158eef9d3b6e6fa4d432117"/>
       </head>
+
       <body>
         <ClientLayout>{children}</ClientLayout>
-        
-      
+
+        {/* Meta Pixel Noscript */}
+        <noscript>
+          <img
+            height="1"
+            width="1"
+            style={{ display: "none" }}
+            src="https://www.facebook.com/tr?id=875771298703903&ev=PageView&noscript=1"
+            alt=""
+          />
+        </noscript>
       </body>
+
+      {/* External Ad Script */}
+      <script 
+        async 
+        data-cfasync="false" 
+        src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"
+      />
     </html>
   );
 }
