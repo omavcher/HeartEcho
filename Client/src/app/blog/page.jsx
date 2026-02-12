@@ -2,205 +2,139 @@
 
 import { blogPosts } from '../../data/blogPosts';
 import Link from 'next/link';
-import Head from 'next/head';
 import './blog.css'
 import Footer from '../../components/Footer'
 import { useState, useMemo, useEffect } from 'react';
-
-// Icons for UI
-const GridIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-);
-const ListIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-);
-const SearchIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-);
+import { FaSearch, FaThLarge, FaList, FaUserCircle } from 'react-icons/fa';
 
 export default function BlogPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
-  const [visibleCount, setVisibleCount] = useState(12); // For "Load More" feature
+  const [viewMode, setViewMode] = useState('grid');
+  const [visibleCount, setVisibleCount] = useState(12);
 
-  // Get all unique categories
   const categories = ['All', ...new Set(blogPosts.map(post => post.category))];
 
-  // Helper: Reset visible count when filters change
   useEffect(() => {
     setVisibleCount(12);
+    // Scroll to top on category change
+    if(typeof window !== 'undefined') window.scrollTo(0,0);
   }, [searchQuery, selectedCategory]);
 
-  // Filter and sort posts
   const filteredPosts = useMemo(() => {
     const lowerQuery = searchQuery.toLowerCase();
-    
     let filtered = blogPosts.filter(post => {
       const matchesSearch = 
         post.title.toLowerCase().includes(lowerQuery) ||
-        post.excerpt.toLowerCase().includes(lowerQuery) ||
-        post.author.toLowerCase().includes(lowerQuery);
-      
+        post.excerpt.toLowerCase().includes(lowerQuery);
       const matchesCategory = selectedCategory === 'All' || post.category === selectedCategory;
-      
       return matchesSearch && matchesCategory;
     });
-
-    // Default sort: Newest first
-    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    return filtered;
+    return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [searchQuery, selectedCategory]);
 
   const displayedPosts = filteredPosts.slice(0, visibleCount);
   const hasMore = displayedPosts.length < filteredPosts.length;
 
-  const handleLoadMore = () => {
-    setVisibleCount(prev => prev + 12);
-  };
-
-  // Helper to generate initials for avatar
-  const getInitials = (name) => {
-    return name ? name.split(' ').map(n => n[0]).join('').substring(0,2) : 'AI';
-  };
-
-  // Helper to format date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if(diffDays < 7) return `${diffDays} days ago`;
+    if(diffDays < 30) return `${Math.floor(diffDays/7)} weeks ago`;
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
   return (
     <>
-      <Head>
-        <title>Blog - HeartEcho</title>
-        <meta name="description" content="Explore the future of relationships with AI companions." />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </Head>
-      
-      <div className="blog-wrapper">
-        <main className="main-content-blog">
-          
-          {/* Header Controls */}
-          <header className="controls-header">
-            <div className="top-bar">
-              <div className="page-title">
-                <h1>Blog</h1>
-              </div>
-              
-              <div className="search-container">
-                <div className="search-input-wrapper">
-                  <input
-                    type="text"
-                    placeholder="Search articles..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                  <button className="search-btn">
-                    <SearchIcon />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Category Chips */}
-            <div className="category-scroll">
-              {categories.map(category => (
-                <button
-                  key={category}
-                  className={`chip ${selectedCategory === category ? 'active' : ''}`}
-                  onClick={() => setSelectedCategory(category)}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-          </header>
-
-          {/* Results Info & View Toggles */}
-          <div className="utility-bar">
-            <span>
-              {filteredPosts.length} Results
-              {searchQuery && ` for "${searchQuery}"`}
-            </span>
+      <div className="blg-root-x30sn">
+        
+        {/* Sticky Header (YouTube Style) */}
+        <header className="blg-header-x30sn">
+          <div className="blg-top-bar-x30sn">
+            <h1 className="blg-page-title-x30sn">Explore</h1>
             
-            <div className="view-toggles">
-              <button 
-                className={viewMode === 'grid' ? 'active' : ''} 
-                onClick={() => setViewMode('grid')}
-                aria-label="Grid View"
-              >
-                <GridIcon />
-              </button>
-              <button 
-                className={viewMode === 'list' ? 'active' : ''} 
-                onClick={() => setViewMode('list')}
-                aria-label="List View"
-              >
-                <ListIcon />
-              </button>
+            <div className="blg-search-container-x30sn">
+              <div className="blg-search-wrapper-x30sn">
+                <input
+                  type="text"
+                  placeholder="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="blg-search-input-x30sn"
+                />
+                <button className="blg-search-btn-x30sn">
+                  <FaSearch />
+                </button>
+              </div>
+            </div>
+
+            <div className="blg-view-toggles-x30sn">
+               {/* Hidden on mobile, shown on desktop */}
+               <button onClick={() => setViewMode('grid')} className={viewMode === 'grid' ? 'active' : ''}><FaThLarge/></button>
+               <button onClick={() => setViewMode('list')} className={viewMode === 'list' ? 'active' : ''}><FaList/></button>
             </div>
           </div>
 
-          {/* Posts Grid */}
-          <div className={`posts-grid ${viewMode === 'list' ? 'list-view' : ''}`}>
-            {displayedPosts.length > 0 ? (
-              displayedPosts.map(post => (
-                <Link href={`/blog/${post.slug}`} key={post.id} className="post-card">
-                  {/* Thumbnail Area */}
-                  <div className="thumbnail-wrapper">
+          {/* Categories Scroll */}
+          <div className="blg-chips-bar-x30sn">
+            {categories.map(category => (
+              <button
+                key={category}
+                className={`blg-chip-x30sn ${selectedCategory === category ? 'active' : ''}`}
+                onClick={() => setSelectedCategory(category)}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <main className="blg-content-x30sn">
+          
+          {filteredPosts.length === 0 ? (
+            <div className="blg-no-results-x30sn">
+              <h3>No results found</h3>
+              <p>Try different keywords or remove filters</p>
+            </div>
+          ) : (
+            <div className={`blg-grid-x30sn ${viewMode}`}>
+              {displayedPosts.map(post => (
+                <Link href={`/blog/${post.slug}`} key={post.id} className="blg-card-x30sn">
+                  <div className="blg-thumb-wrapper-x30sn">
                     <img 
-                      src={post.image} 
+                      src={post.image || '/placeholder.jpg'} 
                       alt={post.title} 
-                      className="post-image"
+                      className="blg-thumb-img-x30sn"
                       loading="lazy"
                     />
-                    <span className="duration-badge">{post.readTime}</span>
+                    <div className="blg-duration-x30sn">{post.readTime}</div>
                   </div>
 
-                  {/* Content Area */}
-                  <div className="post-info">
-                    <div className="author-avatar">
-                      {getInitials(post.author)}
+                  <div className="blg-card-info-x30sn">
+                    <h3 className="blg-card-title-x30sn">{post.title}</h3>
+                    <div className="blg-card-meta-x30sn">
+                      <span className="blg-author-x30sn">{post.author}</span>
+                      <span className="blg-dot-x30sn">•</span>
+                      <span>{formatDate(post.date)}</span>
                     </div>
-                    
-                    <div className="post-text">
-                      <h3 className="post-title" title={post.title}>{post.title}</h3>
-                      <div className="post-meta">
-                        <span>{post.author}</span>
-                        <span>•</span>
-                        <span>{formatDate(post.date)}</span>
-                      </div>
-                      <p className="post-excerpt">{post.excerpt}</p>
-                    </div>
+                    {viewMode === 'list' && <p className="blg-excerpt-x30sn">{post.excerpt}</p>}
                   </div>
                 </Link>
-              ))
-            ) : (
-              <div className="no-results">
-                <h3>No articles found 😕</h3>
-                <p>Try searching for something else or clear your filters.</p>
-                <button 
-                  onClick={() => {setSearchQuery(''); setSelectedCategory('All');}} 
-                  className="load-more-btn"
-                >
-                  Clear Filters
-                </button>
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
 
-          {/* Load More Button */}
           {hasMore && (
-            <div className="load-more-container">
-              <button onClick={handleLoadMore} className="load-more-btn">
-                Load More
-              </button>
+            <div className="blg-load-more-x30sn">
+              <button onClick={() => setVisibleCount(p => p + 12)}>Load more</button>
             </div>
           )}
         </main>
-
+        
         <Footer/>
       </div>
     </>

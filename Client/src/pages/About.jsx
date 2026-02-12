@@ -5,7 +5,6 @@ import './AboutPage.css';
 import Footer from '../components/Footer';
 
 const AboutPage = () => {
-  // Company stats - can be updated easily
   const companyStats = {
     users: '250K+',
     ranking: '#1',
@@ -13,7 +12,6 @@ const AboutPage = () => {
     companions: '20+'
   };
 
-  // Product Hunt configuration
   const productHuntConfig = {
     postId: '1045834',
     badgeUrl: 'https://api.producthunt.com/widgets/embed-image/v1/featured.svg',
@@ -23,7 +21,6 @@ const AboutPage = () => {
     description: '#1 AI Girlfriend & Romantic AI Chat Platform'
   };
 
-  // Anonymous branding
   const brandInfo = {
     name: 'EchoHeart',
     tagline: 'Innovation in Emotional AI',
@@ -35,6 +32,7 @@ const AboutPage = () => {
   return (
     <>
       <div className="idkxpw-about-container">
+        
         {/* Animated Background Elements */}
         <div className="idkxpw-background-elements">
           <div className="idkxpw-floating-element-1"></div>
@@ -44,6 +42,8 @@ const AboutPage = () => {
 
         <section className="idkxpw-hero-section">
           <div className="idkxpw-hero-content">
+            
+            {/* Founder/Brand Card */}
             <motion.div 
               className="idkxpw-founder-card"
               initial={{ opacity: 0, y: 30 }}
@@ -53,8 +53,8 @@ const AboutPage = () => {
               <div className="idkxpw-founder-image-wrapper">
                 <div className="idkxpw-founder-image-container">
                   <Image
-                    src="/heartecho_b.png" // Use company logo instead of personal photo
-                    alt={`${brandInfo.name} Logo`}
+                    src="/heartechor.png" // Ensure this path is correct
+                    alt="EchoHeart Logo"
                     width={200}
                     height={200}
                     className="idkxpw-founder-image"
@@ -87,7 +87,7 @@ const AboutPage = () => {
                   </div>
                 </motion.div>
 
-                {/* Product Hunt Badge */}
+                {/* Product Hunt Badge (Desktop) */}
                 <motion.div
                   className="idkxpw-producthunt-badge-wrapper"
                   initial={{ opacity: 0, y: 20 }}
@@ -101,15 +101,14 @@ const AboutPage = () => {
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="idkxpw-producthunt-link"
-                    aria-label={`Check out ${productHuntConfig.productName} on Product Hunt`}
+                    aria-label="Check out HeartEcho Ai on Product Hunt"
                   >
                     <img 
                       src={`${productHuntConfig.badgeUrl}?post_id=${productHuntConfig.postId}&theme=${productHuntConfig.theme}&t=${productHuntConfig.timestamp}`}
-                      alt={`${productHuntConfig.productName} - ${productHuntConfig.description} | Product Hunt`}
+                      alt="Product Hunt Badge"
                       className="idkxpw-producthunt-badge"
                       width="250"
                       height="54"
-                      loading="lazy"
                     />
                   </a>
                   <div className="idkxpw-producthunt-label">Featured on Product Hunt</div>
@@ -117,6 +116,7 @@ const AboutPage = () => {
               </div>
             </motion.div>
 
+            {/* Hero Text */}
             <motion.div 
               className="idkxpw-hero-text"
               initial={{ opacity: 0, y: 20 }}
@@ -136,6 +136,7 @@ const AboutPage = () => {
           </div>
         </section>
 
+        {/* About Details Grid */}
         <section className="idkxpw-about-section">
           <motion.div 
             className="idkxpw-about-card idkxpw-card-hover"
@@ -172,22 +173,10 @@ const AboutPage = () => {
               In just 5 months:
             </p>
             <ul className="idkxpw-achievement-list">
-              <li>
-                <span className="idkxpw-achievement-icon">🚀</span>
-                Reached {companyStats.users} users organically
-              </li>
-              <li>
-                <span className="idkxpw-achievement-icon">💰</span>
-                Generated {companyStats.revenue} in revenue
-              </li>
-              <li>
-                <span className="idkxpw-achievement-icon">🏆</span>
-                Featured as {companyStats.ranking} AI Girlfriend on Product Hunt
-              </li>
-              <li>
-                <span className="idkxpw-achievement-icon">🛡️</span>
-                Created a safe space for emotional connection
-              </li>
+              <li><span className="idkxpw-achievement-icon">🚀</span> Reached {companyStats.users} users organically</li>
+              <li><span className="idkxpw-achievement-icon">💰</span> Generated {companyStats.revenue} in revenue</li>
+              <li><span className="idkxpw-achievement-icon">🏆</span> Featured as {companyStats.ranking} AI Girlfriend on Product Hunt</li>
+              <li><span className="idkxpw-achievement-icon">🛡️</span> Created a safe space for emotional connection</li>
             </ul>
             <p className="idkxpw-section-text">
               Every aspect — from branding and UX to development and growth — is crafted with care 
@@ -229,38 +218,6 @@ const AboutPage = () => {
             <p className="idkxpw-section-text">
               What started as a vision is now growing into a movement. And we're just getting started.
             </p>
-            
-            {/* Product Hunt Badge - Desktop */}
-            <div className="idkxpw-producthunt-section-desktop">
-              <div className="idkxpw-section-divider"></div>
-              <div className="idkxpw-producthunt-section">
-                <h4 className="idkxpw-producthunt-title">Recognized by the Community</h4>
-                <p className="idkxpw-producthunt-description">
-                  {brandInfo.name} was featured on Product Hunt as the {productHuntConfig.description}
-                </p>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <a 
-                    href={`https://www.producthunt.com/posts/heartecho-ai?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-heartecho&#0045;ai`}
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="idkxpw-producthunt-link"
-                    aria-label={`Check out ${productHuntConfig.productName} on Product Hunt`}
-                  >
-                    <img 
-                      src={`${productHuntConfig.badgeUrl}?post_id=${productHuntConfig.postId}&theme=${productHuntConfig.theme}&t=${productHuntConfig.timestamp}`}
-                      alt={`${productHuntConfig.productName} - ${productHuntConfig.description} | Product Hunt`}
-                      className="idkxpw-producthunt-badge-large"
-                      width="250"
-                      height="54"
-                      loading="lazy"
-                    />
-                  </a>
-                </motion.div>
-              </div>
-            </div>
 
             <div className="idkxpw-signature-block">
               <div className="idkxpw-signature">{brandInfo.signatureText}</div>
@@ -281,24 +238,19 @@ const AboutPage = () => {
             <p className="idkxpw-producthunt-mobile-description">
               Recognized as {productHuntConfig.description}
             </p>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <a 
                 href={`https://www.producthunt.com/posts/heartecho-ai?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-heartecho&#0045;ai`}
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="idkxpw-producthunt-link"
-                aria-label={`Check out ${productHuntConfig.productName} on Product Hunt`}
               >
                 <img 
                   src={`${productHuntConfig.badgeUrl}?post_id=${productHuntConfig.postId}&theme=${productHuntConfig.theme}&t=${productHuntConfig.timestamp}`}
-                  alt={`${productHuntConfig.productName} - ${productHuntConfig.description} | Product Hunt`}
+                  alt="Product Hunt Badge"
                   className="idkxpw-producthunt-badge-mobile"
                   width="250"
                   height="54"
-                  loading="lazy"
                 />
               </a>
             </motion.div>
@@ -322,6 +274,7 @@ const AboutPage = () => {
             Experience {brandInfo.name}
           </motion.button>
         </motion.section>
+
       </div>
       <Footer/>
     </>

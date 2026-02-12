@@ -1,8 +1,8 @@
 import React from 'react';
 
-// --- Mocks for Next.js components ---
-const Link = ({ href, children, className }) => (
-  <a href={href} className={className}>{children}</a>
+// --- Mocks for Next.js components (Replace with actual imports if needed) ---
+const Link = ({ href, children, className, style }) => (
+  <a href={href} className={className} style={style}>{children}</a>
 );
 
 const Image = ({ src, alt, width, height, className }) => (
@@ -34,32 +34,36 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <>
+    <footer className="seh-footer">
       <style>{`
         :root {
           --seh-bg: #000000;
+          --seh-card: #0a0a0a;
           --seh-pink: #ce4085;
-          --seh-pink-muted: rgba(206, 64, 133, 0.1);
-          --seh-border: rgba(255, 255, 255, 0.08);
+          --seh-pink-hover: #e05297;
+          --seh-pink-muted: rgba(206, 64, 133, 0.15);
+          --seh-border: rgba(255, 255, 255, 0.1);
           --seh-text: #ffffff;
-          --seh-muted: #888888;
+          --seh-muted: #9ca3af;
         }
 
         .seh-footer {
           background-color: var(--seh-bg);
           color: var(--seh-text);
-          font-family: 'Inter', -apple-system, sans-serif;
+          font-family: 'Inter', system-ui, -apple-system, sans-serif;
           position: relative;
           overflow: hidden;
           border-top: 1px solid var(--seh-border);
+          width: 100%;
         }
 
         /* Top Accent Line */
         .seh-footer-line {
-          height: 1px;
+          height: 2px;
           width: 100%;
           background: linear-gradient(90deg, transparent, var(--seh-pink), transparent);
-          opacity: 0.5;
+          opacity: 0.8;
+          box-shadow: 0 0 15px var(--seh-pink);
         }
 
         .seh-footer-container {
@@ -83,14 +87,16 @@ export default function Footer() {
           align-items: center;
           gap: 12px;
           text-decoration: none;
+          width: fit-content;
         }
 
         .seh-footer-logo-text {
-          font-size: 1.6rem;
+          font-size: 1.8rem;
           font-weight: 800;
-          letter-spacing: -1px;
+          letter-spacing: -0.5px;
           margin: 0;
           color: #fff;
+          line-height: 1;
         }
 
         .seh-footer-logo-text span {
@@ -101,36 +107,41 @@ export default function Footer() {
           color: var(--seh-muted);
           line-height: 1.6;
           font-size: 0.95rem;
-          max-width: 300px;
+          max-width: 320px;
+          margin: 0;
         }
 
         /* Highlighted Feature - Hot Stories */
         .seh-hot-stories-nudge {
           background: var(--seh-pink-muted);
-          border: 1px solid rgba(206, 64, 133, 0.2);
-          padding: 12px 20px;
-          border-radius: 12px;
+          border: 1px solid rgba(206, 64, 133, 0.3);
+          padding: 14px 20px;
+          border-radius: 16px;
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
           text-decoration: none;
           color: #fff;
-          transition: 0.3s;
-          margin-top: 10px;
+          transition: all 0.3s ease;
+          margin-top: 8px;
+          max-width: 300px;
         }
 
         .seh-hot-stories-nudge:hover {
-          background: rgba(206, 64, 133, 0.2);
+          background: rgba(206, 64, 133, 0.25);
+          border-color: var(--seh-pink);
           transform: translateY(-2px);
+          box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
         .seh-pulse-dot {
-          width: 8px;
-          height: 8px;
+          width: 10px;
+          height: 10px;
           background: #ff3b30;
           border-radius: 50%;
-          box-shadow: 0 0 8px #ff3b30;
+          box-shadow: 0 0 10px #ff3b30;
           animation: seh-pulse 2s infinite;
+          flex-shrink: 0;
         }
 
         @keyframes seh-pulse {
@@ -139,10 +150,16 @@ export default function Footer() {
           100% { transform: scale(0.95); opacity: 0.7; }
         }
 
-        .seh-hot-text b { color: var(--seh-pink); }
-        .seh-hot-text small { display: block; font-size: 0.75rem; opacity: 0.6; }
+        .seh-hot-text {
+          display: flex;
+          flex-direction: column;
+          line-height: 1.2;
+        }
 
-        /* Links Grid */
+        .seh-hot-text b { color: #fff; font-size: 0.95rem; }
+        .seh-hot-text small { color: var(--seh-pink); font-size: 0.75rem; font-weight: 500; margin-top: 2px; }
+
+        /* Links Grid - Desktop Default */
         .seh-links-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
@@ -150,12 +167,13 @@ export default function Footer() {
         }
 
         .seh-link-col h4 {
-          font-size: 0.9rem;
+          font-size: 0.85rem;
           text-transform: uppercase;
-          letter-spacing: 1.5px;
+          letter-spacing: 2px;
           color: #fff;
           margin-bottom: 1.5rem;
           font-weight: 700;
+          opacity: 0.8;
         }
 
         .seh-link-list {
@@ -164,24 +182,28 @@ export default function Footer() {
           margin: 0;
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 14px;
         }
 
         .seh-link-list a {
           color: var(--seh-muted);
           text-decoration: none;
-          font-size: 0.9rem;
-          transition: 0.2s;
+          font-size: 0.95rem;
+          transition: all 0.2s ease;
+          display: inline-block;
         }
 
         .seh-link-list a:hover {
           color: var(--seh-pink);
-          padding-left: 4px;
+          transform: translateX(4px);
         }
 
         .seh-special-link {
           color: var(--seh-pink) !important;
-          font-weight: 700;
+          font-weight: 600;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
         }
 
         /* Bottom Bar */
@@ -193,149 +215,219 @@ export default function Footer() {
           align-items: center;
           max-width: 1200px;
           margin: 0 auto;
+          flex-wrap: wrap;
+          gap: 20px;
         }
 
-        .seh-copy { color: #555; font-size: 0.85rem; }
+        .seh-copy { 
+          color: #666; 
+          font-size: 0.85rem; 
+          margin: 0;
+        }
 
         .seh-social-grid {
           display: flex;
-          gap: 15px;
+          gap: 12px;
         }
 
         .seh-social-link {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          background: #111;
+          width: 42px;
+          height: 42px;
+          border-radius: 12px;
+          background: var(--seh-card);
           display: flex;
           align-items: center;
           justify-content: center;
           color: #fff;
           transition: 0.3s;
-          border: 1px solid #222;
+          border: 1px solid var(--seh-border);
         }
 
         .seh-social-link:hover {
           background: var(--seh-pink);
           border-color: var(--seh-pink);
-          transform: translateY(-50%);
-          box-shadow: 0 5px 15px rgba(206, 64, 133, 0.4);
+          transform: translateY(-3px);
+          box-shadow: 0 5px 15px rgba(206, 64, 133, 0.3);
         }
 
-        .seh-social-link svg { width: 18px; height: 18px; }
+        .seh-social-link svg { width: 20px; height: 20px; }
 
-        /* --- MOBILE RESPONSIVENESS --- */
-        @media (max-width: 900px) {
+        /* --- RESPONSIVE DESIGN --- */
+        
+        /* Tablet & Mobile Layout (Combined for consistency) */
+        @media (max-width: 1024px) {
           .seh-footer-container {
             grid-template-columns: 1fr;
+            gap: 3rem;
+            padding: 3rem 1.5rem 2rem;
             text-align: center;
-            padding-top: 3rem;
           }
-          .seh-footer-brand { align-items: center; }
-          .seh-footer-logo-wrap { justify-content: center; }
-          .seh-footer-desc { max-width: 100%; }
-          .seh-links-grid { grid-template-columns: repeat(2, 1fr); text-align: left; }
+          
+          .seh-footer-brand {
+            align-items: center;
+            max-width: 100%;
+            margin: 0 auto;
+          }
+
+          .seh-footer-desc {
+            max-width: 400px;
+          }
+
+          /* FORCE ONE ROW FOR LINKS on Mobile/Tablet */
+          .seh-links-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Keep 3 columns */
+            gap: 10px; /* Tighter gap */
+            width: 100%;
+            text-align: center; /* Center align text */
+          }
+
+          /* Adjust headings for mobile row */
+          .seh-link-col h4 {
+            font-size: 11px; /* Smaller heading */
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            color: var(--seh-pink); /* Pink headings for contrast */
+            opacity: 1;
+          }
+
+          /* Adjust link spacing for mobile row */
+          .seh-link-list {
+            gap: 10px;
+          }
+
+          .seh-link-list a {
+            font-size: 11px; /* Smaller font for links */
+            white-space: nowrap; /* Prevent wrapping if possible */
+          }
+
+          .seh-link-list a:hover {
+            transform: none; /* Disable shift on touch */
+            color: #fff;
+          }
         }
 
-        @media (max-width: 600px) {
-          .seh-links-grid { grid-template-columns: 1fr; text-align: center; gap: 3rem; }
-          .seh-footer-bottom { flex-direction: column-reverse; gap: 1.5rem; text-align: center; }
-          .seh-social-grid { width: 100%; justify-content: center; }
-          .seh-hot-stories-nudge { width: 100%; justify-content: center; }
-        }
+        /* Smallest Screens adjustments */
+        @media (max-width: 480px) {
+          .seh-links-grid {
+            gap: 5px; /* Extremely tight gap */
+          }
+          
+          .seh-link-col h4 {
+            font-size: 10px;
+            margin-bottom: 0.8rem;
+          }
 
-        @media (max-width: 400px) {
-           .seh-footer-logo-text { font-size: 1.3rem; }
-           .seh-footer-container { padding: 2rem 1rem; }
+          .seh-link-list a {
+            font-size: 11px;
+          }
+
+          .seh-footer-bottom {
+            flex-direction: column-reverse;
+            padding-bottom: 6rem; /* Extra space for bottom nav if app uses one */
+            gap: 1.5rem;
+          }
+          
+          .seh-social-grid {
+            justify-content: center;
+          }
         }
       `}</style>
 
-      <footer className="seh-footer">
-        <div className="seh-footer-line"></div>
-        
-        <div className="seh-footer-container">
-          {/* Brand Info */}
-          <div className="seh-footer-brand">
-            <Link href="/" className="seh-footer-logo-wrap">
-              <Image 
-                src='/heartechor.png' 
-                alt='HeartEcho'
-                width={36} height={36}
-              />
-              <h2 className="seh-footer-logo-text">Heart<span>Echo</span></h2>
-            </Link>
-            
-            <p className="seh-footer-desc">
-              Your personalized AI companion. Experience deep emotional connections and intimate conversations tailored to your desires.
-            </p>
-
-            {/* PSYCHOLOGICAL TRIGGER: The "Main Attraction" nudge */}
-            <Link href="/hot-stories" className="seh-hot-stories-nudge">
-              <span className="seh-pulse-dot"></span>
-              <div className="seh-hot-text">
-                <b>200+ Hot Stories</b>
-                <small>Updated daily • Exclusive access</small>
-              </div>
-            </Link>
-          </div>
-
-          {/* Links Grid */}
-          <div className="seh-links-grid">
-            <div className="seh-link-col">
-              <h4>Legal</h4>
-              <ul className="seh-link-list">
-                <li><Link href="/privacy">Privacy Policy</Link></li>
-                <li><Link href="/terms">Terms of Service</Link></li>
-                <li><Link href="/refund">Refund Policy</Link></li>
-              </ul>
-            </div>
-
-            <div className="seh-link-col">
-              <h4>Support</h4>
-              <ul className="seh-link-list">
-                <li><Link href="/about">About Us</Link></li>
-                <li><Link href="/contact">Contact Support</Link></li>
-                <li><Link href="mailto:heartecho.help@gmail.com" className="seh-special-link">Help Email</Link></li>
-              </ul>
-            </div>
-
-            <div className="seh-link-col">
-              <h4>Explore</h4>
-              <ul className="seh-link-list">
-                <li><Link href="/hot-stories" className="seh-special-link">🔥 Hot Stories</Link></li>
-                <li><Link href="/faq">FAQs</Link></li>
-                <li><Link href="/referral">Referral Program</Link></li>
-                <li><Link href="/blog">Our Blog</Link></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Section */}
-        <div className="seh-footer-bottom">
-          <p className="seh-copy">
-            © {currentYear} HeartEcho AI. 18+ Only.
+      <div className="seh-footer-line"></div>
+      
+      <div className="seh-footer-container">
+        {/* Brand Info */}
+        <div className="seh-footer-brand">
+          <Link href="/" className="seh-footer-logo-wrap">
+            <Image 
+              src='/heartechor.png' 
+              alt='HeartEcho'
+              width={40} 
+              height={40}
+            />
+            <h2 className="seh-footer-logo-text">Heart<span>Echo</span></h2>
+          </Link>
+          
+          <p className="seh-footer-desc">
+            Your personalized AI companion. Experience deep emotional connections and intimate conversations tailored to your desires.
           </p>
 
-          <div className="seh-social-grid">
-            <SocialIcon 
-              label="Instagram"
-              href="https://instagram.com/heartechoai" 
-              path={<path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>} 
-            />
-            <SocialIcon 
-              label="X"
-              href="https://twitter.com/heartecho_ai" 
-              path={<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>} 
-            />
-            <SocialIcon 
-              label="YouTube"
-              href="https://youtube.com/@heartechoai" 
-              path={<path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>} 
-            />
+          {/* Feature Highlight Button */}
+          <Link href="/hot-stories" className="seh-hot-stories-nudge">
+            <span className="seh-pulse-dot"></span>
+            <div className="seh-hot-text">
+              <b>200+ Hot Stories</b>
+              <small>Updated daily • Exclusive access</small>
+            </div>
+          </Link>
+        </div>
+
+        {/* Links Grid - FORCED 3 COLS ON MOBILE */}
+        <div className="seh-links-grid">
+          <div className="seh-link-col">
+            <h4>Legal</h4>
+            <ul className="seh-link-list">
+              <li><Link href="/privacy">Privacy</Link></li>
+              <li><Link href="/terms">Terms</Link></li>
+              <li><Link href="/refund">Refund</Link></li>
+            </ul>
+          </div>
+
+          <div className="seh-link-col">
+            <h4>Support</h4>
+            <ul className="seh-link-list">
+              <li><Link href="/about">About</Link></li>
+              <li><Link href="/contact">Contact</Link></li>
+              <li><Link href="mailto:heartecho.help@gmail.com">Email</Link></li>
+            </ul>
+          </div>
+
+          <div className="seh-link-col">
+            <h4>Explore</h4>
+            <ul className="seh-link-list">
+              <li><Link href="/hot-stories" className="seh-special-link">Stories</Link></li>
+              <li><Link href="/subscribe" style={{color: '#ce4085', fontWeight: 'bold'}}>Join VIP</Link></li>
+              <li><Link href="/blog">Blog</Link></li>
+            </ul>
           </div>
         </div>
-      </footer>
+      </div>
+
+      {/* Bottom Section */}
+      <div className="seh-footer-bottom">
+        <p className="seh-copy">
+          © {currentYear} HeartEcho AI. 18+ Only.
+        </p>
+
+        <div className="seh-social-grid">
+        <SocialIcon 
+  label="Instagram"
+  href="https://instagram.com/heartechoai"
+  path={
+    <>
+      <rect width="24" height="24" rx="6" ry="6" fill="currentColor" opacity="0.1"/>
+      <path 
+        d="M16.98 2H7.02A5.02 5.02 0 0 0 2 7.02v9.96A5.02 5.02 0 0 0 7.02 22h9.96A5.02 5.02 0 0 0 22 16.98V7.02A5.02 5.02 0 0 0 16.98 2ZM12 17.5A5.5 5.5 0 1 1 17.5 12 5.51 5.51 0 0 1 12 17.5Zm5.75-10.25a1.25 1.25 0 1 1 1.25-1.25 1.25 1.25 0 0 1-1.25 1.25Z"
+        fill="currentColor"
+      />
+      <circle cx="12" cy="12" r="3" fill="currentColor"/>
     </>
+  }
+/>
+
+          <SocialIcon 
+            label="X"
+            href="https://twitter.com/heartecho_ai" 
+            path={<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>} 
+          />
+          <SocialIcon 
+            label="YouTube"
+            href="https://youtube.com/@heartechoai" 
+            path={<path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>} 
+          />
+        </div>
+      </div>
+    </footer>
   );
 }

@@ -1,348 +1,319 @@
-/* blog.css */
-
-/* --- Variables & Reset --- */
+/* VARIABLES & RESET */
 :root {
-  --bg-primary: #000000;       
-  --bg-secondary: #272727;     
-  --bg-hover: #3f3f3f;         
-  --text-primary: #f1f1f1;
-  --text-secondary: #aaaaaa;
-  --accent: #cf4084;           
-  --border: #303030;
-  --card-radius: 12px;
-  --transition: 0.2s ease-in-out;
-  
-  /* The Font Stack */
-  --main-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --blg-bg: #000000;
+  --blg-surface: #0f0f0f; /* YouTube Dark Tone */
+  --blg-border: #303030;
+  --blg-text: #ffffff;
+  --blg-text-sec: #aaaaaa;
+  --blg-pink: #ff69b4;
+  --blg-hover: #272727;
 }
 
-body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: var(--main-font); /* Applied here */
-  margin: 0;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased; /* Makes font look crisp on Mac */
-}
-
-/* Force form elements to use the same font */
-button, input, textarea, select {
-  font-family: inherit;
-}
-
-/* --- Layout Containers --- */
-.blog-wrapper {
-  display: flex;
-  flex-direction: column;
+/* ROOT LAYOUT */
+.blg-root-x30sn {
+  background-color: var(--blg-bg);
+  color: var(--blg-text);
   min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  /* Add padding bottom to account for your Mobile Bottom Nav */
+  padding-bottom: 80px; 
 }
 
-.main-content-blofd {
-  flex: 1;
-  padding: 0 1.5rem;
-  max-width: 1600px;
-  margin: 0 auto;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* --- 1. Sticky Header & Search --- */
-.controls-header {
+/* HEADER (YouTube Style) */
+.blg-header-x30sn {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 50;
   background-color: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(10px);
-  padding: 1rem 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--blg-border);
 }
 
-.top-bar {
+.blg-top-bar-x30sn {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 12px;
 }
 
-.page-title h1 {
-  font-size: 1.5rem;
-  margin-left: 1rem;
+.blg-page-title-x30sn {
+  font-size: 20px;
   font-weight: 700;
-  letter-spacing: -0.5px; /* Tighter tracking for system fonts looks better */
+  margin: 0;
+  display: none; /* Hidden on mobile to save space for search */
 }
 
-/* YouTube-style Search Bar */
-.search-container {
+/* SEARCH BAR */
+.blg-search-container-x30sn {
   flex: 1;
   max-width: 600px;
-  display: flex;
-  align-items: center;
   margin: 0 auto;
 }
 
-.search-input-wrapper {
+.blg-search-wrapper-x30sn {
   display: flex;
-  width: 100%;
   background: #121212;
-  border: 1px solid var(--border);
-  border-radius: 40px;
+  border: 1px solid var(--blg-border);
+  border-radius: 20px;
   overflow: hidden;
+  height: 40px;
 }
 
-.search-input-wrapper input {
-  width: 100%;
+.blg-search-input-x30sn {
+  flex: 1;
   background: transparent;
   border: none;
-  color: var(--text-primary);
-  padding: 0.75rem 1.2rem;
-  font-size: 1rem;
+  color: #fff;
+  padding: 0 15px;
+  font-size: 14px;
   outline: none;
 }
 
-.search-btn {
+.blg-search-input-x30sn:focus {
+  border-color: #1c62b9; /* Slight blue tinge on focus like standard inputs or pink */
+}
+
+.blg-search-btn-x30sn {
   background: #222;
   border: none;
-  border-left: 1px solid var(--border);
-  padding: 0 1.25rem;
-  color: var(--text-secondary);
+  border-left: 1px solid var(--blg-border);
+  width: 50px;
+  color: #aaa;
   cursor: pointer;
-}
-
-/* --- 2. Horizontal Category Chips --- */
-.category-scroll {
   display: flex;
-  gap: 0.75rem;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
-  scrollbar-width: none;
-}
-
-.category-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-.chip {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: var(--transition);
-}
-
-.chip:hover {
-  background-color: var(--bg-hover);
-}
-
-.chip.active {
-  background-color: var(--text-primary);
-  color: var(--bg-primary);
-}
-
-/* --- Utility Bar (Sort & View) --- */
-.utility-bar {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  margin-bottom: 1.5rem;
-  font-weight: 500;
+  justify-content: center;
 }
 
-.view-toggles button {
+/* VIEW TOGGLES */
+.blg-view-toggles-x30sn {
+  display: flex;
+  gap: 5px;
+}
+.blg-view-toggles-x30sn button {
   background: transparent;
   border: none;
-  color: var(--text-secondary);
-  font-size: 1.2rem;
+  color: var(--blg-text-sec);
   cursor: pointer;
-  padding: 0.5rem;
+  padding: 8px;
+  font-size: 16px;
+}
+.blg-view-toggles-x30sn button.active {
+  color: var(--blg-pink);
 }
 
-.view-toggles button.active {
-  color: var(--text-primary);
+/* CATEGORY CHIPS */
+.blg-chips-bar-x30sn {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 5px;
+  scrollbar-width: none; /* Hide scrollbar */
+}
+.blg-chips-bar-x30sn::-webkit-scrollbar { display: none; }
+
+.blg-chip-x30sn {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: 0.2s;
+  font-weight: 500;
+}
+.blg-chip-x30sn:hover { background: rgba(255,255,255,0.2); }
+.blg-chip-x30sn.active {
+  background: #fff;
+  color: #000;
 }
 
-/* --- 3. The Grid (YouTube Cards) --- */
-.posts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px 1.5rem;
-}
-
-.posts-grid.list-view {
-  grid-template-columns: 1fr;
-  max-width: 900px;
+/* MAIN CONTENT */
+.blg-content-x30sn {
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 20px 15px;
 }
 
-/* Card Styling */
-.post-card {
+/* GRID SYSTEM */
+.blg-grid-x30sn {
+  display: grid;
+  gap: 16px; /* Tighter gap for mobile */
+}
+
+/* Mobile: 2 Columns Strict */
+.blg-grid-x30sn.grid {
+  grid-template-columns: repeat(2, 1fr); 
+}
+
+/* List View */
+.blg-grid-x30sn.list {
+  grid-template-columns: 1fr;
+}
+
+/* CARD STYLES (YouTube Like) */
+.blg-card-x30sn {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
   text-decoration: none;
-  cursor: pointer;
+  group: 1;
 }
 
-.list-view .post-card {
+/* List View overrides */
+.blg-grid-x30sn.list .blg-card-x30sn {
   flex-direction: row;
-  align-items: flex-start;
+  gap: 15px;
 }
 
-/* Image Wrapper */
-.thumbnail-wrapper {
+/* THUMBNAIL (16:9 Aspect Ratio Locked) */
+.blg-thumb-wrapper-x30sn {
   position: relative;
   width: 100%;
-  aspect-ratio: 16/9;
-  border-radius: var(--card-radius);
+  aspect-ratio: 16 / 9; /* CRITICAL */
+  border-radius: 10px; /* Slight round like YT */
   overflow: hidden;
-  background-color: #202020;
+  background: #202020;
 }
 
-.list-view .thumbnail-wrapper {
-  width: 360px;
+/* List view thumbnail size fixed */
+.blg-grid-x30sn.list .blg-thumb-wrapper-x30sn {
+  width: 300px; /* Fixed width for list view on desktop */
   flex-shrink: 0;
 }
 
-.post-image {
+.blg-thumb-img-x30sn {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s;
 }
-
-.post-card:hover .post-image {
+.blg-card-x30sn:hover .blg-thumb-img-x30sn {
   transform: scale(1.05);
 }
 
-.duration-badge {
+.blg-duration-x30sn {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 2px 6px;
+  bottom: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 4px;
   border-radius: 4px;
-  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.5px;
 }
 
-/* Content */
-.post-info {
-  display: flex;
-  gap: 0.75rem;
+/* CARD INFO */
+.blg-card-info-x30sn {
+  padding-top: 10px;
+  flex: 1;
 }
 
-.author-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background-color: var(--accent);
+.blg-card-title-x30sn {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.3;
+  margin: 0 0 4px 0;
+  /* Line clamp for 2 lines max */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.blg-card-meta-x30sn {
+  font-size: 12px;
+  color: #aaa;
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: white;
-  flex-shrink: 0;
-  font-size: 0.9rem;
-}
-
-.post-text {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.post-title {
-  color: var(--text-primary);
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.4;
-  margin: 0 0 0.25rem 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.post-meta {
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  display: flex;
   flex-wrap: wrap;
-  gap: 4px;
 }
 
-.post-excerpt {
-  display: none;
+.blg-author-x30sn {
+  color: #aaa;
 }
 
-.list-view .post-excerpt {
-  display: block;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  margin-top: 0.5rem;
+.blg-dot-x30sn {
+  margin: 0 4px;
+  font-weight: bold;
+}
+
+.blg-excerpt-x30sn {
+  font-size: 13px;
+  color: #888;
+  margin-top: 8px;
+  line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* --- Footer & Misc --- */
-.load-more-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 3rem;
-  margin-bottom: 2rem;
+/* LOAD MORE */
+.blg-load-more-x30sn {
+  text-align: center;
+  margin-top: 40px;
 }
-
-.load-more-btn {
+.blg-load-more-x30sn button {
   background: transparent;
-  border: 1px solid var(--border);
-  color: var(--accent);
-  padding: 0.75rem 2rem;
+  border: 1px solid #333;
+  color: var(--blg-pink);
+  padding: 10px 30px;
   border-radius: 20px;
   cursor: pointer;
   font-weight: 600;
-  transition: var(--transition);
-  font-family: inherit;
+  transition: 0.2s;
+}
+.blg-load-more-x30sn button:hover {
+  background: rgba(255, 105, 180, 0.1);
+  border-color: var(--blg-pink);
 }
 
-.load-more-btn:hover {
-  background: rgba(207, 64, 132, 0.1);
-  border-color: var(--accent);
-}
-
-.no-results {
+.blg-no-results-x30sn {
   text-align: center;
-  padding: 4rem 0;
-  color: var(--text-secondary);
+  padding: 50px;
+  color: #666;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .controls-header {
-    top: -60px;
-  }
+/* --- RESPONSIVE BREAKPOINTS --- */
+
+/* Desktop / Large Screen */
+@media (min-width: 1024px) {
+  .blg-page-title-x30sn { display: block; }
+  .blg-grid-x30sn.grid { grid-template-columns: repeat(4, 1fr); }
   
-  .list-view .post-card {
-    flex-direction: column;
+  /* In Desktop, accommodate the sidebar (if you have one) */
+  .blg-root-x30sn {
+     /* margin-left: 240px; If you have a fixed sidebar */
   }
+}
+
+/* Tablet */
+@media (max-width: 1023px) and (min-width: 600px) {
+  .blg-grid-x30sn.grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Mobile (Under 600px) */
+@media (max-width: 599px) {
+  /* Hide List View toggle on mobile - Grid is better */
+  .blg-view-toggles-x30sn { display: none; }
   
-  .list-view .thumbnail-wrapper {
-    width: 100%;
+  .blg-grid-x30sn.grid { 
+    grid-template-columns: repeat(2, 1fr); /* FORCED 2 COLUMNS */
+    gap: 10px; /* Tighter gap */
   }
-  
-  .post-info {
-    margin-top: 0.5rem;
-  }
+
+  /* Adjust fonts for small grid */
+  .blg-card-title-x30sn { font-size: 13px; }
+  .blg-card-meta-x30sn { font-size: 11px; }
+
+  /* List view on mobile stacks vertically */
+  .blg-grid-x30sn.list { grid-template-columns: 1fr; }
+  .blg-grid-x30sn.list .blg-card-x30sn { flex-direction: column; gap: 0; }
+  .blg-grid-x30sn.list .blg-thumb-wrapper-x30sn { width: 100%; }
 }

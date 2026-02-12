@@ -1,362 +1,215 @@
-/* Steps Home - iOS Style */
-.steps-wrapper {
-  padding: 4rem 2rem;
-  max-width: 1400px;
+/* VARIABLES */
+:root {
+  --sth-bg-x30sn: #000000;
+  --sth-card-bg-x30sn: #0a0a0a;
+  --sth-border-x30sn: #222;
+  --sth-pink-x30sn: #ff69b4;
+  --sth-text-main-x30sn: #ffffff;
+  --sth-text-sub-x30sn: #888888;
+}
+
+.sth-root-x30sn {
+  padding: 60px 20px;
+  background-color: var(--sth-bg-x30sn);
+  overflow: hidden; /* Hide overflow from scroll container */
+}
+
+.sth-header-x30sn {
+  text-align: center;
+  margin-bottom: 50px;
+  padding: 0 10px;
+}
+
+.sth-main-title-x30sn {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--sth-text-main-x30sn);
+  margin: 0 0 10px 0;
+  letter-spacing: -1px;
+}
+
+.text-pink-x30sn {
+  color: var(--sth-pink-x30sn);
+  background: linear-gradient(90deg, #ff69b4, #ffb6c1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.sth-subtitle-x30sn {
+  color: var(--sth-text-sub-x30sn);
+  font-size: 1.1rem;
+}
+
+/* SCROLL CONTAINER (The Magic for Mobile "One Row") */
+.sth-scroll-container-x30sn {
+  display: flex;
+  gap: 20px;
+  max-width: 1200px;
   margin: 0 auto;
-  position: relative;
-  overflow: hidden;
+  padding: 20px 5px; /* Padding for hover effects */
 }
 
-.step-container {
-  display: grid;
-  gap: 2rem;
-  position: relative;
-}
-
-/* Step Card */
-.step-card {
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* CARD STYLES */
+.sth-card-x30sn {
+  background: var(--sth-card-bg-x30sn);
+  border: 1px solid var(--sth-border-x30sn);
   border-radius: 24px;
-  padding: 2.5rem;
+  padding: 30px;
+  flex: 1; /* Equal width on desktop */
+  min-width: 280px; /* Minimum width for mobile scroll */
+  position: relative;
   display: flex;
   flex-direction: column;
-  position: relative;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 420px;
+  transition: border-color 0.3s ease;
+  /* Glassmorphism hint */
+  backdrop-filter: blur(10px);
 }
 
-.step-card::before {
-  content: '';
+.sth-card-x30sn:hover {
+  border-color: var(--sth-pink-x30sn);
+  box-shadow: 0 10px 30px rgba(255, 105, 180, 0.15);
+  z-index: 2;
+}
+
+.sth-card-x30sn.highlighted {
+  background: linear-gradient(145deg, #111, #0f0f0f);
+  border-color: rgba(255, 105, 180, 0.3);
+  box-shadow: 0 0 20px rgba(255, 105, 180, 0.1);
+}
+
+.sth-card-bg-glow-x30sn {
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent);
-  transition: left 0.6s ease;
-}
-
-.step-card:hover::before {
-  left: 100%;
-}
-
-.card-glow {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 100px; height: 100px;
+  background: var(--sth-pink-x30sn);
   opacity: 0;
-  transition: opacity 0.4s ease;
+  filter: blur(80px);
+  transition: opacity 0.4s;
+  pointer-events: none;
 }
 
-.step-card:hover .card-glow {
-  opacity: 1;
+.sth-card-x30sn:hover .sth-card-bg-glow-x30sn {
+  opacity: 0.15;
 }
 
-/* Highlighted Card */
-.step-card.highlighted {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
-  border: 1px solid rgba(207, 65, 133, 0.3);
-  box-shadow: 
-    0 20px 40px rgba(207, 65, 133, 0.15),
-    0 0 0 1px rgba(207, 65, 133, 0.1) inset;
-}
-
-.step-card.highlighted::after {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(135deg, 
-    rgba(207, 65, 133, 0.4), 
-    rgba(255, 255, 255, 0.1), 
-    rgba(207, 65, 133, 0.4));
-  border-radius: 26px;
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
-.step-card.highlighted:hover::after {
-  opacity: 1;
-}
-
-/* Step Header */
-.step-header {
+/* CARD CONTENT */
+.sth-card-top-x30sn {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
 }
 
-.step-number {
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, #FF2D95, #FF6B9D);
-  color: white;
-  border-radius: 14px;
+.sth-step-num-x30sn {
+  font-size: 3rem;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.05); /* Subtle background number */
+  line-height: 1;
+}
+
+.sth-icon-x30sn {
+  font-size: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  width: 50px; height: 50px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sth-title-x30sn {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--sth-text-main-x30sn);
+  margin-bottom: 10px;
+}
+
+.sth-desc-x30sn {
+  font-size: 0.95rem;
+  color: var(--sth-text-sub-x30sn);
+  line-height: 1.6;
+  margin-bottom: 20px;
+  flex-grow: 1;
+}
+
+/* IMAGE AREA */
+.sth-img-box-x30sn {
+  height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 1.1rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  box-shadow: 0 4px 12px rgba(255, 45, 149, 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.step-number::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.6s ease;
-}
-
-.step-card:hover .step-number::after {
-  left: 100%;
-}
-
-.step-icon {
-  font-size: 2rem;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.step-card:hover .step-icon {
-  transform: scale(1.1) rotate(5deg);
-}
-
-/* Content */
-.step-title {
-  color: #ffffff;
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  letter-spacing: -0.5px;
-  line-height: 1.3;
-  background: linear-gradient(135deg, #ffffff, rgba(255, 255, 255, 0.8));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.step-description {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 1.1rem;
-  line-height: 1.6;
-  margin-bottom: 2.5rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
-  font-weight: 400;
-  flex: 1;
-}
-
-/* Step Image */
-.step-image {
-  text-align: center;
   margin-top: auto;
   position: relative;
 }
 
-.step-image img {
-  width: 120px;
-  height: 120px;
+.sth-img-box-x30sn img {
+  max-height: 100%;
+  max-width: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
+  transition: transform 0.3s;
 }
 
-.step-card:hover .step-image img {
-  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.4));
+.sth-card-x30sn:hover .sth-img-box-x30sn img {
+  transform: scale(1.1) rotate(5deg);
 }
 
-/* Step Connector (Desktop only) */
-.step-connector {
-  display: none;
+.sth-img-fallback-x30sn {
+  /* Fallback shape if image fails or missing */
+  width: 80px; height: 80px;
+  background: linear-gradient(45deg, #111, #222);
+  border-radius: 50%;
+  display: none; /* Hidden if img exists */
+}
+
+/* CONNECTOR LINES (Desktop) */
+.sth-connector-x30sn {
   position: absolute;
   top: 50%;
-  right: -4rem;
-  transform: translateY(-50%);
-  width: 4rem;
+  right: -20px;
+  width: 20px;
   height: 2px;
+  background: linear-gradient(90deg, #333, transparent);
+  display: none; /* Hidden by default */
 }
 
-.connector-line {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    rgba(255, 255, 255, 0.3), 
-    rgba(255, 255, 255, 0.1));
-  border-radius: 1px;
-  transform-origin: left;
+/* RESPONSIVE DESIGN */
+@media (min-width: 769px) {
+  /* Desktop: Connectors visible */
+  .sth-connector-x30sn { display: block; }
+  .sth-card-x30sn:last-child .sth-connector-x30sn { display: none; }
 }
 
-/* Desktop Layout */
-@media (min-width: 992px) {
-  .step-container {
-    grid-template-columns: repeat(3, 1fr);
-    align-items: stretch;
-    gap: 3rem;
+@media (max-width: 768px) {
+  .sth-root-x30sn {
+    padding: 40px 0; /* Remove side padding to allow full bleed scroll */
   }
 
-  .step-card.highlighted {
-    transform: translateY(-10px);
+  .sth-header-x30sn {
+    padding: 0 20px;
   }
 
-  .step-connector {
-    display: block;
-  }
-}
-
-/* Tablet Layout */
-@media (max-width: 991px) and (min-width: 768px) {
-  .step-container {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
-  }
-
-  .step-card:nth-child(3) {
-    grid-column: span 2;
-    max-width: 500px;
-    margin: 0 auto;
-  }
-
-  .step-card {
-    min-height: 380px;
-    padding: 2rem;
-  }
-}
-
-/* Mobile Layout */
-@media (max-width: 767px) {
-  .steps-wrapper {
-    padding: 3rem 1.5rem;
-  }
-
-  .step-container {
-    grid-template-columns: 1fr;
-    max-width: 500px;
-    margin: 0 auto;
-    gap: 1.5rem;
-  }
-
-  .step-card {
-    padding: 2rem;
-    min-height: auto;
-    border-radius: 20px;
-  }
-
-  .step-header {
-    margin-bottom: 1.5rem;
-  }
-
-  .step-number {
-    width: 40px;
-    height: 40px;
-    font-size: 1rem;
-    border-radius: 12px;
-  }
-
-  .step-icon {
-    font-size: 1.75rem;
-  }
-
-  .step-title {
-    font-size: 1.3rem;
-  }
-
-  .step-description {
-    font-size: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .step-image img {
-    width: 100px;
-    height: 100px;
-  }
-}
-
-/* Small Mobile */
-@media (max-width: 480px) {
-  .steps-wrapper {
-    padding: 2rem 1rem;
-  }
-
-  .step-card {
-    padding: 1.5rem;
-    border-radius: 18px;
-  }
-
-  .step-number {
-    width: 36px;
-    height: 36px;
-  }
-
-  .step-icon {
-    font-size: 1.5rem;
-  }
-
-  .step-title {
-    font-size: 1.2rem;
-  }
-
-  .step-description {
-    font-size: 0.95rem;
-  }
-
-  .step-image img {
-    width: 80px;
-    height: 80px;
-  }
-}
-
-/* Reduced Motion Support */
-@media (prefers-reduced-motion: reduce) {
-  .step-card,
-  .step-number,
-  .step-icon,
-  .step-image img {
-    transition: none;
-    animation: none;
+  .sth-scroll-container-x30sn {
+    display: flex;
+    overflow-x: auto; /* Enable Horizontal Scroll */
+    scroll-snap-type: x mandatory; /* Snap effect */
+    padding: 20px; /* Padding inside scroll area */
+    gap: 15px;
+    -webkit-overflow-scrolling: touch; /* Smooth scroll iOS */
+    scrollbar-width: none; /* Hide scrollbar Firefox */
   }
   
-  .step-card.highlighted {
-    transform: none;
+  .sth-scroll-container-x30sn::-webkit-scrollbar {
+    display: none; /* Hide scrollbar Chrome/Safari */
   }
-}
 
-/* Dark Mode Optimizations */
-@media (prefers-color-scheme: dark) {
-  .step-card {
-    background: rgba(0, 0, 0, 0.3);
-  }
-}
-
-/* High Contrast Mode */
-@media (prefers-contrast: high) {
-  .step-card {
-    border: 2px solid #ffffff;
-    background: #000000;
+  .sth-card-x30sn {
+    flex: 0 0 85vw; /* Card takes 85% of viewport width */
+    scroll-snap-align: center; /* Center card on stop */
+    min-width: unset;
+    height: auto;
   }
   
-  .step-card.highlighted {
-    border-color: #FF2D95;
-    background: #000000;
-  }
-  
-  .step-number {
-    background: #FF2D95;
+  .sth-main-title-x30sn {
+    font-size: 2rem;
   }
 }

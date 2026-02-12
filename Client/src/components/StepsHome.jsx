@@ -6,7 +6,7 @@ import '../styles/StepsHome.css';
 function StepsHome() {
   const [isVisible, setIsVisible] = useState(false);
   const containerRef = useRef(null);
-  const isInView = useInView(containerRef, { once: true, margin: "-100px" });
+  const isInView = useInView(containerRef, { once: true, margin: "-50px" });
 
   useEffect(() => {
     if (isInView) {
@@ -18,16 +18,16 @@ function StepsHome() {
     {
       number: 1,
       icon: "👤",
-      title: "Select Your AI Companion",
-      description: "Choose from our diverse range of pre-trained AI personalities or customize your own unique virtual partner.",
+      title: "Select Companion",
+      description: "Choose from diverse AI personalities or customize your unique virtual partner.",
       image: "/icons/heart1.png",
       delay: 0.1
     },
     {
       number: 2,
       icon: "💬",
-      title: "Engage in Meaningful Chats",
-      description: "Experience natural conversations with personalized responses that evolve based on your interaction history.",
+      title: "Chat & Connect",
+      description: "Engage in deep, meaningful conversations that evolve with every message.",
       image: "/icons/heart2.png",
       delay: 0.2,
       highlighted: true
@@ -35,8 +35,8 @@ function StepsHome() {
     {
       number: 3,
       icon: "🚀",
-      title: "Expand Your Experience",
-      description: "Unlock advanced features and integrate your AI companion across multiple platforms for seamless access.",
+      title: "Level Up",
+      description: "Unlock exclusive features and deepen the bond as your relationship grows.",
       image: "/icons/heart3.png",
       delay: 0.3
     }
@@ -44,49 +44,26 @@ function StepsHome() {
 
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
-    }
+    visible: { opacity: 1, transition: { staggerChildren: 0.2 } }
   };
 
   const cardVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 60,
-      scale: 0.9
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        type: "spring",
-        damping: 25,
-        stiffness: 200
-      }
-    }
-  };
-
-  const iconVariants = {
-    hidden: { scale: 0, rotate: -180 },
-    visible: {
-      scale: 1,
-      rotate: 0,
-      transition: {
-        type: "spring",
-        damping: 15,
-        stiffness: 200
-      }
+    hidden: { opacity: 0, y: 50, scale: 0.95 },
+    visible: { 
+      opacity: 1, y: 0, scale: 1, 
+      transition: { type: "spring", damping: 25, stiffness: 200 } 
     }
   };
 
   return (
-    <div className="steps-wrapper" ref={containerRef}>
+    <section className="sth-root-x30sn" ref={containerRef}>
+      <div className="sth-header-x30sn">
+        <h2 className="sth-main-title-x30sn">How It <span className="text-pink-x30sn">Works</span></h2>
+        <p className="sth-subtitle-x30sn">Start your journey in three simple steps</p>
+      </div>
+
       <motion.div 
-        className="step-container"
+        className="sth-scroll-container-x30sn"
         variants={containerVariants}
         initial="hidden"
         animate={isVisible ? "visible" : "hidden"}
@@ -94,86 +71,35 @@ function StepsHome() {
         {steps.map((step, index) => (
           <motion.div
             key={step.number}
-            className={`step-card ${step.highlighted ? 'highlighted' : ''}`}
+            className={`sth-card-x30sn ${step.highlighted ? 'highlighted' : ''}`}
             variants={cardVariants}
-            whileHover={{ 
-              y: -8,
-              transition: { type: "spring", damping: 20, stiffness: 300 }
-            }}
+            whileHover={{ y: -10, transition: { duration: 0.3 } }}
             whileTap={{ scale: 0.98 }}
           >
-            {/* Animated Background Glow */}
-            <div className="card-glow"></div>
+            <div className="sth-card-bg-glow-x30sn"></div>
             
-            <div className="step-header">
-              <motion.div 
-                className="step-number"
-                variants={iconVariants}
-                transition={{ delay: step.delay + 0.1 }}
-              >
-                {step.number}
-              </motion.div>
-              <motion.div 
-                className="step-icon"
-                variants={iconVariants}
-                transition={{ delay: step.delay + 0.2 }}
-              >
-                {step.icon}
-              </motion.div>
+            <div className="sth-card-top-x30sn">
+              <span className="sth-step-num-x30sn">{step.number}</span>
+              <span className="sth-icon-x30sn">{step.icon}</span>
             </div>
 
-            <motion.h3 
-              className="step-title"
-              initial={{ opacity: 0, y: 20 }}
-              animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ delay: step.delay + 0.3 }}
-            >
-              {step.title}
-            </motion.h3>
+            <div className="sth-content-x30sn">
+              <h3 className="sth-title-x30sn">{step.title}</h3>
+              <p className="sth-desc-x30sn">{step.description}</p>
+            </div>
 
-            <motion.p 
-              className="step-description"
-              initial={{ opacity: 0, y: 20 }}
-              animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ delay: step.delay + 0.4 }}
-            >
-              {step.description}
-            </motion.p>
+            <div className="sth-img-box-x30sn">
+               {/* Replace src with actual image path or keep placeholder logic */}
+              <img src={step.image} alt={step.title} onError={(e) => e.target.style.display='none'} />
+              <div className="sth-img-fallback-x30sn"></div> 
+            </div>
 
-            <motion.div 
-              className="step-image"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
-              transition={{ 
-                delay: step.delay + 0.5,
-                type: "spring",
-                damping: 20,
-                stiffness: 100
-              }}
-              whileHover={{ 
-                scale: 1.05,
-                rotate: step.highlighted ? [0, -5, 5, 0] : 0,
-                transition: { duration: 0.3 }
-              }}
-            >
-              <img src={step.image} alt={`Step ${step.number}`} />
-            </motion.div>
-
-            {/* Progress Line (Desktop only) */}
-            {index < steps.length - 1 && (
-              <div className="step-connector">
-                <motion.div 
-                  className="connector-line"
-                  initial={{ scaleX: 0 }}
-                  animate={isVisible ? { scaleX: 1 } : { scaleX: 0 }}
-                  transition={{ delay: step.delay + 0.6, duration: 0.5 }}
-                />
-              </div>
-            )}
+            {/* Connecting Line (Desktop Only visual) */}
+            {index < steps.length - 1 && <div className="sth-connector-x30sn"></div>}
           </motion.div>
         ))}
       </motion.div>
-    </div>
+    </section>
   );
 }
 
