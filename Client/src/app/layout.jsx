@@ -154,7 +154,7 @@ export default function RootLayout({ children }) {
           }}
         />
 
-        {/* Meta Pixel Code */}
+        {/* Meta Pixel (Both IDs) */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -166,7 +166,14 @@ export default function RootLayout({ children }) {
               t.src=v;s=b.getElementsByTagName(e)[0];
               s.parentNode.insertBefore(t,s)}(window, document,'script',
               'https://connect.facebook.net/en_US/fbevents.js');
+
+              // First Pixel
               fbq('init', '875771298703903');
+
+              // Second Pixel
+              fbq('init', '2143647009742290');
+
+              // Track PageView for both
               fbq('track', 'PageView');
             `,
           }}
@@ -178,15 +185,24 @@ export default function RootLayout({ children }) {
       <body>
         <ClientLayout>{children}</ClientLayout>
 
-        {/* Meta Pixel Noscript */}
+        {/* Noscript for Both Pixels */}
         <noscript>
-          <img
-            height="1"
-            width="1"
-            style={{ display: "none" }}
-            src="https://www.facebook.com/tr?id=875771298703903&ev=PageView&noscript=1"
-            alt=""
-          />
+          <>
+            <img
+              height="1"
+              width="1"
+              style={{ display: "none" }}
+              src="https://www.facebook.com/tr?id=875771298703903&ev=PageView&noscript=1"
+              alt=""
+            />
+            <img
+              height="1"
+              width="1"
+              style={{ display: "none" }}
+              src="https://www.facebook.com/tr?id=2143647009742290&ev=PageView&noscript=1"
+              alt=""
+            />
+          </>
         </noscript>
       </body>
 
@@ -199,3 +215,4 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+
