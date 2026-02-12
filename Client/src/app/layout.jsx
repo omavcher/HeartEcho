@@ -143,7 +143,7 @@ export default function RootLayout({ children }) {
           }}
         />
         
-        {/* Facebook Pixel */}
+        {/* Meta Pixel Code - Facebook Pixel */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -161,26 +161,23 @@ export default function RootLayout({ children }) {
           }}
         />
         <noscript>
-          <img height="1" width="1" style={{display: 'none'}} alt="fb pixel"
+          <img 
+            height="1" 
+            width="1" 
+            style={{display: 'none'}}
             src="https://www.facebook.com/tr?id=875771298703903&ev=PageView&noscript=1"
+            alt="facebook pixel"
           />
         </noscript>
-        
-        {/* JuicyAds Verification */}
-        <meta name="juicyads-site-verification" content="64f68c1fc158eef9d3b6e6fa4d432117" />
-        
+        {/* End Meta Pixel Code */}
+                
         {/* AutoNotification Component */}
         <AutoNotification />
       </head>
       <body>
         <ClientLayout>{children}</ClientLayout>
         
-        {/* JuicyAds Ad Script - Moved to body end for better performance */}
-        <script 
-          async 
-          data-cfasync="false" 
-          src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"
-        />
+      
       </body>
     </html>
   );
