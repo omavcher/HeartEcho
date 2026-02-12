@@ -1,0 +1,10 @@
+i have working live ai chat website now make that website in have in nextjs now make it into the expo app mkae it first issalize it name is HeartEcho and all app use the   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+   apple iphone fornt   front and theme like bg pure black and iphone stype styling    --primary: #cf4185;
+  --primary-glow: rgba(207, 65, 133, 0.5);
+  --accent: #ff6ba6;
+  --bg-dark: #050505; /* Slightly lighter than pure black for depth */
+  --bg-card: #121212;
+  --text-main: #ffffff;
+  --text-muted: #a0a0a0;
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);   like 
