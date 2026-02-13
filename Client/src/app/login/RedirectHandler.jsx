@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 
 export default function RedirectHandler() {
   const searchParams = useSearchParams();
-  
+  // 
   useEffect(() => {
     const from = searchParams.get('from');
     if (from && typeof window !== 'undefined') {
