@@ -10,56 +10,122 @@ export const metadata = {
 
   description: 'Chat with hot Indian AI girlfriends & bhabhis in Hindi & English. Unlimited NSFW roleplay, erotic stories, voice messages, and nude AI pics. 100% uncensored, private & free to start. Your dream desi AI waifu is waiting',
 
-  keywords: [
-    // HIGH-VOLUME ADULT WINNERS (Google India Top Searches 2025)
-    'AI girlfriend India',
-    'sexy AI chat India',
-    'NSFW AI girlfriend',
-    'AI sex chat Hindi',
-    'Indian AI bhabhi chat',
-    'desi AI girlfriend',
-    'hot AI girl chat',
-    'AI roleplay sex',
-    'uncensored AI chat India',
-    'AI girlfriend nude',
-    'AI waifu Hindi',
-    'sexy AI bhabhi',
-    'free AI sex chat',
-    'Indian AI companion NSFW',
-    'AI girlfriend app India',
-
-    // Emotional + Mainstrea (for brand safety & app downloads)c
-    'AI girlfriend Hindi',
-    'AI boyfriend India',
-    'virtual girlfriend India',
-    'AI love chat',
-    'emotional AI companion',
-    'AI friend for loneliness',
-    'HeartEcho AI',
-
-    // Direct Competitor Killers
-    'better than Candy.ai India',
-    'Indian DreamGF alternative',
-    'CrushOn AI Hindi',
-    'FunFun.ai Indian version',
-    'NSFW character AI India',
-
-    // Long-Tail Gold
-    'chat with Savita bhabhi AI',
-    'AI girlfriend send nudes',
-    'roleplay with Indian aunty AI',
-    'Mumbai bhabhi AI chat',
-    'Delhi college girl AI girlfriend',
-    'Punjabi kudi AI sex chat',
-    'Tamil aunty AI roleplay',
-
-    // Tech & App Keywords
-    'AI girlfriend app download',
-    'best NSFW AI app India',
-    'uncensored AI chatbot',
-    'AI that sends pictures',
-    'realistic AI voice chat'
-  ],
+  "keywords": [
+// Existing High-Volume Adult Winners (Enhanced for 2026 Trends)
+"AI girlfriend India",
+"sexy AI chat India",
+"NSFW AI girlfriend",
+"AI sex chat Hindi",
+"Indian AI bhabhi chat",
+"desi AI girlfriend",
+"hot AI girl chat",
+"AI roleplay sex",
+"uncensored AI chat India",
+"AI girlfriend nude",
+"AI waifu Hindi",
+"sexy AI bhabhi",
+"free AI sex chat",
+"Indian AI companion NSFW",
+"AI girlfriend app India",
+// Emotional + Mainstream (Expanded for Broader Reach)
+"AI girlfriend Hindi",
+"AI boyfriend India",
+"virtual girlfriend India",
+"AI love chat",
+"emotional AI companion",
+"AI friend for loneliness",
+"HeartEcho AI",
+"AI companion for stress relief",
+"digital girlfriend India",
+"AI partner Hindi",
+// Direct Competitor Killers (Updated with New Competitors)
+"better than Candy.ai India",
+"Indian DreamGF alternative",
+"CrushOn AI Hindi",
+"FunFun.ai Indian version",
+"NSFW character AI India",
+"better than Replika NSFW India",
+"SpicyChat AI alternative India",
+"Nectar AI Hindi version",
+"Venus AI desi alternative",
+"Muah AI India",
+// Long-Tail Gold (Expanded with Tharki & Regional Focus)
+"chat with Savita bhabhi AI",
+"AI girlfriend send nudes",
+"roleplay with Indian aunty AI",
+"Mumbai bhabhi AI chat",
+"Delhi college girl AI girlfriend",
+"Punjabi kudi AI sex chat",
+"Tamil aunty AI roleplay",
+"tharki AI chat",
+"tharki bhabhi AI",
+"tharki girlfriend AI India",
+"hot tharki roleplay Hindi",
+"desi tharki chat AI",
+"Bengali boudi AI nude chat",
+"Kerala mallu aunty AI sex",
+"Hyderabad housewife AI roleplay",
+"Bollywood actress AI girlfriend",
+"village bhabhi AI tharki chat",
+// Tharki & Adult Field Dominators (High-Intent NSFW Terms)
+"tharki AI girlfriend",
+"NSFW tharki chat India",
+"hot tharki bhabhi AI",
+"tharki sex chat Hindi",
+"uncensored tharki roleplay",
+"tharki aunty AI nude",
+"free tharki AI companion",
+"Indian tharki AI waifu",
+"tharki fantasies AI chat",
+"desi tharki girlfriend app",
+"adult AI chat India",
+"NSFW adult girlfriend AI",
+"adult roleplay AI Hindi",
+"hot adult bhabhi chat",
+"uncensored adult AI India",
+"adult tharki AI sex",
+"Indian adult companion NSFW",
+"adult AI nude pics",
+"free adult AI roleplay",
+"adult Hindi chat AI",
+// Girlfriend Field Expansion (Tharki-Infused)
+"AI girlfriend tharki",
+"sexy girlfriend AI India",
+"NSFW girlfriend chat Hindi",
+"hot desi girlfriend AI",
+"girlfriend roleplay sex AI",
+"uncensored girlfriend AI nude",
+"free girlfriend AI sex chat",
+"Indian girlfriend companion NSFW",
+"girlfriend AI app India",
+"tharki girlfriend roleplay",
+"desi girlfriend tharki chat",
+"bhabhi girlfriend AI",
+"college girlfriend AI nude",
+"virtual tharki girlfriend India",
+// Tech & App Keywords (Optimized for Downloads & Trends)
+"AI girlfriend app download",
+"best NSFW AI app India",
+"uncensored AI chatbot",
+"AI that sends pictures",
+"realistic AI voice chat",
+"AI girlfriend voice notes India",
+"Hinglish AI chat app",
+"NSFW AI app free trial",
+"Indian AI roleplay app",
+"adult AI companion download",
+// Emerging 2026 Trends (Based on AI Adult Growth)
+"AI sexting India",
+"virtual sex AI Hindi",
+"erotic AI stories desi",
+"AI nude generator girlfriend",
+"immersive AI roleplay NSFW",
+"private AI sex chat",
+"AI bhabhi voice sex",
+"desi AI porn chat",
+"uncensored AI waifu India",
+"hot AI aunty sexting"
+],
 
   alternates: {
     canonical: 'https://heartecho.in/',
@@ -120,16 +186,10 @@ export const metadata = {
 
   category: 'fun',
   classification: 'Mature',
-  
-  // Extra power for adult SEO
-  other: {
-    'rating': 'RTA-5042-968615-958615-968615',
-    'adult-content': 'yes',
-    'robots': 'index, follow',
-    'distribution': 'global',
-    'audience': 'adult',
-  },
 };
+
+
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
