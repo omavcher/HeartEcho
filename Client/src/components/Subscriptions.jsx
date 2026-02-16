@@ -23,11 +23,9 @@ function SubscriptionContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Yearly Logic
   const YEARLY_PRICE = 399;
   const MONTHLY_EQUIV = 33.25;
 
-  // FOMO Loop
   useEffect(() => {
     const triggerFomo = () => {
       const data = {
@@ -67,6 +65,17 @@ function SubscriptionContent() {
         name: 'HeartEcho',
         description: `${plan} Plan`,
         handler: async (res) => {
+          // --- THE TRIGGER START ---
+          if (window.fbq) {
+            window.fbq('track', 'Purchase', {
+              value: amount,
+              currency: 'INR',
+              content_name: `${plan} Subscription`,
+              transaction_id: res.razorpay_payment_id // Important for deduplication
+            });
+          }
+          // --- THE TRIGGER END ---
+
           await axios.post(`${api.Url}/user/payment/save`, {
             user: userData?._id,
             rupees: amount,
@@ -87,13 +96,11 @@ function SubscriptionContent() {
     <div className="seh-page-wrapper">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       
-      {/* FOMO Popup - Mobile Optimized */}
       <div className={`seh-fomo ${fomo.visible ? 'active' : ''}`}>
         <div className="seh-fomo-dot"></div>
         <p><strong>{fomo.data?.name}</strong> bought <span>{fomo.data?.plan}</span> {fomo.data?.time}m ago</p>
       </div>
 
-      {/* Top Urgency Bar */}
       <div className="seh-top-bar">
         <span>⚡ FLASH SALE: 60% OFF ENDING SOON</span>
       </div>
@@ -109,7 +116,6 @@ function SubscriptionContent() {
         </header>
 
         <div className="seh-grid">
-          {/* Yearly Card - FIRST ON MOBILE */}
           <div className="seh-card seh-featured">
             <div className="seh-badge">BEST VALUE</div>
             <h2 className="seh-plan-name">Yearly Ultimate</h2>
@@ -132,7 +138,6 @@ function SubscriptionContent() {
             </button>
           </div>
 
-          {/* Monthly Card */}
           <div className="seh-card">
             <h2 className="seh-plan-name">Monthly Premium</h2>
             <div className="seh-pricing">
@@ -151,7 +156,6 @@ function SubscriptionContent() {
           </div>
         </div>
 
-        {/* Security & Trust */}
         <div className="seh-trust-section">
           <div className="seh-trust-icons">
              <span>🔒 SSL Secure</span>
