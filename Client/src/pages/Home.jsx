@@ -62,7 +62,7 @@ export default function Home() {
       <main className="home-container">
         <div className="global-noise-overlay"></div>
 
-        {/* Login Modal */}
+        {/* Login Modal
         <AnimatePresence>
           {showLoginModal && (
             <motion.div
@@ -79,7 +79,7 @@ export default function Home() {
               </motion.div>
             </motion.div>
           )}
-        </AnimatePresence>
+        </AnimatePresence> */}
 
         {/* --- HERO SECTION --- */}
         <section className="home-hero-section">

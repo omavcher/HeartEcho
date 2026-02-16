@@ -11,7 +11,6 @@ const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");
 const ReferralCreator = require("../models/ReferralCreator");
 const { generateCreatorToken, verifyReferralCreator } = require('../utils/jwt');
 
-
 exports.dashboardData = async (req, res) => {
   try {
       const userId = req.user.id;
@@ -1591,26 +1590,35 @@ exports.processPayout = async (req, res) => {
 
 
 
-exports.getAllChatsData = async (req, res) => {
+exports.getAllChatsDataToday = async (req, res) => {
   try {
-    // Fetch all active chats
-    const chats = await Chat.find({ isActive: true })
-      .populate("participants")
-      .sort({ updatedAt: -1 })
-      .lean();
+    // 1. Define the time range for "Today" (Start of today in IST or Local)
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    // 2. Fetch chats that have been updated today
+    const chats = await Chat.find({
+      updatedAt: { $gte: startOfToday },
+      isActive: true
+    })
+    .populate("participants")
+    .sort({ updatedAt: -1 })
+    .lean();
 
     const userMap = {};
 
     for (const chat of chats) {
-      // Find the actual human user (the one with an email in the participants array)
-      const humanUser = chat.participants.find(p => p && p.email);
-      if (!humanUser) continue; 
+      // Find the human user
+      const humanUser = chat.participants; // Based on your schema: participants is a single ObjectId ref "User"
+      if (!humanUser || !humanUser.email) continue;
 
       const userId = humanUser._id.toString();
 
-      // Find the AI ID used in this specific chat from the messages
-      const aiMsg = chat.messages.find(m => m.senderModel === "PrebuiltAIFriend");
-      const aiId = aiMsg ? aiMsg.sender : null;
+      // 3. Filter messages to ONLY show what happened today
+      const todaysMessages = chat.messages.filter(m => new Date(m.time) >= startOfToday);
+
+      // If no messages were actually sent today, skip this chat
+      if (todaysMessages.length === 0) continue;
 
       // Grouping logic
       if (!userMap[userId]) {
@@ -1620,42 +1628,197 @@ exports.getAllChatsData = async (req, res) => {
             name: humanUser.name,
             email: humanUser.email,
             profile_picture: humanUser.profile_picture,
-            user_type: humanUser.user_type,
-            joinedAt: humanUser.joinedAt
+            user_type: humanUser.user_type
           },
-          aiInteractions: []
+          interactionsToday: []
         };
       }
 
-      // Fetch AI details for this specific interaction
+      // Identify the AI involved (using your aiParticipants field)
       let aiDetails = null;
-      if (aiId) {
-        aiDetails = await PrebuiltAIFriend.findById(aiId).select("name avatar_img relationship").lean();
+      if (chat.aiParticipants) {
+        aiDetails = await PrebuiltAIFriend.findById(chat.aiParticipants)
+          .select("name avatar_img relationship")
+          .lean();
       }
 
-      // Filter only user messages for analysis
-      const userMessages = chat.messages
-        .filter(m => m.senderModel === "User")
-        .map(m => ({
-          text: m.text,
-          time: m.time,
-          _id: m._id
-        }));
+      // Format the messages for the response (User input vs AI reply)
+      const messageThread = todaysMessages.map(m => ({
+        role: m.senderModel === "User" ? "User" : "AI",
+        text: m.text,
+        mediaType: m.mediaType,
+        time: m.time,
+        status: m.status
+      }));
 
-      userMap[userId].aiInteractions.push({
+      userMap[userId].interactionsToday.push({
         chatId: chat._id,
         aiFriend: aiDetails,
-        messageCount: userMessages.length,
-        messages: userMessages,
+        messageCount: messageThread.length,
+        messages: messageThread,
         lastActive: chat.updatedAt
       });
     }
 
     res.status(200).json({
       success: true,
+      count: Object.values(userMap).length,
+      date: startOfToday.toDateString(),
       data: Object.values(userMap)
     });
+
   } catch (error) {
+    console.error("Error fetching today's chats:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+
+
+/**
+ * Controller to analyze user engagement and login logs
+ */
+exports.getLoginAnalytics = async (req, res) => {
+  try {
+    const now = new Date();
+    
+    // Define time ranges
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // 1. Calculate Active Users (Unique User IDs in specific time windows)
+    const [dau, wau, mau] = await Promise.all([
+      // Daily Active Users (Last 24 Hours)
+      LoginDetail.distinct("user", { time: { $gte: oneDayAgo } }),
+      // Weekly Active Users (Last 7 Days)
+      LoginDetail.distinct("user", { time: { $gte: oneWeekAgo } }),
+      // Monthly Active Users (Last 30 Days)
+      LoginDetail.distinct("user", { time: { $gte: oneMonthAgo } })
+    ]);
+
+    // 2. User & Subscriber Statistics
+    const [totalUsers, totalSubscribers, freeUsers] = await Promise.all([
+      User.countDocuments(),
+      User.countDocuments({ user_type: "subscriber" }),
+      User.countDocuments({ user_type: "free" })
+    ]);
+
+    // 3. Detailed Login Logs List (Paginated or limited to latest)
+    // You can adjust .limit() based on your needs
+    const loginLogs = await LoginDetail.find()
+      .populate("user", "name email user_type profile_picture")
+      .sort({ time: -1 })
+      .limit(100) 
+      .lean();
+
+    // 4. Platform Analysis (Optional bonus: see where users log in from)
+    const platformStats = await LoginDetail.aggregate([
+      { $match: { time: { $gte: oneMonthAgo } } },
+      { $group: { _id: "$platform", count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+
+    res.status(200).json({
+      success: true,
+      summary: {
+        activeMetrics: {
+          dau: dau.length,
+          wau: wau.length,
+          mau: mau.length,
+          stickinessRatio: mau.length > 0 ? ((dau.length / mau.length) * 100).toFixed(2) + "%" : "0%"
+        },
+        userSegments: {
+          total: totalUsers,
+          subscribers: totalSubscribers,
+          free: freeUsers,
+          conversionRate: totalUsers > 0 ? ((totalSubscribers / totalUsers) * 100).toFixed(2) + "%" : "0%"
+        },
+        platforms: platformStats
+      },
+      logs: loginLogs
+    });
+  } catch (error) {
+    console.error("Analytics Error:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+
+exports.getPaymentAnalytics = async (req, res) => {
+  try {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    // 1. Calculate Revenue Metrics
+    const stats = await Payment.aggregate([
+      {
+        $facet: {
+          totalRevenue: [
+            { $group: { _id: null, total: { $sum: "$rupees" } } }
+          ],
+          thisMonthRevenue: [
+            { $match: { date: { $gte: startOfMonth } } },
+            { $group: { _id: null, total: { $sum: "$rupees" }, count: { $sum: 1 } } }
+          ],
+          prevMonthRevenue: [
+            { $match: { date: { $gte: startOfPrevMonth, $lte: endOfPrevMonth } } },
+            { $group: { _id: null, total: { $sum: "$rupees" } } }
+          ],
+          paymentDistribution: [
+             { $group: { _id: "$rupees", count: { $sum: 1 } } },
+             { $sort: { _id: 1 } }
+          ]
+        }
+      }
+    ]);
+
+    const totalRev = stats[0].totalRevenue[0]?.total || 0;
+    const currentMonthRev = stats[0].thisMonthRevenue[0]?.total || 0;
+    const prevMonthRev = stats[0].prevMonthRevenue[0]?.total || 0;
+    const salesCount = stats[0].thisMonthRevenue[0]?.count || 0;
+
+    // 2. Calculate Growth Percentage
+    let growthRate = 0;
+    if (prevMonthRev > 0) {
+      growthRate = ((currentMonthRev - prevMonthRev) / prevMonthRev) * 100;
+    }
+
+    // 3. Subscription Status (from User Model)
+    const activeSubscribers = await User.countDocuments({ 
+      user_type: "subscriber",
+      subscriptionExpiry: { $gte: now } 
+    });
+
+    // 4. Detailed Payment Logs (Latest 100)
+    const paymentLogs = await Payment.find()
+      .populate("user", "name email user_type")
+      .sort({ date: -1 })
+      .limit(100)
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      summary: {
+        revenue: {
+          allTime: totalRev,
+          mrr: currentMonthRev, // Monthly Recurring Revenue (current month)
+          prevMonth: prevMonthRev,
+          growth: `${growthRate.toFixed(2)}%`,
+          averageOrderValue: salesCount > 0 ? (currentMonthRev / salesCount).toFixed(2) : 0
+        },
+        subscriptions: {
+          activeSubscribers: activeSubscribers,
+          // Estimated churn could be added here if you track cancels
+        },
+        pricingTiers: stats[0].paymentDistribution // Shows which plan price is most popular
+      },
+      transactions: paymentLogs
+    });
+  } catch (error) {
+    console.error("Payment Analytics Error:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };

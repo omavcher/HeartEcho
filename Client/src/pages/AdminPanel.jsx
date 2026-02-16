@@ -6,7 +6,7 @@ import {
   FaUsers, FaRobot, FaExclamationCircle, FaChartBar, FaBars, 
   FaTimes, FaChevronRight, FaUserPlus, FaGem 
 } from "react-icons/fa";
-import { MdHistoryEdu, MdDashboard } from "react-icons/md";
+import { MdHistoryEdu, MdDashboard, MdChat, MdPayment, MdAnalytics } from "react-icons/md";
 import { CiEdit } from "react-icons/ci";
 import "./AdminPanel.css";
 
@@ -20,6 +20,10 @@ import CreateStoryPage from "./Admin/CreateStoryPage.jsx";
 import StoriesAdmin from "./Admin/AdminStoy.jsx";
 import EditStoryPage from "./Admin/EditStoryPage.jsx";
 import ChatsDataAdmin from "./Admin/ChatsDataAdmin.jsx";
+import LoginActivityAdmin from "./Admin/LoginActivityAdmin.jsx";
+
+import { IoLogoSass, IoMdLogIn } from "react-icons/io";
+import PaymentActivityAdmin from "./Admin/PaymentActivityAdmin.jsx";
 
 const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
   const pathname = usePathname();
@@ -34,7 +38,9 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
     { path: "/admin/complaints", label: "Complaints", icon: <FaExclamationCircle /> },
     { path: "/admin/referral", label: "Referral Program", icon: <FaUserPlus /> },
     { path: "/admin/create-story", label: "Create Story", icon: <FaGem /> },
-    // { path: "/admin/chats", label: "Chats", icon: <FaRobot /> },
+    { path: "/admin/chats", label: "Chats", icon: <MdChat /> },
+    { path: "/admin/login-activity", label: "Login Activity", icon: <MdAnalytics /> },
+    { path: "/admin/payment-activity", label: "Payment Activity", icon: <MdPayment /> }
   ];
 
   return (
@@ -136,6 +142,10 @@ const AdminPanel = () => {
       '/admin/referral': <div className="content-wrapper-x30sn"><ReferralAdmin /></div>,
       '/admin/create-story': <div className="content-wrapper-x30sn"><CreateStoryPage/></div>,
       '/admin/chats': <div className="content-wrapper-x30sn"><ChatsDataAdmin /></div>,
+       '/admin/login-activity': <div className="content-wrapper-x30sn"><LoginActivityAdmin /></div>,
+        '/admin/payment-activity': <div className="content-wrapper-x30sn"><PaymentActivityAdmin /></div>,
+
+
     };
     // If the path matches edit story dynamic route
     if (pathname?.startsWith('/admin/stories/edit/')) {

@@ -67,8 +67,10 @@ router.post("/referral-payout", controller.processPayout);
 
 
 
-router.get("/chats-data", authMiddleware, controller.getAllChatsData);
+router.get("/chats-data", authMiddleware, controller.getAllChatsDataToday);
 
+router.get("/login-activity",authMiddleware, controller.getLoginAnalytics)
+router.get("/payment-activity",authMiddleware, controller.getPaymentAnalytics)
 
 module.exports = router;
 
