@@ -176,7 +176,7 @@ export async function generateMetadata() {
       },
     },
 
-    category: 'Entertainment', // "Mature" or "Fun" triggers the filter; use Entertainment or Lifestyle
+    category: 'Entertainment', 
     classification: 'Lifestyle',
   };
 }
