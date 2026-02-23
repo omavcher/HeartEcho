@@ -181,7 +181,6 @@ export async function generateMetadata() {
   };
 }
 
-// Main page component (Server Component) - Added JSON-LD Schema for Image SEO
 export default async function HotStoriesPage() {
   // Fetch initial data on server
   const initialStories = await fetchStoriesData();
