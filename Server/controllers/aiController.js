@@ -1406,20 +1406,7 @@ Chal abhi reply likh — pichli baat se seedha garam kar ke aage le ja daddy �
 };
 
 
-// Update test connection endpoint
-exports.testAIConnection = async (req, res) => {
-  try {
-    const result = await openRouterAI.testConnection(); // Changed from geminiAI
-    res.json(result);
-  } catch (error) {
-    console.error("Error testing AI connection:", error);
-    res.status(500).json({ 
-      status: "❌ ERROR",
-      error: error.message,
-      available: false
-    });
-  }
-};
+
 
 // Export quota costs and gender video links for use in other files
 exports.QUOTA_COSTS = QUOTA_COSTS;
