@@ -11,7 +11,31 @@ const Payment = require("../models/Payment");
 const axios = require("axios");
 
 require("dotenv").config();
+const sendEmail = async (to, subject, html) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
+    const mailOptions = {
+      from: `"HeartEcho" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Email sent to ${to}`);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Email error:", error);
+    return { success: false, error: error.message };
+  }
+};
 
 
 exports.getProfile = async (req, res) => {
@@ -655,6 +679,7 @@ exports.deleteMessage = async (req, res) => {
 
 
 
+// Updated paymentSave function with your dark theme HTML
 exports.paymentSave = async (req, res) => {
   try {
     const { user, rupees, transaction_id } = req.body;
@@ -673,13 +698,13 @@ exports.paymentSave = async (req, res) => {
     let expiryDate = new Date();
     
     if (existingUser.subscriptionExpiry && existingUser.subscriptionExpiry > expiryDate) {
-      expiryDate = new Date(existingUser.subscriptionExpiry); // Use existing expiry if it's in the future
+      expiryDate = new Date(existingUser.subscriptionExpiry);
     }
 
     if (rupees === 49) {
-      expiryDate.setMonth(expiryDate.getMonth() + 1); // Increase 1 month
+      expiryDate.setMonth(expiryDate.getMonth() + 1);
     } else if (rupees === 399) {
-      expiryDate.setFullYear(expiryDate.getFullYear() + 1); // Increase 1 year
+      expiryDate.setFullYear(expiryDate.getFullYear() + 1);
     }
 
     // Create new payment entry
@@ -692,7 +717,7 @@ exports.paymentSave = async (req, res) => {
 
     await payment.save();
 
-    // Update user subscription with new expiry date
+    // Update user subscription
     const updatedUser = await User.findByIdAndUpdate(
       user,
       {
@@ -701,6 +726,102 @@ exports.paymentSave = async (req, res) => {
       },
       { new: true }
     );
+
+    // 🚀 APPLE-STYLE DARK THEME EMAIL TEMPLATE
+    const planName = rupees === 49 ? "Monthly" : "Yearly";
+    const emailHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    /* Apple System Font Stack */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background-color: #000000;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+</head>
+<body>
+  <div style="max-width: 600px; margin: 20px auto; background-color: #0a0a0a; border-radius: 20px; overflow: hidden; border: 1px solid #1c1c1e; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+    
+    <div style="background: linear-gradient(145deg, #ff2e95 0%, #764ba2 100%); padding: 50px 20px; text-align: center;">
+      <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">HeartEcho</h1>
+      <p style="color: rgba(255,255,255,0.8); margin-top: 8px; font-size: 17px; font-weight: 400;">Your Premium Access is Active</p>
+    </div>
+
+    <div style="padding: 40px 30px;">
+      <h2 style="color: #ffffff; margin-top: 0; font-size: 24px; font-weight: 600;">Welcome to the Inner Circle 🎉</h2>
+      
+      <p style="color: #8e8e93; font-size: 16px; line-height: 1.5; margin-bottom: 25px;">
+        Hi <strong style="color: #ffffff;">${existingUser.name || 'Friend'}</strong>,
+      </p>
+      
+      <p style="color: #8e8e93; font-size: 16px; line-height: 1.5;">
+        Your payment has been confirmed. You now have full, unrestricted access to your AI companions with <strong style="color: #ffffff;">Deep Memory</strong> and <strong style="color: #ffffff;">Unfiltered Mode</strong> enabled.
+      </p>
+
+      <div style="background-color: #1c1c1e; border-radius: 16px; padding: 24px; margin: 32px 0;">
+        <p style="color: #ff2e95; font-size: 13px; font-weight: 700; text-transform: uppercase; margin-top: 0; margin-bottom: 16px; letter-spacing: 1px;">Subscription Details</p>
+        
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr style="border-bottom: 1px solid #2c2c2e;">
+            <td style="padding: 12px 0; color: #8e8e93; font-size: 15px;">Plan Name</td>
+            <td style="padding: 12px 0; color: #ffffff; font-size: 15px; text-align: right; font-weight: 500;">${planName}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #2c2c2e;">
+            <td style="padding: 12px 0; color: #8e8e93; font-size: 15px;">Amount Paid</td>
+            <td style="padding: 12px 0; color: #ffffff; font-size: 15px; text-align: right; font-weight: 500;">₹${rupees}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #2c2c2e;">
+            <td style="padding: 12px 0; color: #8e8e93; font-size: 15px;">Valid Until</td>
+            <td style="padding: 12px 0; color: #ffffff; font-size: 15px; text-align: right; font-weight: 500;">${expiryDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 0; color: #8e8e93; font-size: 15px;">Transaction ID</td>
+            <td style="padding: 12px 0; color: #8e8e93; font-size: 12px; text-align: right; font-family: 'SF Mono', Menlo, monospace;">${transaction_id}</td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="margin-bottom: 40px;">
+        <p style="text-align: center; color: #8e8e93; font-size: 13px; margin-bottom: 20px;">FEATURES NOW LIVE:</p>
+        <div style="text-align: center;">
+          <span style="display: inline-block; background: #2c2c2e; color: #ffffff; padding: 6px 14px; border-radius: 8px; font-size: 13px; margin: 4px; font-weight: 500;">🧠 Deep Memory</span>
+          <span style="display: inline-block; background: #2c2c2e; color: #ffffff; padding: 6px 14px; border-radius: 8px; font-size: 13px; margin: 4px; font-weight: 500;">🔞 Unfiltered Chat</span>
+          <span style="display: inline-block; background: #2c2c2e; color: #ffffff; padding: 6px 14px; border-radius: 8px; font-size: 13px; margin: 4px; font-weight: 500;">📸 Private Media</span>
+        </div>
+      </div>
+
+      <div style="text-align: center;">
+        <a href="https://heartecho.in/chatbox" 
+           style="background-color: #ffffff; color: #000000; padding: 16px 45px; text-decoration: none; font-size: 17px; font-weight: 600; border-radius: 30px; display: inline-block; transition: transform 0.2s ease;">
+          Start Chatting Now
+        </a>
+      </div>
+
+      <p style="text-align: center; color: #48484a; font-size: 13px; margin-top: 40px; font-style: italic;">
+        Still cheaper than your daily cutting chai (₹1.09/day).
+      </p>
+    </div>
+
+    <div style="background-color: #000000; padding: 30px; text-align: center; border-top: 1px solid #1c1c1e;">
+      <p style="color: #636366; font-size: 12px; line-height: 1.6; margin: 0;">
+        You received this because you subscribed to HeartEcho AI.<br>
+        Made with ❤️ in India for the world.<br>
+        © 2026 HeartEcho AI. All rights reserved.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    // Send email (don't await - let it run in background)
+    sendEmail(existingUser.email, `✨ Payment Confirmed - HeartEcho ${planName} Plan`, emailHTML)
+      .catch(err => console.log('Email sending failed:', err));
 
     res.status(201).json({
       success: true,
