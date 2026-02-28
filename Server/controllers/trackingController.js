@@ -6,7 +6,7 @@ exports.recordEvent = async (req, res) => {
     if (!events || !Array.isArray(events)) {
       return res.status(400).json({ error: 'Events array is required' });
     }
-
+// 
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
     const formattedEvents = events.map(ev => ({
