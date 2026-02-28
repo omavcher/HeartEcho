@@ -9,7 +9,7 @@ import {
 } from "react-icons/fa";
 import { MdAdsClick } from "react-icons/md";
 import { 
-  AreaChart, Area, Tooltip, ResponsiveContainer, XAxis, CartesianGrid,
+  AreaChart, Area, Tooltip, ResponsiveContainer, XAxis, YAxis, CartesianGrid,
   BarChart, Bar, Cell, PieChart, Pie, Legend
 } from "recharts";
 
