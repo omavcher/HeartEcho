@@ -56,6 +56,16 @@ function SubscriptionContent() {
 
   const handlePayment = async (amount, plan) => {
     if (!token) { router.push('/login'); return; }
+
+    // --- TRACK INITIATE CHECKOUT ---
+    if (typeof window !== "undefined" && window.fbq) {
+      window.fbq('track', 'InitiateCheckout', {
+        value: amount,
+        currency: 'INR',
+        content_name: `${plan} Subscription`
+      });
+    }
+
     setIsLoading(true);
     try {
       const options = {

@@ -1,6 +1,8 @@
+import { Suspense } from 'react';
 import AutoNotification from '../components/AutoNotification';
 import './globals.css';
 import ClientLayout from './layout_client';
+import FBPixelEvents from '../components/FBPixelEvents';
 ///csc
 export const metadata = {
   title: {
@@ -128,9 +130,6 @@ export default function RootLayout({ children }) {
 
               // Second Pixel
               fbq('init', '2143647009742290');
-
-              // Track PageView for both
-              fbq('track', 'PageView');
             `,
           }}
         />
@@ -139,6 +138,9 @@ export default function RootLayout({ children }) {
       </head>
 
       <body>
+        <Suspense fallback={null}>
+          <FBPixelEvents />
+        </Suspense>
         <ClientLayout>{children}</ClientLayout>
 
         {/* Noscript for Both Pixels */}

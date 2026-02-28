@@ -452,6 +452,11 @@ function Signup() {
 
       setNotification({ show: true, message: "Signup successful!", type: "success" });
       
+      // --- TRACK COMPLETE REGISTRATION ---
+      if (typeof window !== "undefined" && window.fbq) {
+        window.fbq('track', 'CompleteRegistration');
+      }
+      
       // Redirect to original URL (with query params) or home
       const redirectUrl = getRedirectUrl();
       setTimeout(() => {
@@ -584,6 +589,11 @@ function Signup() {
       }
 
       setNotification({ show: true, message: "Signup successful!", type: "success" });
+      
+      // --- TRACK COMPLETE REGISTRATION ---
+      if (typeof window !== "undefined" && window.fbq) {
+        window.fbq('track', 'CompleteRegistration');
+      }
       
       // Redirect to original URL (with query params) or home
       const redirectUrl = getRedirectUrl();
