@@ -66,18 +66,27 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
 
   // --- 2. FETCH CHATS ---
   const fetchChats = async () => {
-    if (!token) return;
     try {
       if (chats.length === 0) setIsLoading(true);
       
-      const res = await axios.get(`${api.Url}/user/chat-friends`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      let res;
+      if (token) {
+        res = await axios.get(`${api.Url}/user/chat-friends`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        let guestId = localStorage.getItem("Guest-Id");
+        if (guestId) {
+          res = await axios.get(`${api.Url}/guest/chat-friends`, {
+            headers: { "Guest-Id": guestId },
+          });
+        }
+      }
 
-      const chatData = Array.isArray(res.data) ? res.data : [];
-      
-      // Sort logic handled in Render to account for live unread status updates
-      setChats(chatData);
+      if (res && res.data) {
+        const chatData = Array.isArray(res.data) ? res.data : [];
+        setChats(chatData);
+      }
     } catch (error) {
       console.error("Error fetching chats:", error);
     } finally {
@@ -86,9 +95,7 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
   };
 
   useEffect(() => {
-    if (token) {
-      fetchChats();
-    }
+    fetchChats();
   }, [token, refreshTrigger]);
 
 

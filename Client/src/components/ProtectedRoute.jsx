@@ -46,7 +46,9 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     return <div>Loading...</div>;
   }
 
-  if (!isVerified || (adminOnly && !isAdmin)) {
+  const isGuestAllowedPath = location.pathname.startsWith('/chatbox');
+
+  if ((!isVerified && !isGuestAllowedPath) || (adminOnly && !isAdmin)) {
     // Store the current path in localStorage for redirection after login
     localStorage.setItem('redirectAfterLogin', location.pathname + location.search);
     return <Navigate to="/login" replace />;

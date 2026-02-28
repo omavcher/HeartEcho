@@ -26,10 +26,10 @@ app.use(
       "https://www.desistory.fun",
       "http://desistory.fun",
       "http://www.desistory.fun",
-      "http://localhost:3000",///
+      "http://localhost:3000",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "Guest-Id"],
     credentials: true,
   }),
 );
@@ -489,6 +489,7 @@ app.use("/api/v1/api/bots", require("./routes/botsRoutes"));
 app.use("/api/v1/api/story", require("./routes/storyRoutes"));
 app.use("/api/v1/api/status", require("./routes/statusRoutes"));
 app.use("/api/v1/api/tracking", require("./routes/trackingRoutes"));
+app.use("/api/v1/api/guest", require("./routes/guestRoutes"));
 
 // Start Server
 const PORT = process.env.PORT || 5000;

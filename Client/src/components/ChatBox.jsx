@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import api from "../config/api";
 import { useRouter } from 'next/navigation';
+import LoginModal from "./LoginModel";
 
 // --- CONFIGURATION ---
 const QUOTA_COSTS = { TEXT: 1, IMAGE: 15, VIDEO: 20 };
@@ -121,6 +122,8 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false); 
   const [remainingQuota, setRemainingQuota] = useState(5); 
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
   
   // Logic Flags
   const [isBotMessageEnabled, setIsBotMessageEnabled] = useState(true);
@@ -142,9 +145,13 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     setToken(storedToken);
-    if (chatId && storedToken) {
+    
+    // Check if token exists, if not we are setting guest mode
+    if (chatId) {
+      setIsGuest(!storedToken);
       initializeChatData(storedToken);
     }
+    
     // Cleanup loop on unmount
     return () => clearTimeout(continuousLoopRef.current);
   }, [chatId]);
@@ -177,35 +184,53 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
   // --- API LOGIC ---
   const initializeChatData = async (authToken) => {
     setIsLoading(true);
+    const guestMode = !authToken;
+    let clientId = localStorage.getItem("Guest-Id");
+    if (guestMode && !clientId) {
+      clientId = "guest_" + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem("Guest-Id", clientId);
+    }
+
     try {
-      const aiRes = await axios.get(`${api.Url}/ai/detials/${chatId}`, {
-        headers: { Authorization: `Bearer ${authToken}` }
-      });
+      const urlPrefix = guestMode ? `${api.Url}/guest/details` : `${api.Url}/ai/detials`;
+      const headers = guestMode ? { "Guest-Id": clientId } : { Authorization: `Bearer ${authToken}` };
+
+      const aiRes = await axios.get(`${urlPrefix}/${chatId}`, { headers });
       setUserProfile(aiRes.data?.AiInfo || {});
 
       try {
-        const chatRes = await axios.get(`${api.Url}/ai/chats/by-ai/${chatId}`, {
-          headers: { Authorization: `Bearer ${authToken}` }
-        });
+        const chatsUrl = guestMode ? `${api.Url}/guest/chats/${chatId}` : `${api.Url}/ai/chats/by-ai/${chatId}`;
+        const chatRes = await axios.get(chatsUrl, { headers });
         
-        if (chatRes.data?.chat?.messages) {
-          const formattedMsgs = chatRes.data.chat.messages.map(formatMessageData);
+        let msgsData = chatRes.data?.chat?.messages;
+        if (msgsData && msgsData.length > 0) {
+          const formattedMsgs = msgsData.map(formatMessageData);
           setMessages(formattedMsgs);
         } else {
-          triggerBotAutoMessage(authToken);
+          triggerBotAutoMessage(authToken, guestMode, clientId);
         }
       } catch (err) {
         if (err.response?.status === 404) {
            setMessages([]);
-           triggerBotAutoMessage(authToken); 
+           triggerBotAutoMessage(authToken, guestMode, clientId); 
         }
       }
 
-      const quotaRes = await axios.get(`${api.Url}/ai/quota/status`, {
-        headers: { Authorization: `Bearer ${authToken}` }
-      });
-      setRemainingQuota(quotaRes.data?.remainingQuota ?? 5);
-      setIsSubscribed(quotaRes.data?.isSubscriber || false);
+      if (!guestMode) {
+        const quotaRes = await axios.get(`${api.Url}/ai/quota/status`, { headers });
+        setRemainingQuota(quotaRes.data?.remainingQuota ?? 5);
+        setIsSubscribed(quotaRes.data?.isSubscriber || false);
+      } else {
+        const chatsUrl = `${api.Url}/guest/chats/${chatId}`;
+        try {
+           const countRes = await axios.get(chatsUrl, { headers });
+           const count = countRes.data?.messageCount || 0;
+           setRemainingQuota(Math.max(0, 2 - count));
+        } catch (e) {
+           setRemainingQuota(2);
+        }
+        setIsSubscribed(false);
+      }
 
     } catch (error) {
       console.error("Init Error:", error);
@@ -214,14 +239,17 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
     }
   };
 
-  const triggerBotAutoMessage = async (authToken) => {
-    if (!authToken) return;
+  const triggerBotAutoMessage = async (authToken, guestMode = isGuest, cId = localStorage.getItem("Guest-Id")) => {
+    if (!authToken && !guestMode) return;
     setIsTyping(true);
     
     try {
-      const res = await axios.post(`${api.Url}/bots/bots-message`, 
+      const url = guestMode ? `${api.Url}/guest/bots-message` : `${api.Url}/bots/bots-message`;
+      const headers = guestMode ? { "Guest-Id": cId } : { Authorization: `Bearer ${authToken}` };
+
+      const res = await axios.post(url, 
         { aiFriendId: chatId },
-        { headers: { Authorization: `Bearer ${authToken}` } }
+        { headers }
       );
 
       if (res.data?.success && res.data?.botMessage) {
@@ -250,10 +278,10 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
 
   const formatMessageData = (msg) => ({
     _id: msg._id,
-    sender: msg.senderModel === "User" ? "me" : "ai",
+    sender: msg.senderModel === "User" || msg.sender === "guest" || msg.sender === "me" ? "me" : "ai",
     text: msg.text,
     time: msg.time,
-    mediaType: msg.mediaType,
+    mediaType: msg.mediaType || "text",
     imgUrl: msg.imgUrl,
     videoUrl: msg.videoUrl,
     isRead: true, 
@@ -268,6 +296,10 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
 
     // --- QUOTA EXHAUSTED LOGIC ---
     if (!isSubscribed && remainingQuota <= 0) {
+      if (isGuest) {
+        setShowLoginModal(true);
+        return;
+      }
       setIsTyping(true);
       setTimeout(() => {
         setIsTyping(false);
@@ -311,11 +343,10 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
     }, BOT_BEHAVIOR.READ_RECEIPT_DELAY);
 
     try {
-      const response = await axios.post(
-        `${api.Url}/ai/${chatId}/send`, 
-        { text },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const url = isGuest ? `${api.Url}/guest/${chatId}/send` : `${api.Url}/ai/${chatId}/send`;
+      const headers = isGuest ? { "Guest-Id": localStorage.getItem("Guest-Id") } : { Authorization: `Bearer ${token}` };
+
+      const response = await axios.post(url, { text }, { headers });
 
       if (response.data.remainingQuota !== undefined) {
         setRemainingQuota(response.data.remainingQuota);
@@ -325,18 +356,31 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
         m._id === tempId ? { ...m, _id: response.data?.userMessage?._id || tempId, isTemp: false, isRead: true } : m
       ));
 
-      const humanDelay = Math.max(BOT_BEHAVIOR.MIN_TYPING_TIME, Math.random() * BOT_BEHAVIOR.MAX_TYPING_TIME);
-      
-      setTimeout(async () => {
-        await refreshChat(); 
-        setIsTyping(false); 
-      }, humanDelay);
+      // In guest mode, immediately append AI response returned by the endpoint to avoid refresh chat latency
+      if (isGuest && response.data?.aiMessage) {
+        const humanDelay = Math.max(BOT_BEHAVIOR.MIN_TYPING_TIME, Math.random() * BOT_BEHAVIOR.MAX_TYPING_TIME);
+        setTimeout(() => {
+          setIsTyping(false);
+          setMessages(prev => [...prev, formatMessageData(response.data.aiMessage)]);
+        }, humanDelay);
+      } else {
+        const humanDelay = Math.max(BOT_BEHAVIOR.MIN_TYPING_TIME, Math.random() * BOT_BEHAVIOR.MAX_TYPING_TIME);
+        setTimeout(async () => {
+          await refreshChat(); 
+          setIsTyping(false); 
+        }, humanDelay);
+      }
 
     } catch (error) {
       console.error("Send Error:", error);
       setIsTyping(false);
       setMessages(prev => prev.filter(m => m._id !== tempId)); 
-      showNotification("Failed to send.", "error");
+      
+      if (error.response?.status === 403 && error.response?.data?.requireLogin) {
+         setShowLoginModal(true);
+      } else {
+         showNotification("Failed to send.", "error");
+      }
     }
   };
 
@@ -366,9 +410,11 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
 
   const refreshChat = async () => {
     try {
-      const res = await axios.get(`${api.Url}/ai/chats/by-ai/${chatId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const url = isGuest ? `${api.Url}/guest/chats/${chatId}` : `${api.Url}/ai/chats/by-ai/${chatId}`;
+      const headers = isGuest ? { "Guest-Id": localStorage.getItem("Guest-Id") } : { Authorization: `Bearer ${token}` };
+
+      const res = await axios.get(url, { headers });
+      
       if (res.data?.chat?.messages) {
         setMessages(res.data.chat.messages.map(formatMessageData));
       }
@@ -379,6 +425,12 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
     <div className="chat-box-container">
       <style>{STYLES}</style>
       
+      {showLoginModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999 }}>
+            <LoginModal onClose={() => setShowLoginModal(false)} mode={isGuest ? "guest" : "login"} />
+        </div>
+      )}
+
       <PopNoti 
         {...notification} 
         isVisible={notification.show} 

@@ -18,6 +18,9 @@ export async function middleware(request) {
   }
 
   if (!token) {
+    if (pathname.startsWith('/chatbox')) {
+      return NextResponse.next();
+    }
     // Store the FULL URL (with query params) in a cookie before redirecting
     const response = NextResponse.redirect(new URL('/login', request.url));
     response.cookies.set('redirectUrl', fullUrl, {

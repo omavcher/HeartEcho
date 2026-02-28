@@ -71,7 +71,7 @@ function SubscriptionContent() {
     setIsLoading(true);
     try {
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || 'rzp_test_S7R44fJcrPnhgf',
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || 'rzp_live_YHUPR56Ky9qPxC',
         amount: amount * 100,
         currency: 'INR',
         name: 'HeartEcho',

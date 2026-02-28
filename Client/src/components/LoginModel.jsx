@@ -38,8 +38,14 @@ const CloseIcon = () => (
     </svg>
 );
 
-const LoginModal = () => {
+const LoginModal = ({ onClose, mode = "login" }) => {
+    const isGuest = mode === "guest";
     const [isOpen, setIsOpen] = useState(true);
+
+    const handleClose = () => {
+        setIsOpen(false);
+        if (onClose) onClose();
+    }
 
     if (!isOpen) return null;
 
@@ -89,28 +95,33 @@ const LoginModal = () => {
                             </div>
                             
                             <div className="title-group">
-                                <span className="eyebrow">WELCOME BACK</span>
-                                <h2 className="main-title">Continue Chatting</h2>
+                                <span className="eyebrow">{isGuest ? "FREE LIMIT REACHED" : "WELCOME BACK"}</span>
+                                <h2 className="main-title">{isGuest ? "Sign Up for More" : "Continue Chatting"}</h2>
                             </div>
                         </div>
 
                         <div className="content-body">
                             <p className="description-text">
-                                Please log in to access your saved conversations, voice messages, and personalized settings.
+                                {isGuest 
+                                    ? "Your 2 free guest messages are over! Create a free account now to get daily free messages and save your chats." 
+                                    : "Please log in to access your saved conversations, voice messages, and personalized settings."}
                             </p>
                         </div>
 
-                        {/* Login Button */}
-                        <a href="/login" className="cta-button">
+                        {/* CTA Button */}
+                        <a href={isGuest ? "/signup" : "/login"} className="cta-button">
                             <LoginIcon />
-                            <span>Log In to Account</span>
+                            <span>{isGuest ? "Create Free Account" : "Log In to Account"}</span>
                             <div className="glow-effect"></div>
                         </a>
 
                         {/* Optional subtle footer link */}
                         <div className="footer-link">
-                            
-                            <a href="/signup" className="link-highlight"><span>Don't have an account? </span></a>
+                            {isGuest ? (
+                                <a href="/login" className="link-highlight"><span>Already have an account? Log In</span></a>
+                            ) : (
+                                <a href="/signup" className="link-highlight"><span>Don't have an account? Sign Up</span></a>
+                            )}
                         </div>
                     </div>
                 </div>
