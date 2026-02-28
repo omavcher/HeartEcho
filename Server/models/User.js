@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   phone_number: { type: String },
   gender: { type: String, enum: ["male", "female", "Other"] },
   birth_date: { type: Date },
-  age: { type: Number },
+  age: { type: Number , default: 18 },
   password: { type: String, required: true },
   interests: [{ type: String }],
   user_type: { type: String, enum: ["free", "subscriber"], default: "free" },

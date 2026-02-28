@@ -9,5 +9,6 @@ router.post("/:chatId/send", authMiddleware,controller.AiFriendResponse);
 router.get("/detials/:aiFriendId", authMiddleware,controller.AiFriendDetails);
 router.get("/chats/by-ai/:aiFriendId", authMiddleware,controller.getChatByAiFriend);
 router.get("/quota/status", authMiddleware, controller.getAiQuotaStatus);
+router.delete("/:chatId/message/:messageId", authMiddleware, controller.deleteMessage);
 
 module.exports = router;

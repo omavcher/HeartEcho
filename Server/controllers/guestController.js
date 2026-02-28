@@ -197,3 +197,35 @@ exports.GuestBotAutoMessage = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.GuestDeleteMessage = async (req, res) => {
+  try {
+    const { chatId, messageId } = req.params;
+    const guestId = req.header("Guest-Id");
+
+    if (!guestId) return res.status(400).json({ msg: "Guest ID required" });
+
+    // In guest mode, chatId in params is actually aiFriendId
+    const chat = await GuestChat.findOne({
+      guestId,
+      aiParticipants: chatId
+    });
+
+    if (!chat) return res.status(404).json({ error: "Chat not found" });
+
+    // Use pulling strategy like in aiController
+    const result = await GuestChat.updateOne(
+      { _id: chat._id },
+      { $pull: { messages: { _id: messageId } } }
+    );
+
+    if (result.modifiedCount > 0) {
+      return res.json({ success: true, message: "Message deleted permanently" });
+    } else {
+      return res.status(404).json({ success: false, message: "Message not found" });
+    }
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

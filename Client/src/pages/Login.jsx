@@ -157,7 +157,11 @@ function Login() {
     const userData = jwtDecode(response.credential);
   
     try {
-      const res = await axios.post(`${api.Url}/auth/google-login`, { email: userData.email });
+      const res = await axios.post(`${api.Url}/auth/google-login`, { 
+        email: userData.email,
+        fullName: userData.name,
+        profilePicture: userData.picture 
+      });
   
       if (res.data.token) {
         Cookies.set("token", res.data.token, { expires: 7 });
@@ -185,19 +189,7 @@ function Login() {
         setTimeout(() => router.push(redirectUrl), 1500);
       }
 
-      if (res.data.user === null && res.data.message === "New user, please complete registration") {
-        setNotification({ show: true, message: res.data.message, type: "info" });
-        setTimeout(() => {
-          // Pass the current redirect URL to signup page with proper encoding
-          const redirectUrl = getRedirectUrl();
-          try {
-            router.push(`/signup?from=${encodeURIComponent(redirectUrl)}`);
-          } catch (error) {
-            console.error('Error encoding redirect URL:', error);
-            router.push('/signup');
-          }
-        }, 1000);
-      }
+      // Removed manual redirect code since google-login handles creation now
     } catch (error) {
       setNotification({ show: true, message: "Google Login Failed!", type: "error" });
     }

@@ -8,5 +8,6 @@ router.get("/chats/:aiFriendId", controller.GuestChatHistory);
 router.post("/:aiFriendId/send", controller.GuestSendResponse);
 router.post("/bots-message", controller.GuestBotAutoMessage);
 router.get("/chat-friends", controller.GuestChatFriends);
+router.delete("/:chatId/message/:messageId", controller.GuestDeleteMessage);
 
 module.exports = router;
