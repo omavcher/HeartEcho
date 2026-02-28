@@ -507,11 +507,7 @@ function Signup() {
     try {
       const userData = jwtDecode(response.credential);
       
-      const checkUser = await axios.post(`${api.Url}/auth/google-login`, { 
-        email: userData.email,
-        fullName: userData.name,
-        profilePicture: userData.picture 
-      });
+      const checkUser = await axios.post(`${api.Url}/auth/google-login`, { email: userData.email });
       
       if (checkUser.data.user) {
         if (isClient) {
@@ -534,6 +530,18 @@ function Signup() {
         setTimeout(() => {
           router.push(redirectUrl);
         }, 1000);
+        
+      } else {
+        setIsGoogleSignup(true);
+        setGoogleUserData(userData);
+        setFormData(prev => ({
+          ...prev,
+          email: userData.email,
+          fullName: userData.name,
+          profilePicture: userData.picture
+        }));
+        setCurrentStep(2);
+        setNotification({ show: true, message: "Please complete your profile!", type: "info" });
       }
     } catch (error) {
       setNotification({ show: true, message: "Google authentication failed!", type: "error" });

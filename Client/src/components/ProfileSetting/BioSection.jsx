@@ -192,6 +192,7 @@ function BioSection({ onBackSBTNSelect }) {
                   Gender
                 </label>
                 <select
+                  disabled
                   value={userData?.gender}
                   onChange={(e) =>
                     setUserData({ ...userData, gender: e.target.value })

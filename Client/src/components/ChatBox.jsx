@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import axios from "axios";
 import { 
   ArrowLeft, X, Send, Video, Image as ImageIcon, Info, Lock, Zap, 
-  Bot, Check, CheckCheck, Play, CreditCard, Trash2
+  Bot, Check, CheckCheck, Play, CreditCard
 } from "lucide-react";
 import api from "../config/api";
 import { useRouter } from 'next/navigation';
@@ -97,15 +97,6 @@ const MediaMessage = ({ message, isSubscribed, remainingQuota, onSubscribe }) =>
 
         <div className="media-info-gradient">
            <span className="media-time-text">{formatTime(message.time)}</span>
-           {message._id && !message.isTemp && (
-              <button 
-                className="delete-media-btn" 
-                onClick={(e) => { e.stopPropagation(); message.onDelete && message.onDelete(message._id); }}
-                title="Delete Message"
-              >
-                <Trash2 size={14} color="rgba(255,255,255,0.7)" />
-              </button>
-           )}
         </div>
       </div>
     </div>
@@ -133,7 +124,6 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
   const [remainingQuota, setRemainingQuota] = useState(5); 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
-  const [isProfileIncomplete, setIsProfileIncomplete] = useState(false);
   
   // Logic Flags
   const [isBotMessageEnabled, setIsBotMessageEnabled] = useState(true);
@@ -230,17 +220,6 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
         const quotaRes = await axios.get(`${api.Url}/ai/quota/status`, { headers });
         setRemainingQuota(quotaRes.data?.remainingQuota ?? 5);
         setIsSubscribed(quotaRes.data?.isSubscriber || false);
-
-        try {
-          const userRes = await axios.get(`${api.Url}/user/get-user`, { headers });
-          const u = userRes.data;
-          if (!u.phone_number || !u.gender || !u.age || !u.selectedInterests || u.selectedInterests.length === 0) {
-            setIsProfileIncomplete(true);
-          }
-        } catch (userErr) {
-          console.error("Profile check error", userErr);
-        }
-
       } else {
         const chatsUrl = `${api.Url}/guest/chats/${chatId}`;
         try {
@@ -405,27 +384,6 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
     }
   };
 
-  const handleDeleteMessage = async (messageId) => {
-    // Optimistic UI update
-    setMessages(prev => prev.filter(m => m._id !== messageId));
-    
-    try {
-      const url = isGuest 
-        ? `${api.Url}/guest/${chatId}/message/${messageId}`
-        : `${api.Url}/ai/${chatId}/message/${messageId}`;
-      const headers = isGuest 
-        ? { "Guest-Id": localStorage.getItem("Guest-Id") } 
-        : { Authorization: `Bearer ${token}` };
-
-      await axios.delete(url, { headers });
-    } catch (error) {
-      console.error("Delete Error:", error);
-      showNotification("Failed to delete message.", "error");
-      // Optional: Re-fetch chat to restore if failed
-      refreshChat();
-    }
-  };
-
   const toggleBotMessages = () => {
     const newState = !isBotMessageEnabled;
     setIsBotMessageEnabled(newState);
@@ -507,12 +465,6 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
         </div>
       </div>
 
-      {isProfileIncomplete && (
-        <div className="profile-incomplete-banner" onClick={() => router.push('/profile')}>
-          <span>Fill your details (Phone, Gender, Age, Interests) for a better chatting experience! Click here to update.</span>
-        </div>
-      )}
-
       {/* MESSAGES */}
       <div className="chat-messages-area" ref={chatContainerRef}>
         {isLoading ? (
@@ -548,13 +500,13 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
                 
                 {isMedia ? (
                    <MediaMessage 
-                      message={{...msg, onDelete: handleDeleteMessage}}
+                      message={msg}
                       isSubscribed={isSubscribed}
                       remainingQuota={remainingQuota}
                       onSubscribe={() => router.push("/subscribe")}
                     />
                 ) : (
-                  <div className="message-bubble group">
+                  <div className="message-bubble">
                     <div className="text-content">
                       {/* SPECIFIC BOLD SUPPORT FOR QUOTA MESSAGE */}
                       <p style={{ fontWeight: msg.isBold ? '800' : 'normal' }}>{msg.text}</p>
@@ -564,15 +516,6 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
                           <span className="ticks">
                             {msg.isRead ? <CheckCheck size={14} className="read" /> : <Check size={14} />}
                           </span>
-                        )}
-                        {!msg.isTemp && msg._id && (
-                          <button 
-                            className="delete-msg-btn"
-                            onClick={() => handleDeleteMessage(msg._id)}
-                            title="Delete Message"
-                          >
-                            <Trash2 size={12} />
-                          </button>
                         )}
                       </div>
                     </div>
@@ -791,19 +734,6 @@ const STYLES = `
 .nav-btn { background: none; border: none; color: var(--text); padding: 8px; border-radius: 50%; cursor: pointer; flex-shrink: 0; }
 .nav-btn:hover { background: rgba(255,255,255,0.1); }
 
-.profile-incomplete-banner {
-  background: linear-gradient(135deg, #FFD700, #FFA500);
-  color: #000;
-  padding: 10px 16px;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  z-index: 40;
-  transition: opacity 0.2s;
-}
-.profile-incomplete-banner:hover { opacity: 0.9; }
-
 /* Messages Area */
 .chat-messages-area {
   flex: 1; overflow-y: auto; padding: 16px 12px;
@@ -823,17 +753,6 @@ const STYLES = `
 .msg-meta { display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 4px; opacity: 0.7; }
 .time { font-size: 10px; }
 .ticks .read { color: #87CEEB; }
-
-.delete-msg-btn { 
-  background: none; border: none; padding: 0; color: inherit; opacity: 0; cursor: pointer; transition: opacity 0.2s, color 0.2s; margin-left: 4px;
-}
-.delete-msg-btn:hover { color: #ef4444; }
-.message-bubble:hover .delete-msg-btn { opacity: 1; }
-.delete-media-btn {
-  background: none; border: none; padding: 0; cursor: pointer; transition: transform 0.2s;
-}
-.delete-media-btn:hover { transform: scale(1.1); }
-.delete-media-btn svg:hover { stroke: #ef4444 !important; }
 
 /* Media Bubble */
 .media-bubble-container { width: 260px; max-width: 100%; border-radius: 18px; overflow: hidden; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); background: #111; }

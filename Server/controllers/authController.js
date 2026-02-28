@@ -95,40 +95,30 @@ exports.loginUser = async (req, res) => {
 
 exports.googleLogin = async (req, res) => {
   try {
-    const { email, fullName, profilePicture } = req.body;
+    const { email } = req.body;
 
     // Check if user exists
-    let user = await User.findOne({ email });
+    const user = await User.findOne({ email });
     
-    if (!user) {
-      // User doesn't exist - create a new user silently
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(Math.random().toString(36).slice(-10), salt);
-
-      const newUser = new User({
-        profile_picture: profilePicture || "https://res.cloudinary.com/dx6rjowfb/image/upload/v1741006635/Females/l1epmmaa2qdqdvyzu4ao.jpg",
-        name: fullName || email.split("@")[0],
-        email,
-        password: hashedPassword,
-        user_type: "free",
-        termsAccepted: true
+    if (user) {
+      // User exists - proceed with login
+      const token = jwt.sign({ id: user._id , email:user.email}, process.env.JWT_SECRET, { expiresIn: "30d" });
+      return res.json({ 
+        token, 
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          user_type: user.user_type,
+        }
       });
-
-      user = await newUser.save();
+    } else {
+      // User doesn't exist - return null to indicate new user
+      return res.json({ 
+        user: null,
+        message: "New user, please complete registration"
+      });
     }
-    
-    // Generate token and return login success
-    const token = jwt.sign({ id: user._id , email:user.email}, process.env.JWT_SECRET, { expiresIn: "30d" });
-    return res.json({ 
-      token, 
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        user_type: user.user_type,
-      }
-    });
-
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error", error: error.message });
   }

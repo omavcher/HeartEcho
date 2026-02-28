@@ -1623,38 +1623,3 @@ exports.getAiQuotaStatus = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
-exports.deleteMessage = async (req, res) => {
-  try {
-    const { chatId, messageId } = req.params;
-    const userId = req.user.id; // User authentication
-
-    // Find the chat and ensure it belongs to the user
-    // (chatId in this context is actually aiFriendId based on existing code)
-    const chat = await Chat.findOne({
-      participants: userId,
-      aiParticipants: chatId
-    });
-
-    if (!chat) {
-      return res.status(404).json({ success: false, message: "Chat not found" });
-    }
-
-    // Pull the message from messages array
-    const result = await Chat.updateOne(
-      { _id: chat._id },
-      { $pull: { messages: { _id: messageId } } }
-    );
-
-    if (result.modifiedCount > 0) {
-      return res.json({ success: true, message: "Message deleted permanently" });
-    } else {
-      return res.status(404).json({ success: false, message: "Message not found" });
-    }
-    
-
-  } catch (error) {
-    console.error("Error deleting message:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
-  }
-};
