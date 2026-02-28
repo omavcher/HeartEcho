@@ -61,6 +61,12 @@ export default function GlobalTracker() {
       }
     } catch(e) {}
 
+    let storedUtms = {};
+    try {
+      const utmStr = localStorage.getItem('trk_utms');
+      if (utmStr) storedUtms = JSON.parse(utmStr);
+    } catch(e) {}
+
     queueRef.current.push({
       sessionId: sessionRef.current,
       eventType,
@@ -68,7 +74,7 @@ export default function GlobalTracker() {
       url: window.location.href,
       referrer: document.referrer,
       deviceType: /Mobile|Android|iP(ad|hone)/.test(navigator.userAgent) ? 'Mobile' : 'Desktop',
-      eventData: Object.freeze({ ...eventData }),
+      eventData: Object.freeze({ ...storedUtms, ...eventData }),
       timestamp: Date.now()
     });
 
@@ -81,6 +87,29 @@ export default function GlobalTracker() {
     const interval = setInterval(sendQueue, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // Save UTMs if present
+  useEffect(() => {
+    if (typeof window !== 'undefined' && searchParams) {
+      const currentUtms = {};
+      searchParams.forEach((value, key) => {
+        if (key.startsWith('utm_') || key === 'fbclid') {
+          currentUtms[key] = value;
+        }
+      });
+      
+      if (Object.keys(currentUtms).length > 0) {
+        // Merge with existing ones if any, favoring newer ones
+        let existingUtms = {};
+        try {
+          const str = localStorage.getItem('trk_utms');
+          if (str) existingUtms = JSON.parse(str);
+        } catch(e){}
+        
+        localStorage.setItem('trk_utms', JSON.stringify({ ...existingUtms, ...currentUtms }));
+      }
+    }
+  }, [searchParams]);
 
   // Track Page views
   useEffect(() => {

@@ -37,9 +37,11 @@ exports.getAnalytics = async (req, res) => {
     
     let query = {};
     if (startDate && endDate) {
+      const endOfDay = new Date(endDate);
+      endOfDay.setUTCHours(23, 59, 59, 999);
       query.createdAt = {
         $gte: new Date(startDate),
-        $lte: new Date(endDate)
+        $lte: endOfDay
       };
     }
     if (eventType) {
