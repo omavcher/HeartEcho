@@ -3,6 +3,7 @@ import AutoNotification from '../components/AutoNotification';
 import './globals.css';
 import ClientLayout from './layout_client';
 import FBPixelEvents from '../components/FBPixelEvents';
+import GlobalTracker from '../components/GlobalTracker';
 ///csc
 export const metadata = {
   title: {
@@ -140,6 +141,7 @@ export default function RootLayout({ children }) {
       <body>
         <Suspense fallback={null}>
           <FBPixelEvents />
+          <GlobalTracker />
         </Suspense>
         <ClientLayout>{children}</ClientLayout>
 

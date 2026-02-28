@@ -135,6 +135,14 @@ function Login() {
   
       setNotification({ show: true, message: "Login successful!", type: "success" });
       
+      // --- TRACK LOGIN ---
+      if (typeof window !== "undefined") {
+        if (user?.email !== 'omawchar07@gmail.com') {
+          if (window.fbq) window.fbq('track', 'Login');
+          if (window.trackAppEvent) window.trackAppEvent('login_success');
+        }
+      }
+      
       // Redirect to original URL (with query params) or home
       const redirectUrl = getRedirectUrl();
       setTimeout(() => router.push(redirectUrl), 1500);
@@ -163,6 +171,14 @@ function Login() {
         }
   
         setNotification({ show: true, message: "Google Login Successful!", type: "success" });
+        
+        // --- TRACK LOGIN ---
+        if (typeof window !== "undefined") {
+          if (res.data.user?.email !== 'omawchar07@gmail.com') {
+            if (window.fbq) window.fbq('track', 'Login');
+            if (window.trackAppEvent) window.trackAppEvent('login_success');
+          }
+        }
         
         // Redirect to original URL (with query params) or home
         const redirectUrl = getRedirectUrl();

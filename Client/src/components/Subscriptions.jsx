@@ -59,11 +59,13 @@ function SubscriptionContent() {
 
     // --- TRACK INITIATE CHECKOUT ---
     if (typeof window !== "undefined" && window.fbq) {
-      window.fbq('track', 'InitiateCheckout', {
-        value: amount,
-        currency: 'INR',
-        content_name: `${plan} Subscription`
-      });
+      if (userData?.email !== 'omawchar07@gmail.com') {
+        window.fbq('track', 'InitiateCheckout', {
+          value: amount,
+          currency: 'INR',
+          content_name: `${plan} Subscription`
+        });
+      }
     }
 
     setIsLoading(true);
@@ -77,12 +79,14 @@ function SubscriptionContent() {
         handler: async (res) => {
           // --- THE TRIGGER START ---
           if (window.fbq) {
-            window.fbq('track', 'Purchase', {
-              value: amount,
-              currency: 'INR',
-              content_name: `${plan} Subscription`,
-              transaction_id: res.razorpay_payment_id // Important for deduplication
-            });
+            if (userData?.email !== 'omawchar07@gmail.com') {
+              window.fbq('track', 'Purchase', {
+                value: amount,
+                currency: 'INR',
+                content_name: `${plan} Subscription`,
+                transaction_id: res.razorpay_payment_id // Important for deduplication
+              });
+            }
           }
           // --- THE TRIGGER END ---
 

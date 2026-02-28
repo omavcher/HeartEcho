@@ -488,6 +488,7 @@ app.use("/api/v1/api/letters", require("./routes/latterRoutes"));
 app.use("/api/v1/api/bots", require("./routes/botsRoutes"));
 app.use("/api/v1/api/story", require("./routes/storyRoutes"));
 app.use("/api/v1/api/status", require("./routes/statusRoutes"));
+app.use("/api/v1/api/tracking", require("./routes/trackingRoutes"));
 
 // Start Server
 const PORT = process.env.PORT || 5000;

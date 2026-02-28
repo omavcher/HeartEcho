@@ -453,8 +453,11 @@ function Signup() {
       setNotification({ show: true, message: "Signup successful!", type: "success" });
       
       // --- TRACK COMPLETE REGISTRATION ---
-      if (typeof window !== "undefined" && window.fbq) {
-        window.fbq('track', 'CompleteRegistration');
+      if (typeof window !== "undefined") {
+        if (res.data?.user?.email !== 'omawchar07@gmail.com') {
+          if (window.fbq) window.fbq('track', 'CompleteRegistration');
+          if (window.trackAppEvent) window.trackAppEvent('signup_complete');
+        }
       }
       
       // Redirect to original URL (with query params) or home
@@ -513,6 +516,14 @@ function Signup() {
           localStorage.setItem("user", JSON.stringify(checkUser.data.user));
         }
         setNotification({ show: true, message: "Login successful!", type: "success" });
+        
+        // --- TRACK LOGIN ---
+        if (typeof window !== "undefined") {
+          if (checkUser.data.user?.email !== 'omawchar07@gmail.com') {
+            if (window.fbq) window.fbq('track', 'Login');
+            if (window.trackAppEvent) window.trackAppEvent('login_success');
+          }
+        }
         
         // Redirect to original URL (with query params) or home
         const redirectUrl = getRedirectUrl();
@@ -591,8 +602,11 @@ function Signup() {
       setNotification({ show: true, message: "Signup successful!", type: "success" });
       
       // --- TRACK COMPLETE REGISTRATION ---
-      if (typeof window !== "undefined" && window.fbq) {
-        window.fbq('track', 'CompleteRegistration');
+      if (typeof window !== "undefined") {
+        if (res.data?.user?.email !== 'omawchar07@gmail.com') {
+          if (window.fbq) window.fbq('track', 'CompleteRegistration');
+          if (window.trackAppEvent) window.trackAppEvent('signup_complete');
+        }
       }
       
       // Redirect to original URL (with query params) or home

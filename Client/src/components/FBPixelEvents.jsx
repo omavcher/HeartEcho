@@ -9,6 +9,14 @@ export default function FBPixelEvents() {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.fbq) {
+      try {
+        const userStr = localStorage.getItem('user');
+        if (userStr && userStr !== "undefined") {
+          const userObj = JSON.parse(userStr);
+          if (userObj?.email === 'omawchar07@gmail.com') return; // Do not track admin
+        }
+      } catch (e) {}
+
       window.fbq('track', 'PageView');
     }
   }, [pathname, searchParams]);

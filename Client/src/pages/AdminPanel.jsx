@@ -21,7 +21,7 @@ import StoriesAdmin from "./Admin/AdminStoy.jsx";
 import EditStoryPage from "./Admin/EditStoryPage.jsx";
 import ChatsDataAdmin from "./Admin/ChatsDataAdmin.jsx";
 import LoginActivityAdmin from "./Admin/LoginActivityAdmin.jsx";
-
+import TrackingAdmin from "./Admin/TrackingAdmin.jsx";
 import { IoLogoSass, IoMdLogIn } from "react-icons/io";
 import PaymentActivityAdmin from "./Admin/PaymentActivityAdmin.jsx";
 
@@ -39,6 +39,7 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
     { path: "/admin/referral", label: "Referral Program", icon: <FaUserPlus /> },
     { path: "/admin/create-story", label: "Create Story", icon: <FaGem /> },
     { path: "/admin/chats", label: "Chats", icon: <MdChat /> },
+    { path: "/admin/analytics", label: "Tracking & Analytics", icon: <MdAnalytics /> },
     { path: "/admin/login-activity", label: "Login Activity", icon: <MdAnalytics /> },
     { path: "/admin/payment-activity", label: "Payment Activity", icon: <MdPayment /> }
   ];
@@ -142,6 +143,7 @@ const AdminPanel = () => {
       '/admin/referral': <div className="content-wrapper-x30sn"><ReferralAdmin /></div>,
       '/admin/create-story': <div className="content-wrapper-x30sn"><CreateStoryPage/></div>,
       '/admin/chats': <div className="content-wrapper-x30sn"><ChatsDataAdmin /></div>,
+      '/admin/analytics': <div className="content-wrapper-x30sn"><TrackingAdmin /></div>,
        '/admin/login-activity': <div className="content-wrapper-x30sn"><LoginActivityAdmin /></div>,
         '/admin/payment-activity': <div className="content-wrapper-x30sn"><PaymentActivityAdmin /></div>,
 
