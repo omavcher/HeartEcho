@@ -166,6 +166,7 @@ const userStyles = `
 
 const UsersAdmin = () => {
   const [users, setUsers] = useState([]);
+  const [dashboardStats, setDashboardStats] = useState({ newUsersToday: 0, todaySignIns: 0 });
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -180,6 +181,10 @@ const UsersAdmin = () => {
       const token = getToken();
       const response = await axios.get(`${api.Url}/admin/user-dataw`, { headers: { Authorization: `Bearer ${token}` } });
       setUsers(response.data.userData || []);
+      setDashboardStats({
+        newUsersToday: response.data.newUsersToday || 0,
+        todaySignIns: response.data.todaySignIns || 0,
+      });
     } catch (error) { console.error("Fetch Error:", error); } 
     finally { setLoading(false); }
   }, [getToken]);
@@ -188,15 +193,13 @@ const UsersAdmin = () => {
 
   // --- ANALYTICS DATA PREPARATION ---
   const stats = useMemo(() => {
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
     return {
-      joinedToday: users.filter(u => u.joinedAt?.split('T')[0] === todayStr).length,
+      joinedToday: dashboardStats.newUsersToday,
       premiumUsers: users.filter(u => u.user_type === 'subscriber').length,
-      totalLogins: users.reduce((acc, u) => acc + (u.login_details?.length || 0), 0),
+      todaySignIns: dashboardStats.todaySignIns,
       avgAge: users.length > 0 ? (users.reduce((acc, u) => acc + (u.age || 0), 0) / users.length).toFixed(1) : 0
     };
-  }, [users]);
+  }, [users, dashboardStats]);
 
   // Chart 1: Join Trend (Last 7 Days)
   const growthData = useMemo(() => {
@@ -205,7 +208,8 @@ const UsersAdmin = () => {
         const d = new Date();
         d.setDate(d.getDate() - i);
         const dateStr = d.toISOString().split('T')[0];
-        const count = users.filter(u => u.joinedAt?.startsWith(dateStr)).length;
+        // Note: this compares against `createdAt` just to keep UI logic similar, but usually we map the date.
+        const count = users.filter(u => u.createdAt?.startsWith(dateStr) || u.joinedAt?.startsWith(dateStr)).length;
         data.push({ name: d.toLocaleDateString('en-US',{weekday:'short'}), count: count });
     }
     return data;
@@ -273,7 +277,7 @@ const UsersAdmin = () => {
           </div>
           <div className="kpi-box-x30sn">
             <div className="kpi-ico-x30sn"><FaRobot /></div>
-            <div className="kpi-txt-x30sn"><span>Total Logins</span><strong>{stats.totalLogins}</strong></div>
+            <div className="kpi-txt-x30sn"><span>Today Sign-Ins</span><strong>{stats.todaySignIns}</strong></div>
           </div>
         </div>
 

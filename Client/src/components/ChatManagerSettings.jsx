@@ -7,7 +7,10 @@ import axios from "axios";
 import PopNoti from "./PopNoti";
 import AdvancedLoader from './AdvancedLoader'
 
+import { useRouter } from 'next/navigation';
+
 function ChatManagerSettings() {
+  const router = useRouter();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState({
@@ -73,8 +76,8 @@ function ChatManagerSettings() {
 
   // Determine if the user is a subscriber
   const isSubscriber = messageQuota === 999;
-  const progressWidth = isSubscriber ? "100%" : `${(messageQuota / 20) * 100}%`;
-  const activeDays = isSubscriber ? "Active Subscription" : 7 - daysLeft;
+  const progressWidth = isSubscriber ? "100%" : `${(messageQuota / 5) * 100}%`;
+  const activeDays = isSubscriber ? "Active Subscription" : "Forever (Daily Quota)";
 
   return (
     <div className="je9c-dashboard-dwdjwd">
@@ -89,7 +92,7 @@ function ChatManagerSettings() {
       <section className="je9c-overview-dwdjwd">
         <div className="je9c-card-dwdjwd je9c-trial-info-dwdjwd">
           <h2 className="je9c-card-heading-dwdjwd">
-            {isSubscriber ? "Subscription Overview" : "Trial Overview"}
+            {isSubscriber ? "Subscription Overview" : "Account Overview"}
           </h2>
           <div className="je9c-info-grid-dwdjwd">
             <div className="je9c-info-item-dwdjwd">
@@ -97,21 +100,19 @@ function ChatManagerSettings() {
               <p className="je9c-info-value-dwdjwd">{new Date(joinedAt).toLocaleDateString("en-GB")}</p>
             </div>
             <div className="je9c-info-item-dwdjwd">
-              <p className="je9c-info-label-dwdjwd">Days Left</p>
+              <p className="je9c-info-label-dwdjwd">{isSubscriber ? "Days Left" : "Access"}</p>
               <p className="je9c-info-value-dwdjwd je9c-accent-dwdjwd">
                 {isSubscriber 
                   ? `${daysLeft} day${daysLeft === 1 ? "" : "s"}` 
-                  : daysLeft > 0 
-                    ? `${daysLeft} day${daysLeft === 1 ? "" : "s"}` 
-                    : "Expired"
+                  : "Daily Free Quota Active"
                 }
               </p>
             </div>
           </div>
-          {!isSubscriber && daysLeft === 0 && (
+          {!isSubscriber && (
             <button
               className="je9c-action-btn-dwdjwd je9c-upgrade-dwdjwd"
-              onClick={() => alert("Redirecting to subscription page...")}
+              onClick={() => router.push("/subscribe")}
             >
               Upgrade Plan
             </button>
@@ -136,14 +137,14 @@ function ChatManagerSettings() {
                 {isSubscriber ? "Unlimited" : `${messageQuota}`}
               </span>
               <span className="je9c-progress-total-dwdjwd">
-                {isSubscriber ? "" : "/ 20"}
+                {isSubscriber ? "" : "/ 5"}
               </span>
             </div>
           </div>
           <p className="je9c-quota-text-dwdjwd">
             {messageQuota === 999 
               ? "You are a Premium Member! Enjoy Unlimited Chatting 🎉" 
-              : `${messageQuota} / 20 Messages`}
+              : `${messageQuota} / 5 Messages`}
           </p>
         </div>
       </section>

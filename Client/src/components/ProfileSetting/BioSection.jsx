@@ -192,15 +192,20 @@ function BioSection({ onBackSBTNSelect }) {
                   Gender
                 </label>
                 <select
-                  disabled
-                  value={userData?.gender}
+                  value={
+                    userData?.gender?.toLowerCase() === "male" ? "male" :
+                    userData?.gender?.toLowerCase() === "female" ? "female" :
+                    userData?.gender?.toLowerCase() === "other" ? "Other" :
+                    ""
+                  }
                   onChange={(e) =>
                     setUserData({ ...userData, gender: e.target.value })
                   }
                   className="form-select-dwdjwd"
                 >
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
+                  <option value="" disabled>Select gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
                   <option value="Other">Other</option>
                 </select>
               </div>

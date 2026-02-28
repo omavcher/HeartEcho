@@ -267,10 +267,29 @@ exports.getUserDataAdmin = async (req, res) => {
 
 exports.UserALLDtaa = async (req,res) =>{
   try {
-    const userData = await User.find({});
+    const userData = await User.find({}).sort({ createdAt: -1 });
+
+    // Calculate today's start and end dates
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const newUsersToday = await User.countDocuments({
+      createdAt: { $gte: startOfToday, $lte: endOfToday }
+    });
+
+    const uniqueLoginsToday = await LoginDetail.distinct("user", {
+      time: { $gte: startOfToday, $lte: endOfToday }
+    });
+    
+    const todaySignIns = uniqueLoginsToday.length;
 
      return res.status(200).json({
-        userData
+        userData,
+        newUsersToday,
+        todaySignIns
         });
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
