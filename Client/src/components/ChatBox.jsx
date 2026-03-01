@@ -14,12 +14,12 @@ import LoginModal from "./LoginModel";
 const QUOTA_COSTS = { TEXT: 1, IMAGE: 15, VIDEO: 20 };
 
 const BOT_BEHAVIOR = {
-  TYPING_SPEED_MS: 30, 
   MIN_TYPING_TIME: 1500, 
   MAX_TYPING_TIME: 4000,
   READ_RECEIPT_DELAY: 600, 
-  CONTINUOUS_REPLY_DELAY_MIN: 8000, 
-  CONTINUOUS_REPLY_DELAY_MAX: 50000,
+  // How long to wait before sending an unprompted auto-message (ms)
+  AUTO_MSG_DELAY_MIN: 45000,  // 45 seconds
+  AUTO_MSG_DELAY_MAX: 120000, // 2 minutes
 };
 
 // --- COMPONENTS ---
@@ -128,7 +128,10 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
   // Logic Flags
   const [isBotMessageEnabled, setIsBotMessageEnabled] = useState(true);
   const overlayRef = useRef(null);
-  const continuousLoopRef = useRef(null); // Ref to hold the loop timeout
+  // We store { timer, enabled } so we can kill the loop from anywhere
+  const autoMsgTimerRef = useRef(null);
+  // Track enabled state in a ref so async callbacks always see the latest value
+  const isBotEnabledRef = useRef(true);
 
   // Refs
   const chatContainerRef = useRef(null);
@@ -141,6 +144,11 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
     }
   }, []);
 
+  // Keep the ref in sync with state so async callbacks see the latest value
+  useEffect(() => {
+    isBotEnabledRef.current = isBotMessageEnabled;
+  }, [isBotMessageEnabled]);
+
   // --- INITIALIZATION ---
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -152,33 +160,39 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
       initializeChatData(storedToken);
     }
     
-    // Cleanup loop on unmount
-    return () => clearTimeout(continuousLoopRef.current);
+    // Kill any pending auto-message timer on unmount
+    return () => clearAutoMsgTimer();
   }, [chatId]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  // --- CONTINUOUS LOOP LOGIC ---
-  useEffect(() => {
-    if (!isBotMessageEnabled || messages.length === 0 || isLoading) return;
-
-    const lastMsg = messages[messages.length - 1];
-
-    if (lastMsg.sender === 'ai' && !lastMsg.isTemp) {
-      clearTimeout(continuousLoopRef.current);
-      const nextDelay = Math.floor(Math.random() * (BOT_BEHAVIOR.CONTINUOUS_REPLY_DELAY_MAX - BOT_BEHAVIOR.CONTINUOUS_REPLY_DELAY_MIN + 1) + BOT_BEHAVIOR.CONTINUOUS_REPLY_DELAY_MIN);
-      
-      continuousLoopRef.current = setTimeout(() => {
-        if (isBotMessageEnabled && !isTyping) {
-            triggerBotAutoMessage(localStorage.getItem("token"));
-        }
-      }, nextDelay);
+  // --- HELPER: Clear any scheduled auto-message ---
+  const clearAutoMsgTimer = () => {
+    if (autoMsgTimerRef.current) {
+      clearTimeout(autoMsgTimerRef.current);
+      autoMsgTimerRef.current = null;
     }
+  };
 
-    return () => clearTimeout(continuousLoopRef.current);
-  }, [messages, isBotMessageEnabled, isLoading, isTyping]);
+  // --- Schedule ONE auto-message after an appropriate delay ---
+  // Called only after the bot has sent a message and auto is ON.
+  const scheduleNextAutoMessage = (authToken) => {
+    clearAutoMsgTimer(); // always cancel any existing timer first
+    if (!isBotEnabledRef.current) return; // respect the toggle
+
+    const delay = Math.floor(
+      Math.random() * (BOT_BEHAVIOR.AUTO_MSG_DELAY_MAX - BOT_BEHAVIOR.AUTO_MSG_DELAY_MIN + 1)
+      + BOT_BEHAVIOR.AUTO_MSG_DELAY_MIN
+    );
+
+    autoMsgTimerRef.current = setTimeout(() => {
+      // Double-check the toggle hasn't been switched off while we were waiting
+      if (!isBotEnabledRef.current) return;
+      triggerBotAutoMessage(authToken || localStorage.getItem("token"));
+    }, delay);
+  };
 
 
   // --- API LOGIC ---
@@ -266,6 +280,8 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
             isRead: true
           };
           setMessages(prev => [...prev, newMsg]);
+          // Schedule the NEXT auto-message only if auto is still ON
+          scheduleNextAutoMessage(authToken);
         }, typingTime);
       } else {
         setIsTyping(false);
@@ -289,7 +305,8 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
 
   // --- SENDING LOGIC ---
   const handleSendMessage = async (customText = null) => {
-    clearTimeout(continuousLoopRef.current);
+    // Cancel any pending auto-message — user is actively chatting
+    clearAutoMsgTimer();
 
     const text = customText || newMessage;
     if (!text.trim()) return;
@@ -362,12 +379,16 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
         setTimeout(() => {
           setIsTyping(false);
           setMessages(prev => [...prev, formatMessageData(response.data.aiMessage)]);
+          // After bot replies to user, schedule next auto-message if auto is ON
+          scheduleNextAutoMessage(token);
         }, humanDelay);
       } else {
         const humanDelay = Math.max(BOT_BEHAVIOR.MIN_TYPING_TIME, Math.random() * BOT_BEHAVIOR.MAX_TYPING_TIME);
         setTimeout(async () => {
           await refreshChat(); 
-          setIsTyping(false); 
+          setIsTyping(false);
+          // After bot replies to user, schedule next auto-message if auto is ON
+          scheduleNextAutoMessage(token);
         }, humanDelay);
       }
 
@@ -386,12 +407,16 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
 
   const toggleBotMessages = () => {
     const newState = !isBotMessageEnabled;
+    // Update ref immediately so any in-flight timers respect the new state
+    isBotEnabledRef.current = newState;
     setIsBotMessageEnabled(newState);
     if (newState) {
-      triggerBotAutoMessage(token);
-      showNotification("Auto conversation started", "success");
+      // Re-enable: schedule an auto-message soon
+      scheduleNextAutoMessage(token);
+      showNotification("Auto conversation resumed", "success");
     } else {
-      clearTimeout(continuousLoopRef.current);
+      // Disable: kill ANY pending auto-message timer right now
+      clearAutoMsgTimer();
       showNotification("Auto conversation paused", "info");
     }
   };
