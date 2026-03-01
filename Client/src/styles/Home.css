@@ -44,6 +44,12 @@ body {
   margin: 0 auto;
 }
 
+/* Full-width top section — no max-width cap so Live circles span the page */
+.home-top-section {
+  width: 100%;
+  padding-top: 0.5rem;
+}
+
 /* --- Typography Helpers --- */
 .text-gradient {
   background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);

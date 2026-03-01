@@ -388,6 +388,7 @@ export default function Footer() {
             <ul className="seh-link-list">
               <li><Link href="/hot-stories" className="seh-special-link">Stories</Link></li>
               <li><Link href="/subscribe" style={{color: '#ce4085', fontWeight: 'bold'}}>Join VIP</Link></li>
+              <li><Link href="/reviews" style={{color: '#ffd60a', fontWeight: '600'}}>⭐ Reviews</Link></li>
               <li><Link href="/blog">Blog</Link></li>
             </ul>
           </div>
