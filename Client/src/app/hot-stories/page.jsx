@@ -228,40 +228,7 @@ export default async function HotStoriesPage() {
       />
 
       <main className="container">
-        {/* Server-rendered static content for SEO - Enhanced with image links */}
-        <div className="seo-content" style={{ padding: '20px', background: '#111', color: '#888', fontSize: '0.8rem', marginTop: '40px', borderRadius: '8px' }}>
-          <h2>HeartEcho Stories - Interactive Hot Romantic Stories from Indian Cities</h2>
-          <p>Explore interactive stories with alluring images from major cities across India including Mumbai, Delhi, Bangalore, Hyderabad, Chennai, Kolkata, Pune, Ahmedabad, Jaipur, Lucknow, Goa, and Chandigarh. Each story features hot desi thumbnails for bhabhi romance, aunty roleplay, and more.</p>
-          <ul style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', listStyle: 'none', padding: 0 }}>
-            {allIndianCities.map(city => (
-              <li key={city.key}>
-                <a href={`/city/${city.key}`}>
-                  <img 
-                    src={cityInfo[city.key].image} 
-                    alt={cityInfo[city.key].alt || `${city.name} city image for hindi roleplay kahani`} 
-                    width="300" 
-                    height="200" 
-                    loading="lazy"
-                  />
-                  {city.name} - {city.tagline}
-                </a>
-              </li>
-            ))}
-          </ul>
-          {/* visually hidden but DOM-present image gallery for crawler without penalizing cloaking */}
-          <div className="hidden-image-gallery" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 }}>
-            {initialStories.map(story => (
-              <img 
-                key={story._id}
-                src={story.backgroundImage} 
-                alt={`${story.title} - Romantic thumbnail for ${story.category} story in ${story.city} - Desi bhabhi roleplay image`} 
-                width="400" 
-                height="300" 
-                loading="lazy"
-              />
-            ))}
-          </div>
-        </div>
+       
 
         {/* Client Component with Suspense */}
         <Suspense fallback={<Loading />}>
