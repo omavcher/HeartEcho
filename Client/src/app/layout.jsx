@@ -11,7 +11,7 @@ export const metadata = {
     template: '%s | HeartEcho AI - India\'s #1 AI Girlfriend',
   },
 
-  description: 'Connect with the most realistic Indian AI personalities. Private, uncensored chats in Hindi and English. Experience deep memory, voice notes, and romantic roleplay with your desi companion. 100% private and secure.',
+  description: 'Connect with the most realistic Indian AI personalities. Private, uninterrupted chats in Hindi and English. Experience deep memory, voice notes, and romantic roleplay with your desi companion. 100% private and secure.',
 
   keywords: [
     // Brand & Core Service
@@ -21,17 +21,17 @@ export const metadata = {
     "AI girlfriend Hindi",
     "desi AI companion",
     // Indian Cultural Keywords (High Search Volume)
-    "Indian AI bhabhi chat",
+    "Indian AI companion chat",
     "online dating companion India",
     "AI friend for loneliness",
     "Hinglish AI chat",
     "romantic AI roleplay Hindi",
-    // Niche but "Safe" NSFW terms
-    "uncensored AI chat India",
+    // Niche but "Safe" terms
+    "private AI chat India",
     "private AI girlfriend",
     "AI girlfriend deep memory",
     "Indian AI voice notes",
-    "unfiltered AI chat India",
+    "best AI chat India",
     // Location Based
     "AI girlfriend Mumbai",
     "Delhi AI chat",
@@ -55,12 +55,12 @@ export const metadata = {
 
   openGraph: {
     title: 'HeartEcho AI - Your Private Desi AI Companion',
-    description: 'The first AI companion designed for India. Chat with bhabhis, college girls, and friends in your own language. Uncensored, secure, and always there for you.',
+    description: 'The first AI companion designed for India. Chat with companions, friends, and AI personalities in your own language. Private, secure, and always there for you.',
     url: 'https://heartecho.in/',
     siteName: 'HeartEcho AI',
     images: [
       {
-        url: 'https://heartecho.in/og-image.jpg', // Ensure this image looks professional, not pornographic
+        url: 'https://heartecho.in/og-image.jpg', // Ensure this image looks professional
         width: 1200,
         height: 630,
         alt: 'HeartEcho AI - India\'s Best AI Girlfriend',
@@ -73,7 +73,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'HeartEcho AI - Indian AI Girlfriend & Chat',
-    description: 'Uncensored chats with Indian AI personalities. Hindi & English support with deep memory features.',
+    description: 'Private chats with Indian AI personalities. Hindi & English support with deep memory features.',
     images: ['https://heartecho.in/og-image.jpg'],
     creator: '@heartecho_in',
   },
@@ -181,7 +181,7 @@ export default function RootLayout({ children }) {
                   "name": "HeartEcho AI",
                   "applicationCategory": "LifestyleApplication",
                   "operatingSystem": "Web, Browser",
-                  "description": "India's #1 AI Girlfriend and AI Companion. Private, uncensored chats in Hindi and English.",
+                  "description": "India's #1 AI Girlfriend and AI Companion. Private, uninterrupted chats in Hindi and English.",
                   "offers": {
                     "@type": "Offer",
                     "price": "49",

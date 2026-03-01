@@ -137,7 +137,7 @@ export default function StoryPageClient({ initialStory, initialRelatedStories })
 
       {/* RELATED CONTENT */}
       <section className="relatedSection-cwdw4x">
-        <h3 className="sectionHeading-cwdw4x">Hot Suggestions</h3>
+        <h3 className="sectionHeading-cwdw4x">Recommended Stories</h3>
         <div className="grid-cwdw4x">
           {initialRelatedStories.slice(0, 4).map((rel) => (
             <Link href={`/hot-stories/${rel.slug}`} key={rel._id} className="card-cwdw4x">

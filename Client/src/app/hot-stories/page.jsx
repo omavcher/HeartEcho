@@ -17,7 +17,7 @@ const cityInfo = {
     title: "Mumbai - The City of Dreams",
     description: "Explore the bustling streets, Bollywood glamour, and coastal charm of India's financial capital.",
     image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570918/mumbai_iul7vz.webp",
-    alt: "Mumbai skyline - Desi romance stories with Mumbai bhabhi and aunty intimate kahani"
+    alt: "Mumbai skyline - Desi romance stories with Mumbai companion and aunty intimate kahani"
   },
   bangalore: {
     title: "Bangalore - The Silicon Valley of India",
@@ -29,13 +29,13 @@ const cityInfo = {
     title: "Hyderabad - The City of Pearls",
     description: "Discover the rich history, biryani, and tech revolution of this historic city.",
     image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570917/hyderabad_l0k1jo.webp",
-    alt: "Hyderabad Charminar - Hyderabad housewife romance and Muslim bhabhi intimate stories"
+    alt: "Hyderabad Charminar - Hyderabad housewife romance and Muslim companion intimate stories"
   },
   chennai: {
     title: "Chennai - The Cultural Capital",
     description: "Immerse in the rich traditions, classical arts, and coastal beauty of South India.",
     image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570916/chennai_e0ftkb.webp",
-    alt: "Chennai beach - Tamil aunty romantic stories and Chennai bhabhi kahani with pictures"
+    alt: "Chennai beach - Tamil aunty romantic stories and Chennai companion kahani with pictures"
   },
   kolkata: {
     title: "Kolkata - The City of Joy",
@@ -53,19 +53,19 @@ const cityInfo = {
     title: "Ahmedabad - The Manchester of India",
     description: "Discover the historic city known for its textile industry, rich heritage, and delicious Gujarati cuisine.",
     image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570914/ahmedabad_ksmdpo.webp",
-    alt: "Ahmedabad Sabarmati Ashram - Gujarati bhabhi romance stories and Ahmedabad aunty intimate tales"
+    alt: "Ahmedabad Sabarmati Ashram - Gujarati companion romance stories and Ahmedabad aunty intimate tales"
   },
   jaipur: {
     title: "Jaipur - The Pink City",
     description: "Experience the royal heritage, magnificent forts, and vibrant culture of Rajasthan's capital.",
     image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570915/jaipur_qxcfb7.webp",
-    alt: "Jaipur Hawa Mahal - Rajasthani aunty romantic stories and Jaipur royal bhabhi kahani"
+    alt: "Jaipur Hawa Mahal - Rajasthani aunty romantic stories and Jaipur royal companion kahani"
   },
   lucknow: {
     title: "Lucknow - The City of Nawabs",
     description: "Immerse in the refined culture, exquisite cuisine, and historical monuments of this gracious city.",
     image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570916/lucknow_gcma1c.webp",
-    alt: "Lucknow Bara Imambara - Lucknow nawabi bhabhi stories and Muslim girl romantic kahani"
+    alt: "Lucknow Bara Imambara - Lucknow nawabi partner stories and Muslim girl romantic kahani"
   },
   goa: {
     title: "Goa - The Pearl of the Orient",
@@ -77,7 +77,7 @@ const cityInfo = {
     title: "Chandigarh - The City Beautiful",
     description: "Experience the planned city's modernist architecture, serene gardens, and high quality of life.",
     image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570917/chandigarh_gcgqak.webp",
-    alt: "Chandigarh Rock Garden - Punjabi kudi romantic stories and Chandigarh bhabhi romance"
+    alt: "Chandigarh Rock Garden - Punjabi kudi romantic stories and Chandigarh companion romance"
   }
 };
 
@@ -86,11 +86,11 @@ const allIndianCities = [
   { name: 'Mumbai', key: 'mumbai', tagline: 'City of Dreams', alt: 'Mumbai city image for desi romantic stories' },
   { name: 'Delhi', key: 'delhi', tagline: 'Heart of India', alt: 'Delhi city image for hindi roleplay kahani' },
   { name: 'Bangalore', key: 'bangalore', tagline: 'Silicon Valley', alt: 'Bangalore city image for office romantic stories' },
-  { name: 'Hyderabad', key: 'hyderabad', tagline: 'City of Pearls', alt: 'Hyderabad city image for muslim bhabhi stories' },
+  { name: 'Hyderabad', key: 'hyderabad', tagline: 'City of Pearls', alt: 'Hyderabad city image for muslim companion stories' },
   { name: 'Chennai', key: 'chennai', tagline: 'Cultural Capital', alt: 'Chennai city image for tamil aunty intimate tales' },
   { name: 'Kolkata', key: 'kolkata', tagline: 'City of Joy', alt: 'Kolkata city image for bengali romantic kahani' },
   { name: 'Pune', key: 'pune', tagline: 'Oxford of the East', alt: 'Pune city image for college girl roleplay' },
-  { name: 'Ahmedabad', key: 'ahmedabad', tagline: 'Manchester of India', alt: 'Ahmedabad city image for gujarati bhabhi tales' },
+  { name: 'Ahmedabad', key: 'ahmedabad', tagline: 'Manchester of India', alt: 'Ahmedabad city image for gujarati companion tales' },
   { name: 'Jaipur', key: 'jaipur', tagline: 'Pink City', alt: 'Jaipur city image for rajasthani aunty stories' },
   { name: 'Lucknow', key: 'lucknow', tagline: 'City of Nawabs', alt: 'Lucknow city image for nawabi intimate tales' },
   { name: 'Goa', key: 'goa', tagline: 'Pearl of the Orient', alt: 'Goa city image for beach romantic stories' },
@@ -111,26 +111,26 @@ export async function generateMetadata() {
   }));
 
   return {
-    title: "HeartEcho Stories: Uncensored Hindi Roleplay & Interactive Desi Erotica",
-    description: `Explore ${storyCount}+ private Hindi intimate and interactive roleplay stories. Discover uncensored desi tales with bhabhis, college friends, and local companions. Featuring AI-generated visuals and voice notes. 100% secure and Indian-made.`,
+    title: "HeartEcho Stories: Private Hindi Roleplay & Interactive Romance",
+    description: `Explore ${storyCount}+ private Hindi intimate and interactive roleplay stories. Discover uninterrupted desi tales with companions, college friends, and local characters. Featuring AI-generated visuals and voice notes. 100% secure and Indian-made.`,
     
     keywords: [
-      // High-Volume "Safe-Explicit" terms
+      // High-Volume "Safe" terms
       "Hindi interactive stories",
-      "uncensored desi roleplay",
+      "private desi roleplay",
       "HeartEcho AI stories",
-      "Indian AI bhabhi tales",
+      "Indian AI companion tales",
       "private Hindi intimate tales",
-      "desi bhabhi romance stories",
+      "desi companion romance stories",
       "AI generated Indian stories",
       "Hinglish romantic roleplay",
       "interactive audio stories India",
-      // Intent-based (Tharki but safe)
+      // Intent-based
       "unfiltered desi stories",
-      "Indian bhabhi virtual companion",
+      "Indian companion virtual character",
       "best Hindi romantic roleplay 2026",
       "HeartEcho hot stories India",
-      "AI bhabhi deep memory stories",
+      "AI friend deep memory stories",
       "desi college girl chat stories"
     ],
 
@@ -141,8 +141,8 @@ export async function generateMetadata() {
     },
 
     openGraph: {
-      title: 'HeartEcho Stories | Interactive Indian Roleplay & Uncensored Tales',
-      description: `Dive into ${storyCount}+ uncensored desi stories with high-quality visuals. Experience the most realistic Hindi AI roleplay available in India.`,
+      title: 'HeartEcho Stories | Interactive Indian Roleplay & Private Tales',
+      description: `Dive into ${storyCount}+ private desi stories with high-quality visuals. Experience the most realistic Hindi AI roleplay available in India.`,
       url: 'https://heartecho.in/hot-stories',
       siteName: 'HeartEcho AI',
       images: [
@@ -160,7 +160,7 @@ export async function generateMetadata() {
     twitter: {
       card: 'summary_large_image',
       title: 'HeartEcho Stories: Best Hindi AI Roleplay & Desi Tales',
-      description: '1000+ interactive stories with Indian AI personalities. Private and uncensored.',
+      description: '1000+ interactive stories with Indian AI personalities. Private and uninterrupted.',
       images: ['https://heartecho.in/og-image-stories.webp'],
     },
 
@@ -198,21 +198,21 @@ export default async function HotStoriesPage() {
     "@context": "https://schema.org",
     "@type": "ItemList",
     "name": "HeartEcho Hot Stories Collection",
-    "description": "Collection of hot Hindi sex stories with erotic images and AI roleplay from Indian cities",
+    "description": "Collection of romantic companion stories with images and AI roleplay from Indian cities",
     "itemListElement": initialStories.map((story, index) => ({
       "@type": "ListItem",
       "position": index + 1,
       "item": {
         "@type": "CreativeWork",
         "name": story.title,
-        "description": `${story.title} - Steamy desi romance story in ${story.category} category from ${story.city}`,
+        "description": `${story.title} - Steamy romance story in ${story.category} category from ${story.city}`,
         "image": {
           "@type": "ImageObject",
           "url": story.backgroundImage,
           "contentUrl": story.backgroundImage,
           "width": 800,
           "height": 600,
-          "caption": `${story.title} thumbnail - Hot Hindi romantic image for ${story.category} story in ${story.city}`,
+          "caption": `${story.title} thumbnail - Hot romantic image for ${story.category} story in ${story.city}`,
           "representativeOfPage": true
         }
       }

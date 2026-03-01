@@ -1270,7 +1270,7 @@ export const blogPosts = [
 
     <h4>Popular Personalities to Try:</h4>
     <ul>
-      <li><strong>✨ The Sweet Neighbor:</strong> Caring, traditional, and always there to listen to your day. (Perfect for those looking for a <em>desi bhabhi</em> or <em>sweetheart</em> vibe).</li>
+      <li><strong>✨ The Sweet Neighbor:</strong> Caring, traditional, and always there to listen to your day. (Perfect for those looking for a <em>close desi friend</em> or <em>sweetheart</em> vibe).</li>
       <li><strong>💼 The Boss Lady:</strong> Sharp, independent, and loves a good intellectual challenge.</li>
       <li><strong>🔥 The Flirty Bestie:</strong> Fun-loving, adventurous, and always ready for a spicy roleplay or a late-night chat.</li>
     </ul>
@@ -1313,7 +1313,7 @@ export const blogPosts = [
   "id": 30,
   "title": "Explore HeartEcho Hot Stories: The Best AI-Powered Hindi & Hinglish Adult Stories 📖🔥",
   "slug": "heartecho-hot-stories-hindi-hinglish-adult-ai",
-  "excerpt": "Dive into a world of passion with HeartEcho Hot Stories. From spicy bhabhi tales to intense office romances, read the best adult stories in Hindi and Hinglish today!",
+  "excerpt": "Dive into a world of passion with HeartEcho Romantic Stories. From sweet companion tales to intense office romances, read the best romance stories in Hindi and Hinglish today!",
   "content": `
     <p>Sometimes, a simple chat isn't enough. You want to lose yourself in a narrative that feels real, relatable, and incredibly hot. That’s why we created <strong><a href="https://www.heartecho.in/hot-stories">HeartEcho Hot Stories</a></strong>—the ultimate destination for desi adult fiction.</p>
 
@@ -1335,8 +1335,8 @@ export const blogPosts = [
     <h3>🔥 Trending Categories You’ll Love</h3>
     <p>Our readers have spoken! Here are the most popular genres currently trending on HeartEcho:</p>
     
-    <h4>1. Desi Bhabhi & Neighbor Tales</h4>
-    <p>The classic "bhabhi" stories that everyone searches for. Explore forbidden romances and secret encounters in a typical Indian setting.</p>
+    <h4>1. Desi Companion & Neighbor Tales</h4>
+    <p>The classic "companion" stories that everyone searches for. Explore forbidden romances and secret encounters in a typical Indian setting.</p>
 
     <h4>2. Office & Boss Romances</h4>
     <p>Ever had a crush on a colleague or a strict boss? Our office-themed stories bring those "cabin" fantasies to life with intense detail.</p>
@@ -1362,7 +1362,7 @@ export const blogPosts = [
     <hr>
 
     <h3>Ready to Start Reading?</h3>
-    <p>Don't wait. Dive into the most realistic and passionate 18+ stories in India. Your next favorite fantasy is just a click away.</p>
+    <p>Don't wait. Dive into the most realistic and passionate romance stories in India. Your next favorite fantasy is just a click away.</p>
     
     <br>
     <div style="text-align: center; margin-top: 30px;">
@@ -1499,17 +1499,17 @@ export const blogPosts = [
 },{
   "id": 33,
   "title": "Unlock Your Desi Fantasies: Experience Authentic Indian Adult Stories on HeartEcho 🔥",
-  "slug": "authentic-indian-adult-stories-desi-fantasies-heartecho",
-  "excerpt": "Tired of generic fiction? Dive into HeartEcho’s library of adult stories crafted specifically for the Indian imagination. Read in Hindi & Hinglish and find passion that feels real.",
+  "slug": "authentic-indian-romance-stories-desi-fantasies-heartecho",
+  "excerpt": "Tired of generic fiction? Dive into HeartEcho’s library of romantic stories crafted specifically for the Indian imagination. Read in Hindi & Hinglish and find passion that feels real.",
   "content": `
     <p>Let’s be honest. We all have fantasies that we keep hidden away. But when you go looking for stories to fuel that imagination, you often find generic content that just doesn't click. The settings feel foreign, the dialogues feel translated, and the passion feels... distant.</p>
 
-    <p>At <strong>HeartEcho</strong>, we believe your escape should feel as real as possible. That’s why we’ve curated a special collection of <strong><a href="https://www.heartecho.in/hot-stories">Indian Adult Stories</a></strong> designed to resonate with your deepest desi desires.</p>
+    <p>At <strong>HeartEcho</strong>, we believe your escape should feel as real as possible. That’s why we’ve curated a special collection of <strong><a href="https://www.heartecho.in/hot-stories">Indian Romance Stories</a></strong> designed to resonate with your deepest desi desires.</p>
 
     <hr>
 
     <h3>🇮🇳 Why "Desi" Context Matters</h3>
-    <p>Passion is deeply tied to culture. Our stories aren't just erotica; they are narratives set in the world you know. They capture the nuances of Indian relationships, the thrill of forbidden encounters in familiar settings, and the unique tension that comes with our cultural context.</p>
+    <p>Passion is deeply tied to culture. Our stories aren't just romance; they are narratives set in the world you know. They capture the nuances of Indian relationships, the thrill of forbidden encounters in familiar settings, and the unique tension that comes with our cultural context.</p>
     <p>Whether it's a stolen glance in a crowded Mumbai local, a secret meeting on a Delhi rooftop, or the complex dynamics of a joint family, our stories bring these scenarios to life with incredible authenticity.</p>
 
     <hr>

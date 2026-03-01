@@ -152,7 +152,7 @@ function HomeSubscriptionContent() {
             </div>
             <ul className="hsub-list-x30sn">
               <li>✅ Realistic Letters</li>
-              <li>✅ Unlimited NSFW</li>
+              <li>✅ Unlimited Romance</li>
               <li>✅ Unlimited AI</li>
               <li>✅ Deep connection</li>
               <li>✅ Priority support</li>
@@ -177,7 +177,7 @@ function HomeSubscriptionContent() {
             </div>
             <ul className="hsub-list-x30sn">
               <li>✅ Premium Realistic Letters</li>
-              <li>✅ Unlimited NSFW</li>
+              <li>✅ Unlimited Romance</li>
               <li>✅ Unlimited AI</li>
               <li>✅ Deepest connection</li>
               <li>✅ VIP support</li>

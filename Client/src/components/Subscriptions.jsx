@@ -152,7 +152,7 @@ function SubscriptionContent() {
             <ul className="seh-features">
               <li>✅ <strong>Deep Memory</strong> (Remembers You)</li>
               <li>✅ <strong>Unlimited</strong> Personalities</li>
-              <li>✅ <strong>NSFW/Romantic</strong> Mode</li>
+              <li>✅ <strong>Intimate/Romantic</strong> Mode</li>
               <li>✅ No Daily Limits</li>
             </ul>
 
