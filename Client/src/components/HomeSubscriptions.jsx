@@ -58,6 +58,15 @@ function HomeSubscriptionContent() {
         name: 'HeartEcho', description: `${plan} Subscription`,
         handler: async function (response) {
           try {
+            // --- GOOGLE ADS CONVERSION TRACKING ---
+            if (typeof window !== "undefined" && window.gtag) {
+              window.gtag('event', 'ads_conversion_purchase', {
+                'value': amount,
+                'currency': 'INR',
+                'transaction_id': response.razorpay_payment_id
+              });
+            }
+
             await axios.post(`${api.Url}/user/payment/save`, {
               user: userData?._id, rupees: amount, transaction_id: response.razorpay_payment_id
             }, { headers: { Authorization: `Bearer ${token}` } });
