@@ -113,6 +113,19 @@ export default function RootLayout({ children }) {
           }}
         />
 
+        {/* Google tag (gtag.js) for Google Ads */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=AW-363591459"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'AW-363591459');
+            `,
+          }}
+        />
+
         {/* Meta Pixel (Both IDs) */}
         <script
           dangerouslySetInnerHTML={{
