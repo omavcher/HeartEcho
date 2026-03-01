@@ -9,7 +9,7 @@ export const metadata = {
   openGraph: {
     title: 'HeartEcho Reviews — 100+ Verified Member Stories',
     description:
-      'Real stories from 12,000+ HeartEcho premium members. AI companion that remembers you, unlimited conversations, Hot Stories, Live interactions and more — starting ₹299/year.',
+      'Real stories from 12,000+ HeartEcho premium members. AI companion that remembers you, unlimited conversations, Hot Stories, Live interactions and more — starting ₹399/year.',
     url: 'https://heartecho.in/reviews',
     siteName: 'HeartEcho',
     type: 'website',
@@ -26,7 +26,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'HeartEcho Reviews — 100+ Verified Member Stories',
     description:
-      'Real stories from HeartEcho premium members. AI that remembers you, unlimited chats, and much more — ₹299/year.',
+      'Real stories from HeartEcho premium members. AI that remembers you, unlimited chats, and much more — ₹399/year.',
   },
   alternates: {
     canonical: 'https://heartecho.in/reviews',

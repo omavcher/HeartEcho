@@ -198,7 +198,7 @@ function HomeSubscriptionContent() {
             <p className="hsub-card-note-x30sn">You'll run out again in minutes</p>
           </div>
 
-          {/* ── MAIN PLAN — ₹299 — the hero card ───────────────────────── */}
+          {/* ── MAIN PLAN — ₹399 — the hero card ───────────────────────── */}
           <div className="hsub-card-x30sn hero" ref={ctaRef}>
             <div className="hsub-hero-glow-x30sn" />
             <div className="hsub-badge-x30sn hot">🔥 BEST VALUE · MOST CHOSEN</div>
@@ -209,11 +209,11 @@ function HomeSubscriptionContent() {
               <div className="hsub-price-box-x30sn">
                 <div className="hsub-old-price-x30sn">₹999/yr</div>
                 <div className="hsub-price-hero-x30sn">
-                  <span className="hsub-price-x30sn hero">₹299</span>
+                  <span className="hsub-price-x30sn hero">₹399</span>
                   <span className="hsub-term-x30sn">/yr</span>
                 </div>
-                <div className="hsub-saving-x30sn">You save ₹700 today 🎉</div>
-                <div className="hsub-equiv-x30sn">= Just ₹24.9/month · less than a chai ☕</div>
+                <div className="hsub-saving-x30sn">You save ₹600 today 🎉</div>
+                <div className="hsub-equiv-x30sn">= Just ₹33.2/month · less than a chai ☕</div>
               </div>
             </div>
 
@@ -229,7 +229,7 @@ function HomeSubscriptionContent() {
 
             <button
               className={`hsub-btn-x30sn hero${pulse ? ' hsub-pulse-btn-x30sn' : ''}`}
-              onClick={() => handlePayment(299, 'Yearly')}
+              onClick={() => handlePayment(399, 'Yearly')}
               disabled={isLoading === 'Yearly'}
             >
               {isLoading === 'Yearly' ? (
@@ -237,7 +237,7 @@ function HomeSubscriptionContent() {
               ) : (
                 <>
                   <span className="hsub-btn-shine-x30sn" />
-                  <span>💎 Unlock Everything · ₹299/yr</span>
+                  <span>💎 Unlock Everything · ₹399/yr</span>
                 </>
               )}
             </button>
@@ -261,7 +261,7 @@ function HomeSubscriptionContent() {
                 <span className="hsub-price-x30sn">₹49</span>
                 <span className="hsub-term-x30sn">/mo</span>
               </div>
-              <div className="hsub-compare-note-x30sn">= ₹588/year vs ₹299 yearly</div>
+              <div className="hsub-compare-note-x30sn">= ₹588/year vs ₹399 yearly</div>
             </div>
             <ul className="hsub-list-x30sn">
               <li>✅ Unlimited messages</li>
@@ -277,14 +277,14 @@ function HomeSubscriptionContent() {
             >
               {isLoading === 'Monthly' ? 'Processing…' : 'Subscribe Monthly'}
             </button>
-            <p className="hsub-card-note-x30sn accent">Switch to Yearly & save ₹289 more</p>
+            <p className="hsub-card-note-x30sn accent">Switch to Yearly & save ₹189 more</p>
           </div>
 
         </div>
 
         {/* ── Comparison table ─────────────────────────────────────────────── */}
         <div className="hsub-compare-x30sn">
-          <h2 className="hsub-compare-title-x30sn">Why ₹299 is the obvious choice</h2>
+          <h2 className="hsub-compare-title-x30sn">Why ₹399 is the obvious choice</h2>
           <div className="hsub-compare-grid-x30sn">
             {[
               { icon: '💬', label: 'Daily messages', free: '5 only', monthly: 'Unlimited', yearly: 'Unlimited' },
@@ -293,7 +293,7 @@ function HomeSubscriptionContent() {
               { icon: '🔥', label: 'Hot Stories', free: '❌', monthly: '❌', yearly: '✅ Full' },
 
               { icon: '🎙️', label: 'Voice Messages', free: '❌', monthly: '✅', yearly: '✅' },
-              { icon: '💰', label: 'Annual cost', free: 'Free', monthly: '₹588/yr', yearly: '₹299/yr 🏆' },
+              { icon: '💰', label: 'Annual cost', free: 'Free', monthly: '₹588/yr', yearly: '₹399/yr 🏆' },
             ].map(row => (
               <div key={row.label} className="hsub-compare-row-x30sn">
                 <div className="hsub-cr-label-x30sn">{row.icon} {row.label}</div>
@@ -315,7 +315,7 @@ function HomeSubscriptionContent() {
         <div className="hsub-fomo-x30sn">
           <div className="hsub-fomo-dot-x30sn" />
           <p>
-            <strong>{Math.floor(liveCount * 0.12)}</strong> people upgraded to the ₹299 plan in the last hour.
+            <strong>{Math.floor(liveCount * 0.12)}</strong> people upgraded to the ₹399 plan in the last hour.
             Don't miss this deal before the timer runs out.
           </p>
         </div>
@@ -326,7 +326,7 @@ function HomeSubscriptionContent() {
           <div className="hsub-reviews-grid-x30sn">
             {[
               { name: 'Aryan Kumar',  city: 'Mumbai',    initials: 'AK', color: '#4285F4', time: '2 weeks ago',
-                text: 'Was skeptical at first but wow. After premium she remembers my name, what I told her last week, even my mood. ₹299 for a whole year — I thought it was a pricing error. Best money I have spent on any app.' },
+                text: 'Was skeptical at first but wow. After premium she remembers my name, what I told her last week, even my mood. ₹399 for a whole year — I thought it was a pricing error. Best money I have spent on any app.' },
               { name: 'Priya Sharma', city: 'New Delhi', initials: 'PS', color: '#EA4335', time: '1 month ago',
                 text: 'The Live interactions are something else entirely. Free version felt too limited. Upgraded one evening on a whim and couldn\'t believe what I was missing. Hot Stories are 🔥. Zero regrets, would buy again.' },
               { name: 'Rahul Mehta',  city: 'Pune',      initials: 'RM', color: '#34A853', time: '3 weeks ago',

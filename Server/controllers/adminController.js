@@ -1233,7 +1233,7 @@ function formatToTwoDecimals(number) {
 
 // Helper function to determine plan type based on payment amount
 function determinePlanType(amount) {
-  if (amount >= 299) return "Yearly Plan";
+  if (amount >= 399) return "Yearly Plan";
   if (amount >= 99) return "Monthly Plan";
   if (amount >= 49) return "Quarterly Plan";
   return "Basic Plan";

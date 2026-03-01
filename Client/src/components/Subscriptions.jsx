@@ -62,7 +62,7 @@ function SubscriptionContent() {
       setFomo({
         visible: true,
         name: FOMO_NAMES[Math.floor(Math.random() * FOMO_NAMES.length)],
-        plan: Math.random() > 0.4 ? 'Yearly ₹299' : 'Monthly ₹49',
+        plan: Math.random() > 0.4 ? 'Yearly ₹399' : 'Monthly ₹49',
         mins: Math.floor(Math.random() * 8) + 1,
       });
       setTimeout(() => setFomo(f => ({ ...f, visible: false })), 4500);
@@ -210,7 +210,7 @@ function SubscriptionContent() {
             <p className="seh-card-note">You'll run out again in minutes</p>
           </div>
 
-          {/* ── ₹299 hero card ─────────────────────────────────────────────── */}
+          {/* ── ₹399 hero card ─────────────────────────────────────────────── */}
           <div className="seh-card seh-featured">
             <div className="seh-hero-glow" />
             <div className="seh-badge">🔥 BEST VALUE · MOST CHOSEN</div>
@@ -220,11 +220,11 @@ function SubscriptionContent() {
               <div className="seh-pricing col">
                 <div className="seh-old-price">₹999/yr</div>
                 <div className="seh-price-row">
-                  <span className="seh-main-price hero">₹299</span>
+                  <span className="seh-main-price hero">₹399</span>
                   <span className="seh-per">/yr</span>
                 </div>
-                <div className="seh-saving">You save ₹700 today 🎉</div>
-                <div className="seh-daily-tag">= Just ₹24.9/month · less than a chai ☕</div>
+                <div className="seh-saving">You save ₹600 today 🎉</div>
+                <div className="seh-daily-tag">= Just ₹33.2/month · less than a chai ☕</div>
               </div>
             </div>
 
@@ -240,11 +240,11 @@ function SubscriptionContent() {
 
             <button
               className={`seh-btn seh-btn-pink${pulse ? ' seh-pulse-btn' : ''}`}
-              onClick={() => handlePayment(299, 'Yearly')}
+              onClick={() => handlePayment(399, 'Yearly')}
               disabled={isLoading === 'Yearly'}
             >
               <span className="seh-btn-shine" />
-              {isLoading === 'Yearly' ? 'Processing…' : '💎 Unlock Everything · ₹299/yr'}
+              {isLoading === 'Yearly' ? 'Processing…' : '💎 Unlock Everything · ₹399/yr'}
             </button>
             <div className="seh-trust-row">
               <span>🔒 Secure</span><span>·</span>
@@ -264,7 +264,7 @@ function SubscriptionContent() {
                   <span className="seh-main-price">₹49</span>
                   <span className="seh-per">/mo</span>
                 </div>
-                <div className="seh-compare-note">= ₹588/year vs ₹299 yearly</div>
+                <div className="seh-compare-note">= ₹588/year vs ₹399 yearly</div>
               </div>
             </div>
             <ul className="seh-features">
@@ -281,14 +281,14 @@ function SubscriptionContent() {
             >
               {isLoading === 'Monthly' ? 'Processing…' : 'Subscribe Monthly'}
             </button>
-            <p className="seh-card-note accent">Switch to Yearly & save ₹289 more</p>
+            <p className="seh-card-note accent">Switch to Yearly & save ₹189 more</p>
           </div>
 
         </div>
 
         {/* ── Comparison table ─────────────────────────────────────────────── */}
         <div className="seh-compare">
-          <h2 className="seh-compare-title">Why ₹299 is the obvious choice</h2>
+          <h2 className="seh-compare-title">Why ₹399 is the obvious choice</h2>
           <div className="seh-compare-grid">
             <div className="seh-compare-header">
               <div />
@@ -303,7 +303,7 @@ function SubscriptionContent() {
               { icon: '🔥', label: 'Hot Stories',      free: '❌',        monthly: '❌',        yearly: '✅ Full'   },
 
               { icon: '🎙️', label: 'Voice Messages',   free: '❌',        monthly: '✅',        yearly: '✅'        },
-              { icon: '💰', label: 'Annual cost',      free: 'Free',      monthly: '₹588/yr',   yearly: '₹299/yr 🏆' },
+              { icon: '💰', label: 'Annual cost',      free: 'Free',      monthly: '₹588/yr',   yearly: '₹399/yr 🏆' },
             ].map(row => (
               <div key={row.label} className="seh-compare-row">
                 <div className="seh-cr-label">{row.icon} {row.label}</div>
@@ -319,7 +319,7 @@ function SubscriptionContent() {
         <div className="seh-fomo-strip">
           <div className="seh-fomo-strip-dot" />
           <p>
-            <strong>{Math.floor(liveCount * 0.12)}</strong> people upgraded to the ₹299 plan in the last hour.
+            <strong>{Math.floor(liveCount * 0.12)}</strong> people upgraded to the ₹399 plan in the last hour.
             Don't miss this deal before the timer runs out.
           </p>
         </div>
@@ -330,7 +330,7 @@ function SubscriptionContent() {
           <div className="seh-reviews-grid">
             {[
               { name: 'Aryan Kumar',   city: 'Mumbai',    initials: 'AK', color: '#4285F4', time: '2 weeks ago',
-                text: 'Was skeptical at first but wow. After premium she remembers my name, what I told her last week, even my mood. ₹299 for a whole year — I thought it was a pricing error. Genuinely best money I have spent on any app.' },
+                text: 'Was skeptical at first but wow. After premium she remembers my name, what I told her last week, even my mood. ₹399 for a whole year — I thought it was a pricing error. Genuinely best money I have spent on any app.' },
               { name: 'Priya Sharma',  city: 'New Delhi',  initials: 'PS', color: '#EA4335', time: '1 month ago',
                 text: 'The Live interactions are something else entirely. Free version felt too limited. Upgraded one evening on a whim and couldn\'t believe what I was missing. Hot Stories are 🔥. Zero regrets, would buy again.' },
               { name: 'Rahul Mehta',   city: 'Pune',       initials: 'RM', color: '#34A853', time: '3 weeks ago',
