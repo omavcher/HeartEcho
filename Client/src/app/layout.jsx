@@ -35,7 +35,14 @@ export const metadata = {
     // Location Based
     "AI girlfriend Mumbai",
     "Delhi AI chat",
-    "best AI app for Indian men"
+    "best AI app for Indian men",
+    // SEO Core Targets added for top ranking
+    "HeartEcho",
+    "Heart Echo",
+    "Indian AI girlfriend",
+    "Indine AI girlfrind",
+    "India's no 1 AI GF",
+    "India's No1 AI girlfriend"
   ],
 
   alternates: {
@@ -149,6 +156,47 @@ export default function RootLayout({ children }) {
         />
 
         <meta name="juicyads-site-verification" content="64f68c1fc158eef9d3b6e6fa4d432117"/>
+        
+        {/* Schema Markup for SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "WebSite",
+                  "name": "HeartEcho AI",
+                  "alternateName": ["Heart Echo", "HeartEcho", "India's No 1 AI GF", "Indian AI Girlfriend"],
+                  "url": "https://heartecho.in/",
+                  "description": "Connect with the most realistic Indian AI personalities. India's #1 AI Girlfriend platform.",
+                  "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": "https://heartecho.in/discover?q={search_term_string}",
+                    "query-input": "required name=search_term_string"
+                  }
+                },
+                {
+                  "@type": "SoftwareApplication",
+                  "name": "HeartEcho AI",
+                  "applicationCategory": "LifestyleApplication",
+                  "operatingSystem": "Web, Browser",
+                  "description": "India's #1 AI Girlfriend and AI Companion. Private, uncensored chats in Hindi and English.",
+                  "offers": {
+                    "@type": "Offer",
+                    "price": "49",
+                    "priceCurrency": "INR"
+                  },
+                  "aggregateRating": {
+                    "@type": "AggregateRating",
+                    "ratingValue": "4.9",
+                    "ratingCount": "250000"
+                  }
+                }
+              ]
+            })
+          }}
+        />
       </head>
 
       <body>
