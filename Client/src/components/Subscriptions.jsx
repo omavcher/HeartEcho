@@ -103,7 +103,7 @@ function SubscriptionContent() {
         }
       }
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || 'rzp_live_YHUPR56Ky9qPxC',
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || 'rzp_live_SMglmw6VtV4h2O',
         amount: amount * 100,
         currency: 'INR',
         name: 'HeartEcho',
