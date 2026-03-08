@@ -169,9 +169,9 @@ const UsersAdmin = () => {
   const [dashboardStats, setDashboardStats] = useState({ newUsersToday: 0, todaySignIns: 0 });
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [exportFilter, setExportFilter] = useState("all");
   const usersPerPage = 8;
 
   const getToken = useCallback(() => (typeof window !== 'undefined' ? localStorage.getItem("token") || "" : ""), []);
@@ -238,15 +238,41 @@ const UsersAdmin = () => {
                           u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           u._id?.includes(searchTerm);
       const matchType = filterType === "all" || u.user_type === filterType;
-      return matchSearch && matchType;
+      
+      let matchDate = true;
+      const dateField = u.createdAt || u.joinedAt;
+      if (dateFilter !== "all" && dateField) {
+          const userDate = new Date(dateField);
+          const now = new Date();
+          const diffMs = now - userDate;
+          const oneDay = 24 * 60 * 60 * 1000;
+          if (dateFilter === "week") matchDate = diffMs <= 7 * oneDay;
+          else if (dateFilter === "month") matchDate = diffMs <= 30 * oneDay;
+          else if (dateFilter === "6months") matchDate = diffMs <= 180 * oneDay;
+          else if (dateFilter === "year") matchDate = diffMs <= 365 * oneDay;
+      }
+      return matchSearch && matchType && matchDate;
     });
-  }, [users, searchTerm, filterType]);
+  }, [users, searchTerm, filterType, dateFilter]);
 
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage);
 
   const exportUsersForEmail = () => {
-     alert("Downloading JSON for: " + exportFilter);
-     // Add your JSON download logic here
+     const dataToExport = filteredUsers.map(u => ({
+         name: u.name || "N/A",
+         email: u.email || "N/A",
+         age: u.age || "N/A",
+         gender: u.gender || "N/A",
+         user_type: u.user_type || "free",
+     }));
+
+     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToExport, null, 2));
+     const downloadAnchorNode = document.createElement('a');
+     downloadAnchorNode.setAttribute("href", dataStr);
+     downloadAnchorNode.setAttribute("download", `users_export_${new Date().toISOString().split('T')[0]}.json`);
+     document.body.appendChild(downloadAnchorNode);
+     downloadAnchorNode.click();
+     downloadAnchorNode.remove();
   };
 
   if (loading) return <div className="loader-x30sn"><div className="spinner-x30sn"></div><p>Syncing Database...</p></div>;
@@ -345,13 +371,20 @@ const UsersAdmin = () => {
             <FaSearch />
             <input type="text" className="search-inp-x30sn" placeholder="Search by name, email or ID..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
-          <select className="filter-sel-x30sn" onChange={e => setFilterType(e.target.value)}>
+          <select className="filter-sel-x30sn" value={filterType} onChange={e => setFilterType(e.target.value)}>
             <option value="all">All Tiers</option>
             <option value="subscriber">Premium</option>
             <option value="free">Free</option>
           </select>
+          <select className="filter-sel-x30sn" value={dateFilter} onChange={e => setDateFilter(e.target.value)}>
+            <option value="all">All Time</option>
+            <option value="week">Last Week</option>
+            <option value="month">Last Month</option>
+            <option value="6months">Last 6 Months</option>
+            <option value="year">Last Year</option>
+          </select>
           <button className="u-sync-btn-x30sn" style={{width:'auto', padding:'0 15px', borderRadius:8, fontSize:12, gap:8}} onClick={exportUsersForEmail}>
-             <FaDownload/> Export
+             <FaDownload/> Export JSON
           </button>
         </div>
 
