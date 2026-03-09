@@ -30,7 +30,7 @@ export default function StoryPageClient({ initialStory, initialRelatedStories })
 
   const handleStartChat = () => {
     const characterId = story.characterId || story._id;
-    router.push(`/chatbox?chatId=${characterId}&lang=${lang}&character=${encodeURIComponent(story.characterName)}`);
+    router.push(`/chatbox`);
   };
 
   const handleShare = async () => {
