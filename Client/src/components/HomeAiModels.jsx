@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Skeleton from "react-loading-skeleton";
@@ -14,8 +14,6 @@ function HomeAiModels() {
   const [aiModels, setAiModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [hoveredCard, setHoveredCard] = useState(null);
-  const videoRefs = useRef({});
   const router = useRouter();
 
   useEffect(() => {
@@ -52,30 +50,6 @@ function HomeAiModels() {
   const getShortDescription = (description) => {
     const words = description.split(" ");
     return words.slice(0, 6).join(" ") + (words.length > 6 ? "..." : "");
-  };
-
-  const handleMouseEnter = (modelId) => {
-    setHoveredCard(modelId);
-    const video = videoRefs.current[modelId];
-    if (video) {
-      video.currentTime = 0;
-      video.play().catch(error => {
-        console.log("Video play failed:", error);
-      });
-    }
-  };
-
-  const handleMouseLeave = (modelId) => {
-    setHoveredCard(null);
-    const video = videoRefs.current[modelId];
-    if (video) {
-      video.pause();
-      video.currentTime = 0;
-    }
-  };
-
-  const hasVideo = (model) => {
-    return model.avatar_motion_video && model.avatar_motion_video.trim() !== "";
   };
 
   return (
@@ -158,8 +132,6 @@ function HomeAiModels() {
               className="model-card-d32ud" 
               key={model._id}
               onClick={() => handleModelClick(model._id)}
-              onMouseEnter={() => handleMouseEnter(model._id)}
-              onMouseLeave={() => handleMouseLeave(model._id)}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && handleModelClick(model._id)}
@@ -167,26 +139,12 @@ function HomeAiModels() {
             >
               <div className="portrait-ratio-wrapper-d32ud">
                 <div className="model-image-container-d32ud">
-                  {/* Video element - only show when hovering and video exists */}
-                  {hasVideo(model) && (
-                    <video
-                      ref={el => videoRefs.current[model._id] = el}
-                      src={model.avatar_motion_video}
-                      className={`model-video-d32ud portrait-image-d32ud ${hoveredCard === model._id ? 'video-visible-d32ud' : 'video-hidden-d32ud'}`}
-                      loop
-                      muted
-                      playsInline
-                      preload="metadata"
-                    />
-                  )}
-                  
-                  {/* Fallback image - show when not hovering or no video */}
                   <Image 
                     src={model.avatar_img} 
                     alt={model.name}
                     width={270}
                     height={480}
-                    className={`model-image-d32ud portrait-image-d32ud ${hasVideo(model) && hoveredCard === model._id ? 'image-hidden-d32ud' : 'image-visible-d32ud'}`}
+                    className="model-image-d32ud portrait-image-d32ud image-visible-d32ud"
                     priority={index < 4}
                   />
                   

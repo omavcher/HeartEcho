@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { Filter, Search, Play, Pause } from "lucide-react";
@@ -14,9 +14,7 @@ function AIFriends() {
   const [activeTab, setActiveTab] = useState("all");
   const [ageRange, setAgeRange] = useState([18, 50]);
   const [relationshipFilter, setRelationshipFilter] = useState("all");
-  const [hoveredCard, setHoveredCard] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
-  const videoRefs = useRef({});
 
   // --- STYLES INJECTION ---
   const styles = `
@@ -430,30 +428,6 @@ function AIFriends() {
     return words.slice(0, 6).join(" ") + (words.length > 6 ? "..." : "");
   };
 
-  const handleMouseEnter = (modelId) => {
-    setHoveredCard(modelId);
-    const video = videoRefs.current[modelId];
-    if (video) {
-      video.currentTime = 0;
-      video.play().catch(error => {
-        console.log("Video play failed:", error);
-      });
-    }
-  };
-
-  const handleMouseLeave = (modelId) => {
-    setHoveredCard(null);
-    const video = videoRefs.current[modelId];
-    if (video) {
-      video.pause();
-      video.currentTime = 0;
-    }
-  };
-
-  const hasVideo = (model) => {
-    return model.avatar_motion_video && model.avatar_motion_video.trim() !== "";
-  };
-
   return (
     <div className="ai-friends-container-38f3a">
       <style>{styles}</style>
@@ -558,28 +532,12 @@ function AIFriends() {
               href={`/chatbox?chatId=${model._id}`} 
               className="ai-card-38f3a" 
               key={model._id}
-              onMouseEnter={() => handleMouseEnter(model._id)}
-              onMouseLeave={() => handleMouseLeave(model._id)}
             >
               <div className="portrait-ratio-wrapper-38f3a">
-                {/* Video element - only show when hovering and video exists */}
-                {hasVideo(model) && (
-                  <video
-                    ref={el => videoRefs.current[model._id] = el}
-                    src={model.avatar_motion_video}
-                    className={`ai-card-media-38f3a ai-model-video-38f3a ${hoveredCard === model._id ? 'video-visible-38f3a' : 'video-hidden-38f3a'}`}
-                    loop
-                    muted
-                    playsInline
-                    preload="metadata"
-                  />
-                )}
-                
-                {/* Fallback image - show when not hovering or no video */}
                 <img 
                   src={model.avatar_img} 
                   alt={model.name}
-                  className={`ai-card-media-38f3a ai-model-image-38f3a ${hasVideo(model) && hoveredCard === model._id ? 'image-hidden-38f3a' : 'image-visible-38f3a'}`}
+                  className="ai-card-media-38f3a ai-model-image-38f3a image-visible-38f3a"
                 />
 
                 
