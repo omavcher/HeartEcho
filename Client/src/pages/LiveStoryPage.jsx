@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef, Fragment, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
-import { liveStoriesData } from "../data/liveStoriesData";
 import AdvancedLoader from "../components/AdvancedLoader";
 import LoginModal from "../components/LoginModel";
 import api from "../config/api";
@@ -484,12 +483,28 @@ function LiveStoryContent() {
     const [quotaExhausted, setQuotaExhausted] = useState(false);
     const [sendError, setSendError] = useState(null);
     const [showLoginCTA, setShowLoginCTA] = useState(false);
+    const [allStories, setAllStories] = useState([]);
+    const [storiesLoading, setStoriesLoading] = useState(true);
 
     const chatAreaRef = useRef(null);
-    const activeStory = liveStoriesData.find(s => s.slug === currentSlug) || null;
+    const activeStory = allStories.find(s => s.slug === currentSlug) || null;
 
     useEffect(() => {
         setToken(typeof window !== 'undefined' ? localStorage.getItem('token') : null);
+        const fetchStories = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:5000'}/api/live-story/stories`);
+                const data = await res.json();
+                if (data.success) {
+                    setAllStories(data.stories);
+                }
+            } catch (error) {
+                console.error("Failed to fetch stories:", error);
+            } finally {
+                setStoriesLoading(false);
+            }
+        };
+        fetchStories();
     }, []);
 
     // When slug or token changes: fetch previous chat. If no previous messages, show story video.
@@ -737,24 +752,28 @@ function LiveStoryContent() {
                     <p className="ls-sidebar-desc">Experience interactive narratives like real chats.</p>
                 </div>
                 <div className="ls-stories-list">
-                    {liveStoriesData.map((story) => (
-                        <Link 
-                            href={`/live-a-story/${story.slug}`} 
-                            key={story.id} 
-                            onClick={(e) => {
-                                if (windowWidth < 768) setShowSidebar(false);
-                            }}
-                            className={`ls-sidebar-item ${currentSlug === story.slug ? 'active' : ''}`}
-                        >
-                            <img src={story.poster} alt={story.title} className="ls-item-poster" 
-                                 onError={(e) => { e.target.style.display = 'none'; }} />
-                            <div className="ls-item-overlay"></div>
-                            <div className="ls-item-info">
-                                <p className="ls-item-category">{story.category}</p>
-                                <h3 className="ls-item-title">{story.title}</h3>
-                            </div>
-                        </Link>
-                    ))}
+                    {storiesLoading ? (
+                        <div style={{ padding: '20px', color: '#888' }}>Loading stories...</div>
+                    ) : (
+                        allStories.map((story) => (
+                            <Link 
+                                href={`/live-a-story/${story.slug}`} 
+                                key={story._id || story.slug} 
+                                onClick={(e) => {
+                                    if (windowWidth < 768) setShowSidebar(false);
+                                }}
+                                className={`ls-sidebar-item ${currentSlug === story.slug ? 'active' : ''}`}
+                            >
+                                <img src={story.poster} alt={story.title} className="ls-item-poster" 
+                                     onError={(e) => { e.target.style.display = 'none'; }} />
+                                <div className="ls-item-overlay"></div>
+                                <div className="ls-item-info">
+                                    <p className="ls-item-category">{story.category}</p>
+                                    <h3 className="ls-item-title">{story.title}</h3>
+                                </div>
+                            </Link>
+                        ))
+                    )}
                 </div>
             </div>
 

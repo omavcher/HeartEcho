@@ -1,6 +1,5 @@
 import url from "../data/url";
 import { blogPosts } from "../data/blogPosts";
-import { liveStoriesData } from "../data/liveStoriesData";
 import api from '../config/api';
 import axios from "axios";
 
@@ -42,27 +41,9 @@ export default async function sitemap() {
     priority: 0.7,
   }));
 
-  // Live Story routes (listing + all dynamic [slug])
-  const liveStoryRoutes = [
-    { url: `${url}/live-a-story`, lastModified: now, changeFrequency: 'weekly', priority: 0.85 },
-    ...liveStoriesData.map((story) => ({
-      url: `${url}/live-a-story/${story.slug}`,
-      lastModified: now,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    })),
-  ];
-
-  // Blog routes (from local data)
-  const blogRoutes = blogPosts.map((post) => ({
-    url: `${url}/blog/${post.slug}`,
-    lastModified: new Date(post.date),
-    changeFrequency: 'monthly',
-    priority: 0.6,
-  }));
-
   // Fetch dynamic story routes from API
   let storyRoutes = [];
+  let fetchedLiveStoryRoutes = [];
   
   try {
     const response = await axios.get(`${api.Url}/story/get-slug`);
@@ -75,10 +56,32 @@ export default async function sitemap() {
         priority: 0.9,
       }));
     }
+
+    const liveStoryRes = await axios.get(`${api.Url}/live-story/stories`);
+    if (liveStoryRes.data.success && liveStoryRes.data.stories) {
+      fetchedLiveStoryRoutes = liveStoryRes.data.stories.map((story) => ({
+        url: `${url}/live-a-story/${story.slug}`,
+        lastModified: now,
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      }));
+    }
   } catch (error) {
-    console.error("Error fetching story slugs for sitemap:", error);
-    // You might want to add fallback story routes here if API fails
+    console.error("Error fetching dynamically stories for sitemap:", error);
   }
+
+  const liveStoryRoutes = [
+    { url: `${url}/live-a-story`, lastModified: now, changeFrequency: 'weekly', priority: 0.85 },
+    ...fetchedLiveStoryRoutes
+  ];
+
+  // Blog routes (from local data)
+  const blogRoutes = blogPosts.map((post) => ({
+    url: `${url}/blog/${post.slug}`,
+    lastModified: new Date(post.date),
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }));
 
   // Combine all routes
   return [

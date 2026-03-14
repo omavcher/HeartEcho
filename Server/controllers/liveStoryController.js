@@ -6,25 +6,38 @@ const { generatePersonaResponse, generateAIResponse } = require("./openrouter-ai
 // Admin routes
 exports.adminUpsertStoryModel = async (req, res) => {
   try {
-    const { slug, title, storyInText, role, setting, instruction } = req.body;
+    const { slug, title, storyInText, role, setting, instruction, description, category, views } = req.body;
     
     if (!slug || !title) {
       return res.status(400).json({ success: false, message: "Slug and title are required." });
     }
 
+    const cdnUrl = "https://cdn.heartecho.in";
+    const updateData = { slug, title, storyInText, role, setting, instruction, description, category };
+    if (views) updateData.views = views;
+
+    if (req.files) {
+      if (req.files.poster && req.files.poster[0]) {
+        updateData.poster = `${cdnUrl}/${req.files.poster[0].key}`;
+      }
+      if (req.files.banner && req.files.banner[0]) {
+        updateData.banner = `${cdnUrl}/${req.files.banner[0].key}`;
+      }
+      if (req.files.story_movie && req.files.story_movie[0]) {
+        updateData.story_movie = `${cdnUrl}/${req.files.story_movie[0].key}`;
+      }
+      if (req.files.chatting) {
+        updateData.chatting = req.files.chatting.map(file => `${cdnUrl}/${file.key}`);
+      }
+    }
+
     let storyModel = await LiveStoryModel.findOne({ slug });
     
     if (storyModel) {
-      storyModel.title = title;
-      storyModel.storyInText = storyInText;
-      storyModel.role = role;
-      storyModel.setting = setting;
-      storyModel.instruction = instruction;
+      Object.assign(storyModel, updateData);
       await storyModel.save();
     } else {
-      storyModel = await LiveStoryModel.create({
-        slug, title, storyInText, role, setting, instruction
-      });
+      storyModel = await LiveStoryModel.create(updateData);
     }
 
     res.json({ success: true, storyModel });
@@ -40,6 +53,29 @@ exports.adminGetStoryModels = async (req, res) => {
     res.json({ success: true, models });
   } catch (error) {
     console.error("Error getting story models:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// Public endpoints
+exports.getPublicStories = async (req, res) => {
+  try {
+    const stories = await LiveStoryModel.find().select("-instruction -storyInText -role -setting"); // exclude AI specific text to make it lightweight
+    res.json({ success: true, stories });
+  } catch (error) {
+    console.error("Error fetching public stories:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.getPublicStoryBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const story = await LiveStoryModel.findOne({ slug }).select("-instruction -storyInText -role -setting");
+    if (!story) return res.status(404).json({ success: false, message: "Story not found" });
+    res.json({ success: true, story });
+  } catch (error) {
+    console.error("Error fetching public story:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };

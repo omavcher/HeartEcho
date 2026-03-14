@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { liveStoriesData } from '../data/liveStoriesData';
 import { FaFire, FaBookOpen, FaChevronRight } from 'react-icons/fa';
 
 const styles = `
@@ -137,6 +136,23 @@ const styles = `
 `;
 
 export default function HomeLiveStories() {
+  const [liveStories, setLiveStories] = useState([]);
+
+  useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:5000'}/api/live-story/stories`);
+        const data = await res.json();
+        if (data.success) {
+          setLiveStories(data.stories);
+        }
+      } catch (error) {
+        console.error("Failed to fetch live stories:", error);
+      }
+    };
+    fetchStories();
+  }, []);
+
   return (
     <section className="hls-root">
       <style>{styles}</style>
@@ -161,8 +177,8 @@ export default function HomeLiveStories() {
 
         {/* STORIES GRID */}
         <div className="hls-grid">
-          {liveStoriesData.map((story) => (
-            <Link href={`/live-a-story/${story.slug}`} key={story.id} className="hls-card">
+          {liveStories.map((story) => (
+            <Link href={`/live-a-story/${story.slug}`} key={story._id || story.slug} className="hls-card">
               <div className="hls-card-img-box">
                 {/* Fallback pattern since images are dummy paths for now, will show nicely styled alt if missing */}
                 <div style={{position: 'absolute', inset: 0, background: 'linear-gradient(45deg, #111, #222)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', zIndex: 0}}>

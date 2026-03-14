@@ -7,6 +7,13 @@ const liveStoryModelSchema = new mongoose.Schema({
   role: { type: String }, // Role of the AI in the story
   setting: { type: String }, // Setting of the story
   instruction: { type: String }, // Specific prompt instructions for OpenRouter
+  poster: { type: String },
+  banner: { type: String },
+  story_movie: { type: String },
+  description: { type: String },
+  category: { type: String },
+  views: { type: String, default: "0K" },
+  chatting: [{ type: String }],
 }, { timestamps: true });
 
 module.exports = mongoose.model("LiveStoryModel", liveStoryModelSchema);

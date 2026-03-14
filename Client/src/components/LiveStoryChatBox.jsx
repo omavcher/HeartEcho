@@ -9,7 +9,6 @@ import {
 import api from "../config/api";
 import { useRouter } from 'next/navigation';
 import LoginModal from "./LoginModel";
-import { liveStoriesData } from "../data/liveStoriesData";
 
 // --- NO CONFIGURATION DELAYS ---
 
@@ -82,11 +81,18 @@ const LiveStoryChatBox = ({ storySlug, onBackBTNSelect = () => {} }) => {
     const storedToken = localStorage.getItem("token");
     setToken(storedToken);
 
-    // Get story details from array
-    const storyData = liveStoriesData.find(s => s.slug === storySlug);
-    if (storyData) {
-      setStoryDetails(storyData);
-    }
+    // Get story details from server
+    const fetchStoryDetails = async () => {
+      try {
+        const response = await axios.get(`${api.Url}/live-story/stories/${storySlug}`);
+        if (response.data.success) {
+          setStoryDetails(response.data.story);
+        }
+      } catch (error) {
+        console.error("Error fetching story metadata:", error);
+      }
+    };
+    if (storySlug) fetchStoryDetails();
     
     if (storySlug) {
       if (storedToken) {
@@ -387,7 +393,7 @@ const LiveStoryChatBox = ({ storySlug, onBackBTNSelect = () => {} }) => {
             <div className="quota-track">
               <div 
                 className={`quota-fill ${remainingQuota < 3 ? 'danger' : ''}`} 
-                style={{width: \`\${Math.min((remainingQuota/5)*100, 100)}%\`}}
+                style={{width: `${Math.min((remainingQuota/5)*100, 100)}%`}}
               ></div>
             </div>
           </div>
@@ -482,7 +488,7 @@ const LiveStoryChatBox = ({ storySlug, onBackBTNSelect = () => {} }) => {
 export default LiveStoryChatBox;
 
 // --- STYLES ---
-const STYLES = \`
+const STYLES = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
@@ -702,4 +708,4 @@ const STYLES = \`
 .detail-card .value { font-size: 15px; font-weight: 600; color: white; }
 .detail-card .quota-value { color: var(--accent); font-size: 18px; }
 .bio-text { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.8); margin: 0; }
-\`;
+`

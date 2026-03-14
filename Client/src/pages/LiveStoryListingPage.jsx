@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { liveStoriesData } from "../data/liveStoriesData";
 import { FaPlay, FaFire, FaLayerGroup } from "react-icons/fa";
 import AdvancedLoader from "../components/AdvancedLoader";
 
@@ -265,18 +264,29 @@ const STYLES = `
 export default function LiveStoryListingPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [allStories, setAllStories] = useState([]);
     const carouselRef = useRef(null);
 
-    // Filter Stories
-    const heroStories = liveStoriesData.slice(0, 3); 
-    const trendingStories = [...liveStoriesData].sort((a,b) => parseFloat(b.views) - parseFloat(a.views)).slice(0, 10);
-    const allStories = liveStoriesData;
-
     useEffect(() => {
-        // Quick simulated load to ensure hydration completes safely
-        const tmr = setTimeout(() => setIsLoading(false), 200);
-        return () => clearTimeout(tmr);
+        const fetchStories = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:5000'}/api/live-story/stories`);
+                const data = await res.json();
+                if (data.success) {
+                    setAllStories(data.stories);
+                }
+            } catch (error) {
+                console.error("Failed to fetch stories:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchStories();
     }, []);
+
+    // Filter Stories
+    const heroStories = allStories.slice(0, 3); 
+    const trendingStories = [...allStories].sort((a,b) => parseFloat(b.views || 0) - parseFloat(a.views || 0)).slice(0, 10);
 
     // Auto-Scroll Logic for Carousel
     useEffect(() => {
@@ -332,7 +342,7 @@ export default function LiveStoryListingPage() {
                         onScroll={handleCarouselScroll}
                     >
                         {heroStories.map((story) => (
-                            <Link href={`/live-a-story/${story.slug}`} key={story.id} className="lsl-hero-card">
+                            <Link href={`/live-a-story/${story.slug}`} key={story._id || story.slug} className="lsl-hero-card">
                                 <img 
                                     src={story.banner || story.poster} 
                                     alt={story.title} 
@@ -370,7 +380,7 @@ export default function LiveStoryListingPage() {
                         </h2>
                         <div className="lsl-trending-list">
                             {trendingStories.map((story, idx) => (
-                                <Link href={`/live-a-story/${story.slug}`} key={`trend-${story.id}`} className="lsl-trend-card">
+                                <Link href={`/live-a-story/${story.slug}`} key={`trend-${story._id || story.slug}`} className="lsl-trend-card">
                                     <span className="lsl-trend-rank">{idx + 1}</span>
                                     <img src={story.poster} alt={story.title} className="lsl-card-img" onError={(e) => { e.target.style.display = 'none'; }} />
                                     <div className="lsl-card-overlay">
@@ -390,7 +400,7 @@ export default function LiveStoryListingPage() {
                     </h2>
                     <div className="lsl-grid">
                         {allStories.map((story) => (
-                            <Link href={`/live-a-story/${story.slug}`} key={`all-${story.id}`} className="lsl-grid-card">
+                            <Link href={`/live-a-story/${story.slug}`} key={`all-${story._id || story.slug}`} className="lsl-grid-card">
                                 <img src={story.poster} alt={story.title} className="lsl-card-img" onError={(e) => { e.target.style.display = 'none'; }} />
                                 <div className="lsl-card-overlay">
                                     <h3 className="lsl-card-title">{story.title}</h3>
