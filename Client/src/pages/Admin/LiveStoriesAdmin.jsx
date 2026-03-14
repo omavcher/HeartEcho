@@ -32,7 +32,7 @@ const uploadFileToR2 = async (file, folder, token, onProgress) => {
 };
 
 // ── MediaUploadField ───────────────────────────────────────────────────────────
-const MediaUploadField = ({ label, icon, folder, accept, multiple, value, onChange, onClear }) => {
+const MediaUploadField = ({ label, icon, folder, accept, multiple, value, onChange, onClear, onUploadStateChange }) => {
   const inputRef = useRef(null);
   const [previews, setPreviews] = useState([]); // local blob URLs for instant preview
   const [uploading, setUploading] = useState(false);
@@ -51,11 +51,15 @@ const MediaUploadField = ({ label, icon, folder, accept, multiple, value, onChan
   const handleFiles = async (selectedFiles) => {
     const token = localStorage.getItem("token");
     const filesArr = Array.from(selectedFiles);
+    if (!filesArr.length) return;
 
     // Show instant local previews
     const blobUrls = filesArr.map((f) => URL.createObjectURL(f));
     setPreviews(blobUrls);
+    
     setUploading(true);
+    if (onUploadStateChange) onUploadStateChange(true);
+    
     setProgress({});
 
     try {
@@ -67,15 +71,17 @@ const MediaUploadField = ({ label, icon, folder, accept, multiple, value, onChan
         urls.push(url);
       }
 
-      setUploadedUrls(multiple ? urls : urls[0]);
-      onChange(multiple ? urls : urls[0]);
+      const finalVal = multiple ? urls : urls[0];
+      setUploadedUrls(finalVal);
+      onChange(finalVal);
     } catch (err) {
       console.error("Upload error:", err);
-      alert("Upload failed. Please try again.");
+      alert("Upload failed. Please check your internet or bucket CORS settings.");
       setPreviews([]);
       setUploadedUrls(multiple ? [] : null);
     } finally {
       setUploading(false);
+      if (onUploadStateChange) onUploadStateChange(false);
     }
   };
 
@@ -133,7 +139,7 @@ const MediaUploadField = ({ label, icon, folder, accept, multiple, value, onChan
             </div>
           ))}
 
-          {/* Existing saved CDN URLs (when editing) — only if no new upload */}
+          {/* Existing saved CDN URLs (when editing) */}
           {previews.length === 0 &&
             existingUrls.map((url, i) => (
               <div className="preview-thumb-ls existing-ls" key={`existing-${i}`}>
@@ -192,6 +198,12 @@ const LiveStoriesAdmin = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [activeUploads, setActiveUploads] = useState(0);
+
+  const handleUploadStateChange = (isUploading) => {
+    setActiveUploads(prev => isUploading ? prev + 1 : Math.max(0, prev - 1));
+  };
+
 
   const [formData, setFormData] = useState({
     slug: "", title: "", description: "", category: "",
@@ -412,6 +424,7 @@ const LiveStoriesAdmin = () => {
                   value={mediaUrls.poster}
                   onChange={(url) => setMediaUrls((p) => ({ ...p, poster: url }))}
                   onClear={() => setMediaUrls((p) => ({ ...p, poster: null }))}
+                  onUploadStateChange={handleUploadStateChange}
                 />
               </div>
 
@@ -425,6 +438,7 @@ const LiveStoriesAdmin = () => {
                   value={mediaUrls.banner}
                   onChange={(url) => setMediaUrls((p) => ({ ...p, banner: url }))}
                   onClear={() => setMediaUrls((p) => ({ ...p, banner: null }))}
+                  onUploadStateChange={handleUploadStateChange}
                 />
               </div>
 
@@ -438,6 +452,7 @@ const LiveStoriesAdmin = () => {
                   value={mediaUrls.story_movie}
                   onChange={(url) => setMediaUrls((p) => ({ ...p, story_movie: url }))}
                   onClear={() => setMediaUrls((p) => ({ ...p, story_movie: null }))}
+                  onUploadStateChange={handleUploadStateChange}
                 />
               </div>
 
@@ -451,12 +466,23 @@ const LiveStoriesAdmin = () => {
                   value={mediaUrls.chatting}
                   onChange={(urls) => setMediaUrls((p) => ({ ...p, chatting: urls }))}
                   onClear={() => setMediaUrls((p) => ({ ...p, chatting: [] }))}
+                  onUploadStateChange={handleUploadStateChange}
                 />
               </div>
 
               <div className="form-actions-ls">
-                <button type="submit" className="save-btn-ls" disabled={saving}>
-                  {saving ? <><FaSpinner className="spin-ls" /> Saving…</> : <><FaSave /> Save Story</>}
+                <button 
+                  type="submit" 
+                  className="save-btn-ls" 
+                  disabled={saving || activeUploads > 0}
+                >
+                  {saving ? (
+                    <><FaSpinner className="spin-ls" /> Saving…</>
+                  ) : activeUploads > 0 ? (
+                    <><FaSpinner className="spin-ls" /> Uploading files ({activeUploads})…</>
+                  ) : (
+                    <><FaSave /> Save Story</>
+                  )}
                 </button>
               </div>
             </form>
