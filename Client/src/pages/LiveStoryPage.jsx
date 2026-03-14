@@ -493,9 +493,15 @@ function LiveStoryContent() {
             return;
         }
         setStoryProgressIndex(0);
-        setBgIndex(0);
         setIsTyping(false);
         setMyInput('');
+
+        const chatting = activeStory.chatting;
+        if (chatting && chatting.length > 0) {
+          setBgIndex(Math.floor(Math.random() * chatting.length));
+        } else {
+          setBgIndex(0);
+        }
 
         const hasWatched = typeof window !== 'undefined' ? localStorage.getItem(`watched_movie_${currentSlug}`) : null;
 
