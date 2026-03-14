@@ -1,36 +1,54 @@
 const express = require("express");
 const controller = require("../controllers/liveStoryController");
 const authMiddleware = require("../middleware/authMiddleware");
-
-// Note: Ensure admin check middleware is created if it exists. 
-// For now, these admin routes might be protected by basic auth depends on the setup.
-// If you have a specific isAdmin middleware, use it here.
+const { generatePresignedPutUrl } = require("../utils/s3Upload");
 
 const router = express.Router();
 
-const { uploadS3 } = require("../utils/s3Upload");
+// ─── Presigned URL endpoint (for direct browser → R2 uploads) ────────────────
+// Frontend calls this to get a short-lived signed URL, then PUTs the file directly.
+router.post("/admin/presign", authMiddleware, async (req, res) => {
+  try {
+    const { folder, filename, contentType } = req.body;
 
-// Admin Routes
-router.post(
-  "/admin/models", 
-  authMiddleware, 
-  uploadS3.fields([
-    { name: "poster", maxCount: 1 },
-    { name: "banner", maxCount: 1 },
-    { name: "story_movie", maxCount: 1 },
-    { name: "chatting", maxCount: 10 }
-  ]),
-  controller.adminUpsertStoryModel
-);
+    if (!folder || !filename || !contentType) {
+      return res.status(400).json({
+        success: false,
+        message: "folder, filename, and contentType are required.",
+      });
+    }
+
+    // Restrict to safe folders only
+    const allowedFolders = [
+      "live-stories/poster",
+      "live-stories/banner",
+      "live-stories/movie",
+      "live-stories/chatting",
+    ];
+    if (!allowedFolders.includes(folder)) {
+      return res.status(400).json({ success: false, message: "Invalid folder." });
+    }
+
+    const result = await generatePresignedPutUrl(folder, filename, contentType);
+    res.json({ success: true, ...result });
+  } catch (error) {
+    console.error("Error generating presigned URL:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+});
+
+// ─── Admin Routes ─────────────────────────────────────────────────────────────
+// NOTE: No multer here anymore — frontend uploads directly to R2 and sends us the CDN URLs.
+router.post("/admin/models", authMiddleware, controller.adminUpsertStoryModel);
 router.get("/admin/models", authMiddleware, controller.adminGetStoryModels);
 router.post("/admin/sync", authMiddleware, controller.adminSyncModels);
 router.delete("/admin/models/:slug", authMiddleware, controller.adminDeleteStoryModel);
 
-// Public Routes
+// ─── Public Routes ────────────────────────────────────────────────────────────
 router.get("/stories", controller.getPublicStories);
 router.get("/stories/:slug", controller.getPublicStoryBySlug);
 
-// User Chat Routes
+// ─── User Chat Routes ─────────────────────────────────────────────────────────
 router.get("/:storySlug/chat", authMiddleware, controller.getUserChat);
 router.post("/:storySlug/chat/send", authMiddleware, controller.sendChatMessage);
 router.delete("/:storySlug/chat/message/:messageId", authMiddleware, controller.deleteMessage);

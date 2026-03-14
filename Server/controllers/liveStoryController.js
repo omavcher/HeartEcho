@@ -6,33 +6,34 @@ const { generatePersonaResponse, generateAIResponse } = require("./openrouter-ai
 // Admin routes
 exports.adminUpsertStoryModel = async (req, res) => {
   try {
-    const { slug, title, storyInText, role, setting, instruction, description, category, views } = req.body;
-    
+    const {
+      slug, title, storyInText, role, setting, instruction, description, category, views,
+      // Media URLs sent directly from the frontend after direct R2 upload
+      poster, banner, story_movie, chatting
+    } = req.body;
+
     if (!slug || !title) {
       return res.status(400).json({ success: false, message: "Slug and title are required." });
     }
 
-    const cdnUrl = "https://cdn.heartecho.in";
     const updateData = { slug, title, storyInText, role, setting, instruction, description, category };
     if (views) updateData.views = views;
 
-    if (req.files) {
-      if (req.files.poster && req.files.poster[0]) {
-        updateData.poster = `${cdnUrl}/${req.files.poster[0].key}`;
-      }
-      if (req.files.banner && req.files.banner[0]) {
-        updateData.banner = `${cdnUrl}/${req.files.banner[0].key}`;
-      }
-      if (req.files.story_movie && req.files.story_movie[0]) {
-        updateData.story_movie = `${cdnUrl}/${req.files.story_movie[0].key}`;
-      }
-      if (req.files.chatting) {
-        updateData.chatting = req.files.chatting.map(file => `${cdnUrl}/${file.key}`);
+    // Only update media URLs when they are provided (non-empty strings)
+    if (poster)      updateData.poster       = poster;
+    if (banner)      updateData.banner       = banner;
+    if (story_movie) updateData.story_movie  = story_movie;
+    if (chatting) {
+      // chatting may arrive as a JSON-stringified array or already an array
+      try {
+        updateData.chatting = typeof chatting === "string" ? JSON.parse(chatting) : chatting;
+      } catch {
+        updateData.chatting = Array.isArray(chatting) ? chatting : [chatting];
       }
     }
 
     let storyModel = await LiveStoryModel.findOne({ slug });
-    
+
     if (storyModel) {
       Object.assign(storyModel, updateData);
       await storyModel.save();
