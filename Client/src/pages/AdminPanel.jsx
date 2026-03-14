@@ -24,6 +24,7 @@ import LoginActivityAdmin from "./Admin/LoginActivityAdmin.jsx";
 import TrackingAdmin from "./Admin/TrackingAdmin.jsx";
 import { IoLogoSass, IoMdLogIn } from "react-icons/io";
 import PaymentActivityAdmin from "./Admin/PaymentActivityAdmin.jsx";
+import LiveStoriesAdmin from "./Admin/LiveStoriesAdmin.jsx";
 
 const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
   const pathname = usePathname();
@@ -41,7 +42,8 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
     { path: "/admin/chats", label: "Chats", icon: <MdChat /> },
     { path: "/admin/analytics", label: "Tracking & Analytics", icon: <MdAnalytics /> },
     { path: "/admin/login-activity", label: "Login Activity", icon: <MdAnalytics /> },
-    { path: "/admin/payment-activity", label: "Payment Activity", icon: <MdPayment /> }
+    { path: "/admin/payment-activity", label: "Payment Activity", icon: <MdPayment /> },
+    { path: "/admin/live-stories", label: "Live Stories AI", icon: <FaGem /> }
   ];
 
   return (
@@ -146,7 +148,7 @@ const AdminPanel = () => {
       '/admin/analytics': <div className="content-wrapper-x30sn"><TrackingAdmin /></div>,
        '/admin/login-activity': <div className="content-wrapper-x30sn"><LoginActivityAdmin /></div>,
         '/admin/payment-activity': <div className="content-wrapper-x30sn"><PaymentActivityAdmin /></div>,
-
+        '/admin/live-stories': <div className="content-wrapper-x30sn"><LiveStoriesAdmin /></div>,
 
     };
     // If the path matches edit story dynamic route

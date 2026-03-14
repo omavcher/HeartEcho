@@ -1,5 +1,6 @@
 import url from "../data/url";
 import { blogPosts } from "../data/blogPosts";
+import { liveStoriesData } from "../data/liveStoriesData";
 import api from '../config/api';
 import axios from "axios";
 
@@ -41,6 +42,17 @@ export default async function sitemap() {
     priority: 0.7,
   }));
 
+  // Live Story routes (listing + all dynamic [slug])
+  const liveStoryRoutes = [
+    { url: `${url}/live-a-story`, lastModified: now, changeFrequency: 'weekly', priority: 0.85 },
+    ...liveStoriesData.map((story) => ({
+      url: `${url}/live-a-story/${story.slug}`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    })),
+  ];
+
   // Blog routes (from local data)
   const blogRoutes = blogPosts.map((post) => ({
     url: `${url}/blog/${post.slug}`,
@@ -72,6 +84,7 @@ export default async function sitemap() {
   return [
     ...staticRoutes,
     ...cityRoutes,
+    ...liveStoryRoutes,
     ...storyRoutes,
     ...blogRoutes
   ];

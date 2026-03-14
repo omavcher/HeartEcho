@@ -490,6 +490,7 @@ app.use("/api/v1/api/story", require("./routes/storyRoutes"));
 app.use("/api/v1/api/status", require("./routes/statusRoutes"));
 app.use("/api/v1/api/tracking", require("./routes/trackingRoutes"));
 app.use("/api/v1/api/guest", require("./routes/guestRoutes"));
+app.use("/api/v1/api/live-story", require("./routes/liveStoryRoute"));
 
 // Start Server
 const PORT = process.env.PORT || 5000;

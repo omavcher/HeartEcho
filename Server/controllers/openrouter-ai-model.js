@@ -111,16 +111,16 @@ async function generatePersonaResponse(prompt, personaContext) {
       },
       body: JSON.stringify({
         model: model,
-       messages: [
-  {
-    role: "system",
-    content: `${prompt}`
-  },
-  {
-    role: "user",
-    content: prompt   // <-- this is where the actual user message / starting prompt goes
-  }
-],
+        messages: [
+          {
+            role: "system",
+            content: personaContext
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
         max_tokens: 100,
         temperature: 0.85, // Slightly higher for more creative responses
         top_p: 0.95,

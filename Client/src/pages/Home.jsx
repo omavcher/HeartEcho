@@ -14,6 +14,7 @@ import HomeSubscriptions from "../components/HomeSubscriptions";
 import HomeReferralSection from "../components/HomeReferralSection";
 import api from "../config/api";
 import HomeRandomStories from "../components/HomeRandomStories";
+import HomeLiveStories from "../components/HomeLiveStories";
 import AiLiveView from "../components/AiLiveView";
 
 export default function Home() {
@@ -41,6 +42,14 @@ export default function Home() {
           <AiLiveView />
         </section>
 
+          {/* ─── 2.5. LIVE STORIES ──────────────────────────────── */}
+        {serverStatus === "Server is running" && (
+          <section className="section-spacer">
+            <HomeLiveStories />
+          </section>
+        )}
+
+
         {/* ─── 2. AI MODELS GRID ──────────────────────────────── */}
         {serverStatus === "Server is running" && (
           <section className="section-spacer">
@@ -48,21 +57,7 @@ export default function Home() {
           </section>
         )}
 
-        {/* ─── 3. SOCIAL PROOF ────────────────────────────────── */}
-        <section className="social-proof-section">
-          <div className="proof-container">
-            <h2>Loved by the Community</h2>
-            <div className="stat-grid">
-              <div className="stat-card"><h3>4.9/5</h3><p>Rating</p></div>
-              <div className="stat-card"><h3>250K+</h3><p>Active</p></div>
-              <div className="stat-card"><h3>#1</h3><p>Trending</p></div>
-            </div>
-          </div>
-        </section>
-
-        {/* ─── 4. COSPLAY / FEATURES ──────────────────────────── */}
-        <section className="section-spacer"><HomeCosAi /></section>
-
+      
         {/* ─── 5. HOW IT WORKS ────────────────────────────────── */}
         <section className="steps-section"><StepsHome /></section>
 

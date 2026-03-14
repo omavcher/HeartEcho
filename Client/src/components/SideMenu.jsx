@@ -60,6 +60,13 @@ function SideMenu() {
       )
     },
     {
+      href: '/live-a-story',
+      label: 'Live Story',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 4C16 2.89543 16.8954 2 18 2C19.1046 2 20 2.89543 20 4V20C20 21.1046 19.1046 22 18 22C16.8954 22 16 21.1046 16 20V4ZM4 8C4 6.89543 4.89543 6 6 6C7.10457 6 8 6.89543 8 8V16C8 17.1046 7.10457 18 6 18C4.89543 18 4 17.1046 4 16V8ZM10 11C10 9.89543 10.8954 9 12 9C13.1046 9 14 9.89543 14 11V18C14 19.1046 13.1046 20 12 20C10.8954 20 10 19.1046 10 18V11Z"/></svg>
+      )
+    },
+    {
       href: '/chatbox',
       label: 'Chat',
       icon: (
@@ -107,11 +114,16 @@ function SideMenu() {
         {/* Navigation Links */}
         <nav className="side-menu-nav">
           <div className="nav-items">
-            {menuItems.map((item, index) => (
+            {menuItems.map((item) => {
+              const isLiveStory = item.href === '/live-a-story';
+              const isActive = isLiveStory
+                ? (activeLink === item.href || activeLink.startsWith(item.href + '/'))
+                : activeLink === item.href;
+              return (
               <Link 
                 key={item.href}
                 href={item.href}
-                className={`nav-link ${activeLink === item.href ? 'active' : ''}`}
+                className={`nav-link ${isActive ? 'active' : ''}`}
                 onClick={() => setActiveLink(item.href)}
               >
                 <div className="icon-wrapper">
@@ -119,7 +131,8 @@ function SideMenu() {
                 </div>
                 <span className="link-label">{item.label}</span>
               </Link>
-            ))}
+              );
+            })}
           </div>
         </nav>
 

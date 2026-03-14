@@ -90,6 +90,7 @@ export default function AiLiveView() {
           <h2 className="alv-header-title">
             AI Live <span className="alv-title-accent">Studio</span>
           </h2>
+          <span className="alv-beta-badge" aria-label="Beta">Beta</span>
           <span className="alv-header-count">{AI_INFLUENCERS.length} LIVE</span>
         </div>
         <p className="alv-header-sub">
