@@ -105,10 +105,12 @@ exports.getUserChat = async (req, res) => {
 
     // Also send user quota info
     const user = await User.findById(userId);
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       chat,
-      quotaStatus: user.getQuotaStatus()
+      quotaStatus: user.getQuotaStatus(),
+      remainingQuota: user.getRemainingQuota(),
+      isSubscribed: user.isSubscriptionActive()
     });
   } catch (error) {
     console.error("Error getting user chat:", error);
@@ -134,10 +136,18 @@ exports.sendChatMessage = async (req, res) => {
     // Checking quota 
     const isSubscribed = user.isSubscriptionActive();
     if (!isSubscribed) {
-       const canSend = user.canSendMessage(1);
-       if (!canSend) {
-          return res.status(403).json({ success: false, requireLogin: false, quotaExhausted: true, message: "Daily quota exhausted." });
-       }
+      const canSend = user.canSendMessage(1);
+      if (!canSend) {
+        return res.status(403).json({
+          success: false,
+          requireLogin: false,
+          quotaExhausted: true,
+          message: "Daily quota exhausted.",
+          quotaStatus: user.getQuotaStatus(),
+          remainingQuota: user.getRemainingQuota(),
+          isSubscribed
+        });
+      }
     }
 
     let chat = await LiveStoryChat.findOne({ userId, storySlug });
@@ -149,12 +159,38 @@ exports.sendChatMessage = async (req, res) => {
     // Check if the backend AI model for this story exists
     const storyModel = await LiveStoryModel.findOne({ slug: storySlug });
     let personaContext = "";
-    
+
+    // Build lightweight user context so AI can treat the user as the main character
+    let userContext = "";
+    if (user) {
+      const name = user.name || user.fullName || user.username || "";
+      const city = user.city || user.location || "";
+      const age = user.age || "";
+      const gender = user.gender || "";
+
+      userContext =
+        "User Info: " +
+        (name ? `Name: ${name}. ` : "") +
+        (gender ? `Gender: ${gender}. ` : "") +
+        (age ? `Age: ${age}. ` : "") +
+        (city ? `City: ${city}. ` : "");
+    }
+
     if (storyModel) {
-       personaContext = `Title: ${storyModel.title}. Story Context: ${storyModel.storyInText}. Role: ${storyModel.role}. Setting: ${storyModel.setting}. System Instructions: ${storyModel.instruction}`;
+      personaContext =
+        `Title: ${storyModel.title}. ` +
+        `Story Context / Plot: ${storyModel.storyInText}. ` +
+        `Character Role (AI): ${storyModel.role}. ` +
+        `Environment / Setting: ${storyModel.setting}. ` +
+        `System Instructions: ${storyModel.instruction}. ` +
+        `The user is the unnamed मुख्य पात्र of this कहानी. Speak to them in second person (तुम / आप) so they feel they are inside the scene. ` +
+        `Target audience is Indian 18+ Hindi users. Keep the tone cinematic, भावनात्मक and immersive, with natural Hindi dialogues (देवनागरी) and light Hindi‑English mix where it feels real.` +
+        (userContext ? ` ${userContext}` : "");
     } else {
-       // A fallback context if Admin hasn't filled the data yet
-       personaContext = "You are an interesting character in a thrilling chat story. Respond dramatically in Hindi/English mix.";
+      // A fallback context if Admin hasn't filled the data yet
+      personaContext =
+        "You are a cinematic story character chatting with the user. The user is the main character inside the scene. " +
+        "Respond dramatically in Hindi with Devanagari script, mixed naturally with a bit of English, and keep the story flowing like a movie.";
     }
 
     // Add User Message
@@ -163,8 +199,18 @@ exports.sendChatMessage = async (req, res) => {
 
     // Build prompt so the AI responds in character to the user's message and continues the story
     const recentMessages = chat.messages.slice(-10); // last 10 
-    let promptHistory = recentMessages.map(m => `${m.sender === 'me' ? 'User' : 'You'}: ${m.text}`).join('\n');
-    let fullPrompt = `Recent chat history:\n${promptHistory}\n\nInstruction: You are the story character. Reply in character to what the user just said. Keep the story engaging and move the narrative forward based on their message. Stay in character. Write only your reply (1-3 short messages in a chat style, no labels).\n\nYou (reply as the character):`;
+    let promptHistory = recentMessages
+      .map((m) => `${m.sender === "me" ? "User" : "You"}: ${m.text}`)
+      .join("\n");
+
+    let fullPrompt =
+      `Recent chat history:\n${promptHistory}\n\n` +
+      "Instruction: You are the story character and the user is living this कहानी as the मुख्य पात्र. " +
+      "Use the system prompt persona (title, plot, role, setting, instructions, and user info) to stay fully in-character. " +
+      "Reply only as the character, in a cinematic Hindi tone (देवनागरी) with natural emotions, and always move the कहानी forward based on the user's last message. " +
+      "Do not explain that you are an AI or mention prompts/system messages. " +
+      "Write only your reply (1–3 short chat-style messages, no speaker labels).\n\n" +
+      "You (reply as the character):";
 
     try {
       // Get AI Response
@@ -177,15 +223,16 @@ exports.sendChatMessage = async (req, res) => {
       
       // Deduct quota if not subscribed
       if (!isSubscribed) {
-         await user.deductMessageQuota(1);
+        await user.deductMessageQuota(1);
       }
-  
-      res.json({ 
-        success: true, 
+
+      res.json({
+        success: true,
         userMessage,
         aiMessage,
         quotaStatus: user.getQuotaStatus(),
-        remainingQuota: user.getRemainingQuota()
+        remainingQuota: user.getRemainingQuota(),
+        isSubscribed
       });
 
     } catch (apiError) {

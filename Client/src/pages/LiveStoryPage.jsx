@@ -478,6 +478,12 @@ function LiveStoryContent() {
     const [token, setToken] = useState(null);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [chatLoading, setChatLoading] = useState(true);
+    const [quotaStatus, setQuotaStatus] = useState(null);
+    const [remainingQuota, setRemainingQuota] = useState(null);
+    const [isSubscribed, setIsSubscribed] = useState(false);
+    const [quotaExhausted, setQuotaExhausted] = useState(false);
+    const [sendError, setSendError] = useState(null);
+    const [showLoginCTA, setShowLoginCTA] = useState(false);
 
     const chatAreaRef = useRef(null);
     const activeStory = liveStoriesData.find(s => s.slug === currentSlug) || null;
@@ -531,6 +537,19 @@ function LiveStoryContent() {
                 if (activeStory.story_movie && !hasWatched) setShowMovie(true);
                 else setShowMovie(false);
             }
+
+            const qs = res.data?.quotaStatus || null;
+            const rem = (res.data?.remainingQuota !== undefined && res.data?.remainingQuota !== null)
+                ? res.data.remainingQuota
+                : (qs && qs.remainingQuota !== undefined ? qs.remainingQuota : null);
+            const subscribedFlag = res.data?.isSubscribed !== undefined
+                ? res.data.isSubscribed
+                : (qs && qs.isSubscribed !== undefined ? qs.isSubscribed : (qs && qs.user_type === 'subscriber'));
+
+            setQuotaStatus(qs);
+            setRemainingQuota(rem);
+            setIsSubscribed(!!subscribedFlag);
+            setQuotaExhausted(!subscribedFlag && typeof rem === 'number' && rem <= 0);
         }).catch(() => {
             setMessages([]);
             if (activeStory.story_movie && !hasWatched) setShowMovie(true);
@@ -602,8 +621,15 @@ function LiveStoryContent() {
         e.preventDefault();
         if (!myInput.trim()) return;
 
+        if (quotaExhausted && !isSubscribed) {
+            // Free quota over – do not send more messages
+            return;
+        }
+
         if (!token) {
             setShowLoginModal(true);
+            setSendError("कृपया लॉगिन करके कहानी शुरू करें।");
+            setShowLoginCTA(true);
             return;
         }
 
@@ -612,6 +638,8 @@ function LiveStoryContent() {
         setMessages(prev => [...prev, { type: 'sent', text, time: now }]);
         setMyInput('');
         setIsTyping(true);
+        setSendError(null);
+        setShowLoginCTA(false);
 
         try {
             const response = await axios.post(
@@ -619,16 +647,56 @@ function LiveStoryContent() {
                 { text },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
+
             if (response.data?.aiMessage?.text) {
                 const aiTime = response.data.aiMessage?.time || new Date().toISOString();
                 setMessages(prev => [...prev, { type: 'received', text: response.data.aiMessage.text, time: aiTime }]);
             }
+
+            const qs = response.data?.quotaStatus || null;
+            const rem = (response.data?.remainingQuota !== undefined && response.data?.remainingQuota !== null)
+                ? response.data.remainingQuota
+                : (qs && qs.remainingQuota !== undefined ? qs.remainingQuota : null);
+            const subscribedFlag = response.data?.isSubscribed !== undefined
+                ? response.data.isSubscribed
+                : (qs && qs.isSubscribed !== undefined ? qs.isSubscribed : (qs && qs.user_type === 'subscriber'));
+
+            setQuotaStatus(qs);
+            setRemainingQuota(rem);
+            setIsSubscribed(!!subscribedFlag);
+            setQuotaExhausted(!subscribedFlag && typeof rem === 'number' && rem <= 0);
+            setSendError(null);
+            setShowLoginCTA(false);
         } catch (err) {
             console.error('Live story send error:', err);
-            if (err.response?.status === 403 && err.response?.data?.requireLogin) {
+
+            if (err.response?.status === 403 && err.response?.data?.quotaExhausted) {
+                const qs = err.response.data?.quotaStatus || null;
+                const rem = (err.response.data?.remainingQuota !== undefined && err.response.data?.remainingQuota !== null)
+                    ? err.response.data.remainingQuota
+                    : (qs && qs.remainingQuota !== undefined ? qs.remainingQuota : 0);
+                const subscribedFlag = err.response.data?.isSubscribed !== undefined
+                    ? err.response.data.isSubscribed
+                    : (qs && qs.isSubscribed !== undefined ? qs.isSubscribed : false);
+
+                setQuotaStatus(qs);
+                setRemainingQuota(rem);
+                setIsSubscribed(!!subscribedFlag);
+                setQuotaExhausted(true);
+
+                setSendError("आज के आपके free messages ख़त्म हो चुके हैं। आगे story जारी रखने के लिए subscription एक्टिव करें।");
+                setShowLoginCTA(false);
+            } else if (err.response?.status === 403 && err.response?.data?.requireLogin) {
                 setShowLoginModal(true);
+                setSendError("आपको लॉगिन करना होगा ताकि आप कहानी जारी रख सकें।");
+                setShowLoginCTA(true);
+            } else if (err.response?.status === 401) {
+                setShowLoginModal(true);
+                setSendError("सेशन expire हो गया है। कृपया दोबारा लॉगिन करें।");
+                setShowLoginCTA(true);
             } else {
-                setMessages(prev => [...prev, { type: 'received', text: "Something went wrong. Please try again or log in." }]);
+                setSendError("कुछ गड़बड़ हो गई। कृपया दोबारा कोशिश करें या लॉगिन करें।");
+                setShowLoginCTA(true);
             }
         } finally {
             setIsTyping(false);
@@ -773,6 +841,34 @@ function LiveStoryContent() {
                         </div>
 
                         <div className="ls-input-area">
+                            {!isSubscribed && typeof remainingQuota === 'number' && remainingQuota >= 0 && (
+                                <div style={{ position: 'absolute', top: -26, left: 22, fontSize: 11, color: '#ccc' }}>
+                                    Daily free messages left: {remainingQuota}
+                                </div>
+                            )}
+                            {isSubscribed && (
+                                <div style={{ position: 'absolute', top: -26, left: 22, fontSize: 11, color: '#ccc' }}>
+                                    Unlimited messages (Active subscription)
+                                </div>
+                            )}
+
+                            {quotaExhausted && !isSubscribed && (
+                                <div style={{ 
+                                    position: 'absolute', 
+                                    top: -60, 
+                                    left: '50%', 
+                                    transform: 'translateX(-50%)', 
+                                    background: 'rgba(0,0,0,0.7)', 
+                                    borderRadius: 20, 
+                                    padding: '8px 16px', 
+                                    fontSize: 12, 
+                                    color: '#fff',
+                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    backdropFilter: 'blur(10px)'
+                                }}>
+                                    आज के आपके 5 free messages ख़त्म हो चुके हैं। आगे story जारी रखने के लिए subscribe करें।
+                                </div>
+                            )}
                             {!chatLoading && messages.length === 0 && storyProgressIndex < dummyChatSequence.length && !isTyping && (
                                 <button className="ls-progress-story-btn" onClick={handleProgressStory}>
                                     Tap to progress
@@ -781,14 +877,59 @@ function LiveStoryContent() {
                             <input 
                                 type="text" 
                                 className="ls-input-box" 
-                                placeholder="Message..." 
+                                placeholder={quotaExhausted && !isSubscribed ? "Free limit over – subscribe to continue" : "Message..."} 
                                 value={myInput}
                                 onChange={(e) => setMyInput(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleManualSend(e)}
+                                disabled={quotaExhausted && !isSubscribed}
                             />
-                            <button className="ls-send-btn" onClick={handleManualSend} disabled={!myInput.trim()}>
+                            <button 
+                                className="ls-send-btn" 
+                                onClick={handleManualSend} 
+                                disabled={!myInput.trim() || (quotaExhausted && !isSubscribed)}
+                            >
                                 <FaPaperPlane />
                             </button>
+                            {sendError && (
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: '100%',
+                                        left: 20,
+                                        right: 20,
+                                        marginBottom: 8,
+                                        fontSize: 12,
+                                        color: '#fff',
+                                        background: 'rgba(0,0,0,0.8)',
+                                        borderRadius: 12,
+                                        padding: '8px 12px',
+                                        border: '1px solid rgba(255,255,255,0.15)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        gap: 8
+                                    }}
+                                >
+                                    <span>{sendError}</span>
+                                    {showLoginCTA && (
+                                        <button
+                                            onClick={() => router.push('/login')}
+                                            style={{
+                                                background: '#b862ff',
+                                                color: '#fff',
+                                                border: 'none',
+                                                borderRadius: 999,
+                                                padding: '4px 10px',
+                                                fontSize: 11,
+                                                cursor: 'pointer',
+                                                whiteSpace: 'nowrap'
+                                            }}
+                                        >
+                                            Login / लॉगिन करें
+                                        </button>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 ) : (
