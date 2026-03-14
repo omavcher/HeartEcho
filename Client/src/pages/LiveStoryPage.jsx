@@ -493,7 +493,7 @@ function LiveStoryContent() {
         setToken(typeof window !== 'undefined' ? localStorage.getItem('token') : null);
         const fetchStories = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:5000'}/api/live-story/stories`);
+                const res = await fetch(`${api.Url}/live-story/stories`);
                 const data = await res.json();
                 if (data.success) {
                     setAllStories(data.stories);

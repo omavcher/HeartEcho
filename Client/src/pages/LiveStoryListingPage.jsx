@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { FaPlay, FaFire, FaLayerGroup } from "react-icons/fa";
 import AdvancedLoader from "../components/AdvancedLoader";
+import api from "../config/api";
 
 const STYLES = `
 .lsl-page {
@@ -270,7 +271,7 @@ export default function LiveStoryListingPage() {
     useEffect(() => {
         const fetchStories = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:5000'}/api/live-story/stories`);
+                const res = await fetch(`${api.Url}/live-story/stories`);
                 const data = await res.json();
                 if (data.success) {
                     setAllStories(data.stories);
