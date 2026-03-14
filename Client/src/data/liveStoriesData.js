@@ -10,9 +10,9 @@ export const liveStoriesData = [
     category: "Thriller",
     views: "1.2M",
     chatting: [
-      "/live-stories/chatting/rakt-bhumi-1.jpeg",
-      "/live-stories/chatting/rakt-bhumi-2.jpeg",
-      "/live-stories/chatting/rakt-bhumi-3.jpeg",
+      "/live-stories/chatting/rakt-bhumi-1.jpg",
+      "/live-stories/chatting/rakt-bhumi-2.jpg",
+      "/live-stories/chatting/rakt-bhumi-3.jpg",
     ],
   }
 ];
