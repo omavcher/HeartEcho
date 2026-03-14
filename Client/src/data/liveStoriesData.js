@@ -5,7 +5,7 @@ export const liveStoriesData = [
     title: "RAKT BHUMI",
     poster: "/live-stories/posters/rakt-bhumi-1.png",
     banner: "/live-stories/banners/rakt-bhumi-1.png",
-    story_movie: "https://www.pexels.com/download/video/35461866/",
+    story_movie: "/live-stories/movies/rakt-bhumi-1.mp4",
     description: "You are a disgraced Encounter Specialist framed for a crime you didn't commit. Tonight, the underworld, the police, and the politicians are all hunting you. With only a burner phone and a mysterious voice in your ear, you have 6 hours to find the evidence or become another statistic in the city’s morgue.",
     category: "Thriller",
     views: "1.2M",
