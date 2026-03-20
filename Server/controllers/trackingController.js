@@ -57,11 +57,10 @@ exports.getAnalytics = async (req, res) => {
       utmSourceStats,
       funnelByEvent,
       // Conversion funnel counts (cheap countDocuments)
-      visitorCount,
-      loginCount,
-      signupCount,
-      checkoutCount,
-      purchaseCount,
+      uniqueVisitorSessions, // unique sessions that had any page_view
+      newUsersInPeriod,       // actual user registrations in period
+      uniqueLoggedInUsers,    // unique user IDs with login event
+      uniqueChattedUsers,     // unique user IDs who used funnel_click / ai feature
       paidUserCount,
       freeUserCount,
       totalUsers,
@@ -149,15 +148,44 @@ exports.getAnalytics = async (req, res) => {
         { $limit: 15 }
       ]),
 
-      // 9-15. Conversion funnel counts (cheap countDocuments — no aggregation)
-      TrackingEvent.countDocuments({ ...query, eventType: 'page_view' }),
-      TrackingEvent.countDocuments({ ...query, eventType: 'login_success' }),
-      TrackingEvent.countDocuments({ ...query, eventType: 'signup_complete' }),
-      TrackingEvent.countDocuments({ ...query, eventType: 'initiate_checkout' }),
-      TrackingEvent.countDocuments({ ...query, eventType: 'subscription_purchase' }),
+      // 9. Unique visitor sessions — group sessionId, count distinct (capped 10k)
+      TrackingEvent.aggregate([
+        { $match: { ...query, eventType: 'page_view' } },
+        { $limit: 10000 },
+        { $group: { _id: '$sessionId' } },
+        { $count: 'total' }
+      ]).then(r => r[0]?.total || 0),
+
+      // 10. New user registrations in the date period (from User model)
+      User.countDocuments(
+        query.createdAt
+          ? { createdAt: { $gte: query.createdAt.$gte, $lte: query.createdAt.$lte } }
+          : {}
+      ),
+
+      // 11. Unique users who logged in (group user IDs, capped 5k)
+      TrackingEvent.aggregate([
+        { $match: { ...query, eventType: 'login_success', user: { $ne: null } } },
+        { $limit: 5000 },
+        { $group: { _id: '$user' } },
+        { $count: 'total' }
+      ]).then(r => r[0]?.total || 0),
+
+      // 12. Unique users who engaged with AI chat features (funnel_click or click after login)
+      TrackingEvent.aggregate([
+        { $match: { ...query, eventType: { $in: ['funnel_click', 'click', 'ai_message'] }, user: { $ne: null } } },
+        { $limit: 5000 },
+        { $group: { _id: '$user' } },
+        { $count: 'total' }
+      ]).then(r => r[0]?.total || 0),
+
+      // 13. Paid subscriber count (all time)
       User.countDocuments({ user_type: 'subscriber' }),
+      // 14. Free user count
       User.countDocuments({ user_type: 'free' }),
+      // 15. Total users
       User.countDocuments(),
+      // 16. Payments in period
       Payment.countDocuments(
         query.createdAt
           ? { date: { $gte: query.createdAt.$gte, $lte: query.createdAt.$lte } }
@@ -303,15 +331,15 @@ exports.getAnalytics = async (req, res) => {
 
     // ─── conversionFunnelSessions ─────────────────────────────────────────────
     const conversionFunnelSessions = {
-      visitors: visitorCount,
-      loggedIn: loginCount,
-      signedUp: signupCount,
-      checkoutInit: checkoutCount,
-      purchased: purchaseCount,
-      paidUserCount,
+      // HeartEcho journey: Visit → Signup → Login → Chat → Subscribe
+      visitors:     uniqueVisitorSessions,    // unique sessions
+      signedUp:     newUsersInPeriod,         // new registrations from User model
+      loggedIn:     uniqueLoggedInUsers,      // unique users with login event
+      chatted:      uniqueChattedUsers,       // unique users who used AI chat features
+      paidUserCount,                          // all paid subscribers (all time)
       freeUserCount,
       totalUsers,
-      recentPaidUsers
+      recentPaidUsers                         // payments in selected period
     };
 
     res.status(200).json({

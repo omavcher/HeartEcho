@@ -249,12 +249,13 @@ export default function TrackingAdmin() {
   const funnelData = useMemo(() => {
     const f = data?.conversionFunnelSessions;
     if (!f) return [];
+    // HeartEcho journey: Visit → Signup → Login → Chat → Subscribe
     return [
-      { label:'Visitors', count: f.visitors, color: FUNNEL_COLORS[0] },
-      { label:'Logged In', count: f.loggedIn, color: FUNNEL_COLORS[1] },
-      { label:'Signed Up', count: f.signedUp, color: FUNNEL_COLORS[2] },
-      { label:'Checkout', count: f.checkoutInit, color: FUNNEL_COLORS[3] },
-      { label:'Subscribed', count: f.purchased || f.paidUserCount, color: FUNNEL_COLORS[4] },
+      { label:'Visitors',  sublabel:'Unique Sessions', count: f.visitors,     color: FUNNEL_COLORS[0] },
+      { label:'Signed Up', sublabel:'New Registrations', count: f.signedUp,   color: FUNNEL_COLORS[1] },
+      { label:'Logged In', sublabel:'Unique Users',  count: f.loggedIn,       color: FUNNEL_COLORS[2] },
+      { label:'Used Chat', sublabel:'Engaged Users', count: f.chatted,        color: FUNNEL_COLORS[3] },
+      { label:'Subscribed',sublabel:'Paid Customers',count: f.paidUserCount,  color: FUNNEL_COLORS[4] },
     ];
   }, [data]);
 
@@ -271,8 +272,11 @@ export default function TrackingAdmin() {
     })), [data]);
 
   const f = data?.conversionFunnelSessions || {};
-  const convRate = pct(f.paidUserCount||0, f.totalUsers||1);
-  const loginRate = pct(f.loggedIn||0, f.visitors||1);
+  const convRate    = pct(f.paidUserCount||0, f.totalUsers||1);       // all-time paid/total
+  const signupRate  = pct(f.signedUp||0,     f.visitors||1);          // visitors who signed up
+  const loginRate   = pct(f.loggedIn||0,     f.signedUp||1);          // signups who logged in
+  const chatRate    = pct(f.chatted||0,      f.loggedIn||1);          // logged in who chatted
+  const subRate     = pct(f.paidUserCount||0,f.loggedIn||1);          // logged in who subscribed
 
   const TABS = [
     { id:'overview', label:'Overview', icon:<FaChartLine/> },
@@ -347,13 +351,13 @@ export default function TrackingAdmin() {
                 <div className="trk-kpi">
                   {[
                     { lbl:'Total Events', val: fmtNum(data.totalEventsExtracted), ico:<FaChartLine/>, c:'c0', bg:'rgba(255,105,180,.1)', col:'#ff69b4' },
-                    { lbl:'Total Users', val: fmtNum(f.totalUsers||0), ico:<FaUsers/>, c:'c1', bg:'rgba(0,188,212,.1)', col:'#00bcd4' },
-                    { lbl:'Paid Subscribers', val: fmtNum(f.paidUserCount||0), ico:<FaCrown/>, c:'c2', bg:'rgba(139,195,74,.1)', col:'#8bc34a', chg:`${convRate} conversion` },
-                    { lbl:'Free Users', val: fmtNum(f.freeUserCount||0), ico:<FaUsers/>, c:'c3', bg:'rgba(255,152,0,.1)', col:'#ff9800' },
-                    { lbl:'Visitor → Login', val: loginRate, ico:<FaUserPlus/>, c:'c4', bg:'rgba(156,39,176,.1)', col:'#9c27b0' },
-                    { lbl:'Session Signups', val: fmtNum(f.signedUp||0), ico:<FaUserPlus/>, c:'c5', bg:'rgba(255,235,59,.1)', col:'#ffeb3b' },
-                    { lbl:'Checkout Started', val: fmtNum(f.checkoutInit||0), ico:<FaShoppingBag/>, c:'c6', bg:'rgba(244,67,54,.1)', col:'#f44336' },
-                    { lbl:'Purchases (Period)', val: fmtNum(f.recentPaidUsers||0), ico:<FaTrophy/>, c:'c7', bg:'rgba(76,175,80,.1)', col:'#4caf50' },
+                    { lbl:'Total Users',       val: fmtNum(f.totalUsers||0),     ico:<FaUsers/>,       c:'c1', bg:'rgba(0,188,212,.1)',    col:'#00bcd4' },
+                    { lbl:'Paid Subscribers',   val: fmtNum(f.paidUserCount||0),  ico:<FaCrown/>,       c:'c2', bg:'rgba(139,195,74,.1)',   col:'#8bc34a', chg:`${convRate} overall conversion` },
+                    { lbl:'Free Users',          val: fmtNum(f.freeUserCount||0),  ico:<FaUsers/>,       c:'c3', bg:'rgba(255,152,0,.1)',    col:'#ff9800' },
+                    { lbl:'Visitor → Signup',   val: signupRate,                  ico:<FaUserPlus/>,    c:'c4', bg:'rgba(156,39,176,.1)',   col:'#9c27b0' },
+                    { lbl:'Signup → Login',     val: loginRate,                   ico:<FaUserPlus/>,    c:'c5', bg:'rgba(255,235,59,.1)',   col:'#ffeb3b' },
+                    { lbl:'Login → Chat',       val: chatRate,                    ico:<FaRobot/>,       c:'c6', bg:'rgba(244,67,54,.1)',    col:'#f44336' },
+                    { lbl:'Payments (Period)',   val: fmtNum(f.recentPaidUsers||0),ico:<FaTrophy/>,      c:'c7', bg:'rgba(76,175,80,.1)',    col:'#4caf50' },
                   ].map((k,i) => (
                     <div key={i} className={`trk-kpi-box ${k.c}`}>
                       <div className="trk-kpi-ico" style={{background:k.bg, color:k.col}}>{k.ico}</div>
@@ -450,16 +454,16 @@ export default function TrackingAdmin() {
                   <div className="funnel-steps">
                     {funnelData.map((step, i) => {
                       const basePct = pct(step.count, funnelData[0]?.count || 1);
-                      const widthPct = Math.max(15, (step.count / (funnelData[0]?.count || 1)) * 100);
+                      const widthPct = Math.max(10, (step.count / (funnelData[0]?.count || 1)) * 100);
                       return (
                         <React.Fragment key={i}>
                           <div className="funnel-step">
                             <div className="funnel-bar" style={{background: step.color+'22', border:`1px solid ${step.color}44`}}>
                               <div className="funnel-count" style={{color:step.color}}>{fmtNum(step.count)}</div>
                               <div className="funnel-label">{step.label}</div>
+                              <div style={{fontSize:9,color:'rgba(255,255,255,.4)',marginTop:2}}>{step.sublabel}</div>
                             </div>
                             <div className="funnel-pct">{basePct} of visitors</div>
-                            {/* Mini progress bar */}
                             <div style={{height:4, background:'#111', borderRadius:2, marginTop:8, overflow:'hidden'}}>
                               <div style={{width:`${widthPct}%`, height:'100%', background:step.color, borderRadius:2, transition:'width .6s'}}/>
                             </div>
@@ -476,10 +480,10 @@ export default function TrackingAdmin() {
                 {/* Conversion Rates Summary */}
                 <div className="trk-kpi">
                   {[
-                    { lbl:'Visitor → Login Rate', val: loginRate, desc:'Sessions that logged in', col:'#ff69b4' },
-                    { lbl:'Login → Signup Rate', val: pct(f.signedUp||0, f.loggedIn||1), desc:'Logins that completed signup', col:'#00bcd4' },
-                    { lbl:'Signup → Checkout', val: pct(f.checkoutInit||0, f.signedUp||1), desc:'Signups that started checkout', col:'#ff9800' },
-                    { lbl:'Overall Conversion', val: convRate, desc:'Free users that became paid', col:'#8bc34a' },
+                    { lbl:'Visitor → Signup Rate',  val: signupRate, desc:'Unique sessions that registered',    col:'#ff69b4' },
+                    { lbl:'Signup → Login Rate',    val: loginRate,  desc:'Registered users who logged in',     col:'#00bcd4' },
+                    { lbl:'Login → Chat Rate',      val: chatRate,   desc:'Logged-in users who used AI chat',   col:'#ff9800' },
+                    { lbl:'Overall Paid Conversion',val: convRate,   desc:'All users who became paid subscribers',col:'#8bc34a' },
                   ].map((k,i) => (
                     <div key={i} className={`trk-kpi-box c${i}`}>
                       <div>
