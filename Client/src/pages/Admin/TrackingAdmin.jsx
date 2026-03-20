@@ -688,77 +688,118 @@ export default function TrackingAdmin() {
               </>
             )}
 
-            {/* ══════════ EVENT LOG TAB ══════════ */}
+            {/* ══════════ USER JOURNEY TAB ══════════ */}
             {tab === 'log' && (
               <div className="trk-log">
                 <div className="trk-section-title">
-                  <FaEye/> Live Event Log
+                  <FaUsers/> User Activity Log
                   <span style={{fontSize:11,color:'#444',fontWeight:400,marginLeft:'auto'}}>
-                    {data.recentEvents?.length} events · Page {data.currentPage}/{data.totalPages}
+                    {data.userJourney?.length} unique users/sessions · Page {data.currentPage}/{data.totalPages}
                   </span>
                 </div>
                 <div className="trk-scroll">
                   <table className="log-table">
                     <thead>
                       <tr>
-                        <th>Event</th>
-                        <th>User</th>
-                        <th>Time / IP</th>
-                        <th>Page & Attribution</th>
+                        <th>User / Session</th>
+                        <th>Events Triggered</th>
+                        <th>Landing → Last Page</th>
                         <th>Source</th>
+                        <th>First Seen → Last Seen</th>
+                        <th>Status</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {data.recentEvents?.map(ev => {
-                        const utms = Object.keys(ev.eventData||{}).filter(k=>k.startsWith('utm_')||k==='fbclid');
-                        const isAd = ev.eventData?.fbclid || ev.eventData?.utm_medium==='paid' || ev.eventData?.utm_medium==='cpc';
-                        const isOrganic = ev.referrer && !isAd;
+                      {(data.userJourney||[]).map((u, i) => {
+                        const isAd = u.hasFbclid || u.utmMedium === 'paid' || u.utmMedium === 'cpc';
+                        const isOrganic = u.referrer && !isAd;
+                        const timeDiff = u.lastSeen && u.firstSeen
+                          ? Math.round((new Date(u.lastSeen) - new Date(u.firstSeen)) / 1000) : 0;
+                        const dur = timeDiff < 60 ? `${timeDiff}s` : timeDiff < 3600 ? `${Math.round(timeDiff/60)}m` : `${(timeDiff/3600).toFixed(1)}h`;
                         return (
-                          <tr key={ev._id}>
+                          <tr key={i}>
+                            {/* IDENTITY */}
                             <td>
-                              <span className={getBadgeClass(ev.eventType)}>{getIcon(ev.eventType)} {ev.eventType.replace(/_/g,' ')}</span>
-                              <div style={{fontSize:10,color:'#555',marginTop:5}}>{ev.deviceType}</div>
-                            </td>
-                            <td>
-                              {ev.user ? (
+                              {u.user ? (
                                 <div className="user-cell">
-                                  <img src={ev.user.profile_picture||'https://cdn-icons-png.flaticon.com/512/149/149071.png'} className="u-avatar" alt=""/>
+                                  <img src={u.user.profile_picture||'https://cdn-icons-png.flaticon.com/512/149/149071.png'} className="u-avatar" alt=""/>
                                   <div>
-                                    <div style={{fontWeight:600,color:'#fff',fontSize:12}}>{ev.user.name}</div>
-                                    <div style={{fontSize:10,color:'#555'}}>{ev.user.email}</div>
-                                    <span className={`badge badge-${ev.user.user_type==='subscriber'?'paid':'free'}`} style={{fontSize:9,marginTop:3}}>
-                                      {ev.user.user_type==='subscriber'?'Premium':'Free'}
+                                    <div style={{fontWeight:700,color:'#fff',fontSize:12}}>{u.user.name}</div>
+                                    <div style={{fontSize:10,color:'#555'}}>{u.user.email}</div>
+                                    <span className={`badge badge-${u.user.user_type==='subscriber'?'paid':'free'}`} style={{fontSize:9,marginTop:3}}>
+                                      {u.user.user_type==='subscriber'?'Premium':'Free'}
                                     </span>
                                   </div>
                                 </div>
-                              ) : <span style={{color:'#444',fontStyle:'italic',fontSize:11}}>Anonymous</span>}
-                              <div style={{fontSize:9,color:'#333',marginTop:4}}>sess: {ev.sessionId?.substring(0,14)}…</div>
-                            </td>
-                            <td style={{color:'#888'}}>
-                              <div style={{fontSize:12}}>{new Date(ev.createdAt).toLocaleString([],{dateStyle:'short',timeStyle:'short'})}</div>
-                              <div style={{fontSize:10,color:'#444',marginTop:3}}>IP: {ev.ip?.split(',')[0]}</div>
-                            </td>
-                            <td>
-                              <div style={{color:'#00bcd4',fontSize:12,fontWeight:600,marginBottom:4}}>{ev.path}</div>
-                              {utms.length > 0 && (
-                                <div>{utms.map(k=><span key={k} className="utm-pill"><strong>{k.replace('utm_','')}:</strong> {ev.eventData[k]}</span>)}</div>
+                              ) : (
+                                <div>
+                                  <div style={{color:'#888',fontStyle:'italic',fontSize:12}}>Anonymous</div>
+                                  <div style={{fontSize:9,color:'#333',marginTop:2}}>{u.deviceType} · {u.ip?.split(',')[0]}</div>
+                                </div>
                               )}
-                              {ev.referrer && <div style={{fontSize:10,color:'#444',marginTop:4,wordBreak:'break-all'}}>ref: {ev.referrer}</div>}
+                              <div style={{fontSize:9,color:'#333',marginTop:3}}>sess: {String(u.sessionId||'').substring(0,16)}…</div>
                             </td>
+
+                            {/* EVENTS */}
+                            <td>
+                              <div style={{fontWeight:900,fontSize:20,color:'#ff69b4',lineHeight:1}}>{u.totalEvents}</div>
+                              <div style={{fontSize:9,color:'#555',marginBottom:7}}>total events</div>
+                              <div style={{display:'flex',flexWrap:'wrap',gap:3}}>
+                                {(u.eventTypes||[]).map(et => (
+                                  <span key={et} className={getBadgeClass(et)} style={{fontSize:8,padding:'2px 5px'}}>
+                                    {et.replace(/_/g,' ')}
+                                  </span>
+                                ))}
+                              </div>
+                              {timeDiff > 0 && <div style={{fontSize:9,color:'#444',marginTop:5}}>⏱ {dur} on site</div>}
+                            </td>
+
+                            {/* PAGES */}
+                            <td>
+                              <div style={{fontSize:11,color:'#00bcd4',fontWeight:600,marginBottom:4}}>↳ {u.landingPage||'/'}</div>
+                              {u.lastPage && u.lastPage !== u.landingPage && (
+                                <div style={{fontSize:10,color:'#555'}}>last: {u.lastPage}</div>
+                              )}
+                            </td>
+
+                            {/* SOURCE */}
                             <td>
                               {isAd ? (
-                                <span className="badge badge-fb"><FaFacebook/> Ad</span>
+                                <span className="badge badge-fb"><FaFacebook/> FB Ad</span>
                               ) : isOrganic ? (
                                 <span className="badge badge-organic"><FaGlobe style={{fontSize:9}}/> Organic</span>
                               ) : (
                                 <span className="badge badge-direct">Direct</span>
                               )}
+                              {u.utmCampaign && <div style={{marginTop:5}}><span className="utm-pill">camp: {u.utmCampaign}</span></div>}
+                              {u.utmSource && <div><span className="utm-pill">src: {u.utmSource}</span></div>}
+                            </td>
+
+                            {/* TIMES */}
+                            <td style={{color:'#888',fontSize:11}}>
+                              <div>{u.firstSeen ? new Date(u.firstSeen).toLocaleString([],{dateStyle:'short',timeStyle:'short'}) : '—'}</div>
+                              <div style={{color:'#333',margin:'3px 0',fontSize:10}}>↓</div>
+                              <div style={{color:'#ccc'}}>{u.lastSeen ? new Date(u.lastSeen).toLocaleString([],{dateStyle:'short',timeStyle:'short'}) : '—'}</div>
+                            </td>
+
+                            {/* STATUS */}
+                            <td>
+                              <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                                {u.user?.user_type === 'subscriber' || u.converted ? (
+                                  <span className="badge badge-paid" style={{fontSize:9}}><FaCrown style={{fontSize:8}}/> Paid</span>
+                                ) : (
+                                  <span className="badge badge-free" style={{fontSize:9}}>Free</span>
+                                )}
+                                {u.loggedIn ? <span className="badge badge-ls" style={{fontSize:9}}>Logged In</span> : null}
+                                {u.signedUp ? <span className="badge badge-sc" style={{fontSize:9}}>Signed Up</span> : null}
+                                {u.converted ? <span className="badge badge-sp" style={{fontSize:9}}>Converted ✓</span> : null}
+                              </div>
                             </td>
                           </tr>
                         );
                       })}
-                      {data.recentEvents?.length === 0 && (
-                        <tr><td colSpan="5" style={{textAlign:'center',padding:50,color:'#444'}}>No events found for selected filters</td></tr>
+                      {(!data.userJourney || data.userJourney.length === 0) && (
+                        <tr><td colSpan="6" style={{textAlign:'center',padding:50,color:'#444'}}>No user activity found for selected filters</td></tr>
                       )}
                     </tbody>
                   </table>

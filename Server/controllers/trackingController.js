@@ -55,6 +55,7 @@ exports.getAnalytics = async (req, res) => {
     const [
       totalEventsExtracted,
       recentEvents,
+      userJourney,
       eventCounts,
       timeSeriesData,
       deviceStats,
@@ -79,12 +80,78 @@ exports.getAnalytics = async (req, res) => {
         .limit(parseInt(limit))
         .populate('user', 'name email user_type profile_picture joinedAt'),
 
+      // 2b. User Journey: one row per unique user/session
+      TrackingEvent.aggregate([
+        { $match: query },
+        { $sort: { createdAt: 1 } },
+        {
+          $group: {
+            _id: { $ifNull: ['$user', '$sessionId'] },
+            isRegistered: { $first: { $cond: [{ $ne: ['$user', null] }, true, false] } },
+            userId: { $first: '$user' },
+            sessionId: { $first: '$sessionId' },
+            totalEvents: { $sum: 1 },
+            eventTypes: { $addToSet: '$eventType' },
+            landingPage: { $first: '$path' },
+            lastPage: { $last: '$path' },
+            firstSeen: { $min: '$createdAt' },
+            lastSeen: { $max: '$createdAt' },
+            deviceType: { $first: '$deviceType' },
+            ip: { $first: '$ip' },
+            referrer: { $first: '$referrer' },
+            utmSource: { $first: '$eventData.utm_source' },
+            utmCampaign: { $first: '$eventData.utm_campaign' },
+            utmMedium: { $first: '$eventData.utm_medium' },
+            hasFbclid: { $max: { $cond: [{ $ne: [{ $ifNull: ['$eventData.fbclid', null] }, null] }, 1, 0] } },
+            converted: { $max: { $cond: [{ $eq: ['$eventType', 'subscription_purchase'] }, 1, 0] } },
+            signedUp: { $max: { $cond: [{ $eq: ['$eventType', 'signup_complete'] }, 1, 0] } },
+            loggedIn: { $max: { $cond: [{ $eq: ['$eventType', 'login_success'] }, 1, 0] } }
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'userData'
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            isRegistered: 1,
+            userId: 1,
+            sessionId: 1,
+            totalEvents: 1,
+            eventTypes: 1,
+            landingPage: 1,
+            lastPage: 1,
+            firstSeen: 1,
+            lastSeen: 1,
+            deviceType: 1,
+            ip: 1,
+            referrer: 1,
+            utmSource: 1,
+            utmCampaign: 1,
+            utmMedium: 1,
+            hasFbclid: 1,
+            converted: 1,
+            signedUp: 1,
+            loggedIn: 1,
+            user: { $arrayElemAt: ['$userData', 0] }
+          }
+        },
+        { $sort: { lastSeen: -1 } },
+        { $skip: (parseInt(page) - 1) * parseInt(limit) },
+        { $limit: parseInt(limit) }
+      ], { allowDiskUse: true }),
+
       // 3. Event type counts
       TrackingEvent.aggregate([
         { $match: query },
         { $group: { _id: "$eventType", count: { $sum: 1 } } },
         { $sort: { count: -1 } }
-      ]),
+      ], { allowDiskUse: true }),
 
       // 4. Time series daily aggregation
       TrackingEvent.aggregate([
@@ -96,14 +163,14 @@ exports.getAnalytics = async (req, res) => {
           } 
         },
         { $sort: { _id: 1 } }
-      ]),
+      ], { allowDiskUse: true }),
 
       // 5. Device distribution
       TrackingEvent.aggregate([
         { $match: query },
         { $group: { _id: "$deviceType", count: { $sum: 1 } } },
         { $sort: { count: -1 } }
-      ]),
+      ], { allowDiskUse: true }),
 
       // 6. User Paid vs Free behavior stats
       TrackingEvent.aggregate([
@@ -123,7 +190,7 @@ exports.getAnalytics = async (req, res) => {
             count: { $sum: 1 }
           }
         }
-      ]),
+      ], { allowDiskUse: true }),
 
       // 7. Top UTM Sources
       TrackingEvent.aggregate([
@@ -131,7 +198,7 @@ exports.getAnalytics = async (req, res) => {
         { $group: { _id: "$eventData.utm_source", count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 10 }
-      ]),
+      ], { allowDiskUse: true }),
 
       // 8. Funnel stats by session
       TrackingEvent.aggregate([
@@ -139,7 +206,7 @@ exports.getAnalytics = async (req, res) => {
         { $group: { _id: { sessionId: "$sessionId", eventType: "$eventType" } } },
         { $group: { _id: "$_id.eventType", uniqueSessions: { $sum: 1 } } },
         { $sort: { uniqueSessions: -1 } }
-      ]),
+      ], { allowDiskUse: true }),
 
       // 9. AD Traffic: FB Ads (fbclid) vs Organic vs UTM campaigns
       TrackingEvent.aggregate([
@@ -183,7 +250,7 @@ exports.getAnalytics = async (req, res) => {
           }
         },
         { $sort: { uniqueSessions: -1 } }
-      ]),
+      ], { allowDiskUse: true }),
 
       // 10. UTM Campaign breakdown (for FB Ads marketing)
       TrackingEvent.aggregate([
@@ -218,7 +285,7 @@ exports.getAnalytics = async (req, res) => {
         },
         { $sort: { uniqueSessions: -1 } },
         { $limit: 20 }
-      ]),
+      ], { allowDiskUse: true }),
 
       // 11. Landing pages (first page visited per session)
       TrackingEvent.aggregate([
@@ -251,7 +318,7 @@ exports.getAnalytics = async (req, res) => {
         },
         { $sort: { sessions: -1 } },
         { $limit: 15 }
-      ]),
+      ], { allowDiskUse: true }),
 
       // 12. Full Conversion Funnel: visitor → login → subscriber
       //     Track distinct sessions through stages
@@ -312,7 +379,7 @@ exports.getAnalytics = async (req, res) => {
         },
         { $sort: { conversions: -1 } },
         { $limit: 10 }
-      ]),
+      ], { allowDiskUse: true }),
 
       // 14. Daily breakdown of ad traffic vs organic
       TrackingEvent.aggregate([
@@ -352,7 +419,7 @@ exports.getAnalytics = async (req, res) => {
           }
         },
         { $sort: { _id: 1 } }
-      ])
+      ], { allowDiskUse: true })
     ]);
 
     res.status(200).json({
@@ -368,6 +435,7 @@ exports.getAnalytics = async (req, res) => {
         recentEvents,
         totalPages: Math.ceil(totalEventsExtracted / parseInt(limit)) || 1,
         currentPage: parseInt(page),
+        userJourney,
         // New marketing data
         adTrafficBreakdown,
         utmCampaignStats,
