@@ -91,12 +91,21 @@ function SubscriptionContent() {
       } catch (e) { /* silent */ }
     };
     if (typeof window !== 'undefined' && localStorage.getItem("token")) fetchUser();
+
+    // Track subscribe page view
+    if (typeof window !== 'undefined' && window.trackAppEvent) {
+      window.trackAppEvent('subscribe_page_view', { page: 'subscribe' });
+    }
   }, []);
 
   const handlePayment = async (amount, plan) => {
     if (!token) { router.push('/login'); return; }
     setIsLoading(plan);
     try {
+      // Track checkout initiation
+      if (typeof window !== 'undefined' && window.trackAppEvent) {
+        window.trackAppEvent('initiate_checkout', { plan, amount, currency: 'INR' });
+      }
       if (typeof window !== "undefined" && window.fbq) {
         if (userData?.email !== 'omawchar07@gmail.com') {
           window.fbq('track', 'InitiateCheckout', { value: amount, currency: 'INR', content_name: `${plan} Subscription` });
@@ -109,6 +118,10 @@ function SubscriptionContent() {
         name: 'HeartEcho',
         description: `${plan} Plan`,
         handler: async (res) => {
+          // Track successful purchase
+          if (typeof window !== 'undefined' && window.trackAppEvent) {
+            window.trackAppEvent('subscription_purchase', { plan, amount, currency: 'INR', transaction_id: res.razorpay_payment_id });
+          }
           if (window.fbq && userData?.email !== 'omawchar07@gmail.com') {
             window.fbq('track', 'Purchase', { value: amount, currency: 'INR', content_name: `${plan} Subscription`, transaction_id: res.razorpay_payment_id });
           }

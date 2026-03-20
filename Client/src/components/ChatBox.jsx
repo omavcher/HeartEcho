@@ -317,6 +317,10 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
         setShowLoginModal(true);
         return;
       }
+      // Track quota exhausted — key conversion trigger moment
+      if (typeof window !== 'undefined' && window.trackAppEvent) {
+        window.trackAppEvent('quota_exhausted', { chatId, remainingQuota: 0 });
+      }
       setIsTyping(true);
       setTimeout(() => {
         setIsTyping(false);
@@ -327,7 +331,7 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
           time: new Date().toISOString(),
           mediaType: "text",
           isRead: true,
-          isBold: true // Custom flag for bold rendering
+          isBold: true
         };
         setMessages(prev => [...prev, quotaExhaustedReply]);
       }, 1000);
@@ -347,7 +351,12 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
 
     setMessages(prev => [...prev, userMsg]);
     setNewMessage("");
-    
+
+    // Track chat message sent — this feeds the "Used Chat" funnel stage
+    if (typeof window !== 'undefined' && window.trackAppEvent) {
+      window.trackAppEvent('chat_message_sent', { chatId, isSubscribed, remainingQuota });
+    }
+
     if (!isSubscribed) {
       setRemainingQuota(prev => Math.max(0, prev - 1));
     }
@@ -623,7 +632,12 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
             <button 
                 className="send-btn active" 
                 style={{ background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: 'black' }}
-                onClick={() => router.push("/subscribe")}
+                onClick={() => {
+                  if (typeof window !== 'undefined' && window.trackAppEvent) {
+                    window.trackAppEvent('upgrade_click', { chatId, source: 'quota_button' });
+                  }
+                  router.push("/subscribe");
+                }}
             >
                 <Zap size={20} fill="black" />
             </button>
