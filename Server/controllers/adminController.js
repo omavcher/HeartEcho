@@ -5,6 +5,7 @@ const Chat = require("../models/Chat");
 const LoginDetail = require("../models/LoginDetail");
 const Ticket = require("../models/Ticket");
 const Payment = require("../models/Payment");
+const TrackingEvent = require("../models/TrackingEvent");
 const moment = require("moment");
 require("dotenv").config();
 const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");
@@ -1818,6 +1819,26 @@ exports.getPaymentAnalytics = async (req, res) => {
       .limit(100)
       .lean();
 
+    // 5. Check which users came from Facebook Ads
+    const userIds = paymentLogs.map(p => p.user?._id).filter(Boolean);
+    const trackingDocs = await TrackingEvent.find({
+      user: { $in: userIds },
+      $or: [
+        { "eventData.fbclid": { $ne: null, $exists: true } },
+        { "eventData.utm_source": { $regex: /facebook|fb|ig|instagram/i } }
+      ]
+    }).select("user").lean();
+
+    const fbUserSet = new Set(trackingDocs.map(t => String(t.user)));
+
+    const enrichedLogs = paymentLogs.map(p => {
+      const isFb = p.user && fbUserSet.has(String(p.user._id));
+      return {
+        ...p,
+        isFacebookSource: isFb
+      };
+    });
+
     res.status(200).json({
       success: true,
       summary: {
@@ -1834,7 +1855,7 @@ exports.getPaymentAnalytics = async (req, res) => {
         },
         pricingTiers: stats[0].paymentDistribution // Shows which plan price is most popular
       },
-      transactions: paymentLogs
+      transactions: enrichedLogs
     });
   } catch (error) {
     console.error("Payment Analytics Error:", error);

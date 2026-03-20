@@ -5,7 +5,7 @@ import axios from "axios";
 import api from "../../config/api";
 import { 
   FaMoneyBillWave, FaChartLine, FaUsers, FaCreditCard, 
-  FaSync, FaArrowUp, FaArrowDown, FaCrown 
+  FaSync, FaArrowUp, FaArrowDown, FaCrown, FaFacebook
 } from "react-icons/fa";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid
@@ -288,7 +288,14 @@ const PaymentActivityAdmin = () => {
                   <tr key={txn._id}>
                     <td>
                       <div className="pay-user-cell-x30sn">
-                        <span className="pay-user-name-x30sn">{txn.user?.name || 'Deleted User'}</span>
+                        <span className="pay-user-name-x30sn">
+                          {txn.user?.name || 'Deleted User'}
+                          {txn.isFacebookSource && (
+                            <span title="Acquired via Facebook Ads">
+                              <FaFacebook style={{ color: '#1877f2', marginLeft: '6px', fontSize: '12px' }} />
+                            </span>
+                          )}
+                        </span>
                         <span className="pay-user-email-x30sn">{txn.user?.email || 'N/A'}</span>
                       </div>
                     </td>
