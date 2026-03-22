@@ -165,11 +165,24 @@ function BioSection({ onBackSBTNSelect }) {
                   </svg>
                 </div>
               </div>
-              <h4 className="user-name-dwdjwd">{userData?.name}</h4>
               <p className="user-email-dwdjwd">{userData?.email}</p>
             </div>
 
             <section className="bio-section-box4-dwdjwd">
+              <div className="form-group-dwdjwd">
+                <label className="form-label-dwdjwd">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={userData?.name || ""}
+                  onChange={(e) =>
+                    setUserData({ ...userData, name: e.target.value })
+                  }
+                  className="form-input-dwdjwd"
+                  placeholder="Enter your name"
+                />
+              </div>
               <div className="form-group-dwdjwd">
                 <label className="form-label-dwdjwd">
                   Phone Number

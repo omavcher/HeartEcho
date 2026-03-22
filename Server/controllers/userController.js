@@ -69,7 +69,7 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user.id || req.user._id; 
-    const { profile_picture, phone_number, age, selectedInterests, gender } = req.body;
+    const { name, profile_picture, phone_number, age, selectedInterests, gender } = req.body;
 
     if (!userId) {
       return res.status(400).json({ message: "❌ User ID is missing!" });
@@ -78,7 +78,7 @@ exports.updateProfile = async (req, res) => {
     // Update the user profile in the database
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { profile_picture, phone_number, age, selectedInterests, gender },
+      { name, profile_picture, phone_number, age, selectedInterests, gender },
       { new: true, runValidators: true }
     );
 

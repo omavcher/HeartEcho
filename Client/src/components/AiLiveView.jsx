@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import api from "../config/api";
 import AiLiveModal from "./AiLiveModal";
 import "../styles/AiLiveView.css";
 
@@ -12,33 +14,7 @@ import "../styles/AiLiveView.css";
 // Replace the src paths with your real CDN/Cloudinary URLs.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const AI_INFLUENCERS = [
-  {
-    id: "janvi",
-    name: "Janvi",
-    tag: "Lifestyle",
-    age: 22,
-    gender: "female",
-    avatar: "/live_models/janvi/avatar.jpg",
-    // Idle loop videos — shown randomly when no action is triggered
-    idleVideos: [
-      "/live_models/janvi/idle_1.mp4",
-      "/live_models/janvi/idle_2.mp4",
-      "/live_models/janvi/idle_3.mp4",
-      "/live_models/janvi/idle_4.mp4",
-      "/live_models/janvi/idle_5.mp4",
-    ],
-    // Reaction videos per action (2-3 each)
-    actionVideos: {
-      wave:  ["/live_models/janvi/wave1.mp4", "/live_models/janvi/wave2.mp4"],
-      dance: ["/live_models/janvi/dance1.mp4", "/live_models/janvi/dance2.mp4"],
-      naughty:  ["/live_models/janvi/naughty1.mp4", "/live_models/janvi/naughty2.mp4"],
-      kiss:  ["/live_models/janvi/kiss1.mp4", "/live_models/janvi/kiss2.mp4"],
-      pose:  ["/live_models/janvi/pose1.mp4", "/live_models/janvi/pose2.mp4"],
-      hot_show: ["/live_models/janvi/hot_show1.mp4", "/live_models/janvi/hot_show2.mp4"],
-    },
-  }
-];
+// removed hardcoded AI_INFLUENCERS
 
 // ── Instagram-style Live circle card ─────────────────────────────────────────
 function LiveCard({ model, index, onOpen }) {
@@ -80,6 +56,39 @@ function LiveCard({ model, index, onOpen }) {
 // ── Main section ──────────────────────────────────────────────────────────────
 export default function AiLiveView() {
   const [activeModel, setActiveModel] = useState(null);
+  const [influencers, setInfluencers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchInfluencers = async () => {
+      try {
+        const { data } = await axios.get(`${api.Url}/ai-live`);
+        if (data.success) {
+          const activeOnly = data.data.filter(inf => inf.isActive !== false);
+          setInfluencers(activeOnly);
+        }
+      } catch (error) {
+        console.error("Error fetching AI Live Influencers:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchInfluencers();
+  }, []);
+
+  const handleOpenModel = async (model) => {
+    setActiveModel(model);
+    try {
+      if (model._id) {
+        await axios.post(`${api.Url}/ai-live/${model._id}/view`);
+      }
+    } catch (error) {
+      console.error("Failed to increment view:", error);
+    }
+  };
+
+  if (loading) return <div style={{ color: "white", padding: "20px", textAlign: "center" }}>Loading AI Live Studio...</div>;
+  if (!influencers || influencers.length === 0) return null;
 
   return (
     <section className="alv-section" aria-label="AI Live Studio">
@@ -91,7 +100,7 @@ export default function AiLiveView() {
             AI Live <span className="alv-title-accent">Studio</span>
           </h2>
           <span className="alv-beta-badge" aria-label="Beta">Beta</span>
-          <span className="alv-header-count">{AI_INFLUENCERS.length} LIVE</span>
+          <span className="alv-header-count">{influencers.length} LIVE</span>
         </div>
         <p className="alv-header-sub">
           Your AI companions are live — tap to interact
@@ -100,9 +109,9 @@ export default function AiLiveView() {
 
       {/* Scrollable row */}
       <div className="alv-scroll-row" role="list" aria-label="Live influencers">
-        {AI_INFLUENCERS.map((model, i) => (
+        {influencers.map((model, i) => (
           <div key={model.id} role="listitem">
-            <LiveCard model={model} index={i} onOpen={setActiveModel} />
+            <LiveCard model={model} index={i} onOpen={handleOpenModel} />
           </div>
         ))}
       </div>
