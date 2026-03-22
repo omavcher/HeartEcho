@@ -18,15 +18,23 @@ router.post("/admin/presign", authMiddleware, async (req, res) => {
       });
     }
 
-    // Restrict to safe folders only
-    const allowedFolders = [
-      "live-stories/poster",
-      "live-stories/banner",
-      "live-stories/movie",
-      "live-stories/chatting",
+    // Restrict to safe base folders dynamically (allowing subfolders)
+    const allowedPrefixes = [
+      "live-stories",
+      "ai-live",
+      "ai_friends",
+      "prebuilt",
+      "story_avatars",
+      "story_backgrounds",
+      "story_albums",
+      "other_media"
     ];
-    if (!allowedFolders.includes(folder)) {
-      return res.status(400).json({ success: false, message: "Invalid folder." });
+    
+    // Check if the requested folder starts with any of the allowed base prefixes
+    const isAllowed = allowedPrefixes.some(prefix => folder.startsWith(prefix));
+    
+    if (!isAllowed) {
+      return res.status(400).json({ success: false, message: "Invalid folder permission. Cannot upload to: " + folder });
     }
 
     const result = await generatePresignedPutUrl(folder, filename, contentType);
