@@ -203,8 +203,7 @@ const CreateStoryPage = () => {
 
   const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 'Ahmedabad', 'Jaipur', 'Lucknow', 'Goa', 'Chandigarh', 'Other'];
 
-  const cloudName = 'dx6rjowfb';
-  const uploadPreset = 'ml_default';
+  // Removed Cloudinary config
 
   // Effects & Fetchers
   useEffect(() => {
@@ -243,19 +242,24 @@ const CreateStoryPage = () => {
   );
 
   // Upload Logic
-  const uploadToCloudinary = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', uploadPreset);
-    formData.append('cloud_name', cloudName);
-    
+  const uploadToCloudflareR2 = async (file, folderName = 'story-media') => {
     try {
-      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, { method: 'POST', body: formData });
-      if (!response.ok) throw new Error('Upload failed');
-      const data = await response.json();
-      return data.secure_url;
+      const token = localStorage.getItem("token") || "";
+      const { data } = await axios.post(
+        `${api.Url}/live-story/admin/presign`,
+        { folder: `create-story/${folderName}`, filename: file.name, contentType: file.type },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!data.success) throw new Error("Failed to get upload URL");
+
+      await axios.put(data.uploadUrl, file, {
+        headers: { "Content-Type": file.type }
+      });
+
+      return data.cdnUrl;
     } catch (error) {
-      console.error(error); throw error;
+      console.error('Upload failed', error);
+      throw error;
     }
   };
 
@@ -271,7 +275,7 @@ const CreateStoryPage = () => {
       const reader = new FileReader();
       reader.onloadend = () => setBackgroundPreview(reader.result);
       reader.readAsDataURL(file);
-      const imageUrl = await uploadToCloudinary(file, 'background');
+      const imageUrl = await uploadToCloudflareR2(file, 'background');
       setFormData(prev => ({ ...prev, backgroundImage: imageUrl }));
     } catch (err) { setError('Upload failed'); } 
     finally { setUploadingBackground(false); }
@@ -285,7 +289,7 @@ const CreateStoryPage = () => {
       const reader = new FileReader();
       reader.onloadend = () => setAvatarPreview(reader.result);
       reader.readAsDataURL(file);
-      const imageUrl = await uploadToCloudinary(file, 'avatar');
+      const imageUrl = await uploadToCloudflareR2(file, 'avatar');
       setFormData(prev => ({ ...prev, characterAvatar: imageUrl }));
     } catch (err) { setError('Upload failed'); } 
     finally { setUploadingAvatar(false); }
@@ -296,7 +300,7 @@ const CreateStoryPage = () => {
     if (!files.length) return;
     try {
       setUploadingAlbum(true);
-      const uploadPromises = files.map(file => uploadToCloudinary(file, 'album'));
+      const uploadPromises = files.map(file => uploadToCloudflareR2(file, 'album'));
       const imageUrls = await Promise.all(uploadPromises);
       const newAlbum = [...imageAlbum, ...imageUrls];
       setImageAlbum(newAlbum);

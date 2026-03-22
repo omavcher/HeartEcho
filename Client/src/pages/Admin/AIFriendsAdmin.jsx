@@ -224,9 +224,7 @@ const AIFriendsAdmin = () => {
   const fileInputRef = useRef({ avatar: null, motionVideo: null, images: null, videos: null });
 
   const cloudinaryConfig = {
-    cloudName: 'dieklmzt6', 
-    uploadPreset: 'heartec_ai_compins_data_bolOm',
-    apiUrl: 'https://api.cloudinary.com/v1_1'
+    // Removed Cloudinary config
   };
 
   const colors = useMemo(() => ["#4facfe", "#ff69b4", "#00F260", "#ff3b30", "#333333"], []);
@@ -234,29 +232,24 @@ const AIFriendsAdmin = () => {
   const getToken = useCallback(() => (typeof window !== 'undefined' ? localStorage.getItem("token") || "" : ""), []);
 
   // --- Upload Logic ---
-  const uploadToCloudinary = async (file, type = 'image', onProgress = null) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', cloudinaryConfig.uploadPreset);
-    formData.append('cloud_name', cloudinaryConfig.cloudName);
-    
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.upload.addEventListener('progress', (event) => {
-        if (onProgress && event.lengthComputable) {
-          const percentComplete = Math.round((event.loaded / event.total) * 100);
-          onProgress(percentComplete);
-        }
-      });
-      xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(JSON.parse(xhr.responseText).secure_url);
-        } else { reject(new Error('Upload failed')); }
-      });
-      xhr.addEventListener('error', () => reject(new Error('Upload failed')));
-      xhr.open('POST', `${cloudinaryConfig.apiUrl}/${cloudinaryConfig.cloudName}/${type === 'image' ? 'image' : 'video'}/upload`);
-      xhr.send(formData);
+  const uploadToCloudflareR2 = async (file, type = 'image', onProgress = null) => {
+    const token = getToken();
+    const folder = type === 'image' ? 'ai-friends/images' : 'ai-friends/videos';
+    const { data } = await axios.post(
+      `${api.Url}/live-story/admin/presign`,
+      { folder, filename: file.name, contentType: file.type },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!data.success) throw new Error("Failed to get upload URL");
+
+    await axios.put(data.uploadUrl, file, {
+      headers: { "Content-Type": file.type },
+      onUploadProgress: (e) => {
+        if (onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
+      },
     });
+
+    return data.cdnUrl;
   };
 
   const handleFileUpload = async (event, field, index = null) => {
@@ -266,7 +259,7 @@ const AIFriendsAdmin = () => {
     setUploading({ status: 'uploading', type: 'single', field, index, progress: 0, total: 1, completed: 0, errors: [] });
 
     try {
-      const uploadUrl = await uploadToCloudinary(file, isImage ? 'image' : 'video', (progress) => {
+      const uploadUrl = await uploadToCloudflareR2(file, isImage ? 'image' : 'video', (progress) => {
         setUploading(prev => ({ ...prev, progress }));
       });
       
@@ -292,7 +285,7 @@ const AIFriendsAdmin = () => {
 
     for (let i = 0; i < files.length; i++) {
       try {
-        const url = await uploadToCloudinary(files[i], type, (p) => {
+        const url = await uploadToCloudflareR2(files[i], type, (p) => {
            // simple progress approximation
         });
         urls.push(url);
