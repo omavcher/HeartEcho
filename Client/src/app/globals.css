@@ -21,6 +21,18 @@ body, html {
   overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
+/* Prevent image downloads & dragging globally */
+img, video {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* --- SCROLLBARS --- */
 ::-webkit-scrollbar {
   width: 6px;
