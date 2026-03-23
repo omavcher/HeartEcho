@@ -33,5 +33,9 @@ router.get("/plans", authMiddleware, controller.getSubscriptionPlans);
 router.post("/update", authMiddleware, controller.updateSubscription);
 router.post("/check-quota", authMiddleware, controller.checkMessageQuota);
 
+// Upgrade routes (prorated billing)
+router.post("/payment/upgrade", authMiddleware, controller.upgradeSubscription);
+router.get("/payment/upgrade-pricing", authMiddleware, controller.getUpgradePricing);
+
 
 module.exports = router;

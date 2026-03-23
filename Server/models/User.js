@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema({
   // Subscription Management
   joinedAt: { type: Date, default: Date.now },
   subscriptionExpiry: { type: Date, default: null },
+  subscriptionTier: { type: String, enum: ["none", "monthly", "yearly", "yearly_pro"], default: "none" },
   
   // Message quota system
   messageQuota: { 
@@ -37,6 +38,8 @@ const userSchema = new mongoose.Schema({
     default: 0,
     min: 0 
   },
+  audioCallQuota: { type: Number, default: 0 },
+  audioCallMinutesUsedToday: { type: Number, default: 0 },
 
   // Referral System
   referredBy: {
@@ -91,6 +94,7 @@ userSchema.methods.resetDailyQuota = function () {
   
   if (lastResetDate < today) {
     this.messagesUsedToday = 0;
+    this.audioCallMinutesUsedToday = 0;
     this.lastQuotaReset = now;
     
     // Ensure free users have 20 messages
@@ -244,8 +248,11 @@ userSchema.statics.checkExpiredSubscriptions = async function () {
       $set: { 
         user_type: "free",
         subscriptionExpiry: null,
+        subscriptionTier: "none",
         messageQuota:5,
-        messagesUsedToday: 0
+        audioCallQuota: 0,
+        messagesUsedToday: 0,
+        audioCallMinutesUsedToday: 0
       }
     }
   );

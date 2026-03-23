@@ -703,10 +703,20 @@ exports.paymentSave = async (req, res) => {
     }
 
     const rupeesNum = Number(rupees);
+    let subscriptionTier = "none";
+    let audioCallQuota = 0;
+
     if (rupeesNum === 49) {
       expiryDate.setMonth(expiryDate.getMonth() + 1);
+      subscriptionTier = "monthly";
     } else if (rupeesNum === 399) {
       expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+      subscriptionTier = "yearly";
+      audioCallQuota = 10; // 10 minutes limit
+    } else if (rupeesNum === 999) {
+      expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+      subscriptionTier = "yearly_pro";
+      audioCallQuota = 9999; // Unlimited
     }
 
     // Create new payment entry
@@ -726,6 +736,8 @@ exports.paymentSave = async (req, res) => {
         $set: { 
           user_type: "subscriber", 
           subscriptionExpiry: expiryDate,
+          subscriptionTier: subscriptionTier,
+          audioCallQuota: audioCallQuota,
           messageQuota: 999 
         },
         $push: { payment_history: payment._id },
@@ -954,7 +966,132 @@ exports.updateSubscription = async (req, res) => {
   }
 };
 
-// Get subscription plans
+// ── UPGRADE SUBSCRIPTION (Pro-rated / difference payment) ───────────────────
+// Logic: User already paid ₹399 for yearly. Wants ₹999 yearly_pro.
+//        They only pay the DIFFERENCE: ₹999 - ₹400 = ₹599 (we charge ₹599).
+//        The existing subscription expiry is PRESERVED (not extended, just upgraded).
+exports.upgradeSubscription = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { rupees, transaction_id } = req.body;
+
+    if (!rupees || !transaction_id) {
+      return res.status(400).json({ error: "rupees and transaction_id are required" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Validate this is a legitimate upgrade payment amount
+    const rupeesNum = Number(rupees);
+    const UPGRADE_YEARLY_TO_PRO = 599; // ₹399 → ₹999 = pay only ₹599
+
+    let newTier = null;
+    let newAudioQuota = null;
+
+    if (rupeesNum === UPGRADE_YEARLY_TO_PRO && user.subscriptionTier === "yearly") {
+      // Upgrading yearly → yearly_pro. Keep same expiry, just unlock unlimited calls.
+      newTier = "yearly_pro";
+      newAudioQuota = 9999;
+    } else if (rupeesNum === 999) {
+      // Fresh yearly_pro purchase (no existing plan or monthly)
+      newTier = "yearly_pro";
+      newAudioQuota = 9999;
+      // Extend expiry by 1 year from now
+      const newExpiry = user.subscriptionExpiry && user.subscriptionExpiry > new Date()
+        ? new Date(user.subscriptionExpiry)
+        : new Date();
+      newExpiry.setFullYear(newExpiry.getFullYear() + 1);
+      user.subscriptionExpiry = newExpiry;
+    } else {
+      return res.status(400).json({ 
+        error: "Invalid upgrade amount",
+        expected: UPGRADE_YEARLY_TO_PRO,
+        received: rupeesNum
+      });
+    }
+
+    // Save payment record
+    const payment = new Payment({
+      user: userId,
+      rupees: rupeesNum,
+      transaction_id,
+      expiry_date: user.subscriptionExpiry,
+      plan_type: `upgrade_to_${newTier}`
+    });
+    await payment.save();
+
+    // Apply upgrade
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          subscriptionTier: newTier,
+          audioCallQuota: newAudioQuota,
+          messageQuota: 999,
+          user_type: "subscriber"
+        },
+        $push: { payment_history: payment._id }
+      },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: `Upgraded to ${newTier === "yearly_pro" ? "Ultimate (₹999)" : newTier} successfully!`,
+      subscriptionTier: updatedUser.subscriptionTier,
+      audioCallQuota: updatedUser.audioCallQuota,
+      subscriptionExpiry: updatedUser.subscriptionExpiry
+    });
+  } catch (error) {
+    console.error("Error upgrading subscription:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Get upgrade pricing info
+exports.getUpgradePricing = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId).select("subscriptionTier subscriptionExpiry audioCallQuota");
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const PLANS = {
+      monthly:    { price: 49,  name: "Monthly",      calls: false },
+      yearly:     { price: 399, name: "Yearly",       calls: "10 min/day" },
+      yearly_pro: { price: 999, name: "Ultimate",     calls: "Unlimited" },
+    };
+
+    const currentTier = user.subscriptionTier || "none";
+    let upgradeTo = null;
+    let upgradePrice = null;
+    let savingMessage = null;
+
+    if (currentTier === "monthly") {
+      upgradeTo = "yearly_pro";
+      upgradePrice = 999;
+      savingMessage = "Switch to Ultimate for unlimited calls + chat";
+    } else if (currentTier === "yearly") {
+      upgradeTo = "yearly_pro";
+      upgradePrice = 599; // Pay only the difference
+      savingMessage = "You already paid ₹399. Upgrade for just ₹599 more!";
+    }
+
+    res.status(200).json({
+      currentTier,
+      currentPlan: PLANS[currentTier] || null,
+      upgradeTo,
+      upgradePrice,
+      savingMessage,
+      plans: PLANS
+    });
+  } catch (error) {
+    console.error("Error getting upgrade pricing:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
 exports.getSubscriptionPlans = async (req, res) => {
   try {
     const plans = [
