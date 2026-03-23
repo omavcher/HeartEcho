@@ -42,13 +42,6 @@ export default function Home() {
           <AiLiveView />
         </section>
 
-          {/* ─── 2.5. LIVE STORIES ──────────────────────────────── */}
-        {serverStatus === "Server is running" && (
-          <section className="section-spacer">
-            <HomeLiveStories />
-          </section>
-        )}
-
 
         {/* ─── 2. AI MODELS GRID ──────────────────────────────── */}
         {serverStatus === "Server is running" && (
@@ -56,6 +49,16 @@ export default function Home() {
             <HomeAiModels />
           </section>
         )}
+
+        {/* ─── 2.5. LIVE STORIES ──────────────────────────────── */}
+        {serverStatus === "Server is running" && (
+          <section className="section-spacer">
+            <HomeLiveStories />
+          </section>
+        )}
+
+
+      
 
       
         {/* ─── 5. HOW IT WORKS ────────────────────────────────── */}
