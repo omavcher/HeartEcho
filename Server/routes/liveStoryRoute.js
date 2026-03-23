@@ -18,7 +18,6 @@ router.post("/admin/presign", authMiddleware, async (req, res) => {
       });
     }
 
-    // Restrict to safe base folders dynamically (allowing subfolders)
     const allowedPrefixes = [
       "live-stories",
       "ai-live",
@@ -27,7 +26,8 @@ router.post("/admin/presign", authMiddleware, async (req, res) => {
       "story_avatars",
       "story_backgrounds",
       "story_albums",
-      "other_media"
+      "other_media",
+      "create-story"
     ];
     
     // Check if the requested folder starts with any of the allowed base prefixes
