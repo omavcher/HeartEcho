@@ -839,3 +839,51 @@ exports.getAllSlugs = async (req, res) => {
   }
 };
 
+// @desc    Get comprehensive analytics for admin dashboard
+// @route   GET /api/v1/stories/admin/analytics
+// @access  Public/Admin
+exports.getAdminAnalytics = async (req, res) => {
+  try {
+    const totalStories = await Story.countDocuments();
+    const featuredCount = await Story.countDocuments({ featured: true });
+    const trendingCount = await Story.countDocuments({ trending: true });
+
+    // Aggregate total reads
+    const result = await Story.aggregate([
+      { $group: { _id: null, totalReads: { $sum: "$readCount" } } }
+    ]);
+    const totalReads = result.length > 0 ? result[0].totalReads : 0;
+
+    // Top 5 stories by readCount
+    const topStories = await Story.find({})
+      .sort({ readCount: -1 })
+      .limit(5)
+      .select('title slug excerpt category readCount backgroundImage characterAvatar createdAt');
+
+    // Last 5 recently published
+    const recentStories = await Story.find({})
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select('title slug excerpt category readCount backgroundImage characterAvatar createdAt');
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalStories,
+        totalReads,
+        featuredCount,
+        trendingCount,
+        topStories,
+        recentStories
+      }
+    });
+
+  } catch (error) {
+    console.error("Error fetching admin analytics:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching analytics",
+      error: error.message
+    });
+  }
+};

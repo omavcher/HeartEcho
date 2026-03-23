@@ -150,6 +150,45 @@ const styles = `
 .msg-success-x30sn { background: rgba(0,255,0,0.1); color: #00ff00; border: 1px solid rgba(0,255,0,0.2); }
 .msg-error-x30sn { background: rgba(255,0,0,0.1); color: #ff4444; border: 1px solid rgba(255,0,0,0.2); }
 
+/* TABS */
+.s-tabs-x30sn {
+  display: flex; gap: 20px; border-bottom: 1px solid #333; margin-bottom: 25px;
+}
+.s-tab-btn-x30sn {
+  background: none; border: none; color: #888; font-size: 15px; font-weight: 600; padding: 10px 0; cursor: pointer;
+  position: relative; transition: color 0.2s;
+}
+.s-tab-btn-x30sn:hover { color: #fff; }
+.s-tab-btn-x30sn.active { color: #ff69b4; }
+.s-tab-btn-x30sn.active::after {
+  content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: #ff69b4;
+}
+
+/* DASHBOARD */
+.s-dash-grid-x30sn {
+  display: grid; grid-template-columns: 2fr 1fr; gap: 25px; margin-top: 20px;
+}
+.s-dash-card-x30sn {
+  background: #0a0a0a; border: 1px solid #222; border-radius: 16px; padding: 25px;
+}
+.s-dash-card-title-x30sn {
+  font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
+}
+.s-story-row-x30sn {
+  display: flex; align-items: center; gap: 15px; padding: 15px 0; border-bottom: 1px solid #1a1a1a; transition: 0.2s;
+}
+.s-story-row-x30sn:hover { background: #111; border-radius: 8px; padding: 15px 10px; margin: 0 -10px; }
+.s-story-row-x30sn:last-child { border-bottom: none; }
+.s-story-row-img-x30sn { width: 50px; height: 70px; object-fit: cover; border-radius: 6px; }
+.s-story-row-info-x30sn { flex: 1; min-width: 0; }
+.s-story-row-info-x30sn h4 { margin: 0 0 5px 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+.s-story-row-info-x30sn p { margin: 0; font-size: 12px; color: #888; }
+.s-story-row-reads-x30sn { font-weight: bold; color: #ff69b4; display: flex; align-items: center; gap: 5px;}
+
+@media (max-width: 1000px) {
+  .s-dash-grid-x30sn { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 768px) {
   .s-header-x30sn { flex-direction: column; align-items: flex-start; }
   .s-create-btn-x30sn { width: 100%; justify-content: center; }
@@ -174,6 +213,11 @@ const StoriesAdmin = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalStories, setTotalStories] = useState(0);
   const itemsPerPage = 10;
+  
+  // Analytics
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [analytics, setAnalytics] = useState(null);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
   
   const categories = [
     'Housewife', 'Bhabhi', 'Devar-Bhabhi', 'Nanad-Bhabhi', 'Aunty', 'Village', 'Desi', 
@@ -215,7 +259,27 @@ const StoriesAdmin = () => {
     }
   };
 
-  useEffect(() => { fetchStories(); }, [currentPage, filters]);
+  const fetchAnalytics = async () => {
+    try {
+      setLoadingAnalytics(true);
+      const res = await axios.get(`${api.Url}/story/admin/analytics`);
+      if (res.data.success) {
+        setAnalytics(res.data.data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingAnalytics(false);
+    }
+  };
+
+  useEffect(() => { 
+    if (activeTab === 'content') {
+      fetchStories(); 
+    } else {
+      fetchAnalytics();
+    }
+  }, [currentPage, filters, activeTab]);
 
   const handleSearch = (e) => { e.preventDefault(); setCurrentPage(1); fetchStories(); };
   const handleFilterChange = (key, val) => { setFilters(prev => ({ ...prev, [key]: val })); setCurrentPage(1); };
@@ -264,61 +328,108 @@ const StoriesAdmin = () => {
         {success && <div className="msg-box-x30sn msg-success-x30sn">{success}</div>}
         {error && <div className="msg-box-x30sn msg-error-x30sn">{error}</div>}
 
-        {/* STATS STRIP */}
-        <div className="s-stats-grid-x30sn">
-          <div className="s-stat-card-x30sn">
-            <div className="s-stat-icon-x30sn"><MdMenuBook /></div>
-            <div className="s-stat-info-x30sn"><span>Total Stories</span><strong>{totalStories}</strong></div>
-          </div>
-          <div className="s-stat-card-x30sn">
-            <div className="s-stat-icon-x30sn"><FaStar /></div>
-            <div className="s-stat-info-x30sn"><span>Featured</span><strong>{stories.filter(s => s.featured).length}</strong></div>
-          </div>
-          <div className="s-stat-card-x30sn">
-            <div className="s-stat-icon-x30sn"><FaFire /></div>
-            <div className="s-stat-info-x30sn"><span>Trending</span><strong>{stories.filter(s => s.trending).length}</strong></div>
-          </div>
-          <div className="s-stat-card-x30sn">
-            <div className="s-stat-icon-x30sn"><FaEye /></div>
-            <div className="s-stat-info-x30sn"><span>Total Reads</span><strong>{stories.reduce((acc,s) => acc + (s.readCount||0), 0).toLocaleString()}</strong></div>
-          </div>
+        {/* TABS */}
+        <div className="s-tabs-x30sn">
+          <button className={`s-tab-btn-x30sn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>Analytics Dashboard</button>
+          <button className={`s-tab-btn-x30sn ${activeTab === 'content' ? 'active' : ''}`} onClick={() => setActiveTab('content')}>Story Content</button>
         </div>
 
-        {/* FILTERS */}
-        <div className="s-filters-x30sn">
-          <form onSubmit={handleSearch} className="s-search-row-x30sn">
-            <div className="s-search-box-x30sn">
-              <FaSearch />
-              <input 
-                type="text" className="s-input-x30sn" placeholder="Search by title, character..." 
-                value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} 
-              />
+        {activeTab === 'dashboard' && (
+          <div className="s-dash-grid-x30sn">
+            <div className="s-dash-card-x30sn" style={{gridColumn: '1 / -1'}}>
+              <div className="s-dash-card-title-x30sn">Channel Analytics Overview</div>
+              <div className="s-stats-grid-x30sn" style={{marginBottom: 0}}>
+                <div className="s-stat-card-x30sn">
+                  <div className="s-stat-icon-x30sn"><MdMenuBook /></div>
+                  <div className="s-stat-info-x30sn"><span>Total Stories</span><strong>{analytics?.totalStories || 0}</strong></div>
+                </div>
+                <div className="s-stat-card-x30sn">
+                  <div className="s-stat-icon-x30sn"><FaStar /></div>
+                  <div className="s-stat-info-x30sn"><span>Featured Stories</span><strong>{analytics?.featuredCount || 0}</strong></div>
+                </div>
+                <div className="s-stat-card-x30sn" style={{borderLeft: '4px solid #ff69b4'}}>
+                  <div className="s-stat-icon-x30sn"><FaEye /></div>
+                  <div className="s-stat-info-x30sn"><span style={{color:'#ff69b4'}}>Total Views (All Time)</span><strong>{analytics?.totalReads?.toLocaleString() || 0}</strong></div>
+                </div>
+              </div>
             </div>
-            <button type="submit" className="s-search-btn-x30sn">Search</button>
-          </form>
 
-          <div className="s-filter-row-x30sn">
-            <select className="s-select-x30sn" value={filters.category} onChange={(e) => handleFilterChange('category', e.target.value)}>
-              <option value="">All Categories</option>
-              {categories.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <select className="s-select-x30sn" value={filters.city} onChange={(e) => handleFilterChange('city', e.target.value)}>
-              <option value="">All Cities</option>
-              {cities.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <select className="s-select-x30sn" value={filters.featured} onChange={(e) => handleFilterChange('featured', e.target.value)}>
-              <option value="">Featured: Any</option>
-              <option value="true">Featured Only</option>
-              <option value="false">Not Featured</option>
-            </select>
-            <select className="s-select-x30sn" value={filters.trending} onChange={(e) => handleFilterChange('trending', e.target.value)}>
-              <option value="">Trending: Any</option>
-              <option value="true">Trending Only</option>
-              <option value="false">Not Trending</option>
-            </select>
-            <button className="s-clear-btn-x30sn" onClick={clearFilters}><FaSync/></button>
+            <div className="s-dash-card-x30sn">
+              <div className="s-dash-card-title-x30sn"><div style={{display:'flex', gap:8, alignItems:'center'}}><FaFire color="#ff69b4"/> Top Performing Stories</div> <small style={{color:'#888', fontWeight:'normal'}}>By All-Time Views</small></div>
+              {loadingAnalytics ? <div className="s-loading-x30sn">Loading Analytics...</div> : analytics?.topStories?.map((story, i) => (
+                <div key={story._id} className="s-story-row-x30sn">
+                  <div style={{fontWeight:'bold', color:'#555', fontSize:18, width: 20}}>{i+1}</div>
+                  <img src={story.backgroundImage} className="s-story-row-img-x30sn" alt="" />
+                  <div className="s-story-row-info-x30sn">
+                    <h4>{story.title}</h4>
+                    <p>{story.category}</p>
+                  </div>
+                  <div className="s-story-row-reads-x30sn"><FaEye/> {story.readCount?.toLocaleString()}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="s-dash-card-x30sn">
+              <div className="s-dash-card-title-x30sn">Latest Stories <small style={{color:'#888', fontWeight:'normal'}}>Recent additions</small></div>
+              {loadingAnalytics ? <div className="s-loading-x30sn">Loading Analytics...</div> : analytics?.recentStories?.map(story => (
+                <div key={story._id} className="s-story-row-x30sn">
+                  <img src={story.backgroundImage} className="s-story-row-img-x30sn" style={{width: 40, height: 40, borderRadius: '50%'}} alt="" />
+                  <div className="s-story-row-info-x30sn">
+                    <h4>{story.title}</h4>
+                    <p>{new Date(story.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <div className="s-story-row-reads-x30sn" style={{color:'#ccc', fontSize:12}}><FaEye/> {story.readCount}</div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {activeTab === 'content' && (
+          <>
+            {/* STATS STRIP FOR CONTENT TAB ONLY */}
+            <div className="s-stats-grid-x30sn">
+              <div className="s-stat-card-x30sn">
+                <div className="s-stat-icon-x30sn"><MdMenuBook /></div>
+                <div className="s-stat-info-x30sn"><span>Filtered Stories</span><strong>{totalStories}</strong></div>
+              </div>
+            </div>
+
+            {/* FILTERS */}
+            <div className="s-filters-x30sn">
+              <form onSubmit={handleSearch} className="s-search-row-x30sn">
+                <div className="s-search-box-x30sn">
+                  <FaSearch />
+                  <input 
+                    type="text" className="s-input-x30sn" placeholder="Search by title, character..." 
+                    value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} 
+                  />
+                </div>
+                <button type="submit" className="s-search-btn-x30sn">Search</button>
+              </form>
+
+              <div className="s-filter-row-x30sn">
+                <select className="s-select-x30sn" value={filters.category} onChange={(e) => handleFilterChange('category', e.target.value)}>
+                  <option value="">All Categories</option>
+                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <select className="s-select-x30sn" value={filters.city} onChange={(e) => handleFilterChange('city', e.target.value)}>
+                  <option value="">All Cities</option>
+                  {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <select className="s-select-x30sn" value={filters.featured} onChange={(e) => handleFilterChange('featured', e.target.value)}>
+                  <option value="">Featured: Any</option>
+                  <option value="true">Featured Only</option>
+                  <option value="false">Not Featured</option>
+                </select>
+                <select className="s-select-x30sn" value={filters.trending} onChange={(e) => handleFilterChange('trending', e.target.value)}>
+                  <option value="">Trending: Any</option>
+                  <option value="true">Trending Only</option>
+                  <option value="false">Not Trending</option>
+                </select>
+                <button className="s-clear-btn-x30sn" onClick={clearFilters}><FaSync/></button>
+              </div>
+            </div>
 
         {/* TABLE */}
         <div className="s-table-wrap-x30sn">
@@ -414,6 +525,8 @@ const StoriesAdmin = () => {
             })}
             <button className="s-page-btn-x30sn" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
           </div>
+        )}
+        </>
         )}
 
       </div>

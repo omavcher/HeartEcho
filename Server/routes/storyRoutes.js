@@ -39,5 +39,8 @@ router.patch('/:id/toggle-featured', storyController.toggleFeatured);
 router.patch('/:id/toggle-trending', storyController.toggleTrending);
 
 
+// Admin Analytics
+router.get('/admin/analytics', storyController.getAdminAnalytics);
+
 router.get('/get-slug', storyController.getAllSlugs);
 module.exports = router;
