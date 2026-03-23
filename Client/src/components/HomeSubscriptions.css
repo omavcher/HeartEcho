@@ -477,7 +477,7 @@
 }
 .hsub-compare-header-x30sn {
   display: grid;
-  grid-template-columns: 1fr 80px 100px 110px;
+  grid-template-columns: 1.5fr 80px 100px 110px;
   gap: 0;
   border-bottom: 1px solid rgba(255,255,255,0.08);
   background: #111;
@@ -497,7 +497,7 @@
 }
 .hsub-compare-row-x30sn {
   display: grid;
-  grid-template-columns: 1fr 80px 100px 110px;
+  grid-template-columns: 1.5fr 80px 100px 110px;
   border-bottom: 1px solid rgba(255,255,255,0.04);
   transition: background 0.2s;
 }
@@ -750,27 +750,29 @@
   .hsub-root-x30sn { padding-bottom: 24px; }
 
   .hsub-plans-scroll-x30sn {
+    flex-direction: row;
     flex-wrap: nowrap;
     overflow-x: auto;
     justify-content: flex-start;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    padding: 16px;
-    gap: 14px;
+    padding: 10px 16px 32px;
+    gap: 16px;
   }
   .hsub-plans-scroll-x30sn::-webkit-scrollbar { display: none; }
 
   .hsub-card-x30sn {
     min-width: 82vw;
     max-width: 82vw;
-    scroll-snap-align: center;
     flex-shrink: 0;
+    scroll-snap-align: center;
+    margin: 0;
   }
   .hsub-card-x30sn.hero {
-    min-width: 88vw;
-    max-width: 88vw;
-    transform: scale(1); /* no scale on mobile — takes too much space */
+    min-width: 82vw;
+    max-width: 82vw;
+    transform: none; /* no scale on mobile */
   }
 
   .hsub-compare-grid-x30sn {
@@ -779,7 +781,7 @@
   }
   .hsub-compare-row-x30sn,
   .hsub-compare-header-x30sn {
-    grid-template-columns: 1fr 64px 80px 90px;
+    grid-template-columns: 1.2fr 60px 80px 90px;
   }
 
   .hsub-sticky-cta-x30sn { padding: 10px 16px max(12px, env(safe-area-inset-bottom)); }

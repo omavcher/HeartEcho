@@ -278,10 +278,6 @@ export default function ReviewsPage() {
           </Link>
           <div className="rvp-cta-trust">
             <span>🔒 Razorpay secured</span>
-            <span>·</span>
-            <span>30-day money back</span>
-            <span>·</span>
-            <span>Cancel anytime</span>
           </div>
         </div>
       </section>

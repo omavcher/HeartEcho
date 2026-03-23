@@ -36,18 +36,7 @@ function Refund() {
             </ul>
           </section>
 
-          <section className="ref-section-x30sn">
-            <h2>Changing Your Mind</h2>
-            <ul>
-              <li>
-                <strong>Monthly Connections:</strong> Cancel anytime, continue enjoying until your period ends.
-              </li>
-              <li>
-                <strong>Annual Commitments:</strong> We'll refund unused months (minus 30 days) because 
-                relationships take time to grow.
-              </li>
-            </ul>
-          </section>
+         
 
           <section className="ref-section-x30sn">
             <h2>When We'll Make It Right</h2>

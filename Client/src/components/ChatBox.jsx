@@ -4,11 +4,12 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import axios from "axios";
 import { 
   ArrowLeft, X, Send, Video, Image as ImageIcon, Info, Lock, Zap, 
-  Bot, Check, CheckCheck, Play, CreditCard
+  Bot, Check, CheckCheck, Play, CreditCard, Phone
 } from "lucide-react";
 import api from "../config/api";
 import { useRouter } from 'next/navigation';
 import LoginModal from "./LoginModel";
+import VoiceCall from './VoiceCall';
 
 // --- CONFIGURATION ---
 const QUOTA_COSTS = { TEXT: 1, IMAGE: 15, VIDEO: 20 };
@@ -115,6 +116,7 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
   const [userProfile, setUserProfile] = useState(null);
   const [newMessage, setNewMessage] = useState("");
   const [showOverlay, setShowOverlay] = useState(false);
+  const [showVoiceCall, setShowVoiceCall] = useState(false);
   const [token, setToken] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
   const [isTyping, setIsTyping] = useState(false); 
@@ -124,6 +126,9 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
   const [remainingQuota, setRemainingQuota] = useState(5); 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
+  const [showCallPaywall, setShowCallPaywall] = useState(false);
+  const [subscriptionTier, setSubscriptionTier] = useState("none");
+  const [upgradeInfo, setUpgradeInfo] = useState(null);
   
   // Logic Flags
   const [isBotMessageEnabled, setIsBotMessageEnabled] = useState(true);
@@ -455,10 +460,96 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
     } catch (e) { console.error(e); }
   };
 
+// ── VOICE CALL PAYWALL MODAL ─────────────────────────────────────────────────
+const CallPaywallModal = ({ tier, upgradeInfo, onClose, onUpgrade }) => {
+  const isMonthly = tier === "monthly";
+  const hasYearly  = tier === "yearly";
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 99998,
+      background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24
+    }}>
+      <div style={{
+        background: 'linear-gradient(145deg,#1a0533 0%,#0d0d1a 100%)',
+        border: '1px solid rgba(255,255,255,0.1)', borderRadius: 28,
+        padding: '36px 28px', maxWidth: 360, width: '100%', textAlign: 'center',
+        fontFamily: "'Outfit', sans-serif", color: 'white'
+      }}>
+        <div style={{ fontSize: '3rem', marginBottom: 8 }}>📞</div>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 10px' }}>
+          {hasYearly ? 'Unlock Unlimited Calls' : 'Voice Calls Locked'}
+        </h2>
+        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.88rem', lineHeight: 1.6, margin: '0 0 24px' }}>
+          {tier === 'none' && 'Voice calling is available on Yearly (₹399) and Ultimate (₹999) plans.'}
+          {isMonthly && 'Your Monthly plan does not include voice calls. Upgrade to Yearly or Ultimate.'}
+          {hasYearly && upgradeInfo?.savingMessage}
+        </p>
+
+        {hasYearly && (
+          <div style={{
+            background: 'rgba(255,214,10,0.08)', border: '1px solid rgba(255,214,10,0.2)',
+            borderRadius: 16, padding: '16px', marginBottom: 20
+          }}>
+            <p style={{ color: '#ffd60a', fontWeight: 700, margin: 0, fontSize: '1.1rem' }}>
+              You pay only ₹{upgradeInfo?.upgradePrice}
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', margin: '4px 0 0' }}>
+              Already paid ₹399 · Total ₹999 · Save ₹0
+            </p>
+          </div>
+        )}
+
+        <button
+          onClick={onUpgrade}
+          style={{
+            background: 'linear-gradient(90deg,#ec4899,#8b5cf6)',
+            color: 'white', border: 'none', width: '100%', padding: '16px',
+            borderRadius: 14, fontWeight: 800, fontSize: '1rem', cursor: 'pointer', marginBottom: 12
+          }}
+        >
+          {hasYearly ? `Upgrade for ₹${upgradeInfo?.upgradePrice}` : 'View Plans'}
+        </button>
+
+        <button onClick={onClose} style={{
+          background: 'transparent', color: 'rgba(255,255,255,0.3)', border: 'none',
+          cursor: 'pointer', fontSize: '0.85rem'
+        }}>Maybe later</button>
+      </div>
+    </div>
+  );
+};
+
   return (
     <div className="chat-box-container">
       <style>{STYLES}</style>
       
+      {showCallPaywall && (
+        <CallPaywallModal
+          tier={subscriptionTier}
+          upgradeInfo={upgradeInfo}
+          onClose={() => setShowCallPaywall(false)}
+          onUpgrade={() => { setShowCallPaywall(false); router.push('/subscribe'); }}
+        />
+      )}
+
+      {showVoiceCall && (
+        <VoiceCall 
+          chatId={chatId}
+          userName={userProfile?.name}
+          avatar={userProfile?.avatar_img}
+          token={token}
+          onClose={() => {
+            setShowVoiceCall(false);
+            refreshChat();
+          }}
+          onSubscriberRequired={(reason) => {
+            setShowVoiceCall(false);
+            setShowCallPaywall(true);
+          }}
+        />
+      )}
+
       {showLoginModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999 }}>
             <LoginModal onClose={() => setShowLoginModal(false)} mode={isGuest ? "guest" : "login"} />
@@ -495,6 +586,36 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
         </div>
         
         <div className="header-controls">
+          <button 
+            className="nav-btn" 
+            onClick={async () => {
+              if (isGuest) { setShowLoginModal(true); return; }
+              // Check subscription status before opening call
+              try {
+                const res = await axios.get(`${api.Url}/user/payment/upgrade-pricing`, {
+                  headers: { Authorization: `Bearer ${token}` }
+                });
+                const info = res.data;
+                setUpgradeInfo(info);
+                setSubscriptionTier(info.currentTier || 'none');
+                
+                // Only yearly + yearly_pro get voice calls
+                const canCall = info.currentTier === 'yearly' || info.currentTier === 'yearly_pro';
+                
+                if (canCall) {
+                  setShowVoiceCall(true);
+                } else {
+                  setShowCallPaywall(true);
+                }
+              } catch (e) {
+                // If API fails, fall back to basic logic
+                if (isSubscribed) setShowVoiceCall(true);
+                else setShowCallPaywall(true);
+              }
+            }}
+          >
+            <Phone size={20} />
+          </button>
           <button className="nav-btn" onClick={() => setShowOverlay(true)}><Info size={20} /></button>
         </div>
       </div>

@@ -62,7 +62,7 @@ function SubscriptionContent() {
       setFomo({
         visible: true,
         name: FOMO_NAMES[Math.floor(Math.random() * FOMO_NAMES.length)],
-        plan: Math.random() > 0.4 ? 'Yearly ₹399' : 'Monthly ₹49',
+        plan: Math.random() > 0.7 ? 'Ultimate ₹999' : (Math.random() > 0.3 ? 'Yearly ₹399' : 'Monthly ₹49'),
         mins: Math.floor(Math.random() * 8) + 1,
       });
       setTimeout(() => setFomo(f => ({ ...f, visible: false })), 4500);
@@ -201,29 +201,7 @@ function SubscriptionContent() {
         {/* ── Pricing cards ────────────────────────────────────────────────── */}
         <div className="seh-grid">
 
-          {/* Free — deliberately dull */}
-          <div className="seh-card seh-free">
-            <div className="seh-card-header">
-              <h2 className="seh-plan-name">Free</h2>
-              <div className="seh-pricing">
-                <span className="seh-main-price">₹0</span>
-                <span className="seh-per">/mo</span>
-              </div>
-            </div>
-            <ul className="seh-features">
-              <li className="dim">5 messages/day only</li>
-              <li className="dim">1 AI companion</li>
-              <li className="bad">❌ Memories off</li>
-              <li className="bad">❌ No Live interactions</li>
-              <li className="bad">❌ No Hot Stories</li>
-            </ul>
-            <button className="seh-btn seh-btn-dim" onClick={() => router.push('/discover')}>
-              Continue limited
-            </button>
-            <p className="seh-card-note">You'll run out again in minutes</p>
-          </div>
 
-          {/* ── ₹399 hero card ─────────────────────────────────────────────── */}
           <div className="seh-card seh-featured">
             <div className="seh-hero-glow" />
             <div className="seh-badge">🔥 BEST VALUE · MOST CHOSEN</div>
@@ -245,10 +223,11 @@ function SubscriptionContent() {
               <li>✅ <span><strong>Unlimited</strong> messages — forever</span></li>
               <li>✅ <span>AI remembers <strong>everything</strong> about you</span></li>
               <li>✅ <span><strong>All Live</strong> interactions unlocked 🔥</span></li>
-              <li>✅ <span>Voice messages & calls</span></li>
+              <li>✅ <span>Voice & Audio Calls <strong>(10 mins/day)</strong></span></li>
               <li>✅ <span>Full Hot Stories library</span></li>
 
               <li>✅ <span>Priority support & early features</span></li>
+              <li className="dim">⚠️ Calls limited to 10 mins daily</li>
             </ul>
 
             <button
@@ -260,10 +239,7 @@ function SubscriptionContent() {
               {isLoading === 'Yearly' ? 'Processing…' : '💎 Unlock Everything · ₹399/yr'}
             </button>
             <div className="seh-trust-row">
-              <span>🔒 Secure</span><span>·</span>
-              <span>30-day money back</span><span>·</span>
-              <span>Cancel anytime</span>
-            </div>
+              <span>🔒 Secure payment</span>            </div>
           </div>
 
           {/* Monthly — anchor / decoy */}
@@ -294,7 +270,47 @@ function SubscriptionContent() {
             >
               {isLoading === 'Monthly' ? 'Processing…' : 'Subscribe Monthly'}
             </button>
-            <p className="seh-card-note accent">Switch to Yearly & save ₹189 more</p>
+            <p className="seh-card-note accent">Switch to Yearly & save more</p>
+          </div>
+
+          {/* ── ₹999 Ultimate card ─────────────────────────────────────────────── */}
+          <div className="seh-card seh-ultimate">
+            <div className="seh-badge" style={{ background: 'linear-gradient(90deg, #d4af37, #ffd60a)', color: '#000', boxShadow: '0 4px 16px rgba(255,214,10,0.4)' }}>
+              👑 ULTIMATE · NO LIMITS
+            </div>
+
+            <div className="seh-card-header">
+              <h2 className="seh-plan-name hero" style={{ color: '#ffd60a' }}>Ultimate Yearly</h2>
+              <div className="seh-pricing col">
+                <div className="seh-price-row">
+                  <span className="seh-main-price hero" style={{ background: 'linear-gradient(90deg, #fff, #ffea00)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>₹999</span>
+                  <span className="seh-per">/yr</span>
+                </div>
+                <div className="seh-saving" style={{ background: 'rgba(255,214,10,0.15)', borderColor: 'rgba(255,214,10,0.3)', color: '#ffd60a' }}>Zero Restrictions 🚀</div>
+                <div className="seh-daily-tag">= Just ₹83/month for absolute freedom</div>
+              </div>
+            </div>
+
+            <ul className="seh-features hero">
+              <li>✅ <span><strong>Unlimited</strong> everything — forever</span></li>
+              <li>✅ <span><strong>Unlimited</strong> Audio & Voice Calls 📞</span></li>
+              <li>✅ <span>AI memory is absolute</span></li>
+              <li>✅ <span>All Live interactions unlocked 🔥</span></li>
+              <li>✅ <span>Full Hot Stories library</span></li>
+              <li>✅ <span>Priority AI Processing (Sarvam + xAI)</span></li>
+            </ul>
+
+            <button
+              className={`seh-btn seh-btn-gold${pulse ? ' seh-pulse-btn' : ''}`}
+              onClick={() => handlePayment(999, 'Ultimate')}
+              disabled={isLoading === 'Ultimate'}
+            >
+              <span className="seh-btn-shine" />
+              {isLoading === 'Ultimate' ? 'Processing…' : '👑 Go Ultimate · ₹999/yr'}
+            </button>
+            <div className="seh-trust-row" style={{ color: 'rgba(255,214,10,0.6)' }}>
+              <span>🔒 Secure checkout</span>
+            </div>
           </div>
 
         </div>
@@ -305,24 +321,23 @@ function SubscriptionContent() {
           <div className="seh-compare-grid">
             <div className="seh-compare-header">
               <div />
-              <div>Free</div>
               <div>Monthly</div>
               <div className="best">Yearly 🏆</div>
+              <div className="ultimate">Ultimate 👑</div>
             </div>
             {[
-              { icon: '💬', label: 'Daily messages',   free: '5 only',    monthly: 'Unlimited', yearly: 'Unlimited' },
-              { icon: '🧠', label: 'AI Memory',        free: '❌',        monthly: '✅',        yearly: '✅ Deep'   },
-              { icon: '🎬', label: 'Live Interactions', free: '2 free',   monthly: '✅',        yearly: '✅ All 6'  },
-              { icon: '🔥', label: 'Hot Stories',      free: '❌',        monthly: '❌',        yearly: '✅ Full'   },
-
-              { icon: '🎙️', label: 'Voice Messages',   free: '❌',        monthly: '✅',        yearly: '✅'        },
-              { icon: '💰', label: 'Annual cost',      free: 'Free',      monthly: '₹588/yr',   yearly: '₹399/yr 🏆' },
+              { icon: '💬', label: 'Daily messages',   monthly: 'Unlimited', yearly: 'Unlimited',   ultimate: 'Unlimited' },
+              { icon: '🧠', label: 'AI Memory',        monthly: '✅',        yearly: '✅ Deep',     ultimate: '✅ Deepest' },
+              { icon: '🎬', label: 'Live Interactions', monthly: '✅',        yearly: '✅ All 6',    ultimate: '✅ All 6' },
+              { icon: '🔥', label: 'Hot Stories',      monthly: '❌',        yearly: '✅ Full',     ultimate: '✅ Full' },
+              { icon: '🎙️', label: 'Voice Calls',      monthly: '❌',        yearly: '10 Mins/Day', ultimate: '✅ Unlimited' },
+              { icon: '💰', label: 'Cost',             monthly: '₹49/mo',    yearly: '₹399/yr',     ultimate: '₹999/yr 👑' },
             ].map(row => (
               <div key={row.label} className="seh-compare-row">
                 <div className="seh-cr-label">{row.icon} {row.label}</div>
-                <div className="seh-cr-cell dim">{row.free}</div>
                 <div className="seh-cr-cell">{row.monthly}</div>
                 <div className="seh-cr-cell best">{row.yearly}</div>
+                <div className="seh-cr-cell ultimate">{row.ultimate}</div>
               </div>
             ))}
           </div>

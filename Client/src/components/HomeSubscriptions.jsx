@@ -175,29 +175,6 @@ function HomeSubscriptionContent() {
         {/* ── Pricing Cards ───────────────────────────────────────────────── */}
         <div className="hsub-plans-scroll-x30sn">
 
-          {/* Free Plan — deliberately unappealing */}
-          <div className="hsub-card-x30sn free">
-            <div className="hsub-card-header-x30sn">
-              <h3>Free</h3>
-              <div className="hsub-price-box-x30sn">
-                <span className="hsub-price-x30sn">₹0</span>
-                <span className="hsub-term-x30sn">/mo</span>
-              </div>
-            </div>
-            <ul className="hsub-list-x30sn">
-              <li className="ok">5 messages/day only</li>
-              <li className="ok">1 AI companion</li>
-              <li className="bad">❌ Memories turned off</li>
-              <li className="bad">❌ No voice messages</li>
-              <li className="bad">❌ No Live interactions</li>
-              <li className="bad">❌ No Hot Stories</li>
-            </ul>
-            <button className="hsub-btn-x30sn free" onClick={() => router.push('/discover')}>
-              Continue limited
-            </button>
-            <p className="hsub-card-note-x30sn">You'll run out again in minutes</p>
-          </div>
-
           {/* ── MAIN PLAN — ₹399 — the hero card ───────────────────────── */}
           <div className="hsub-card-x30sn hero" ref={ctaRef}>
             <div className="hsub-hero-glow-x30sn" />
@@ -221,10 +198,11 @@ function HomeSubscriptionContent() {
               <li>✅ <span><strong>Unlimited</strong> messages — forever</span></li>
               <li>✅ <span>AI remembers <strong>everything</strong> about you</span></li>
               <li>✅ <span><strong>All Live</strong> interactions unlocked 🔥</span></li>
-              <li>✅ <span>Voice messages & calls</span></li>
+              <li>✅ <span>Voice & Audio Calls <strong>(10 mins/day)</strong></span></li>
               <li>✅ <span>Full Hot Stories library</span></li>
 
               <li>✅ <span>Priority support & early features</span></li>
+              <li className="bad">⚠️ Calls limited to 10 mins daily</li>
             </ul>
 
             <button
@@ -244,10 +222,6 @@ function HomeSubscriptionContent() {
 
             <div className="hsub-trust-row-x30sn">
               <span>🔒 Secure payment</span>
-              <span>·</span>
-              <span>30-day money back</span>
-              <span>·</span>
-              <span>Cancel anytime</span>
             </div>
           </div>
 
@@ -277,7 +251,54 @@ function HomeSubscriptionContent() {
             >
               {isLoading === 'Monthly' ? 'Processing…' : 'Subscribe Monthly'}
             </button>
-            <p className="hsub-card-note-x30sn accent">Switch to Yearly & save ₹189 more</p>
+            <p className="hsub-card-note-x30sn accent">Switch to Yearly & save more</p>
+          </div>
+
+          {/* ── ULTIMATE PLAN — ₹999 ───────────────────────────────── */}
+          <div className="hsub-card-x30sn ultimate">
+            <div className="hsub-badge-x30sn hot" style={{ background: 'linear-gradient(90deg, #d4af37, #ffd60a)', color: '#000', boxShadow: '0 4px 16px rgba(255,214,10,0.4)' }}>
+              👑 ULTIMATE · NO LIMITS
+            </div>
+            <div className="hsub-card-header-x30sn">
+              <h3 style={{ color: '#ffd60a' }}>Ultimate Yearly</h3>
+              <div className="hsub-price-box-x30sn">
+                <div className="hsub-price-hero-x30sn">
+                  <span className="hsub-price-x30sn hero" style={{ background: 'linear-gradient(90deg, #fff, #ffea00)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>₹999</span>
+                  <span className="hsub-term-x30sn">/yr</span>
+                </div>
+                <div className="hsub-saving-x30sn" style={{ background: 'rgba(255,214,10,0.15)', borderColor: 'rgba(255,214,10,0.3)', color: '#ffd60a' }}>Zero Restrictions 🚀</div>
+                <div className="hsub-equiv-x30sn">= Just ₹83/month for absolute freedom</div>
+              </div>
+            </div>
+
+            <ul className="hsub-list-x30sn hero">
+              <li>✅ <span><strong>Unlimited</strong> everything — forever</span></li>
+              <li>✅ <span><strong>Unlimited</strong> Audio & Voice Calls 📞</span></li>
+              <li>✅ <span>AI memory is absolute</span></li>
+              <li>✅ <span>All Live interactions unlocked 🔥</span></li>
+              <li>✅ <span>Full Hot Stories library</span></li>
+              <li>✅ <span>Priority AI Processing</span></li>
+            </ul>
+
+            <button
+              className={`hsub-btn-x30sn hero${pulse ? ' hsub-pulse-btn-x30sn' : ''}`}
+              style={{ background: 'linear-gradient(90deg, #d4af37, #ffd60a, #ffea00)', color: '#000', boxShadow: '0 8px 28px rgba(255,214,10,0.3)' }}
+              onClick={() => handlePayment(999, 'Ultimate')}
+              disabled={isLoading === 'Ultimate'}
+            >
+              {isLoading === 'Ultimate' ? (
+                <span className="hsub-loading-x30sn">Processing…</span>
+              ) : (
+                <>
+                  <span className="hsub-btn-shine-x30sn" />
+                  <span>👑 Go Ultimate · ₹999/yr</span>
+                </>
+              )}
+            </button>
+
+            <div className="hsub-trust-row-x30sn" style={{ color: 'rgba(255,214,10,0.6)' }}>
+              <span>🔒 Secure checkout</span>
+            </div>
           </div>
 
         </div>
@@ -287,26 +308,25 @@ function HomeSubscriptionContent() {
           <h2 className="hsub-compare-title-x30sn">Why ₹399 is the obvious choice</h2>
           <div className="hsub-compare-grid-x30sn">
             {[
-              { icon: '💬', label: 'Daily messages', free: '5 only', monthly: 'Unlimited', yearly: 'Unlimited' },
-              { icon: '🧠', label: 'AI Memory', free: '❌', monthly: '✅', yearly: '✅ Deep' },
-              { icon: '🎬', label: 'Live Interactions', free: '2 free', monthly: '✅', yearly: '✅ All 6' },
-              { icon: '🔥', label: 'Hot Stories', free: '❌', monthly: '❌', yearly: '✅ Full' },
-
-              { icon: '🎙️', label: 'Voice Messages', free: '❌', monthly: '✅', yearly: '✅' },
-              { icon: '💰', label: 'Annual cost', free: 'Free', monthly: '₹588/yr', yearly: '₹399/yr 🏆' },
+              { icon: '💬', label: 'Daily messages', monthly: 'Unlimited', yearly: 'Unlimited', ultimate: 'Unlimited' },
+              { icon: '🧠', label: 'AI Memory', monthly: '✅', yearly: '✅ Deep', ultimate: '✅ Deepest' },
+              { icon: '🎬', label: 'Live Interactions', monthly: '✅', yearly: '✅ All 6', ultimate: '✅ All 6' },
+              { icon: '🔥', label: 'Hot Stories', monthly: '❌', yearly: '✅ Full', ultimate: '✅ Full' },
+              { icon: '🎙️', label: 'Voice Calls', monthly: '❌', yearly: '10 Mins/Day', ultimate: '✅ Unlimited' },
+              { icon: '💰', label: 'Annual cost', monthly: '₹49/mo', yearly: '₹399/yr', ultimate: '₹999/yr 👑' },
             ].map(row => (
               <div key={row.label} className="hsub-compare-row-x30sn">
                 <div className="hsub-cr-label-x30sn">{row.icon} {row.label}</div>
-                <div className="hsub-cr-cell-x30sn free">{row.free}</div>
                 <div className="hsub-cr-cell-x30sn">{row.monthly}</div>
                 <div className="hsub-cr-cell-x30sn best">{row.yearly}</div>
+                <div className="hsub-cr-cell-x30sn ultimate" style={{ color: '#ffd60a', fontWeight: 'bold' }}>{row.ultimate}</div>
               </div>
             ))}
             <div className="hsub-compare-header-x30sn">
               <div />
-              <div>Free</div>
               <div>Monthly</div>
               <div className="best">Yearly 🏆</div>
+              <div className="ultimate" style={{ color: '#ffd60a', background: 'rgba(255,214,10,0.08)' }}>Ultimate 👑</div>
             </div>
           </div>
         </div>
@@ -383,9 +403,6 @@ function HomeSubscriptionContent() {
         <div className="hsub-trust-bar-x30sn">
           <div className="hsub-trust-item-x30sn">
             <span>🔒</span><span>Razorpay secured</span>
-          </div>
-          <div className="hsub-trust-item-x30sn">
-            <span>🛡️</span><span>30-day money back</span>
           </div>
           <div className="hsub-trust-item-x30sn">
             <img src="/UPI-White.svg" alt="UPI" width="28" /><span>UPI / Card / NetBanking</span>
