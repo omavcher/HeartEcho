@@ -682,14 +682,15 @@ exports.deleteMessage = async (req, res) => {
 // Updated paymentSave function with your dark theme HTML
 exports.paymentSave = async (req, res) => {
   try {
-    const { user, rupees, transaction_id } = req.body;
+    const { rupees, transaction_id } = req.body;
+    const userId = req.body.user || (req.user ? (req.user.id || req.user._id) : null);
 
-    if (!user || !rupees || !transaction_id) {
+    if (!userId || !rupees || !transaction_id) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
     // Find user
-    const existingUser = await User.findById(user);
+    const existingUser = await User.findById(userId);
     if (!existingUser) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -701,16 +702,17 @@ exports.paymentSave = async (req, res) => {
       expiryDate = new Date(existingUser.subscriptionExpiry);
     }
 
-    if (rupees === 49) {
+    const rupeesNum = Number(rupees);
+    if (rupeesNum === 49) {
       expiryDate.setMonth(expiryDate.getMonth() + 1);
-    } else if (rupees === 399) {
+    } else if (rupeesNum === 399) {
       expiryDate.setFullYear(expiryDate.getFullYear() + 1);
     }
 
     // Create new payment entry
     const payment = new Payment({
-      user,
-      rupees,
+      user: userId,
+      rupees: rupeesNum,
       transaction_id,
       expiry_date: expiryDate,
     });
@@ -719,16 +721,20 @@ exports.paymentSave = async (req, res) => {
 
     // Update user subscription
     const updatedUser = await User.findByIdAndUpdate(
-      user,
+      userId,
       {
-        $set: { user_type: "subscriber", subscriptionExpiry: expiryDate },
+        $set: { 
+          user_type: "subscriber", 
+          subscriptionExpiry: expiryDate,
+          messageQuota: 999 
+        },
         $push: { payment_history: payment._id },
       },
       { new: true }
     );
 
     // 🚀 APPLE-STYLE DARK THEME EMAIL TEMPLATE
-    const planName = rupees === 49 ? "Monthly" : "Yearly";
+    const planName = rupeesNum === 49 ? "Monthly" : "Yearly";
     const emailHTML = `
 <!DOCTYPE html>
 <html>
