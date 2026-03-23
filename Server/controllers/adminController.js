@@ -12,6 +12,42 @@ const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");
 const ReferralCreator = require("../models/ReferralCreator");
 const { generateCreatorToken, verifyReferralCreator } = require('../utils/jwt');
 
+exports.manualSubscription = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { password, tier } = req.body;
+
+        if (password !== "omjs2693") {
+            return res.status(401).json({ success: false, message: "Invalid Admin Password" });
+        }
+
+        const user = await User.findById(id);
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+        const plans = {
+            monthly: { days: 30, quota: 0 },
+            yearly: { days: 365, quota: 999999 },
+            yearly_pro: { days: 365, quota: 999999 }
+        };
+
+        if (!plans[tier]) return res.status(400).json({ success: false, message: "Invalid tier" });
+
+        user.user_type = "subscriber";
+        user.subscriptionTier = tier;
+        user.audioCallQuota = plans[tier].quota;
+        
+        const expiry = new Date();
+        expiry.setDate(expiry.getDate() + plans[tier].days);
+        user.subscriptionExpiry = expiry;
+
+        await user.save();
+        res.status(200).json({ success: true, message: `Subscribed user to ${tier}` });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
 exports.dashboardData = async (req, res) => {
   try {
       const userId = req.user.id;

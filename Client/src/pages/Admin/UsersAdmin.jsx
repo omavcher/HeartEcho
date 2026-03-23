@@ -172,6 +172,7 @@ const UsersAdmin = () => {
   const [dateFilter, setDateFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [subModal, setSubModal] = useState({ open: false, userId: null, tier: "yearly_pro", password: "" });
   const usersPerPage = 8;
 
   const getToken = useCallback(() => (typeof window !== 'undefined' ? localStorage.getItem("token") || "" : ""), []);
@@ -273,6 +274,22 @@ const UsersAdmin = () => {
      document.body.appendChild(downloadAnchorNode);
      downloadAnchorNode.click();
      downloadAnchorNode.remove();
+  };
+
+  const handleManualSub = async () => {
+    if (!subModal.password || !subModal.tier) return alert("Fill all fields");
+    try {
+        const token = getToken();
+        await axios.post(`${api.Url}/admin/manual-subscribe/${subModal.userId}`, {
+            password: subModal.password,
+            tier: subModal.tier
+        }, { headers: { Authorization: `Bearer ${token}` } });
+        alert(`Success! User is now ${subModal.tier}`);
+        setSubModal({ open: false, userId: null, tier: "yearly_pro", password: "" });
+        fetchAllData();
+    } catch (e) {
+        alert(e.response?.data?.message || "Error subscribing user");
+    }
   };
 
   if (loading) return <div className="loader-x30sn"><div className="spinner-x30sn"></div><p>Syncing Database...</p></div>;
@@ -427,6 +444,14 @@ const UsersAdmin = () => {
               </div>
 
               <div className="uc-actions-x30sn">
+                <button 
+                  className="act-btn-x30sn" 
+                  title="Manual Subscription" 
+                  onClick={() => setSubModal({ open: true, userId: user._id, tier: "yearly_pro", password: "" })}
+                  style={{color: '#ff69b4', borderColor:'rgba(255,105,180,0.2)'}}
+                >
+                  <FaUserPlus />
+                </button>
                 <button className="act-btn-x30sn" title="Edit User"><FaEdit /></button>
                 <button className="act-btn-x30sn" style={{color:'#ff4444', borderColor:'rgba(255,68,68,0.2)'}} title="Delete User"><FaTrash /></button>
               </div>
@@ -440,6 +465,40 @@ const UsersAdmin = () => {
             <span style={{color:'#666', fontSize:13, fontWeight:600}}>Page {currentPage}</span>
             <button className="pg-btn-x30sn" disabled={paginatedUsers.length < usersPerPage} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
         </div>
+
+        {/* MANUAL SUB MODAL */}
+        {subModal.open && (
+           <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.8)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center'}}>
+              <div style={{background:'#050505', border:'1px solid #333', padding:25, borderRadius:16, width:320, display:'flex', flexDirection:'column', gap:15}}>
+                 <h3 style={{margin:0, color:'#ff69b4', fontSize:18}}>Manual Subscription</h3>
+                 
+                 <label style={{fontSize:12, color:'#999'}}>Select Tier</label>
+                 <select 
+                   style={{background:'#000', border:'1px solid #333', color:'#fff', padding:10, borderRadius:8}}
+                   value={subModal.tier} 
+                   onChange={e => setSubModal({...subModal, tier: e.target.value})}
+                 >
+                   <option value="monthly">Monthly (₹49)</option>
+                   <option value="yearly">Yearly (₹399)</option>
+                   <option value="yearly_pro">Ultimate (₹999)</option>
+                 </select>
+
+                 <label style={{fontSize:12, color:'#999'}}>Admin Password</label>
+                 <input 
+                   type="password"
+                   style={{background:'#000', border:'1px solid #333', color:'#fff', padding:10, borderRadius:8}}
+                   placeholder="Enter admin pass..."
+                   value={subModal.password}
+                   onChange={e => setSubModal({...subModal, password: e.target.value})}
+                 />
+
+                 <div style={{display:'flex', gap:10, marginTop:10}}>
+                   <button style={{flex:1, background:'#444', border:'none', padding:10, borderRadius:8, color:'#fff', cursor:'pointer'}} onClick={() => setSubModal({open: false, userId: null, tier: "yearly_pro", password: ""})}>Cancel</button>
+                   <button style={{flex:1, background:'#ff69b4', border:'none', padding:10, borderRadius:8, color:'#000', fontWeight:600, cursor:'pointer'}} onClick={handleManualSub}>Confirm</button>
+                 </div>
+              </div>
+           </div>
+        )}
       </div>
     </>
   );

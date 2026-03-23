@@ -11,6 +11,7 @@ router.get('/users-breakdown',authMiddleware, controller.getUsersBreakdown);
 
 router.get('/users-administr',authMiddleware, controller.getUserDataAdmin);
 router.get('/user-dataw' ,authMiddleware,  controller.UserALLDtaa);
+router.post('/manual-subscribe/:id', authMiddleware, controller.manualSubscription);
 
 
 router.get('/aiuser-data' ,  controller.aiAllModelData);
