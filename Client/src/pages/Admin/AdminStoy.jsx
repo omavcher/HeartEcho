@@ -9,48 +9,52 @@ import {
 } from 'react-icons/fa';
 import { MdMenuBook } from "react-icons/md";
 import api from '../../config/api';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 // ------------------- CSS STYLES -------------------
 const styles = `
 /* ROOT & LAYOUT */
 .stories-root-x30sn {
-  color: #fff;
-  font-family: 'Inter', system-ui, sans-serif;
   animation: fade-in-x30sn 0.4s ease;
+  width: 100%;
 }
 @keyframes fade-in-x30sn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* HEADER */
 .s-header-x30sn {
-  display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 20px;
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 30px;
 }
-.s-title-group-x30sn h1 { font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -0.5px; }
-.s-title-group-x30sn p { color: #ff69b4; margin: 5px 0 0 0; font-size: 13px; font-weight: 500; }
+.s-title-group-x30sn h1 { font-size: 28px; font-weight: 700; color: #fff; margin: 0; }
+.s-title-group-x30sn p { color: #ff69b4; font-size: 14px; margin-top: 5px; }
+
+.s-actions-group-x30sn { display: flex; gap: 10px; }
 
 .s-create-btn-x30sn {
-  background: #ff69b4; color: #000; padding: 12px 24px; border-radius: 10px; font-weight: 700;
-  text-decoration: none; display: flex; align-items: center; gap: 8px; transition: 0.2s; border: none;
+  background: #ff69b4; color: #000; padding: 10px 18px; border-radius: 8px; font-weight: 600; font-size: 14px;
+  text-decoration: none; display: flex; align-items: center; gap: 8px; border: none; transition: 0.2s;
 }
-.s-create-btn-x30sn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(255,105,180,0.4); }
+.s-create-btn-x30sn:hover { opacity: 0.8; }
 
 /* STATS STRIP */
 .s-stats-grid-x30sn {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px;
 }
 .s-stat-card-x30sn {
-  background: #050505; border: 1px solid #222; border-radius: 14px; padding: 16px;
-  display: flex; align-items: center; gap: 15px; position: relative; overflow: hidden;
+  background: #111; border: 1px solid #333; border-radius: 16px; padding: 24px; position: relative; overflow: hidden;
 }
 .s-stat-card-x30sn::after {
-  content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px;
-  background: linear-gradient(90deg, #ff69b4, transparent); opacity: 0.5;
+  content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #ff69b4;
+}
+.s-stat-header-x30sn {
+  display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;
 }
 .s-stat-icon-x30sn {
-  width: 46px; height: 46px; border-radius: 12px; background: rgba(255,105,180,0.1); color: #ff69b4;
+  width: 44px; height: 44px; border-radius: 12px; background: rgba(255,105,180,0.1); color: #ff69b4;
   display: flex; align-items: center; justify-content: center; font-size: 20px;
 }
-.s-stat-info-x30sn span { display: block; font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
-.s-stat-info-x30sn strong { font-size: 22px; color: #fff; font-weight: 700; }
+.s-stat-label-x30sn { color: #888; font-size: 14px; font-weight: 500; }
+.s-stat-value-x30sn { font-size: 32px; font-weight: 700; color: #fff; margin: 0; }
+
 
 /* FILTERS */
 .s-filters-x30sn {
@@ -165,11 +169,20 @@ const styles = `
 }
 
 /* DASHBOARD */
+.s-chart-section-x30sn {
+  background: #111; border: 1px solid #333; border-radius: 16px; padding: 24px; margin-bottom: 30px;
+}
+.s-chart-head-x30sn {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+}
+.s-chart-head-x30sn h3 { margin: 0; font-size: 18px; color: #fff; }
+.s-chart-area-x30sn { height: 350px; width: 100%; }
+
 .s-dash-grid-x30sn {
-  display: grid; grid-template-columns: 2fr 1fr; gap: 25px; margin-top: 20px;
+  display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 10px;
 }
 .s-dash-card-x30sn {
-  background: #0a0a0a; border: 1px solid #222; border-radius: 16px; padding: 25px;
+  background: #111; border: 1px solid #333; border-radius: 16px; padding: 24px;
 }
 .s-dash-card-title-x30sn {
   font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
@@ -177,13 +190,14 @@ const styles = `
 .s-story-row-x30sn {
   display: flex; align-items: center; gap: 15px; padding: 15px 0; border-bottom: 1px solid #1a1a1a; transition: 0.2s;
 }
-.s-story-row-x30sn:hover { background: #111; border-radius: 8px; padding: 15px 10px; margin: 0 -10px; }
+.s-story-row-x30sn:hover { background: rgba(255,105,180,0.05); border-radius: 8px; padding: 15px 10px; margin: 0 -10px; }
 .s-story-row-x30sn:last-child { border-bottom: none; }
 .s-story-row-img-x30sn { width: 50px; height: 70px; object-fit: cover; border-radius: 6px; }
 .s-story-row-info-x30sn { flex: 1; min-width: 0; }
 .s-story-row-info-x30sn h4 { margin: 0 0 5px 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
 .s-story-row-info-x30sn p { margin: 0; font-size: 12px; color: #888; }
 .s-story-row-reads-x30sn { font-weight: bold; color: #ff69b4; display: flex; align-items: center; gap: 5px;}
+
 
 @media (max-width: 1000px) {
   .s-dash-grid-x30sn { grid-template-columns: 1fr; }
@@ -319,9 +333,11 @@ const StoriesAdmin = () => {
             <h1>Story Content</h1>
             <p>Manage & Curate Database</p>
           </div>
-          <Link href="/admin/create-story" className="s-create-btn-x30sn">
-            <FaPlus /> New Story
-          </Link>
+          <div className="s-actions-group-x30sn">
+            <Link href="/admin/create-story" className="s-create-btn-x30sn">
+              <FaPlus /> New Story
+            </Link>
+          </div>
         </div>
 
         {/* FEEDBACK MSG */}
@@ -335,63 +351,101 @@ const StoriesAdmin = () => {
         </div>
 
         {activeTab === 'dashboard' && (
-          <div className="s-dash-grid-x30sn">
-            <div className="s-dash-card-x30sn" style={{gridColumn: '1 / -1'}}>
-              <div className="s-dash-card-title-x30sn">Channel Analytics Overview</div>
-              <div className="s-stats-grid-x30sn" style={{marginBottom: 0}}>
-                <div className="s-stat-card-x30sn">
+          <>
+            {/* STATS STRIP FOR DASHBOARD - MATCHING ADMIN UI EXACTLY */}
+            <div className="s-stats-grid-x30sn">
+              <div className="s-stat-card-x30sn">
+                <div className="s-stat-header-x30sn">
                   <div className="s-stat-icon-x30sn"><MdMenuBook /></div>
-                  <div className="s-stat-info-x30sn"><span>Total Stories</span><strong>{analytics?.totalStories || 0}</strong></div>
+                  <span className="s-stat-label-x30sn">Total Stories</span>
                 </div>
-                <div className="s-stat-card-x30sn">
+                <h3 className="s-stat-value-x30sn">{analytics?.totalStories || 0}</h3>
+              </div>
+              <div className="s-stat-card-x30sn">
+                <div className="s-stat-header-x30sn">
                   <div className="s-stat-icon-x30sn"><FaStar /></div>
-                  <div className="s-stat-info-x30sn"><span>Featured Stories</span><strong>{analytics?.featuredCount || 0}</strong></div>
+                  <span className="s-stat-label-x30sn">Featured Stories</span>
                 </div>
-                <div className="s-stat-card-x30sn" style={{borderLeft: '4px solid #ff69b4'}}>
+                <h3 className="s-stat-value-x30sn">{analytics?.featuredCount || 0}</h3>
+              </div>
+              <div className="s-stat-card-x30sn">
+                <div className="s-stat-header-x30sn">
                   <div className="s-stat-icon-x30sn"><FaEye /></div>
-                  <div className="s-stat-info-x30sn"><span style={{color:'#ff69b4'}}>Total Views (All Time)</span><strong>{analytics?.totalReads?.toLocaleString() || 0}</strong></div>
+                  <span className="s-stat-label-x30sn">Total Views (All Time)</span>
                 </div>
+                <h3 className="s-stat-value-x30sn">{analytics?.totalReads?.toLocaleString() || 0}</h3>
               </div>
             </div>
 
-            <div className="s-dash-card-x30sn">
-              <div className="s-dash-card-title-x30sn"><div style={{display:'flex', gap:8, alignItems:'center'}}><FaFire color="#ff69b4"/> Top Performing Stories</div> <small style={{color:'#888', fontWeight:'normal'}}>By All-Time Views</small></div>
-              {loadingAnalytics ? <div className="s-loading-x30sn">Loading Analytics...</div> : analytics?.topStories?.map((story, i) => (
-                <div key={story._id} className="s-story-row-x30sn">
-                  <div style={{fontWeight:'bold', color:'#555', fontSize:18, width: 20}}>{i+1}</div>
-                  <img src={story.backgroundImage} className="s-story-row-img-x30sn" alt="" />
-                  <div className="s-story-row-info-x30sn">
-                    <h4>{story.title}</h4>
-                    <p>{story.category}</p>
-                  </div>
-                  <div className="s-story-row-reads-x30sn"><FaEye/> {story.readCount?.toLocaleString()}</div>
-                </div>
-              ))}
+            {/* CHART SECTION */}
+            <div className="s-chart-section-x30sn">
+              <div className="s-chart-head-x30sn">
+                <FaFire style={{color:'#ff69b4'}} />
+                <h3>Views Performance Analytics</h3>
+              </div>
+              <div className="s-chart-area-x30sn">
+                {loadingAnalytics ? <div className="s-loading-x30sn">Loading Graph...</div> : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={analytics?.topStories || []}>
+                      <XAxis dataKey="title" stroke="#888" tick={{fill: '#888', fontSize: 12}} axisLine={false} tickLine={false} tickFormatter={(val) => val.length > 15 ? val.substring(0, 15) + '...' : val} />
+                      <YAxis stroke="#888" tick={{fill: '#888', fontSize: 12}} axisLine={false} tickLine={false} />
+                      <Tooltip contentStyle={{backgroundColor: '#111', border: '1px solid #333', borderRadius: '8px', color: '#fff'}} itemStyle={{color: '#ff69b4'}} cursor={{fill: 'rgba(255,105,180,0.05)'}} />
+                      <defs>
+                        <linearGradient id="colorPink" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#ff69b4" stopOpacity={1}/>
+                          <stop offset="95%" stopColor="#d31d71" stopOpacity={0.8}/>
+                        </linearGradient>
+                      </defs>
+                      <Bar dataKey="readCount" name="Total Views" fill="url(#colorPink)" radius={[6, 6, 0, 0]} barSize={50} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
             </div>
 
-            <div className="s-dash-card-x30sn">
-              <div className="s-dash-card-title-x30sn">Latest Stories <small style={{color:'#888', fontWeight:'normal'}}>Recent additions</small></div>
-              {loadingAnalytics ? <div className="s-loading-x30sn">Loading Analytics...</div> : analytics?.recentStories?.map(story => (
-                <div key={story._id} className="s-story-row-x30sn">
-                  <img src={story.backgroundImage} className="s-story-row-img-x30sn" style={{width: 40, height: 40, borderRadius: '50%'}} alt="" />
-                  <div className="s-story-row-info-x30sn">
-                    <h4>{story.title}</h4>
-                    <p>{new Date(story.createdAt).toLocaleDateString()}</p>
+            <div className="s-dash-grid-x30sn">
+              <div className="s-dash-card-x30sn">
+                <div className="s-dash-card-title-x30sn"><div style={{display:'flex', gap:8, alignItems:'center'}}><FaFire color="#ff69b4"/> Top Performing Stories</div> <small style={{color:'#888', fontWeight:'normal'}}>By All-Time Views</small></div>
+                {loadingAnalytics ? <div className="s-loading-x30sn">Loading Analytics...</div> : analytics?.topStories?.map((story, i) => (
+                  <div key={story._id} className="s-story-row-x30sn">
+                    <div style={{fontWeight:'bold', color:'#555', fontSize:18, width: 20}}>{i+1}</div>
+                    <img src={story.backgroundImage} className="s-story-row-img-x30sn" alt="" />
+                    <div className="s-story-row-info-x30sn">
+                      <h4>{story.title}</h4>
+                      <p>{story.category}</p>
+                    </div>
+                    <div className="s-story-row-reads-x30sn"><FaEye/> {story.readCount?.toLocaleString()}</div>
                   </div>
-                  <div className="s-story-row-reads-x30sn" style={{color:'#ccc', fontSize:12}}><FaEye/> {story.readCount}</div>
-                </div>
-              ))}
+                ))}
+              </div>
+
+              <div className="s-dash-card-x30sn">
+                <div className="s-dash-card-title-x30sn">Latest Stories <small style={{color:'#888', fontWeight:'normal'}}>Recent additions</small></div>
+                {loadingAnalytics ? <div className="s-loading-x30sn">Loading Analytics...</div> : analytics?.recentStories?.map(story => (
+                  <div key={story._id} className="s-story-row-x30sn">
+                    <img src={story.backgroundImage} className="s-story-row-img-x30sn" style={{width: 40, height: 40, borderRadius: '50%'}} alt="" />
+                    <div className="s-story-row-info-x30sn">
+                      <h4>{story.title}</h4>
+                      <p>{new Date(story.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <div className="s-story-row-reads-x30sn" style={{color:'#ccc', fontSize:12}}><FaEye/> {story.readCount}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          </>
         )}
 
         {activeTab === 'content' && (
           <>
             {/* STATS STRIP FOR CONTENT TAB ONLY */}
-            <div className="s-stats-grid-x30sn">
+            <div className="s-stats-grid-x30sn" style={{marginBottom: 30}}>
               <div className="s-stat-card-x30sn">
-                <div className="s-stat-icon-x30sn"><MdMenuBook /></div>
-                <div className="s-stat-info-x30sn"><span>Filtered Stories</span><strong>{totalStories}</strong></div>
+                <div className="s-stat-header-x30sn">
+                  <div className="s-stat-icon-x30sn"><MdMenuBook /></div>
+                  <span className="s-stat-label-x30sn">Filtered Stories</span>
+                </div>
+                <h3 className="s-stat-value-x30sn">{totalStories}</h3>
               </div>
             </div>
 
