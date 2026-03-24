@@ -145,11 +145,12 @@ function Login() {
       
       // Redirect to original URL (with query params) or home
       const redirectUrl = getRedirectUrl();
-      setTimeout(() => router.push(redirectUrl), 1500);
+      window.location.href = redirectUrl;
+      return;
     } catch (error) {
       setNotification({ show: true, message: error.response?.data?.msg || "Login failed", type: "error" });
+      setIsLogin(false);
     }
-    setIsLogin(false);
   };
 
   const handleGoogleSuccess = async (response) => {
@@ -182,26 +183,20 @@ function Login() {
         
         // Redirect to original URL (with query params) or home
         const redirectUrl = getRedirectUrl();
-        setTimeout(() => router.push(redirectUrl), 1500);
+        window.location.href = redirectUrl;
+        return;
       }
 
       if (res.data.user === null && res.data.message === "New user, please complete registration") {
         setNotification({ show: true, message: res.data.message, type: "info" });
-        setTimeout(() => {
-          // Pass the current redirect URL to signup page with proper encoding
-          const redirectUrl = getRedirectUrl();
-          try {
-            router.push(`/signup?from=${encodeURIComponent(redirectUrl)}`);
-          } catch (error) {
-            console.error('Error encoding redirect URL:', error);
-            router.push('/signup');
-          }
-        }, 1000);
+        const redirectUrl = getRedirectUrl();
+        router.push(`/signup?from=${encodeURIComponent(redirectUrl)}`);
+        return;
       }
     } catch (error) {
       setNotification({ show: true, message: "Google Login Failed!", type: "error" });
+      setIsLogin(false);
     }
-    setIsLogin(false);
   };
 
   const handleGoogleFailure = (error) => {
@@ -213,9 +208,35 @@ function Login() {
   if (!isClient) {
     return (
       <div className="signup-container">
-        <div className="signup-loading">
-          <div className="loader-signin"></div>
-          <p>Loading...</p>
+        <div className="signup-left skeleton-left">
+          <div className="signup-sidebar">
+            <span className="sideup-top-sanp">
+              <div className="skeleton-logo"></div>
+              <div className="skeleton-text short" style={{ marginLeft: "10px", height: "24px", width: "120px" }}></div>
+            </span>
+            <div className="steps-singe">
+              {[1, 2, 3].map((num) => (
+                <div className="step" key={num}>
+                  <div className="skeleton-circle"></div>
+                  <div className="step-text" style={{ width: "100%" }}>
+                    <div className="skeleton-text short"></div>
+                    <div className="skeleton-text long"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="signup-right">
+          <div className="signup-box" style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+            <div className="skeleton-title" style={{ height: "32px", width: "40%", marginBottom: "20px" }}></div>
+            <div className="skeleton-input" style={{ height: "50px" }}></div>
+            <div className="skeleton-text short" style={{ alignSelf: "center", margin: "15px 0", height: "1px", width: "100%" }}></div>
+            <div className="skeleton-input" style={{ height: "45px" }}></div>
+            <div className="skeleton-input" style={{ height: "45px" }}></div>
+            <div className="skeleton-button" style={{ height: "45px", marginTop: "10px" }}></div>
+          </div>
         </div>
       </div>
     );
@@ -259,7 +280,28 @@ function Login() {
 
       <div className="signup-right">
         <div className="signup-box">
-          <h2>Login</h2>
+          <h2>Welcome Back</h2>
+          
+          <div className="authO2-container3d" style={{ marginBottom: "20px", display: "flex", justifyContent: "center", width: "100%", padding: "5px" }}>
+            <GoogleOAuthProvider clientId={googleClientId}>
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleFailure}
+                theme="filled_black"
+                size="large"
+                shape="rectangular"
+                width="100%"
+                text="continue_with"
+              />
+            </GoogleOAuthProvider>
+          </div>
+
+          <div className="last-hearder-sini" style={{ marginBottom: "20px" }}>
+            <span className="last-ssx-con-line"></span>
+            <h3>Or login with email</h3>
+            <span className="last-ssx-con-line"></span>
+          </div>
+
           <form className="inputs-sign" onSubmit={handleSubmit}>
             <div className="password-input">
               <input
@@ -291,24 +333,7 @@ function Login() {
             </div>
           </form>
 
-          <div className="last-sinin-con">
-            <div className="last-hearder-sini">
-              <span className="last-ssx-con-line"></span>
-              <h3>Or Login with</h3>
-              <span className="last-ssx-con-line"></span>
-            </div>
-
-            <div className="authO2-container3d">
-              <GoogleOAuthProvider clientId={googleClientId}>
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={handleGoogleFailure}
-                  theme="filled_black"
-                  size="large"
-                />
-              </GoogleOAuthProvider>
-            </div>
-
+          <div className="last-sinin-con" style={{ marginTop: "20px" }}>
             <h2 className="have-h2dx">
               Don't have an account?{" "}
               <Link href="/signup" style={{ textDecoration: "none" }}>

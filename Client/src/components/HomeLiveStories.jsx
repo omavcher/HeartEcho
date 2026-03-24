@@ -134,10 +134,16 @@ const styles = `
   .hls-view-all-btn { width: 100%; justify-content: center; }
   .hls-card { min-width: 200px; max-width: 200px; }
 }
+
+@keyframes hls-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
 `;
 
 export default function HomeLiveStories() {
   const [liveStories, setLiveStories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStories = async () => {
@@ -149,6 +155,8 @@ export default function HomeLiveStories() {
         }
       } catch (error) {
         console.error("Failed to fetch live stories:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchStories();
@@ -178,30 +186,56 @@ export default function HomeLiveStories() {
 
         {/* STORIES GRID */}
         <div className="hls-grid">
-          {liveStories.map((story) => (
-            <Link href={`/live-a-story/${story.slug}`} key={story._id || story.slug} className="hls-card">
-              <div className="hls-card-img-box">
-                {/* Fallback pattern since images are dummy paths for now, will show nicely styled alt if missing */}
-                <div style={{position: 'absolute', inset: 0, background: 'linear-gradient(45deg, #111, #222)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', zIndex: 0}}>
-                   <span style={{opacity: 0.1, fontSize: 60}}><FaBookOpen /></span>
-                </div>
-                {/* Actual poster */}
-                <img src={story.poster} className="hls-card-img" alt={story.title} loading="lazy" 
-                     onError={(e) => { e.target.style.display = 'none'; }} />
-                <div className="hls-img-overlay"></div>
-                
-                <div className="hls-card-content">
-                  <div className="hls-card-cat">{story.category}</div>
-                  <h4 className="hls-card-title">{story.title}</h4>
-                  <p className="hls-card-excerpt">{story.description}</p>
+          {loading ? (
+            [1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="hls-card" style={{borderColor: '#1a1a1a', background: '#0a0a0a'}}>
+                <div className="hls-card-img-box" style={{background: '#111'}}>
+                  <div style={{width: '100%', height: '100%', background: '#222', animation: 'hls-pulse 1.5s infinite ease-in-out'}} />
+                  <div className="hls-img-overlay"></div>
                   
-                  <div className="hls-card-footer">
-                    <span className="hls-views"><FaFire size={12}/> {story.views} views</span>
+                  <div className="hls-card-content">
+                    <div style={{width: 60, height: 12, background: 'rgba(184, 98, 255, 0.4)', borderRadius: 4, marginBottom: 8, animation: 'hls-pulse 1.5s infinite ease-in-out'}} />
+                    <div style={{width: '90%', height: 20, background: '#333', borderRadius: 4, marginBottom: 6, animation: 'hls-pulse 1.5s infinite ease-in-out'}} />
+                    <div style={{width: '60%', height: 20, background: '#333', borderRadius: 4, marginBottom: 16, animation: 'hls-pulse 1.5s infinite ease-in-out'}} />
+                    
+                    <div style={{width: '100%', height: 12, background: '#222', borderRadius: 4, marginBottom: 6, animation: 'hls-pulse 1.5s infinite ease-in-out'}} />
+                    <div style={{width: '80%', height: 12, background: '#222', borderRadius: 4, marginBottom: 12, animation: 'hls-pulse 1.5s infinite ease-in-out'}} />
+                    
+                    <div className="hls-card-footer">
+                      <div style={{width: 70, height: 12, background: '#333', borderRadius: 4, animation: 'hls-pulse 1.5s infinite ease-in-out'}} />
+                    </div>
                   </div>
                 </div>
               </div>
-            </Link>
-          ))}
+            ))
+          ) : liveStories.length > 0 ? (
+            liveStories.map((story) => (
+              <Link href={`/live-a-story/${story.slug}`} key={story._id || story.slug} className="hls-card">
+                <div className="hls-card-img-box">
+                  {/* Fallback pattern since images are dummy paths for now, will show nicely styled alt if missing */}
+                  <div style={{position: 'absolute', inset: 0, background: 'linear-gradient(45deg, #111, #222)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', zIndex: 0}}>
+                     <span style={{opacity: 0.1, fontSize: 60}}><FaBookOpen /></span>
+                  </div>
+                  {/* Actual poster */}
+                  <img src={story.poster} className="hls-card-img" alt={story.title} loading="lazy" 
+                       onError={(e) => { e.target.style.display = 'none'; }} />
+                  <div className="hls-img-overlay"></div>
+                  
+                  <div className="hls-card-content">
+                    <div className="hls-card-cat">{story.category}</div>
+                    <h4 className="hls-card-title">{story.title}</h4>
+                    <p className="hls-card-excerpt">{story.description}</p>
+                    
+                    <div className="hls-card-footer">
+                      <span className="hls-views"><FaFire size={12}/> {story.views} views</span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))
+          ) : (
+             <div style={{padding: '20px', color: '#666'}}>No live stories available right now.</div>
+          )}
         </div>
       </div>
     </section>

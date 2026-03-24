@@ -87,7 +87,35 @@ export default function AiLiveView() {
     }
   };
 
-  if (loading) return <div style={{ color: "white", padding: "20px", textAlign: "center" }}>Loading AI Live Studio...</div>;
+  const AiLiveSkeleton = () => (
+    <section className="alv-section" aria-label="AI Live Studio">
+      <div className="alv-header">
+        <div className="alv-header-row">
+          <span className="alv-header-dot" style={{background: '#333'}} aria-hidden />
+          <h2 className="alv-header-title" style={{display: 'flex', alignItems: 'center'}}>
+            <div style={{width: 150, height: 28, background: '#333', borderRadius: 4, animation: 'alv-pulse 1.5s infinite ease-in-out'}} />
+          </h2>
+        </div>
+        <div style={{width: 250, height: 16, background: '#222', borderRadius: 4, marginTop: 10, animation: 'alv-pulse 1.5s infinite ease-in-out'}} />
+      </div>
+
+      <div className="alv-scroll-row" role="list">
+        {[1,2,3,4,5,6].map(i => (
+          <div key={i} role="listitem" className="alv-circle-item">
+            <div className="alv-ring" style={{border: '2px solid #333'}}>
+              <div className="alv-ring-inner">
+                <div style={{width: '100%', height: '100%', borderRadius: '50%', background: '#222', animation: 'alv-pulse 1.5s infinite ease-in-out'}} />
+              </div>
+            </div>
+            <div style={{width: 60, height: 12, background: '#333', borderRadius: 4, marginTop: 14, alignSelf: 'center', animation: 'alv-pulse 1.5s infinite ease-in-out', margin: '14px auto 0'}} />
+          </div>
+        ))}
+      </div>
+      <style>{`@keyframes alv-pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }`}</style>
+    </section>
+  );
+
+  if (loading) return <AiLiveSkeleton />;
   if (!influencers || influencers.length === 0) return null;
 
   return (

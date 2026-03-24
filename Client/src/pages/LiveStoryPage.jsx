@@ -428,6 +428,11 @@ const styles = `
         padding-bottom: 80px; /* Space for mobile menu */
     }
 }
+
+@keyframes ls-pulse { 
+    0%, 100% {opacity: 0.5;} 
+    50% {opacity: 1;} 
+}
 `;
 
 // Date label: Today, Yesterday, or formatted date
@@ -753,7 +758,14 @@ function LiveStoryContent() {
                 </div>
                 <div className="ls-stories-list">
                     {storiesLoading ? (
-                        <div style={{ padding: '20px', color: '#888' }}>Loading stories...</div>
+                        [1,2,3,4,5,6].map(i => (
+                            <div key={i} className="ls-sidebar-item" style={{background: '#111', animation: 'ls-pulse 1.5s infinite ease-in-out'}}>
+                                <div style={{position: 'absolute', bottom: 14, left: 12, right: 12}}>
+                                    <div style={{width: 40, height: 10, background: 'rgba(184, 98, 255, 0.4)', borderRadius: 4, marginBottom: 6}}></div>
+                                    <div style={{width: '90%', height: 14, background: '#222', borderRadius: 4}}></div>
+                                </div>
+                            </div>
+                        ))
                     ) : (
                         allStories.map((story) => (
                             <Link 
@@ -823,8 +835,19 @@ function LiveStoryContent() {
 
                         <div className="ls-chat-area" id="ls-chat-area-scroll" ref={chatAreaRef}>
                             {chatLoading ? (
-                                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1, minHeight: 120, color: '#888' }}>
-                                    <span>Loading chat...</span>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1, padding: '20px 0' }}>
+                                    <div className="ls-msg-wrap received">
+                                        <div className="ls-bubble" style={{width: 150, height: 44, background: '#1e1e1e', color: 'transparent', animation: 'ls-pulse 1.5s infinite ease-in-out'}}></div>
+                                    </div>
+                                    <div className="ls-msg-wrap sent">
+                                        <div className="ls-bubble" style={{width: 220, height: 44, background: '#b862ff33', border: '1px solid #b862ff66', color: 'transparent', animation: 'ls-pulse 1.5s infinite ease-in-out'}}></div>
+                                    </div>
+                                    <div className="ls-msg-wrap received">
+                                        <div className="ls-bubble" style={{width: '70%', height: 60, background: '#1e1e1e', color: 'transparent', animation: 'ls-pulse 1.5s infinite ease-in-out'}}></div>
+                                    </div>
+                                    <div className="ls-msg-wrap sent">
+                                        <div className="ls-bubble" style={{width: 100, height: 44, background: '#b862ff33', border: '1px solid #b862ff66', color: 'transparent', animation: 'ls-pulse 1.5s infinite ease-in-out'}}></div>
+                                    </div>
                                 </div>
                             ) : messages.length === 0 ? (
                                 <div style={{textAlign: 'center', padding: '10px 0', fontSize: '12px', color: '#aaa', marginTop: 'auto'}}>

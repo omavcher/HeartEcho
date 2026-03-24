@@ -462,15 +462,13 @@ function Signup() {
       
       // Redirect to original URL (with query params) or home
       const redirectUrl = getRedirectUrl();
-      setTimeout(() => {
-        router.push(redirectUrl);
-      }, 1000);
+      window.location.href = redirectUrl;
+      return;
       
     } catch (err) {
       setNotification({ show: true, message: err.response?.data?.message || "Signup failed!", type: "error" });
+      setIsSignup(false);
     }
-    
-    setIsSignup(false);
   };
 
   const verifyOtp = async () => {
@@ -527,9 +525,8 @@ function Signup() {
         
         // Redirect to original URL (with query params) or home
         const redirectUrl = getRedirectUrl();
-        setTimeout(() => {
-          router.push(redirectUrl);
-        }, 1000);
+        window.location.href = redirectUrl;
+        return;
         
       } else {
         setIsGoogleSignup(true);
@@ -611,14 +608,13 @@ function Signup() {
       
       // Redirect to original URL (with query params) or home
       const redirectUrl = getRedirectUrl();
-      setTimeout(() => {
-        router.push(redirectUrl);
-      }, 1000);
+      window.location.href = redirectUrl;
+      return;
       
     } catch (err) {
       setNotification({ show: true, message: err.response?.data?.message || "Signup failed!", type: "error" });
+      setIsSignup(false);
     }
-    setIsSignup(false);
   };
 
   const validateGoogleSignupData = () => {
@@ -786,10 +782,36 @@ function Signup() {
   // Don't render anything until client-side to avoid hydration issues
   if (!isClient) {
     return (
-      <div className='signup-container'>
-        <div className='signup-loading'>
-          <div className="loader-signin"></div>
-          <p>Loading...</p>
+      <div className="signup-container">
+        <div className="signup-left skeleton-left">
+          <div className="signup-sidebar">
+            <span className="sideup-top-sanp">
+              <div className="skeleton-logo"></div>
+              <div className="skeleton-text short" style={{ marginLeft: "10px", height: "24px", width: "120px" }}></div>
+            </span>
+            <div className="steps-singe">
+              {[1, 2, 3, 4, 5].map((num) => (
+                <div className="step" key={num}>
+                  <div className="skeleton-circle"></div>
+                  <div className="step-text" style={{ width: "100%" }}>
+                    <div className="skeleton-text short"></div>
+                    <div className="skeleton-text long"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="signup-right">
+          <div className="signup-box" style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+            <div className="skeleton-title" style={{ height: "32px", width: "40%", marginBottom: "20px" }}></div>
+            <div className="skeleton-input" style={{ height: "50px" }}></div>
+            <div className="skeleton-text short" style={{ alignSelf: "center", margin: "15px 0", height: "1px", width: "100%" }}></div>
+            <div className="skeleton-input" style={{ height: "45px" }}></div>
+            <div className="skeleton-input" style={{ height: "45px" }}></div>
+            <div className="skeleton-button" style={{ height: "45px", marginTop: "10px" }}></div>
+          </div>
         </div>
       </div>
     );
@@ -844,7 +866,28 @@ function Signup() {
             <>
               {step === 1 && (
                 <div>
-                  <h2>Basic Information</h2>
+                  <h2>Create an Account</h2>
+
+                  <div className="authO2-container3d" style={{ marginBottom: "20px", display: "flex", justifyContent: "center", width: "100%", padding: "5px" }}>
+                    <GoogleOAuthProvider clientId={googleClientId}>
+                      <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={handleGoogleFailure}
+                        theme="filled_black"
+                        size="large"
+                        shape="rectangular"
+                        width="100%"
+                        text="continue_with"
+                      />
+                    </GoogleOAuthProvider>
+                  </div>
+
+                  <div className="last-hearder-sini" style={{ marginBottom: "20px" }}>
+                    <span className="last-ssx-con-line"></span>
+                    <h3>Or Register with email</h3>
+                    <span className="last-ssx-con-line"></span>
+                  </div>
+
                   <div className='inputs-sign'>
                     <input type="text" name="fullName" placeholder="Full Name" onChange={handleChange} />
                     <div className='email-opt-sen-signpa'>
@@ -1037,24 +1080,7 @@ function Signup() {
             </>
           )}
         </div>
-        <div className='last-sinin-con'>
-          <div className='last-hearder-sini'>
-            <span className='last-ssx-con-line'></span>
-            <h3>Or Signup with</h3>
-            <span className='last-ssx-con-line'></span>
-          </div>
-          
-          <div className='authO2-container3d'>
-            <GoogleOAuthProvider clientId={googleClientId}>
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleFailure}
-                theme="filled_black"
-                size="large"
-              />
-            </GoogleOAuthProvider>
-          </div>
-
+        <div className='last-sinin-con' style={{ marginTop: "20px" }}>
           <h2 className='have-h2dx'>Do you have an account? <Link href='/login' style={{textDecoration:'none'}}> <span>Login Now</span></Link> </h2>
         </div>
       </div>

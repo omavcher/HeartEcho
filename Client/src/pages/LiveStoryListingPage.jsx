@@ -259,6 +259,31 @@ const STYLES = `
     text-transform: uppercase;
     margin-top: 4px;
 }
+
+/* --- SKELETONS --- */
+.lsl-skeleton-hero {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: 12px;
+    background: #111;
+    animation: lsl-pulse 1.5s infinite ease-in-out;
+    margin-bottom: 20px;
+}
+@media (min-width: 768px) {
+    .lsl-skeleton-hero { border-radius: 20px; aspect-ratio: 21/9; }
+}
+@media (min-width: 1024px) {
+    .lsl-skeleton-hero { aspect-ratio: 2.5 / 1; max-height: 420px; }
+}
+
+.lsl-skeleton-card {
+    aspect-ratio: 9/16;
+    border-radius: 16px;
+    background: #111;
+    animation: lsl-pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes lsl-pulse { 0%, 100% {opacity: 0.5} 50% {opacity: 1} }
 `;
 
 
@@ -321,7 +346,35 @@ export default function LiveStoryListingPage() {
         }
     };
 
-    if (isLoading) return <AdvancedLoader />;
+    if (isLoading) return (
+        <div className="lsl-page">
+            <style>{STYLES}</style>
+            <div className="lsl-glow"></div>
+            <div className="lsl-content">
+                <div className="lsl-top-header">
+                    <h1 className="lsl-title">Live A <span className="lsl-title-glow">Story</span></h1>
+                    <p className="lsl-subtitle">Immerse yourself in cinematic interactive chatting experiences.</p>
+                </div>
+                <div className="lsl-carousel-section">
+                    <div className="lsl-skeleton-hero"></div>
+                </div>
+                
+                <h2 className="lsl-section-title">
+                    <FaFire className="lsl-section-icon" /> Trending Top 10
+                </h2>
+                <div className="lsl-trending-list">
+                    {[1,2,3,4,5,6].map(i => <div key={i} className="lsl-trend-card lsl-skeleton-card"></div>)}
+                </div>
+
+                <h2 className="lsl-section-title">
+                    <FaLayerGroup className="lsl-section-icon" /> All Stories
+                </h2>
+                <div className="lsl-grid">
+                    {[1,2,3,4,5,6,7,8,9,10].map(i => <div key={i} className="lsl-grid-card lsl-skeleton-card"></div>)}
+                </div>
+            </div>
+        </div>
+    );
 
     return (
         <div className="lsl-page">

@@ -44,18 +44,14 @@ export default function Home() {
 
 
         {/* ─── 2. AI MODELS GRID ──────────────────────────────── */}
-        {serverStatus === "Server is running" && (
-          <section className="section-spacer">
-            <HomeAiModels />
-          </section>
-        )}
+        <section className="section-spacer">
+          <HomeAiModels />
+        </section>
 
         {/* ─── 2.5. LIVE STORIES ──────────────────────────────── */}
-        {serverStatus === "Server is running" && (
-          <section className="section-spacer">
-            <HomeLiveStories />
-          </section>
-        )}
+        <section className="section-spacer">
+          <HomeLiveStories />
+        </section>
 
 
       
