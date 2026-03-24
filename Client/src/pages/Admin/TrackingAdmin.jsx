@@ -466,10 +466,138 @@ export default function TrackingAdmin() {
               </>
             )}
 
+            {/* ══════════ ADS TAB ══════════ */}
+            {tab === 'ads' && (
+              <>
+                <div className="trk-two">
+                  {/* Traffic Sources */}
+                  <div className="trk-card">
+                    <div className="trk-section-title"><MdAdsClick/> Traffic Sources (Unique Sessions)</div>
+                    {adSources.length === 0 ? (
+                      <div style={{color:'#444',fontSize:12,textAlign:'center',padding:30}}>No ad traffic data yet. Add UTM params or fbclid to your ad links.</div>
+                    ) : adSources.map((s,i) => {
+                      const src = (s._id||'').toLowerCase();
+                      const srcIcon = src.includes('instagram')||src.includes('ig')
+                        ? <FaInstagram style={{color:'#e1306c',marginRight:5}}/>
+                        : src.includes('facebook')||src.includes('fb')
+                        ? <FaFacebook style={{color:'#4a90d9',marginRight:5}}/>
+                        : <FaGlobe style={{color:'#8bc34a',marginRight:5}}/>;
+                      return (
+                        <div key={i} className="ad-source-row">
+                          <div className="ad-source-name" title={s._id||'Unknown'} style={{display:'flex',alignItems:'center'}}>
+                            {srcIcon}{s._id || 'Direct / Unknown'}
+                          </div>
+                          <div className="ad-source-bar-wrap">
+                            <div className="ad-source-bar" style={{width:`${((s.uniqueSessions||0)/maxAdSource)*100}%`, background: COLORS6[i%COLORS6.length]}}/>
+                          </div>
+                          <div className="ad-source-count">{s.uniqueSessions||0}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* UTM Campaigns — rich card */}
+                  <div className="trk-card">
+                    <div className="trk-section-title"><FaBullhorn/> UTM Campaign Performance</div>
+                    {(data.utmCampaignStats||[]).length === 0 ? (
+                      <div style={{color:'#444',fontSize:12,textAlign:'center',padding:30}}>No UTM data found. Add utm_campaign to your ad links.</div>
+                    ) : (() => {
+                      const camps = (data.utmCampaignStats||[]).slice(0,8);
+                      const maxS = camps.reduce((m,c)=>Math.max(m,c.uniqueSessions||0),1);
+
+                      const srcBadge = (source) => {
+                        const s = (source||'').toLowerCase();
+                        if (s.includes('instagram')||s.includes('ig'))
+                          return <span className="src-badge src-ig"><FaInstagram/>Instagram</span>;
+                        if (s.includes('facebook')||s.includes('fb'))
+                          return <span className="src-badge src-fb"><FaFacebook/>Facebook</span>;
+                        if (s.includes('paid_ad')||s.includes('paid'))
+                          return <span className="src-badge src-paid"><FaTag/>Paid</span>;
+                        if (s.includes('google')||s.includes('goog'))
+                          return <span className="src-badge src-gen"><FaGlobe/>Google</span>;
+                        return <span className="src-badge src-gen"><FaGlobe/>{source||'Unknown'}</span>;
+                      };
+
+                      const parseName = (name) => {
+                        if (!name) return <span style={{color:'#555',fontStyle:'italic'}}>Unknown Campaign</span>;
+                        const parts = name.split('__');
+                        return (
+                          <div className="camp-full-name">
+                            <div style={{color:'#fff',marginBottom:3}}>{parts[0]}</div>
+                            {parts.slice(1).map((seg,i)=>(
+                              <span key={i} className="segment">{seg.replace(/_/g,' ')}</span>
+                            ))}
+                          </div>
+                        );
+                      };
+
+                      return camps.map((c,i) => {
+                        const barW = maxS > 0 ? ((c.uniqueSessions||0)/maxS*100) : 0;
+                        return (
+                          <div key={i} style={{padding:'12px 0',borderBottom:'1px solid #0d0d0d'}}>
+                            {/* Source + Medium pills */}
+                            <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:6,flexWrap:'wrap'}}>
+                              {srcBadge(c._id?.source)}
+                              <span style={{background:'rgba(255,235,59,.08)',border:'1px solid rgba(255,235,59,.15)',color:'#ffeb3b',padding:'2px 7px',borderRadius:5,fontSize:9,fontWeight:700}}>
+                                {c._id?.medium||'unknown'}
+                              </span>
+                            </div>
+                            {/* Campaign name */}
+                            {parseName(c._id?.campaign)}
+                            {/* Mini bar + stats */}
+                            <div style={{display:'flex',alignItems:'center',gap:10,marginTop:8}}>
+                              <div style={{flex:1,height:4,background:'#111',borderRadius:2,overflow:'hidden'}}>
+                                <div style={{width:`${barW}%`,height:'100%',background:'#ff69b4',borderRadius:2,transition:'width .6s'}}/>
+                              </div>
+                              <span style={{fontSize:13,fontWeight:900,color:'#ff69b4',minWidth:28,textAlign:'right'}}>{c.uniqueSessions||0}</span>
+                            </div>
+                            <div style={{display:'flex',gap:14,marginTop:6}}>
+                              <span style={{fontSize:10,color:'#555'}}>Events: <strong style={{color:'#00bcd4'}}>{c.events||0}</strong></span>
+                              <span style={{fontSize:10,color:'#555'}}>Users: <strong style={{color:'#8bc34a'}}>{c.uniqueUsers||0}</strong></span>
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+
+                {/* Daily Ad vs Organic */}
+                <div className="trk-card full" style={{marginBottom:18}}>
+                  <div className="trk-section-title"><FaFacebook style={{color:'#4a90d9'}}/> Daily: Ad Sessions vs Organic Sessions</div>
+                  <div style={{height:240}}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={timeSeriesData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#111"/>
+                        <XAxis dataKey="name" stroke="#444" fontSize={10} axisLine={false} tickLine={false}/>
+                        <YAxis stroke="#444" fontSize={10} axisLine={false} tickLine={false}/>
+                        <Tooltip content={<CustomTooltip/>}/>
+                        <Legend wrapperStyle={{fontSize:11,color:'#888'}}/>
+                        <Bar name="Ad Sessions" dataKey="ad" fill="#e1306c" radius={[4,4,0,0]} stackId="a"/>
+                        <Bar name="Organic Sessions" dataKey="organic" fill="#8bc34a" radius={[4,4,0,0]} stackId="a"/>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Setup tip */}
+                <div style={{background:'rgba(225,48,108,.05)',border:'1px solid rgba(225,48,108,.15)',borderRadius:12,padding:'16px 20px',fontSize:12,color:'#aaa',lineHeight:1.7}}>
+                  <strong style={{color:'#e1306c',display:'flex',alignItems:'center',gap:8,marginBottom:8}}><FaInstagram/> Correct URL Format for Paid Ads</strong>
+                  Add these params to ALL your ad destination URLs:<br/>
+                  <code style={{background:'#000',padding:'6px 10px',borderRadius:6,display:'block',marginTop:8,color:'#ff69b4',fontSize:11,wordBreak:'break-all'}}>
+                    ?utm_source=instagram&amp;utm_medium=paid&amp;utm_campaign=YOUR_CAMPAIGN_NAME
+                  </code>
+                  <span style={{color:'#555',fontSize:11,marginTop:6,display:'block'}}>
+                    HeartEcho auto-fixes <code style={{color:'#ff69b4'}}>&amp;amp;</code> encoded URLs from AMP pages.
+                  </span>
+                </div>
+              </>
+            )}
+
             {/* ══════════ CAMPAIGNS TAB ══════════ */}
             {tab === 'campaigns' && (() => {
               const campaigns = data.utmCampaignStats || [];
-              const maxSess = campaigns.reduce((m, c) => Math.max(m, c.uniqueSessions || 0), 1);
+              const maxSess = campaigns.reduce((s, c) => Math.max(s, c.uniqueSessions || 0), 1);
               const totalPaid = f.paidUserCount || 0;
 
               const getSourceBadge = (source) => {
@@ -703,91 +831,6 @@ export default function TrackingAdmin() {
               </>
             )}
 
-            {/* ══════════ ADS TAB ══════════ */}
-            {tab === 'ads' && (
-              <>
-                <div className="trk-two">
-                  {/* Traffic Sources */}
-                  <div className="trk-card">
-                    <div className="trk-section-title"><MdAdsClick/> Traffic Sources (Unique Sessions)</div>
-                    {adSources.length === 0 ? (
-                      <div style={{color:'#444',fontSize:12,textAlign:'center',padding:30}}>No ad traffic data yet. Add UTM params or fbclid to your ad links.</div>
-                    ) : adSources.map((s,i) => (
-                      <div key={i} className="ad-source-row">
-                        <div className="ad-source-name" title={s._id||'Unknown'}>
-                          {s._id?.includes('Facebook') || s._id?.includes('facebook') ? <FaFacebook style={{color:'#4a90d9',marginRight:5}}/> : null}
-                          {s._id || 'Direct'}
-                        </div>
-                        <div className="ad-source-bar-wrap">
-                          <div className="ad-source-bar" style={{width:`${((s.uniqueSessions||0)/maxAdSource)*100}%`, background: COLORS6[i%COLORS6.length]}}/>
-                        </div>
-                        <div className="ad-source-count">{s.uniqueSessions||0}</div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* UTM Campaigns */}
-                  <div className="trk-card">
-                    <div className="trk-section-title"><FaBullhorn/> UTM Campaign Performance</div>
-                    {(data.utmCampaignStats||[]).length === 0 ? (
-                      <div style={{color:'#444',fontSize:12,textAlign:'center',padding:30}}>No UTM data found. Add utm_campaign to your Facebook ad links.</div>
-                    ) : (data.utmCampaignStats||[]).slice(0,8).map((c,i) => (
-                      <div key={i} className="camp-row">
-                        <div className="camp-name">{c._id?.campaign || 'Unknown Campaign'}</div>
-                        <div className="camp-meta">
-                          <span className="utm-pill">src:{c._id?.source}</span>
-                          <span className="utm-pill">med:{c._id?.medium}</span>
-                        </div>
-                        <div className="camp-stats">
-                          <div className="camp-stat">
-                            <div className="camp-stat-val glow-pink">{c.uniqueSessions}</div>
-                            <div className="camp-stat-lbl">Sessions</div>
-                          </div>
-                          <div className="camp-stat">
-                            <div className="camp-stat-val glow-cyan">{c.events}</div>
-                            <div className="camp-stat-lbl">Events</div>
-                          </div>
-                          <div className="camp-stat">
-                            <div className="camp-stat-val glow-green">{c.uniqueUsers}</div>
-                            <div className="camp-stat-lbl">Users</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Daily Ad vs Organic */}
-                <div className="trk-card full" style={{marginBottom:18}}>
-                  <div className="trk-section-title"><FaFacebook style={{color:'#4a90d9'}}/> Daily: Facebook Ad Sessions vs Organic Sessions</div>
-                  <div style={{height:240}}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={timeSeriesData}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#111"/>
-                        <XAxis dataKey="name" stroke="#444" fontSize={10} axisLine={false} tickLine={false}/>
-                        <YAxis stroke="#444" fontSize={10} axisLine={false} tickLine={false}/>
-                        <Tooltip content={<CustomTooltip/>}/>
-                        <Legend wrapperStyle={{fontSize:11,color:'#888'}}/>
-                        <Bar name="Ad Sessions" dataKey="ad" fill="#1877f2" radius={[4,4,0,0]} stackId="a"/>
-                        <Bar name="Organic Sessions" dataKey="organic" fill="#8bc34a" radius={[4,4,0,0]} stackId="a"/>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                {/* Pro tip for FB Ad setup */}
-                <div style={{background:'rgba(24,119,242,.06)',border:'1px solid rgba(24,119,242,.15)',borderRadius:12,padding:'16px 20px',fontSize:12,color:'#aaa',lineHeight:1.7}}>
-                  <strong style={{color:'#4a90d9',display:'flex',alignItems:'center',gap:8,marginBottom:8}}><FaFacebook/> Facebook Ads Setup Guide</strong>
-                  Add these params to ALL your Facebook Ad destination URLs:<br/>
-                  <code style={{background:'#000',padding:'6px 10px',borderRadius:6,display:'block',marginTop:8,color:'#ff69b4',fontSize:11}}>
-                    ?utm_source=facebook&utm_medium=paid&utm_campaign=YOUR_CAMPAIGN_NAME&fbclid={'{{'}fbclid{'}}'}
-                  </code>
-                  <span style={{color:'#555',fontSize:11,marginTop:6,display:'block'}}>
-                    Replace {'{{fbclid}}'} with Facebook's dynamic parameter. HeartEcho will then automatically track all your paid ad conversions.
-                  </span>
-                </div>
-              </>
-            )}
 
             {/* ══════════ LANDING PAGES TAB ══════════ */}
             {tab === 'landing' && (
