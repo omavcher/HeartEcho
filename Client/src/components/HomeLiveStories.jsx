@@ -147,11 +147,27 @@ export default function HomeLiveStories() {
 
   useEffect(() => {
     const fetchStories = async () => {
+      const cacheKey = 'hls_stories';
+      const cacheTimeKey = 'hls_stories_time';
+      const cachedData = sessionStorage.getItem(cacheKey);
+      const cachedTime = sessionStorage.getItem(cacheTimeKey);
+      
+      const now = new Date().getTime();
+      const ONE_MINUTE_MS = 60000; // 1 minute
+      
+      if (cachedData && cachedTime && (now - parseInt(cachedTime)) < ONE_MINUTE_MS) {
+        setLiveStories(JSON.parse(cachedData));
+        setLoading(false);
+        return;
+      }
+
       try {
         const res = await fetch(`${api.Url}/live-story/stories`);
         const data = await res.json();
         if (data.success) {
           setLiveStories(data.stories);
+          sessionStorage.setItem(cacheKey, JSON.stringify(data.stories));
+          sessionStorage.setItem(cacheTimeKey, now.toString());
         }
       } catch (error) {
         console.error("Failed to fetch live stories:", error);

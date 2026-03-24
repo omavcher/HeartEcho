@@ -61,11 +61,27 @@ export default function AiLiveView() {
 
   useEffect(() => {
     const fetchInfluencers = async () => {
+      const cacheKey = 'alv_influencers';
+      const cacheTimeKey = 'alv_influencers_time';
+      const cachedData = sessionStorage.getItem(cacheKey);
+      const cachedTime = sessionStorage.getItem(cacheTimeKey);
+      
+      const now = new Date().getTime();
+      const ONE_MINUTE_MS = 60000; // 1 minute
+      
+      if (cachedData && cachedTime && (now - parseInt(cachedTime)) < ONE_MINUTE_MS) {
+        setInfluencers(JSON.parse(cachedData));
+        setLoading(false);
+        return;
+      }
+
       try {
         const { data } = await axios.get(`${api.Url}/ai-live`);
         if (data.success) {
           const activeOnly = data.data.filter(inf => inf.isActive !== false);
           setInfluencers(activeOnly);
+          sessionStorage.setItem(cacheKey, JSON.stringify(activeOnly));
+          sessionStorage.setItem(cacheTimeKey, now.toString());
         }
       } catch (error) {
         console.error("Error fetching AI Live Influencers:", error);

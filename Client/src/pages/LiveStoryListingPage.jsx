@@ -295,11 +295,28 @@ export default function LiveStoryListingPage() {
 
     useEffect(() => {
         const fetchStories = async () => {
+            const cacheKey = 'lsl_allStories';
+            const cacheTimeKey = 'lsl_allStories_time';
+            const cachedData = sessionStorage.getItem(cacheKey);
+            const cachedTime = sessionStorage.getItem(cacheTimeKey);
+            
+            const now = new Date().getTime();
+            const ONE_MINUTE_MS = 60000; // 1 minute
+            
+            // If cache exists and is less than 1 minute old
+            if (cachedData && cachedTime && (now - parseInt(cachedTime)) < ONE_MINUTE_MS) {
+                setAllStories(JSON.parse(cachedData));
+                setIsLoading(false);
+                return;
+            }
+
             try {
                 const res = await fetch(`${api.Url}/live-story/stories`);
                 const data = await res.json();
                 if (data.success) {
                     setAllStories(data.stories);
+                    sessionStorage.setItem(cacheKey, JSON.stringify(data.stories));
+                    sessionStorage.setItem(cacheTimeKey, now.toString());
                 }
             } catch (error) {
                 console.error("Failed to fetch stories:", error);
