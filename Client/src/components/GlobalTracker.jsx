@@ -88,27 +88,64 @@ export default function GlobalTracker() {
     return () => clearInterval(interval);
   }, []);
 
-  // Save UTMs if present
-  useEffect(() => {
-    if (typeof window !== 'undefined' && searchParams) {
-      const currentUtms = {};
+  // ─── Save UTMs if present ──────────────────────────────────────────────────
+  // Robust parser: handles standard & and HTML-encoded &amp; keys (e.g. from
+  // AMP pages: ?amp;utm_medium=paid&amp;utm_campaign=xxx)
+  const extractAndSaveUtms = () => {
+    if (typeof window === 'undefined') return;
+    const currentUtms = {};
+
+    // 1. Try Next.js searchParams first
+    if (searchParams) {
       searchParams.forEach((value, key) => {
-        if (key.startsWith('utm_') || key === 'fbclid') {
-          currentUtms[key] = value;
+        // Strip 'amp;' prefix that AMP/HTML-encoded URLs inject
+        const cleanKey = key.replace(/^amp;/, '');
+        if (cleanKey.startsWith('utm_') || cleanKey === 'fbclid') {
+          currentUtms[cleanKey] = value;
         }
       });
-      
-      if (Object.keys(currentUtms).length > 0) {
-        // Merge with existing ones if any, favoring newer ones
-        let existingUtms = {};
-        try {
-          const str = localStorage.getItem('trk_utms');
-          if (str) existingUtms = JSON.parse(str);
-        } catch(e){}
-        
-        localStorage.setItem('trk_utms', JSON.stringify({ ...existingUtms, ...currentUtms }));
-      }
     }
+
+    // 2. Always also parse raw search string — catches AMP-encoded & cases
+    //    where Next.js may have already split them wrongly
+    const rawSearch = window.location.search || window.location.href.split('?')[1] || '';
+    if (rawSearch) {
+      // Replace all &amp; -> & before parsing
+      const normalized = rawSearch.replace(/&amp;/gi, '&').replace(/^\?/, '');
+      normalized.split('&').forEach(pair => {
+        const [rawKey, ...rest] = pair.split('=');
+        if (!rawKey) return;
+        const cleanKey = decodeURIComponent(rawKey.replace(/^amp;/, ''));
+        const value = decodeURIComponent((rest.join('=') || '').replace(/\+/g, ' '));
+        if (cleanKey.startsWith('utm_') || cleanKey === 'fbclid') {
+          currentUtms[cleanKey] = value;
+        }
+      });
+    }
+
+    // 3. If we found utm_campaign or utm_medium but no utm_source, try to infer
+    if ((currentUtms.utm_campaign || currentUtms.utm_medium) && !currentUtms.utm_source) {
+      // Look for known patterns in campaign names
+      const camp = (currentUtms.utm_campaign || '').toLowerCase();
+      if (camp.includes('fb') || camp.includes('facebook')) currentUtms.utm_source = 'facebook';
+      else if (camp.includes('ig') || camp.includes('instagram')) currentUtms.utm_source = 'instagram';
+      else if (camp.includes('google') || camp.includes('goog')) currentUtms.utm_source = 'google';
+      else currentUtms.utm_source = 'paid_ad';
+    }
+
+    if (Object.keys(currentUtms).length > 0) {
+      let existingUtms = {};
+      try {
+        const str = localStorage.getItem('trk_utms');
+        if (str) existingUtms = JSON.parse(str);
+      } catch(e) {}
+      localStorage.setItem('trk_utms', JSON.stringify({ ...existingUtms, ...currentUtms }));
+    }
+  };
+
+  useEffect(() => {
+    extractAndSaveUtms();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   // Track Page views

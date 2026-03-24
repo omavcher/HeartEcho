@@ -2,6 +2,24 @@ const TrackingEvent = require('../models/TrackingEvent');
 const User = require('../models/User');
 const Payment = require('../models/Payment');
 
+// ─── Sanitize eventData: strip amp; prefix from UTM keys, infer utm_source ───
+const sanitizeEventData = (raw = {}) => {
+  const out = {};
+  for (const [key, val] of Object.entries(raw)) {
+    const clean = key.replace(/^amp;/, '');
+    out[clean] = val;
+  }
+  // Infer utm_source when campaign/medium present but source missing
+  if ((out.utm_campaign || out.utm_medium) && !out.utm_source) {
+    const camp = (out.utm_campaign || '').toLowerCase();
+    if (camp.includes('fb') || camp.includes('facebook')) out.utm_source = 'facebook';
+    else if (camp.includes('ig') || camp.includes('instagram')) out.utm_source = 'instagram';
+    else if (camp.includes('google') || camp.includes('goog')) out.utm_source = 'google';
+    else out.utm_source = 'paid_ad';
+  }
+  return out;
+};
+
 exports.recordEvent = async (req, res) => {
   try {
     const { events } = req.body;
@@ -14,7 +32,7 @@ exports.recordEvent = async (req, res) => {
       sessionId: ev.sessionId,
       eventType: ev.eventType,
       path: ev.path,
-      eventData: ev.eventData || {},
+      eventData: sanitizeEventData(ev.eventData || {}),
       url: ev.url,
       userAgent: req.headers['user-agent'],
       referrer: ev.referrer,

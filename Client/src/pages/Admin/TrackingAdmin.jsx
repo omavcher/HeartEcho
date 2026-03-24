@@ -7,7 +7,8 @@ import {
   FaSync, FaFilter, FaChartLine, FaMousePointer,
   FaUsers, FaEye, FaShoppingBag, FaRobot, FaMobileAlt,
   FaFacebook, FaBullhorn, FaFunnelDollar, FaTrophy,
-  FaArrowRight, FaGlobe, FaLink, FaUserPlus, FaCrown
+  FaArrowRight, FaGlobe, FaLink, FaUserPlus, FaCrown,
+  FaInstagram, FaTag, FaAd, FaSortAmountDown
 } from "react-icons/fa";
 import { MdAdsClick, MdTrendingUp, MdLandscape } from "react-icons/md";
 import { BiTargetLock } from "react-icons/bi";
@@ -160,6 +161,24 @@ const S = `
 
 /* SCROLLABLE */
 .trk-scroll { overflow-x:auto; }
+
+/* CAMPAIGN DETAIL TABLE */
+.camp-tbl { width:100%; border-collapse:collapse; }
+.camp-tbl th { padding:10px 14px; color:#ff69b4; font-size:10px; text-transform:uppercase; border-bottom:1px solid #1a1a1a; font-weight:700; letter-spacing:.6px; text-align:left; white-space:nowrap; }
+.camp-tbl td { padding:11px 14px; border-bottom:1px solid #0d0d0d; color:#ccc; font-size:12px; vertical-align:middle; }
+.camp-tbl tr:hover td { background:#070707; }
+.camp-tbl tr:last-child td { border-bottom:none; }
+.camp-name-cell { max-width:220px; }
+.camp-full-name { font-size:11px; color:#fff; font-weight:700; word-break:break-word; line-height:1.3; }
+.camp-full-name .segment { display:inline-block; background:rgba(255,105,180,.08); border:1px solid rgba(255,105,180,.15); border-radius:4px; padding:1px 5px; margin:2px 2px 0 0; font-size:9px; color:#ff69b4; }
+.src-badge { display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:10px; font-weight:700; }
+.src-fb { background:rgba(24,119,242,.12); color:#4a90d9; border:1px solid rgba(24,119,242,.2); }
+.src-ig { background:rgba(225,48,108,.12); color:#e1306c; border:1px solid rgba(225,48,108,.2); }
+.src-paid { background:rgba(255,152,0,.12); color:#ff9800; border:1px solid rgba(255,152,0,.2); }
+.src-gen { background:rgba(139,195,74,.12); color:#8bc34a; border:1px solid rgba(139,195,74,.2); }
+.conv-rate { font-size:13px; font-weight:800; }
+.conv-bar-wrap { height:4px; background:#1a1a1a; border-radius:2px; overflow:hidden; margin-top:4px; }
+.conv-bar { height:100%; border-radius:2px; }
 `;
 
 const COLORS6 = ['#ff69b4','#00bcd4','#8bc34a','#ff9800','#ffeb3b','#9c27b0'];
@@ -279,11 +298,12 @@ export default function TrackingAdmin() {
   const subRate   = pct(f.subscribed || f.paidUserCount || 0, f.chatted || 1);
 
   const TABS = [
-    { id:'overview', label:'Overview', icon:<FaChartLine/> },
-    { id:'funnel', label:'Conversion Funnel', icon:<FaFunnelDollar/> },
-    { id:'ads', label:'Facebook Ads & UTM', icon:<FaFacebook/> },
-    { id:'landing', label:'Landing Pages', icon:<MdLandscape/> },
-    { id:'log', label:'Event Log', icon:<FaEye/> },
+    { id:'overview',   label:'Overview',          icon:<FaChartLine/> },
+    { id:'campaigns',  label:'Campaigns & UTM',   icon:<FaAd/> },
+    { id:'funnel',     label:'Conversion Funnel', icon:<FaFunnelDollar/> },
+    { id:'ads',        label:'Ad Sources',        icon:<FaFacebook/> },
+    { id:'landing',    label:'Landing Pages',     icon:<MdLandscape/> },
+    { id:'log',        label:'Event Log',         icon:<FaEye/> },
   ];
 
   return (
@@ -446,7 +466,173 @@ export default function TrackingAdmin() {
               </>
             )}
 
-            {/* ══════════ FUNNEL TAB ══════════ */}
+            {/* ══════════ CAMPAIGNS TAB ══════════ */}
+            {tab === 'campaigns' && (() => {
+              const campaigns = data.utmCampaignStats || [];
+              const maxSess = campaigns.reduce((m, c) => Math.max(m, c.uniqueSessions || 0), 1);
+              const totalPaid = f.paidUserCount || 0;
+
+              const getSourceBadge = (source) => {
+                const s = (source || '').toLowerCase();
+                if (s.includes('instagram') || s.includes('ig')) return <span className="src-badge src-ig"><FaInstagram/>Instagram</span>;
+                if (s.includes('facebook') || s.includes('fb')) return <span className="src-badge src-fb"><FaFacebook/>Facebook</span>;
+                if (s.includes('paid_ad') || s.includes('paid')) return <span className="src-badge src-paid"><FaTag/>Paid Ad</span>;
+                return <span className="src-badge src-gen"><FaGlobe/>{source || 'Unknown'}</span>;
+              };
+
+              // Parse campaign name into readable segments (split by __ and _)
+              const parseCampaignName = (name) => {
+                if (!name) return <span style={{color:'#555',fontStyle:'italic'}}>Unknown</span>;
+                const parts = name.split('__');
+                return (
+                  <div className="camp-full-name">
+                    <div style={{marginBottom:4,color:'#fff'}}>{parts[0] || name}</div>
+                    {parts.slice(1).map((seg, i) => (
+                      <span key={i} className="segment">{seg.replace(/_/g,' ')}</span>
+                    ))}
+                  </div>
+                );
+              };
+
+              return (
+                <>
+                  {/* KPI row */}
+                  <div className="trk-kpi" style={{marginBottom:20}}>
+                    {[
+                      { lbl:'Active Campaigns', val: campaigns.length, ico:<FaBullhorn/>, c:'c0', bg:'rgba(255,105,180,.1)', col:'#ff69b4' },
+                      { lbl:'Total Ad Sessions', val: fmtNum(campaigns.reduce((s,c)=>s+(c.uniqueSessions||0),0)), ico:<FaAd/>, c:'c1', bg:'rgba(0,188,212,.1)', col:'#00bcd4' },
+                      { lbl:'Ad Reached Users', val: fmtNum(campaigns.reduce((s,c)=>s+(c.uniqueUsers||0),0)), ico:<FaUsers/>, c:'c2', bg:'rgba(139,195,74,.1)', col:'#8bc34a' },
+                      { lbl:'Paid Subscribers', val: fmtNum(totalPaid), ico:<FaCrown/>, c:'c3', bg:'rgba(255,152,0,.1)', col:'#ff9800', chg:'all-time' },
+                    ].map((k,i) => (
+                      <div key={i} className={`trk-kpi-box ${k.c}`}>
+                        <div className="trk-kpi-ico" style={{background:k.bg, color:k.col}}>{k.ico}</div>
+                        <div>
+                          <div className="trk-kpi-lbl">{k.lbl}</div>
+                          <div className="trk-kpi-val">{k.val}</div>
+                          {k.chg && <div className="trk-kpi-chg">{k.chg}</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Main Campaign Table */}
+                  <div className="trk-card full" style={{marginBottom:18}}>
+                    <div className="trk-section-title"><FaSortAmountDown/> All Campaigns — Performance Breakdown</div>
+                    {campaigns.length === 0 ? (
+                      <div style={{color:'#444',fontSize:13,textAlign:'center',padding:'40px 0',lineHeight:2}}>
+                        No UTM campaign data yet.<br/>
+                        <span style={{fontSize:11,color:'#333'}}>Make sure your ad URLs include <code style={{color:'#ff69b4',background:'#0a0a0a',padding:'2px 6px',borderRadius:4}}>utm_campaign=YOUR_CAMPAIGN</code></span>
+                      </div>
+                    ) : (
+                      <div className="trk-scroll">
+                        <table className="camp-tbl">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Campaign Name</th>
+                              <th>Source</th>
+                              <th>Medium</th>
+                              <th>Sessions</th>
+                              <th>Events</th>
+                              <th>Users Reached</th>
+                              <th>Reach %</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {campaigns.map((c, i) => {
+                              const reachPct = maxSess > 0 ? ((c.uniqueSessions||0)/maxSess*100) : 0;
+                              return (
+                                <tr key={i}>
+                                  <td style={{color:'#444',fontWeight:700,width:32}}>{i+1}</td>
+                                  <td className="camp-name-cell">
+                                    {parseCampaignName(c._id?.campaign)}
+                                  </td>
+                                  <td>{getSourceBadge(c._id?.source)}</td>
+                                  <td>
+                                    <span style={{background:'rgba(255,235,59,.08)',border:'1px solid rgba(255,235,59,.15)',color:'#ffeb3b',padding:'3px 8px',borderRadius:5,fontSize:10,fontWeight:700}}>
+                                      {c._id?.medium || 'unknown'}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <div style={{fontWeight:900,fontSize:16,color:'#ff69b4'}}>{fmtNum(c.uniqueSessions||0)}</div>
+                                    <div className="conv-bar-wrap">
+                                      <div className="conv-bar" style={{width:`${reachPct}%`,background:'#ff69b4'}}/>
+                                    </div>
+                                  </td>
+                                  <td style={{color:'#00bcd4',fontWeight:700}}>{fmtNum(c.events||0)}</td>
+                                  <td style={{color:'#8bc34a',fontWeight:700}}>{fmtNum(c.uniqueUsers||0)}</td>
+                                  <td>
+                                    <div className="conv-rate" style={{color: reachPct>50?'#8bc34a':reachPct>20?'#ff9800':'#ff69b4'}}>
+                                      {reachPct.toFixed(1)}%
+                                    </div>
+                                    <div style={{fontSize:9,color:'#444'}}>of top campaign</div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Source split chart */}
+                  <div className="trk-two">
+                    <div className="trk-card">
+                      <div className="trk-section-title"><FaGlobe/> Sessions by Source</div>
+                      <div style={{height:220}}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={adSources}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#111"/>
+                            <XAxis dataKey="_id" stroke="#444" fontSize={10} axisLine={false} tickLine={false}/>
+                            <YAxis stroke="#444" fontSize={10} axisLine={false} tickLine={false}/>
+                            <Tooltip content={<CustomTooltip/>}/>
+                            <Bar dataKey="uniqueSessions" name="Sessions" radius={[6,6,0,0]}>
+                              {adSources.map((_,i) => <Cell key={i} fill={COLORS6[i%COLORS6.length]}/>)}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    <div className="trk-card">
+                      <div className="trk-section-title"><FaChartLine/> Daily Ad vs Organic</div>
+                      <div style={{height:220}}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart data={timeSeriesData}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#111"/>
+                            <XAxis dataKey="name" stroke="#444" fontSize={9} axisLine={false} tickLine={false}/>
+                            <YAxis stroke="#444" fontSize={10} axisLine={false} tickLine={false}/>
+                            <Tooltip content={<CustomTooltip/>}/>
+                            <Legend wrapperStyle={{fontSize:11,color:'#888'}}/>
+                            <Line type="monotone" name="Ad" dataKey="ad" stroke="#e1306c" strokeWidth={2} dot={false}/>
+                            <Line type="monotone" name="Organic" dataKey="organic" stroke="#8bc34a" strokeWidth={2} dot={false}/>
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* UTM Setup Guide */}
+                  <div style={{background:'rgba(225,48,108,.05)',border:'1px solid rgba(225,48,108,.15)',borderRadius:12,padding:'16px 20px',fontSize:12,color:'#aaa',lineHeight:1.8}}>
+                    <strong style={{color:'#e1306c',display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+                      <FaInstagram/> UTM Tracking Setup — Use This URL Format for All Paid Ads
+                    </strong>
+                    <div style={{marginBottom:8}}>Your current campaign URL format (from the ad):</div>
+                    <code style={{background:'#000',padding:'8px 12px',borderRadius:6,display:'block',marginBottom:10,color:'#8bc34a',fontSize:11,wordBreak:'break-all'}}>
+                      https://www.heartecho.in/?utm_source=instagram&utm_medium=paid&utm_campaign=HeartEcho_Awareness_Tier23__Gaming_Otaku_20-28__DressInfu4
+                    </code>
+                    <div style={{marginBottom:6,color:'#666',fontSize:11}}>⚠️ <strong style={{color:'#ffeb3b'}}>Common Issue:</strong> If your ad platform generates links with <code style={{color:'#ff69b4',background:'#111',padding:'1px 4px',borderRadius:3}}>&amp;amp;</code> instead of <code style={{color:'#ff69b4',background:'#111',padding:'1px 4px',borderRadius:3}}>&amp;</code>, HeartEcho now automatically fixes this. All UTM data will be tracked correctly.</div>
+                    <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:8}}>
+                      {['utm_source=instagram','utm_medium=paid','utm_campaign=CAMPAIGN_NAME'].map((p,i) => (
+                        <span key={i} className="utm-pill" style={{fontSize:10,padding:'3px 8px'}}>{p}</span>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
+
             {tab === 'funnel' && (
               <>
                 <div className="trk-funnel">
