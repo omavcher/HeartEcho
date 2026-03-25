@@ -1947,11 +1947,19 @@ exports.sendTicketEmail = async (req, res) => {
       for (const account of SENDER_ACCOUNTS) {
           try {
               const transporter = nodemailer.createTransport({
-                  service: 'gmail',
+                  host: 'smtp.gmail.com',
+                  port: 587,
+                  secure: false, // false for 587, true for 465
                   auth: {
                       user: account.user,
                       pass: account.pass
-                  }
+                  },
+                  tls: {
+                      rejectUnauthorized: false
+                  },
+                  connectionTimeout: 5000, // 5 seconds max connection wait
+                  greetingTimeout: 5000,
+                  socketTimeout: 5000
               });
 
               await transporter.sendMail({
