@@ -27,7 +27,6 @@ router.post("/aiuser-data/multiple", controller.PutAIFrindData);
 router.get("/tickets", controller.getAllTickets);
 router.delete("/tickets/:id", controller.deleteTicket);
 router.put("/tickets/:id", controller.updateTicket);
-router.post("/tickets/:id/email", controller.sendTicketEmail);
 
 
 

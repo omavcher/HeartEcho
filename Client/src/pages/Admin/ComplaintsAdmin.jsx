@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { 
   FaTicketAlt, FaTrash, FaEdit, FaSearch, FaCheckCircle, 
-  FaTimesCircle, FaSync, FaDownload, FaChartBar, FaExclamationTriangle, FaEnvelope 
+  FaTimesCircle, FaSync, FaDownload, FaChartBar, FaExclamationTriangle 
 } from "react-icons/fa";
 import {
   BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, 
@@ -11,12 +11,6 @@ import {
 } from "recharts";
 import api from "../../config/api";
 import axios from "axios";
-
-const EMAIL_TEMPLATES = [
-  { label: "Resolved - Standard", value: "Hello,\n\nWe have successfully resolved your issue. Thank you for bringing this to our attention. Let us know if you need anything else.\n\nBest regards,\nHeartEcho Team" },
-  { label: "Need More Info", value: "Hello,\n\nWe are currently investigating your issue but need a little more information from you to proceed. Could you please provide further details regarding what exactly went wrong?\n\nBest regards,\nHeartEcho Team" },
-  { label: "Apology & Investigation", value: "Hello,\n\nWe sincerely apologize for the inconvenience you experienced. Our engineering team is currently investigating the root cause, and we'll have an update for you shortly. We appreciate your patience.\n\nBest regards,\nHeartEcho Team" }
-];
 
 // ------------------- CSS STYLES (Pure Black & Pink Theme) -------------------
 const styles = `
@@ -137,9 +131,6 @@ const ComplaintsAdmin = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [editTicket, setEditTicket] = useState(null);
-  const [emailTicket, setEmailTicket] = useState(null);
-  const [emailText, setEmailText] = useState("");
-  const [sendingEmail, setSendingEmail] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const ticketsPerPage = 6;
@@ -220,33 +211,6 @@ const ComplaintsAdmin = () => {
       setTickets(tickets.map(t => t._id === editTicket._id ? response.data.data : t));
       setEditTicket(null);
     } catch (e) { alert("Update failed"); }
-  };
-
-  const handleSendEmail = async (e) => {
-    e.preventDefault();
-    if (!emailText) return alert("Please enter an email response.");
-    if (!emailTicket?.user?.email) return alert("User does not have an email on file.");
-    
-    setSendingEmail(true);
-    try {
-      const token = getToken();
-      await axios.post(`${api.Url}/admin/tickets/${emailTicket._id}/email`, {
-        responseText: emailText,
-        userEmail: emailTicket.user.email,
-        userName: emailTicket.user.name,
-        issue: emailTicket.issue,
-        date: emailTicket.date
-      }, { headers: { Authorization: `Bearer ${token}` } });
-      
-      alert("Email sent successfully!");
-      setEmailTicket(null);
-      setEmailText("");
-    } catch (e) { 
-      console.error(e);
-      alert("Failed to send email"); 
-    } finally {
-      setSendingEmail(false);
-    }
   };
 
   if (loading) return <div className="cmp-root-x30sn" style={{display:'flex',alignItems:'center',justifyContent:'center'}}><FaSync className="refreshing" style={{color:'#ff69b4'}}/></div>;
@@ -362,9 +326,6 @@ const ComplaintsAdmin = () => {
                 </div>
               </div>
               <div className="cmp-card-actions-x30sn">
-                {ticket.user?.email && (
-                  <button className="cmp-act-btn-x30sn" onClick={() => setEmailTicket(ticket)} title="Send Email Response"><FaEnvelope/></button>
-                )}
                 <button className="cmp-act-btn-x30sn" onClick={() => setEditTicket(ticket)} title="Edit Status"><FaEdit/></button>
                 <button className="cmp-act-btn-x30sn del" onClick={() => handleDelete(ticket._id)} title="Delete Ticket"><FaTrash/></button>
               </div>
@@ -402,34 +363,6 @@ const ComplaintsAdmin = () => {
               <div style={{display:'flex', gap:10, marginTop:20, justifyContent:'flex-end'}}>
                 <button type="button" className="cmp-btn-x30sn" onClick={() => setEditTicket(null)}>Cancel</button>
                 <button type="submit" className="cmp-btn-x30sn primary">Update Ticket</button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* EMAIL MODAL */}
-        {emailTicket && (
-          <div className="cmp-modal-overlay-x30sn">
-            <form onSubmit={handleSendEmail} className="cmp-modal-content-x30sn" style={{maxWidth: '600px'}}>
-              <h3>Email Response to {emailTicket.user?.name || 'User'}</h3>
-              <div className="cmp-form-group-x30sn">
-                <label>Select Template</label>
-                <select className="cmp-select-x30sn" onChange={e => {
-                  if (e.target.value) setEmailText(e.target.value);
-                }}>
-                  <option value="">-- Choose a template --</option>
-                  {EMAIL_TEMPLATES.map((t, idx) => (
-                    <option key={idx} value={t.value}>{t.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="cmp-form-group-x30sn">
-                <label>Response Content</label>
-                <textarea className="cmp-textarea-x30sn" rows={8} value={emailText} onChange={e => setEmailText(e.target.value)} placeholder="Type your response here..." required />
-              </div>
-              <div style={{display:'flex', gap:10, marginTop:20, justifyContent:'flex-end'}}>
-                <button type="button" className="cmp-btn-x30sn" onClick={() => setEmailTicket(null)} disabled={sendingEmail}>Cancel</button>
-                <button type="submit" className="cmp-btn-x30sn primary" disabled={sendingEmail}>{sendingEmail ? 'Sending...' : 'Send Email'}</button>
               </div>
             </form>
           </div>
