@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const nodemailer = require("nodemailer");
 const User = require("../models/User");
 const AIFriend = require("../models/AIFriend");
 const Chat = require("../models/Chat");
@@ -525,36 +526,15 @@ exports.aiAllModelData = async (req,res) =>{
 
   exports.getAllTickets = async (req, res) => {
     try {
-      // Fetch all tickets
-      const tickets = await Complaint.find().lean(); // Use lean() for plain JS objects
-  
-      // Map through tickets to fetch user names
-      const ticketsWithUserNames = await Promise.all(
-        tickets.map(async (ticket) => {
-          let userName = "Unknown"; // Default if user not found
-  
-          if (mongoose.Types.ObjectId.isValid(ticket.user)) {
-            const user = await User.findById(ticket.user, "name"); // Fetch only the name field
-            if (user && user.name) {
-              userName = user.name;
-            }
-          }
-  
-          // Return ticket with userName instead of full user object
-          return {
-            _id: ticket._id,
-            user: ticket.user, // Keep the user ID
-            userName, // Add the fetched user name
-            issue: ticket.issue,
-            date: ticket.date,
-            status: ticket.status,
-          };
-        })
-      );
+      // Fetch all tickets and populate user details perfectly
+      const tickets = await Complaint.find()
+        .populate("user", "name email phone_number gender age user_type subscriptionTier joinedAt")
+        .sort({ date: -1 })
+        .lean();
   
       res.status(200).json({
         success: true,
-        data: ticketsWithUserNames,
+        data: tickets,
       });
     } catch (error) {
       console.error("Error fetching tickets:", error);
@@ -721,7 +701,7 @@ exports.updateTicket = async (req, res) => {
       id,
       updatedData,
       { new: true, runValidators: true }
-    ).populate("user", "name email");
+    ).populate("user", "name email phone_number gender age user_type subscriptionTier joinedAt");
 
     if (!updatedTicket) {
       return res.status(404).json({
@@ -1896,5 +1876,103 @@ exports.getPaymentAnalytics = async (req, res) => {
   } catch (error) {
     console.error("Payment Analytics Error:", error);
     res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+let SENDER_ACCOUNTS = [];
+try {
+  SENDER_ACCOUNTS = JSON.parse(process.env.SENDER_ACCOUNTS || "[]");
+} catch (e) {
+  console.error("Failed to parse SENDER_ACCOUNTS from .env", e);
+}
+
+exports.sendTicketEmail = async (req, res) => {
+  try {
+      const { id } = req.params;
+      const { responseText, userEmail, userName, issue, date } = req.body;
+
+      if (!userEmail || !responseText) {
+          return res.status(400).json({ success: false, message: "Email and response text are required" });
+      }
+
+      const htmlTemplate = `
+      <div style="font-family: 'Inter', sans-serif; background-color: #000; color: #fff; padding: 40px 20px; max-width: 600px; margin: 0 auto; border-radius: 12px; border: 1px solid #333;">
+          <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #ff69b4; margin: 0; font-size: 28px; letter-spacing: -0.5px;">HeartEcho Support</h1>
+              <p style="color: #888; font-size: 14px; margin-top: 5px;">Response to your recent complaint</p>
+          </div>
+          
+          <div style="background-color: #050505; border: 1px solid #222; border-radius: 10px; padding: 25px; margin-bottom: 25px;">
+              <h3 style="color: #fff; margin-top: 0; font-size: 18px; border-bottom: 1px solid #222; padding-bottom: 10px;">Hello ${userName || 'User'},</h3>
+              
+              <div style="margin: 20px 0;">
+                  <span style="display: block; font-size: 12px; color: #888; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">Complaint ID</span>
+                  <span style="display: inline-block; font-size: 14px; color: #ccc; background: #111; padding: 8px 12px; border-radius: 6px; border: 1px solid #222;">#${id}</span>
+              </div>
+
+              <div style="margin: 20px 0;">
+                  <span style="display: block; font-size: 12px; color: #888; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">Date Submitted</span>
+                  <span style="display: inline-block; font-size: 14px; color: #ccc; background: #111; padding: 8px 12px; border-radius: 6px; border: 1px solid #222;">${new Date(date).toLocaleString()}</span>
+              </div>
+
+              <div style="margin: 25px 0 20px 0;">
+                  <span style="display: block; font-size: 12px; color: #ff69b4; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">Your Complaint</span>
+                  <div style="font-size: 14px; color: #eee; background: rgba(255,105,180,0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,105,180,0.2); line-height: 1.6;">
+                      ${issue || 'N/A'}
+                  </div>
+              </div>
+
+              <div style="margin: 25px 0 10px 0;">
+                  <span style="display: block; font-size: 12px; color: #00ff00; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">Our Response</span>
+                  <div style="font-size: 15px; color: #fff; background: rgba(0,255,0,0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(0,255,0,0.2); line-height: 1.6;">
+                      ${responseText.replace(/\n/g, '<br/>')}
+                  </div>
+              </div>
+          </div>
+
+          <div style="text-align: center; color: #666; font-size: 12px; margin-top: 30px;">
+              <p>If you have any further questions, please reply directly to this email or submit a new ticket.</p>
+              <p>&copy; ${new Date().getFullYear()} HeartEcho. All rights reserved.</p>
+          </div>
+      </div>
+      `;
+
+      let emailSent = false;
+      let usedEmail = '';
+      
+      for (const account of SENDER_ACCOUNTS) {
+          try {
+              const transporter = nodemailer.createTransport({
+                  service: 'gmail',
+                  auth: {
+                      user: account.user,
+                      pass: account.pass
+                  }
+              });
+
+              await transporter.sendMail({
+                  from: `"HeartEcho Support" <${account.user}>`,
+                  to: userEmail,
+                  subject: 'Update on your HeartEcho Support Ticket',
+                  html: htmlTemplate
+              });
+
+              emailSent = true;
+              usedEmail = account.user;
+              console.log(`Successfully sent ticket response email via ${account.user} to ${userEmail}`);
+              break; 
+          } catch (err) {
+              console.warn(`Failed to send email using ${account.user}. Trying next...`, err.message);
+          }
+      }
+
+      if (emailSent) {
+          return res.status(200).json({ success: true, message: `Email successfully sent via ${usedEmail}` });
+      } else {
+          return res.status(500).json({ success: false, message: "All email providers failed to send." });
+      }
+  } catch (error) {
+      console.error("sendTicketEmail error:", error);
+      res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

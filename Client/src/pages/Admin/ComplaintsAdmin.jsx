@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { 
   FaTicketAlt, FaTrash, FaEdit, FaSearch, FaCheckCircle, 
-  FaTimesCircle, FaSync, FaDownload, FaChartBar, FaExclamationTriangle 
+  FaTimesCircle, FaSync, FaDownload, FaChartBar, FaExclamationTriangle, FaEnvelope 
 } from "react-icons/fa";
 import {
   BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, 
@@ -11,6 +11,12 @@ import {
 } from "recharts";
 import api from "../../config/api";
 import axios from "axios";
+
+const EMAIL_TEMPLATES = [
+  { label: "Resolved - Standard", value: "Hello,\n\nWe have successfully resolved your issue. Thank you for bringing this to our attention. Let us know if you need anything else.\n\nBest regards,\nHeartEcho Team" },
+  { label: "Need More Info", value: "Hello,\n\nWe are currently investigating your issue but need a little more information from you to proceed. Could you please provide further details regarding what exactly went wrong?\n\nBest regards,\nHeartEcho Team" },
+  { label: "Apology & Investigation", value: "Hello,\n\nWe sincerely apologize for the inconvenience you experienced. Our engineering team is currently investigating the root cause, and we'll have an update for you shortly. We appreciate your patience.\n\nBest regards,\nHeartEcho Team" }
+];
 
 // ------------------- CSS STYLES (Pure Black & Pink Theme) -------------------
 const styles = `
@@ -131,6 +137,9 @@ const ComplaintsAdmin = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [editTicket, setEditTicket] = useState(null);
+  const [emailTicket, setEmailTicket] = useState(null);
+  const [emailText, setEmailText] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const ticketsPerPage = 6;
@@ -182,7 +191,10 @@ const ComplaintsAdmin = () => {
   const filteredTickets = useMemo(() => {
     return tickets.filter((t) => {
       const name = t.user?.name || "Unknown";
-      const matchesSearch = t.issue?.toLowerCase().includes(searchTerm.toLowerCase()) || name.toLowerCase().includes(searchTerm.toLowerCase());
+      const email = t.user?.email || "";
+      const matchesSearch = t.issue?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            email.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = filterStatus === "all" || t.status === filterStatus;
       return matchesSearch && matchesStatus;
     });
@@ -208,6 +220,33 @@ const ComplaintsAdmin = () => {
       setTickets(tickets.map(t => t._id === editTicket._id ? response.data.data : t));
       setEditTicket(null);
     } catch (e) { alert("Update failed"); }
+  };
+
+  const handleSendEmail = async (e) => {
+    e.preventDefault();
+    if (!emailText) return alert("Please enter an email response.");
+    if (!emailTicket?.user?.email) return alert("User does not have an email on file.");
+    
+    setSendingEmail(true);
+    try {
+      const token = getToken();
+      await axios.post(`${api.Url}/admin/tickets/${emailTicket._id}/email`, {
+        responseText: emailText,
+        userEmail: emailTicket.user.email,
+        userName: emailTicket.user.name,
+        issue: emailTicket.issue,
+        date: emailTicket.date
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      
+      alert("Email sent successfully!");
+      setEmailTicket(null);
+      setEmailText("");
+    } catch (e) { 
+      console.error(e);
+      alert("Failed to send email"); 
+    } finally {
+      setSendingEmail(false);
+    }
   };
 
   if (loading) return <div className="cmp-root-x30sn" style={{display:'flex',alignItems:'center',justifyContent:'center'}}><FaSync className="refreshing" style={{color:'#ff69b4'}}/></div>;
@@ -278,7 +317,7 @@ const ComplaintsAdmin = () => {
         <div className="cmp-filters-x30sn">
           <div className="cmp-search-wrap-x30sn">
             <FaSearch />
-            <input className="cmp-input-x30sn" placeholder="Search by issue or user name..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+            <input className="cmp-input-x30sn" placeholder="Search by issue, user name, or email..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
           <select className="cmp-select-x30sn" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
             <option value="all">All Tickets</option>
@@ -293,18 +332,41 @@ const ComplaintsAdmin = () => {
             <div key={ticket._id} className="cmp-ticket-card-x30sn">
               <div>
                 <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                  <span className={`cmp-status-badge-x30sn ${ticket.status.toLowerCase()}`}>{ticket.status}</span>
+                  <span className={`cmp-status-badge-x30sn ${ticket.status?.toLowerCase()}`}>{ticket.status}</span>
                   <span style={{fontSize:11, color:'#555'}}>{new Date(ticket.date).toLocaleDateString()}</span>
                 </div>
                 <div className="cmp-issue-text-x30sn">{ticket.issue}</div>
-                <div className="cmp-user-data-x30sn">
-                  <div><strong>User:</strong> {ticket.user?.name || "Anonymous"}</div>
-                  <div><strong>ID:</strong> {ticket.user?._id || ticket.user || "N/A"}</div>
+                
+                <div className="cmp-user-data-x30sn" style={{display:'flex', flexDirection:'column', gap:'6px'}}>
+                  <div style={{display:'flex', justifyContent:'space-between', borderBottom:'1px solid #1a1a1a', paddingBottom:'4px'}}>
+                    <span style={{whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'70%'}}>
+                      <strong style={{color:'#ff69b4'}}>User:</strong> {ticket.user?.name || "Anonymous"}
+                    </span>
+                    <span style={{color: ticket.user?.user_type === 'subscriber' ? '#00ff00' : '#888', textTransform:'capitalize', fontSize:'11px', fontWeight:'bold'}}>
+                      {ticket.user?.user_type || "Free"}
+                    </span>
+                  </div>
+                  <div style={{display:'flex', justifyContent:'space-between'}}>
+                    <span style={{whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'100%'}}>
+                      <strong>Email:</strong> {ticket.user?.email || "N/A"}
+                    </span>
+                  </div>
+                  <div style={{display:'flex', justifyContent:'space-between'}}>
+                    <span><strong>Phone:</strong> {ticket.user?.phone_number || "N/A"}</span>
+                    <span><strong>Age:</strong> {ticket.user?.age || "N/A"} • <span style={{textTransform:'capitalize'}}>{ticket.user?.gender || "N/A"}</span></span>
+                  </div>
+                  <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                    <span><strong>Tier:</strong> <span style={{textTransform:'capitalize'}}>{ticket.user?.subscriptionTier || "none"}</span></span>
+                    <span style={{fontSize:'10px'}}><strong>ID:</strong> {ticket.user?._id ? ticket.user._id.toString().substring(0,8) + '...' : "N/A"}</span>
+                  </div>
                 </div>
               </div>
               <div className="cmp-card-actions-x30sn">
-                <button className="cmp-act-btn-x30sn" onClick={() => setEditTicket(ticket)}><FaEdit/></button>
-                <button className="cmp-act-btn-x30sn del" onClick={() => handleDelete(ticket._id)}><FaTrash/></button>
+                {ticket.user?.email && (
+                  <button className="cmp-act-btn-x30sn" onClick={() => setEmailTicket(ticket)} title="Send Email Response"><FaEnvelope/></button>
+                )}
+                <button className="cmp-act-btn-x30sn" onClick={() => setEditTicket(ticket)} title="Edit Status"><FaEdit/></button>
+                <button className="cmp-act-btn-x30sn del" onClick={() => handleDelete(ticket._id)} title="Delete Ticket"><FaTrash/></button>
               </div>
             </div>
           ))}
@@ -340,6 +402,34 @@ const ComplaintsAdmin = () => {
               <div style={{display:'flex', gap:10, marginTop:20, justifyContent:'flex-end'}}>
                 <button type="button" className="cmp-btn-x30sn" onClick={() => setEditTicket(null)}>Cancel</button>
                 <button type="submit" className="cmp-btn-x30sn primary">Update Ticket</button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* EMAIL MODAL */}
+        {emailTicket && (
+          <div className="cmp-modal-overlay-x30sn">
+            <form onSubmit={handleSendEmail} className="cmp-modal-content-x30sn" style={{maxWidth: '600px'}}>
+              <h3>Email Response to {emailTicket.user?.name || 'User'}</h3>
+              <div className="cmp-form-group-x30sn">
+                <label>Select Template</label>
+                <select className="cmp-select-x30sn" onChange={e => {
+                  if (e.target.value) setEmailText(e.target.value);
+                }}>
+                  <option value="">-- Choose a template --</option>
+                  {EMAIL_TEMPLATES.map((t, idx) => (
+                    <option key={idx} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="cmp-form-group-x30sn">
+                <label>Response Content</label>
+                <textarea className="cmp-textarea-x30sn" rows={8} value={emailText} onChange={e => setEmailText(e.target.value)} placeholder="Type your response here..." required />
+              </div>
+              <div style={{display:'flex', gap:10, marginTop:20, justifyContent:'flex-end'}}>
+                <button type="button" className="cmp-btn-x30sn" onClick={() => setEmailTicket(null)} disabled={sendingEmail}>Cancel</button>
+                <button type="submit" className="cmp-btn-x30sn primary" disabled={sendingEmail}>{sendingEmail ? 'Sending...' : 'Send Email'}</button>
               </div>
             </form>
           </div>
