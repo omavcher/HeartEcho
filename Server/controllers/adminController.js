@@ -1879,13 +1879,6 @@ exports.getPaymentAnalytics = async (req, res) => {
   }
 };
 
-let SENDER_ACCOUNTS = [];
-try {
-  SENDER_ACCOUNTS = JSON.parse(process.env.SENDER_ACCOUNTS || "[]");
-} catch (e) {
-  console.error("Failed to parse SENDER_ACCOUNTS from .env", e);
-}
-
 exports.sendTicketEmail = async (req, res) => {
   try {
       const { id } = req.params;
@@ -1893,6 +1886,17 @@ exports.sendTicketEmail = async (req, res) => {
 
       if (!userEmail || !responseText) {
           return res.status(400).json({ success: false, message: "Email and response text are required" });
+      }
+
+      const SENDER_ACCOUNTS = [
+        { user: process.env.EMAIL_1, pass: process.env.PASS_1 },
+        { user: process.env.EMAIL_2, pass: process.env.PASS_2 },
+        { user: process.env.EMAIL_3, pass: process.env.PASS_3 }
+      ].filter(acc => acc.user && acc.pass);
+
+      if (SENDER_ACCOUNTS.length === 0) {
+          console.error("No valid email accounts configured in .env");
+          return res.status(500).json({ success: false, message: "Server email configuration is missing." });
       }
 
       const htmlTemplate = `
