@@ -23,6 +23,49 @@ exports.getDeletedAccounts = async (req, res) => {
   }
 };
 
+// Get today's key indicators
+exports.getTodayIndicators = async (req, res) => {
+  try {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    
+    const todayQuery = { $gte: startOfToday, $lte: endOfToday };
+
+    const [
+      newUsers,
+      newComplaints,
+      newReferrals,
+      newLogins,
+      newPayments,
+      newDeletedAccounts
+    ] = await Promise.all([
+      User.countDocuments({ createdAt: todayQuery }),
+      Ticket.countDocuments({ date: todayQuery }),
+      ReferralCreator.countDocuments({ createdAt: todayQuery }),
+      LoginDetail.countDocuments({ time: todayQuery }),
+      Payment.countDocuments({ date: todayQuery }),
+      DeletedAccount.countDocuments({ deletedAt: todayQuery })
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        users: newUsers,
+        complaints: newComplaints,
+        referrals: newReferrals,
+        logins: newLogins,
+        payments: newPayments,
+        deletedAccounts: newDeletedAccounts,
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching today indicators:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 exports.manualSubscription = async (req, res) => {
     try {
         const { id } = req.params;

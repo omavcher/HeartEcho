@@ -1,5 +1,7 @@
 'use client';
 import { useState, useEffect } from "react";
+import axios from "axios";
+import api from "../../config/api";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
@@ -33,19 +35,42 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
 
   const isActive = (path) => pathname === path;
 
+  const [indicators, setIndicators] = useState({});
+
+  useEffect(() => {
+    const fetchIndicators = async () => {
+      try {
+        if (typeof window === 'undefined') return;
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const res = await axios.get(`${api.Url}/admin/today-indicators`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.data.success) {
+          setIndicators(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch indicators", err);
+      }
+    };
+    fetchIndicators();
+    const interval = setInterval(fetchIndicators, 60000); // refresh every minute
+    return () => clearInterval(interval);
+  }, []);
+
   const navItems = [
     { path: "/admin/dashboard", label: "Dashboard", icon: <MdDashboard /> },
-    { path: "/admin/users", label: "Users", icon: <FaUsers /> },
+    { path: "/admin/users", label: "Users", icon: <FaUsers />, countKey: "users" },
     { path: "/admin/stories", label: "Stories", icon: <MdHistoryEdu /> },
     { path: "/admin/ai-friends", label: "AI Friends", icon: <FaRobot /> },
-    { path: "/admin/complaints", label: "Complaints", icon: <FaExclamationCircle /> },
-    { path: "/admin/referral", label: "Referral Program", icon: <FaUserPlus /> },
+    { path: "/admin/complaints", label: "Complaints", icon: <FaExclamationCircle />, countKey: "complaints" },
+    { path: "/admin/referral", label: "Referral Program", icon: <FaUserPlus />, countKey: "referrals" },
     { path: "/admin/create-story", label: "Create Story", icon: <FaGem /> },
     { path: "/admin/chats", label: "Chats", icon: <MdChat /> },
     { path: "/admin/analytics", label: "Tracking & Analytics", icon: <MdAnalytics /> },
-    { path: "/admin/login-activity", label: "Login Activity", icon: <MdAnalytics /> },
-    { path: "/admin/payment-activity", label: "Payment Activity", icon: <MdPayment /> },
-    { path: "/admin/deleted-accounts", label: "Deleted Accounts", icon: <FaUsers /> },
+    { path: "/admin/login-activity", label: "Login Activity", icon: <MdAnalytics />, countKey: "logins" },
+    { path: "/admin/payment-activity", label: "Payment Activity", icon: <MdPayment />, countKey: "payments" },
+    { path: "/admin/deleted-accounts", label: "Deleted Accounts", icon: <FaUsers />, countKey: "deletedAccounts" },
     { path: "/admin/live-stories", label: "Live Stories AI", icon: <FaGem /> },
     { path: "/admin/ai-live-view", label: "AI Live View", icon: <FaGem /> }
   ];
@@ -86,7 +111,12 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
                 >
                 <span className="nav-icon-x30sn">{item.icon}</span>
                 <span className="nav-label-x30sn">{item.label}</span>
-                {isActive(item.path) && <FaChevronRight className="nav-chevron-x30sn" />}
+                
+                {item.countKey && indicators[item.countKey] > 0 && (
+                  <span className="nav-badge-x30sn">+{indicators[item.countKey]}</span>
+                )}
+
+                {!(item.countKey && indicators[item.countKey] > 0) && isActive(item.path) && <FaChevronRight className="nav-chevron-x30sn" />}
                 </Link>
             ))}
             </div>

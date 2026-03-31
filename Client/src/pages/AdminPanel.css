@@ -133,6 +133,25 @@
   opacity: 0.8;
 }
 
+.nav-badge-x30sn {
+  background: var(--text-pink-x30sn);
+  color: #000;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 12px;
+  margin-left: auto;
+  min-width: 24px;
+  text-align: center;
+  box-shadow: 0 0 8px rgba(255,105,180,0.5);
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+
 /* Sidebar Footer */
 .sidebar-footer-x30sn {
   padding: 20px;
