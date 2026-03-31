@@ -9,6 +9,7 @@ const Ticket = require("../models/Ticket");
 const nodemailer = require("nodemailer");
 const Payment = require("../models/Payment");
 const axios = require("axios");
+const DeletedAccount = require("../models/DeletedAccount");
 
 require("dotenv").config();
 const sendEmail = async (to, subject, html) => {
@@ -301,23 +302,80 @@ exports.verifyOtpDestroy = async (req, res) => {
   }
 };
 
-// ✅ Delete user account
+// ✅ Delete user account — full cascade, no OTP required
 exports.deleteAccount = async (req, res) => {
   try {
     const userId = req.user.id;
-    
-    // Ensure OTP verification was completed
-    if (otpDeleteStorage.has(userId)) {
-      return res.status(400).json({ message: "OTP verification required before deleting account" });
-    }
 
-    const deletedUser = await User.findByIdAndDelete(userId);
-    if (!deletedUser) return res.status(404).json({ message: "User not found" });
+    // 1. Find the user first to archive their key details
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    res.status(200).json({ message: "Account deleted successfully" });
+    // 2. Gather stats before deletion (for archive)
+    const [chatCount, ticketCount, paymentCount, aiFriendCount, chatMessages] = await Promise.all([
+      Chat.countDocuments({ participants: userId }),
+      Ticket.countDocuments({ user: userId }),
+      Payment.countDocuments({ user: userId }),
+      AIFriend.countDocuments({ user: userId }),
+      Chat.aggregate([
+        { $match: { "messages.sender": new mongoose.Types.ObjectId(userId) } },
+        { $unwind: "$messages" },
+        { $match: { "messages.sender": new mongoose.Types.ObjectId(userId) } },
+        { $count: "total" }
+      ])
+    ]);
+
+    // 3. Get last payment for audit
+    const lastPayment = await Payment.findOne({ user: userId }).sort({ createdAt: -1 });
+
+    // 4. Save archive record BEFORE deleting anything
+    await DeletedAccount.create({
+      originalUserId: userId.toString(),
+      name: user.name,
+      email: user.email,
+      phone_number: user.phone_number,
+      gender: user.gender,
+      age: user.age,
+      user_type: user.user_type,
+      subscriptionTier: user.subscriptionTier,
+      subscriptionExpiry: user.subscriptionExpiry,
+      joinedAt: user.joinedAt,
+      stats: {
+        totalChats: chatCount,
+        totalMessages: chatMessages.length > 0 ? chatMessages[0].total : 0,
+        totalPayments: paymentCount,
+        totalTickets: ticketCount,
+        totalAIFriends: aiFriendCount,
+      },
+      lastPayment: lastPayment ? {
+        amount: lastPayment.rupees,
+        transaction_id: lastPayment.transaction_id,
+        date: lastPayment.createdAt,
+      } : null,
+      ip: req.ip || null,
+    });
+
+    // 5. Cascade delete all related data
+    await Promise.all([
+      // Delete all chats the user participated in
+      Chat.deleteMany({ participants: userId }),
+      // Delete login details
+      LoginDetail.deleteMany({ user: userId }),
+      // Delete support tickets
+      Ticket.deleteMany({ user: userId }),
+      // Delete payments
+      Payment.deleteMany({ user: userId }),
+      // Delete custom AI friends created by user
+      AIFriend.deleteMany({ user: userId }),
+    ]);
+
+    // 6. Finally delete the user
+    await User.findByIdAndDelete(userId);
+
+    res.status(200).json({ success: true, message: "Account and all associated data deleted successfully." });
   } catch (error) {
     console.error("Error deleting account:", error);
-    res.status(500).json({ message: "⚠️ Server error! Please try again later." });
+    res.status(500).json({ message: "Server error during account deletion." });
   }
 };
 

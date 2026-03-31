@@ -6,18 +6,13 @@ import api from "../config/api";
 import axios from "axios";
 import PopNoti from "./PopNoti";
 import AdvancedLoader from './AdvancedLoader'
-
 import { useRouter } from 'next/navigation';
 
 function ChatManagerSettings() {
   const router = useRouter();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [notification, setNotification] = useState({
-    show: false,
-    message: "",
-    type: "",
-  });
+  const [notification, setNotification] = useState({ show: false, message: "", type: "" });
   const [token, setToken] = useState(null);
 
   useEffect(() => {
@@ -30,158 +25,128 @@ function ChatManagerSettings() {
         const res = await axios.get(`${api.Url}/user/get-chat-data`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (res.data) {
-          setUserData(res.data);
-        }
+        if (res.data) setUserData(res.data);
       } catch (error) {
-        console.error("Error fetching user data:", error);
-        setNotification({
-          show: true,
-          message: "Failed to load user data. Please try again.",
-          type: "error",
-        });
+        setNotification({ show: true, message: "Failed to load user data.", type: "error" });
       } finally {
         setLoading(false);
       }
     };
-
-    if (token) {
-      getUserData();
-    }
+    if (token) getUserData();
   }, [token]);
 
   if (loading) {
-    return <AdvancedLoader
-    variant="spinner"
-    size="large"
-    color="primary"
-    text={`Loading...`}
-    overlay={false}
-    />;
+    return <AdvancedLoader variant="spinner" size="large" color="primary" text="Loading..." overlay={false} />;
   }
 
   if (!userData) {
-    return <div className="je9c-error-dwdjwd">Error loading user data.</div>;
+    return <div className="ios-error-msg">Error loading user data.</div>;
   }
 
-  // Extract correct properties from API response
-  const {
-    userType,
-    messageQuota,
-    totalMessagesSent,
-    joinedAt,
-    daysLeft,
-  } = userData;
-
-  // Determine if the user is a subscriber
+  const { userType, messageQuota, totalMessagesSent, joinedAt, daysLeft } = userData;
   const isSubscriber = messageQuota === 999;
   const progressWidth = isSubscriber ? "100%" : `${(messageQuota / 5) * 100}%`;
-  const activeDays = isSubscriber ? "Active Subscription" : "Forever (Daily Quota)";
+  const activeDays = isSubscriber ? "Active Subscription" : "Forever (Daily)";
 
   return (
-    <div className="je9c-dashboard-dwdjwd">
-      <PopNoti
-        message={notification.message}
-        type={notification.type}
-        isVisible={notification.show}
-        onClose={() => setNotification({ ...notification, show: false })}
-      />
+    <div className="ios-settings-container">
+      <PopNoti message={notification.message} type={notification.type} isVisible={notification.show} onClose={() => setNotification({ ...notification, show: false })} />
 
-      {/* Overview Section */}
-      <section className="je9c-overview-dwdjwd">
-        <div className="je9c-card-dwdjwd je9c-trial-info-dwdjwd">
-          <h2 className="je9c-card-heading-dwdjwd">
-            {isSubscriber ? "Subscription Overview" : "Account Overview"}
-          </h2>
-          <div className="je9c-info-grid-dwdjwd">
-            <div className="je9c-info-item-dwdjwd">
-              <p className="je9c-info-label-dwdjwd">Joined</p>
-              <p className="je9c-info-value-dwdjwd">{new Date(joinedAt).toLocaleDateString("en-GB")}</p>
+      <div className="ios-settings-group">
+        <h3 className="ios-group-title">ACCOUNT SUBSCRIPTION</h3>
+        <div className="ios-list">
+          <div className="ios-list-item">
+            <div className="ios-item-left">
+              <div className="ios-icon-box" style={{ background: '#0a84ff' }}>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><path d="M11 7h2v6h-2zm0 8h2v2h-2z"/></svg>
+              </div>
+              <span className="ios-item-title">Current Plan</span>
             </div>
-            <div className="je9c-info-item-dwdjwd">
-              <p className="je9c-info-label-dwdjwd">{isSubscriber ? "Days Left" : "Access"}</p>
-              <p className="je9c-info-value-dwdjwd je9c-accent-dwdjwd">
-                {isSubscriber 
-                  ? `${daysLeft} day${daysLeft === 1 ? "" : "s"}` 
-                  : "Daily Free Quota Active"
-                }
-              </p>
+            <div className="ios-item-right">
+              <span className="ios-item-value">{userType}</span>
             </div>
           </div>
+          
+          <div className="ios-list-item">
+            <div className="ios-item-left">
+              <div className="ios-icon-box" style={{ background: '#30d158' }}>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 002 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"/></svg>
+              </div>
+              <span className="ios-item-title">Joined Date</span>
+            </div>
+            <div className="ios-item-right">
+              <span className="ios-item-value">{new Date(joinedAt).toLocaleDateString("en-GB")}</span>
+            </div>
+          </div>
+
+          <div className="ios-list-item">
+            <div className="ios-item-left">
+              <div className="ios-icon-box" style={{ background: '#ff9f0a' }}>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+              </div>
+              <span className="ios-item-title">{isSubscriber ? "Days Left" : "Access"}</span>
+            </div>
+            <div className="ios-item-right">
+              <span className="ios-item-value">{isSubscriber ? `${daysLeft} Days` : "Daily Quota"}</span>
+            </div>
+          </div>
+
           {!isSubscriber && (
-            <button
-              className="je9c-action-btn-dwdjwd je9c-upgrade-dwdjwd"
-              onClick={() => router.push("/subscribe")}
-            >
-              Upgrade Plan
-            </button>
+            <div className="ios-list-item ios-action-item" onClick={() => router.push("/subscribe")}>
+              <span className="ios-action-text">Upgrade Plan</span>
+              <svg className="ios-chevron" viewBox="0 0 24 24" fill="currentColor"><path d="M9.29 15.88L13.17 12 9.29 8.12c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l4.59 4.59c.39.39.39 1.02 0 1.41L10.7 17.3c-.39.39-1.02.39-1.41 0-.38-.39-.39-1.03 0-1.42z"/></svg>
+            </div>
           )}
         </div>
+      </div>
 
-        {/* Quota Section */}
-        <div className="je9c-card-dwdjwd je9c-quota-info-dwdjwd">
-          <h2 className="je9c-card-heading-dwdjwd">Daily Quota</h2>
-          <p className="je9c-plan-type-dwdjwd">
-            Plan: <span className="je9c-plan-value-dwdjwd">{userType}</span>
-          </p>
-          <div className="je9c-progress-container-dwdjwd">
-            <div className="je9c-progress-bar-dwdjwd">
-              <div
-                className="je9c-progress-dwdjwd"
-                style={{ width: progressWidth }}
-              ></div>
-            </div>
-            <div className="je9c-progress-labels-dwdjwd">
-              <span className="je9c-progress-current-dwdjwd">
-                {isSubscriber ? "Unlimited" : `${messageQuota}`}
-              </span>
-              <span className="je9c-progress-total-dwdjwd">
-                {isSubscriber ? "" : "/ 5"}
-              </span>
+      <div className="ios-settings-group">
+        <h3 className="ios-group-title">DAILY QUOTA</h3>
+        <div className="ios-list ios-list-vertical">
+          <div className="ios-quota-header">
+            <span className="ios-item-title">Messages Used</span>
+            <span className="ios-item-value">{isSubscriber ? "Unlimited" : `${messageQuota} / 5`}</span>
+          </div>
+          <div className="ios-progress-bar-container">
+            <div className={`ios-progress-bar ${isSubscriber ? 'ios-progress-premium' : ''}`}>
+              <div className="ios-progress-fill" style={{ width: progressWidth }}></div>
             </div>
           </div>
-          <p className="je9c-quota-text-dwdjwd">
-            {messageQuota === 999 
-              ? "You are a Premium Member! Enjoy Unlimited Chatting 🎉" 
-              : `${messageQuota} / 5 Messages`}
+          <p className="ios-group-footer">
+            {isSubscriber ? "You are a Premium Member enjoying unlimited messages." : "Your free messages reset daily. Upgrade for unlimited messaging without boundaries."}
           </p>
         </div>
-      </section>
+      </div>
 
-      {/* Stats Section */}
-      <section className="je9c-stats-dwdjwd">
-        <div className="je9c-card-dwdjwd je9c-stats-info-dwdjwd">
-          <h2 className="je9c-card-heading-dwdjwd">Usage Insights</h2>
-          <div className="je9c-stats-grid-dwdjwd">
-            <div className="je9c-stat-item-dwdjwd">
-              <div className="je9c-stat-icon-dwdjwd">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM13 7C13 6.44772 12.5523 6 12 6C11.4477 6 11 6.44772 11 7V13C11 13.5523 11.4477 14 12 14C12.5523 14 13 13.5523 13 13V7ZM12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C16.4183 4 20 7.58172 20 12C20 16.4183 16.4183 20 12 20Z"></path>
-                </svg>
+      <div className="ios-settings-group">
+        <h3 className="ios-group-title">USAGE INSIGHTS</h3>
+        <div className="ios-list">
+          <div className="ios-list-item">
+            <div className="ios-item-left">
+              <div className="ios-icon-box" style={{ background: '#5e5ce6' }}>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
               </div>
-              <span className="je9c-stat-value-dwdjwd">{totalMessagesSent}</span>
-              <span className="je9c-stat-label-dwdjwd">Messages Sent</span>
+              <span className="ios-item-title">Total Messages Sent</span>
             </div>
-            <div className="je9c-stat-item-dwdjwd">
-              <div className="je9c-stat-icon-dwdjwd">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C17.523 2 22 6.477 22 12C22 17.523 17.523 22 12 22C6.477 22 2 17.523 2 12C2 6.477 6.477 2 12 2ZM12 4C7.582 4 4 7.582 4 12C4 16.418 7.582 20 12 20C16.418 20 20 16.418 20 12C20 7.582 16.418 4 12 4ZM13 12C13 11.4477 12.5523 11 12 11C11.4477 11 11 11.4477 11 12V16C11 16.5523 11.4477 17 12 17C12.5523 17 13 16.5523 13 16V12ZM12 7C12.5523 7 13 7.44772 13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7Z"></path>
-                </svg>
+            <div className="ios-item-right">
+              <span className="ios-item-value">{totalMessagesSent}</span>
+            </div>
+          </div>
+          
+          <div className="ios-list-item">
+            <div className="ios-item-left">
+              <div className="ios-icon-box" style={{ background: '#ff375f' }}>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
               </div>
-              <span className="je9c-stat-value-dwdjwd">{activeDays}</span>
-              <span className="je9c-stat-label-dwdjwd">Active Days</span>
+              <span className="ios-item-title">Active Days</span>
+            </div>
+            <div className="ios-item-right">
+              <span className="ios-item-value">{activeDays}</span>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Footer */}
-      <footer className="je9c-dashboard-footer-dwdjwd">
-        <button className="je9c-action-btn-dwdjwd je9c-support-dwdjwd">
-          Get Support
-        </button>
-      </footer>
     </div>
   );
 }

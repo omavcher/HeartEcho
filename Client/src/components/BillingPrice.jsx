@@ -64,7 +64,7 @@ const BillingPrice = () => {
   };
 
   return (
-    <div className="billing-container">
+    <div className="ios-settings-container">
       {/* Notification Popup */}
       <PopNoti
         message={notification.message}
@@ -73,104 +73,79 @@ const BillingPrice = () => {
         onClose={() => setNotification({ ...notification, show: false })}
       />
 
-      <div className="search-bar-billing-price">
-        <input
-          type="text"
-          name="name"
-          value={formData.name}
-          onChange={handleInputChange}
-          className="name-input"
-          disabled
-        />
-        <input
-          type="text"
-          name="transactionId"
-          value={formData.transactionId}
-          onChange={handleInputChange}
-          className="id-input"
-        />
-        <input
-          type="number"
-          name="amount"
-          value={formData.amount}
-          onChange={handleInputChange}
-          className="mileage-input"
-        />
-        <button className="search-btn-billing-price" onClick={handleSearch}>
-          Search
-        </button>
-      </div>
-
-      <div className="customers-found">
-        <p>{paymentData ? 'Payment Found' : 'Payment Not Found'}</p>
-      </div>
-
-      <div className="customer-cards">
-        {/* Active Payments List */}
-        <div className="customer-card active">
-          <div className="customer-header">
-            <img
-              src={paymentData?.profilePicture || "/default-profile.png"}
-              alt={paymentData?.name || "User"}
-              className="profile-img"
-            />
-            <div className="customer-info">
-              <h3>{paymentData?.name || "User Name"}</h3>
-              <p>{paymentData?.paymentHistory?.length > 0 ? "Payments" : "No Payments Yet"}</p>
-            </div>
-            <span className="status active">Active</span>
+      <div className="ios-settings-group">
+        <h3 className="ios-group-title">VERIFY TRANSACTION</h3>
+        <div className="ios-list">
+          <div className="ios-list-item">
+            <span className="ios-item-title-col">Name</span>
+            <input className="ios-input-right" disabled value={formData.name} onChange={handleInputChange} name="name" />
           </div>
+          <div className="ios-list-item">
+            <span className="ios-item-title-col">Txn ID</span>
+            <input className="ios-input-right" value={formData.transactionId} onChange={handleInputChange} name="transactionId" />
+          </div>
+          <div className="ios-list-item">
+            <span className="ios-item-title-col">Amount</span>
+            <input type="number" className="ios-input-right" value={formData.amount} onChange={handleInputChange} name="amount" />
+          </div>
+          <div className="ios-list-item ios-action-item ios-center-action" onClick={handleSearch}>
+            <span className="ios-action-text ios-primary-action" style={{color: 'var(--ios-theme-accent)'}}>Search</span>
+          </div>
+        </div>
+        <p className="ios-group-footer">Use the above to manually query specific payment records. Result: {paymentData ? 'Found' : 'Not Found'}.</p>
+      </div>
 
-          <div className="customer-details">
-            {paymentData?.paymentHistory?.length > 0 ? (
-              paymentData.paymentHistory.map((payment) => (
-                <div key={payment._id} className="payment-item">
-                  <p>
-                    <strong>Transaction ID:</strong> {payment.transaction_id}
-                  </p>
-                  <p>
-                    <strong>Amount Paid:</strong> ₹{payment.rupees}
-                  </p>
-                  <p>
-                    <strong>Payment Date:</strong> {new Date(payment.date).toLocaleDateString()}
-                  </p>
-                  <p>
-                    <strong>Expiry Date:</strong> {new Date(payment.expiry_date).toLocaleDateString()}
-                  </p>
+      <div className="ios-settings-group">
+        <h3 className="ios-group-title">PAYMENT HISTORY</h3>
+        <div className="ios-list">
+          {paymentData?.paymentHistory?.length > 0 ? (
+            paymentData.paymentHistory.map((payment) => (
+              <div key={payment._id} className="ios-list-item ios-payment-row">
+                <div className="ios-item-left">
+                  <div className="ios-icon-box" style={{ background: '#30d158' }}>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-4v-1h4v-1h-4v-1h-4v-1h-4v-1h4v5zm-7 0H7v-1h2v-1H7v-1h2v-1H7v-1h2v5zm4-6V3.5L18.5 9H13z"/></svg>
+                  </div>
+                  <div className="ios-item-stack" style={{display: 'flex', flexDirection: 'column'}}>
+                    <span className="ios-item-title">₹{payment.rupees}</span>
+                    <span className="ios-item-subtitle" style={{fontSize: '0.8rem', color: 'var(--ios-text-secondary)', marginTop: '2px'}}>{payment.transaction_id}</span>
+                  </div>
                 </div>
-              ))
-            ) : (
-              <p>No past payments found.</p>
-            )}
-          </div>
-        </div>
-
-        {/* Next Payment Details Card */}
-        <div className="customer-card inactive">
-          <div className="customer-header">
-            <div className="customer-abbr">{paymentData?.name?.charAt(0) || "U"}</div>
-            <div className="customer-info">
-              <h3>{paymentData?.name || "User Name"}</h3>
-              <p>{paymentData?.nextSubscriptionDate ? "Next Payment Due" : "Subscribe to See"}</p>
+                <div className="ios-item-right" style={{flexDirection: 'column', alignItems: 'flex-end', gap: '2px'}}>
+                  <span className="ios-item-value">{new Date(payment.date).toLocaleDateString()}</span>
+                  <span className="ios-item-subtitle" style={{fontSize: '0.8rem', color: 'var(--ios-text-secondary)'}}>Exp: {new Date(payment.expiry_date).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="ios-list-item">
+              <span className="ios-item-title" style={{ color: 'var(--ios-text-secondary)' }}>No past payments found.</span>
             </div>
-            <span className="status inactive">{paymentData?.nextSubscriptionDate ? "Pending" : "Not Subscribed"}</span>
-          </div>
-
-          <div className="customer-details">
-            {paymentData?.nextSubscriptionDate ? (
-              <p>
-                <strong>Next Due Date:</strong> {paymentData.nextSubscriptionDate}
-              </p>
-            ) : (
-              <p>Subscribe to see payment details.</p>
-            )}
-          </div>
-
-          <Link href='/subscribe' className="edit-merge-btn">
-            {paymentData?.nextSubscriptionDate ? "Pay Now" : "Subscribe"}
-          </Link>
+          )}
         </div>
       </div>
+
+      <div className="ios-settings-group">
+        <h3 className="ios-group-title">UPCOMING PAYMENT</h3>
+        <div className="ios-list">
+          <div className="ios-list-item">
+            <span className="ios-item-title-col">Next Due</span>
+            <span className="ios-item-value">{paymentData?.nextSubscriptionDate ? new Date(paymentData.nextSubscriptionDate).toLocaleDateString() : "Not Subscribed"}</span>
+          </div>
+          <div className="ios-list-item">
+            <span className="ios-item-title-col">Status</span>
+            <span className="ios-item-value" style={{ color: paymentData?.nextSubscriptionDate ? '#ff9f0a' : 'var(--ios-text-secondary)', fontWeight: 600 }}>
+              {paymentData?.nextSubscriptionDate ? "Pending" : "Inactive"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="ios-submit-container">
+        <Link href='/subscribe' className="ios-primary-btn" style={{textDecoration: 'none'}}>
+          {paymentData?.nextSubscriptionDate ? "Pay Now" : "Subscribe"}
+        </Link>
+      </div>
+
     </div>
   );
 };
