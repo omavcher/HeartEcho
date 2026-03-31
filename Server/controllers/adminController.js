@@ -9,8 +9,19 @@ const TrackingEvent = require("../models/TrackingEvent");
 const moment = require("moment");
 require("dotenv").config();
 const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");
+const DeletedAccount = require("../models/DeletedAccount");
 const ReferralCreator = require("../models/ReferralCreator");
 const { generateCreatorToken, verifyReferralCreator } = require('../utils/jwt');
+// Get all deleted accounts
+exports.getDeletedAccounts = async (req, res) => {
+  try {
+    const deletedAccounts = await DeletedAccount.find().sort({ deletedAt: -1 });
+    res.status(200).json({ success: true, data: deletedAccounts });
+  } catch (error) {
+    console.error("Error fetching deleted accounts:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
 
 exports.manualSubscription = async (req, res) => {
     try {

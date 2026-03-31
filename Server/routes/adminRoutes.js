@@ -8,6 +8,7 @@ const router = express.Router();
 router.post("/dashboard-data", authMiddleware, controller.dashboardData);
 
 router.get('/users-breakdown',authMiddleware, controller.getUsersBreakdown);
+router.get('/deleted-accounts', authMiddleware, controller.getDeletedAccounts);
 
 router.get('/users-administr',authMiddleware, controller.getUserDataAdmin);
 router.get('/user-dataw' ,authMiddleware,  controller.UserALLDtaa);

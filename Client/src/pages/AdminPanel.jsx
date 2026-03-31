@@ -26,6 +26,7 @@ import { IoLogoSass, IoMdLogIn } from "react-icons/io";
 import PaymentActivityAdmin from "./Admin/PaymentActivityAdmin.jsx";
 import LiveStoriesAdmin from "./Admin/LiveStoriesAdmin.jsx";
 import AiLiveViewAdmin from "./Admin/AiLiveViewAdmin.jsx";
+import DeletedAccountsAdmin from "./Admin/DeletedAccountsAdmin.jsx";
 
 const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
   const pathname = usePathname();
@@ -44,6 +45,7 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
     { path: "/admin/analytics", label: "Tracking & Analytics", icon: <MdAnalytics /> },
     { path: "/admin/login-activity", label: "Login Activity", icon: <MdAnalytics /> },
     { path: "/admin/payment-activity", label: "Payment Activity", icon: <MdPayment /> },
+    { path: "/admin/deleted-accounts", label: "Deleted Accounts", icon: <FaUsers /> },
     { path: "/admin/live-stories", label: "Live Stories AI", icon: <FaGem /> },
     { path: "/admin/ai-live-view", label: "AI Live View", icon: <FaGem /> }
   ];
@@ -150,6 +152,7 @@ const AdminPanel = () => {
       '/admin/analytics': <div className="content-wrapper-x30sn"><TrackingAdmin /></div>,
        '/admin/login-activity': <div className="content-wrapper-x30sn"><LoginActivityAdmin /></div>,
         '/admin/payment-activity': <div className="content-wrapper-x30sn"><PaymentActivityAdmin /></div>,
+        '/admin/deleted-accounts': <div className="content-wrapper-x30sn"><DeletedAccountsAdmin /></div>,
         '/admin/live-stories': <div className="content-wrapper-x30sn"><LiveStoriesAdmin /></div>,
         '/admin/ai-live-view': <div className="content-wrapper-x30sn"><AiLiveViewAdmin /></div>,
 
