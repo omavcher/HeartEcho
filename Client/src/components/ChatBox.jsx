@@ -221,6 +221,11 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
         const chatsUrl = guestMode ? `${api.Url}/guest/chats/${chatId}` : `${api.Url}/ai/chats/by-ai/${chatId}`;
         const chatRes = await axios.get(chatsUrl, { headers });
         
+        // Mark as read immediately when opening the chat
+        if (!guestMode) {
+          axios.post(`${api.Url}/user/chats/${chatId}/read`, {}, { headers }).catch(e => console.error("Could not mark read"));
+        }
+
         let msgsData = chatRes.data?.chat?.messages;
         if (msgsData && msgsData.length > 0) {
           const formattedMsgs = msgsData.map(formatMessageData);
@@ -454,6 +459,10 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
 
       const res = await axios.get(url, { headers });
       
+      if (!isGuest) {
+        axios.post(`${api.Url}/user/chats/${chatId}/read`, {}, { headers }).catch(e => console.error("Could not mark read"));
+      }
+
       if (res.data?.chat?.messages) {
         setMessages(res.data.chat.messages.map(formatMessageData));
       }

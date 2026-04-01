@@ -30,7 +30,7 @@ const StatusStories = ({ onChatStart }) => {
       }
     };
 
-    const savedViewed = localStorage.getItem('viewedStories');
+    const savedViewed = localStorage.getItem('viewedStories'); 
     if (savedViewed) {
       setViewedStatuses(JSON.parse(savedViewed));
     }

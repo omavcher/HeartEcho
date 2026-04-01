@@ -29,10 +29,6 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
   const [token, setToken] = useState(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
 
-  // --- SMART UNREAD SYSTEM STATE ---
-  // Stores { "chat_id": "timestamp_when_read" }
-  const [lastReadTimestamps, setLastReadTimestamps] = useState({});
-
   // Simulation State
   const autoTriggerCount = useRef(0); 
   const MAX_AUTO_TRIGGERS = 5;
@@ -52,14 +48,6 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
             setIsSubscribed(true);
           }
         } catch (error) { console.error(error); }
-      }
-
-      // Load Read Timestamps from LocalStorage
-      try {
-        const storedTimestamps = JSON.parse(localStorage.getItem('chatReadTimestamps') || '{}');
-        setLastReadTimestamps(storedTimestamps);
-      } catch (e) {
-        console.error("Error loading read status", e);
       }
     }
   }, []);
@@ -100,22 +88,32 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
 
 
   // --- 3. HANDLE CLICK (MARK AS READ) ---
-  const handleChatClick = (chatId, rawChatId) => {
+  const handleChatClick = async (chatId, rawChatId) => {
     const targetId = rawChatId || chatId;
     
     // 1. Navigation
     onChatSelect(targetId);
     onBackBTNSelect(false);
 
-    // 2. Smart Read Logic: Save current time as "Last Read Time"
-    const now = new Date().toISOString();
-    
-    setLastReadTimestamps(prev => {
-      const updated = { ...prev, [targetId]: now };
-      // Save to persistent storage
-      localStorage.setItem('chatReadTimestamps', JSON.stringify(updated));
-      return updated;
-    });
+    // 2. Real Read Logic: API Call to mark messages as read
+    if (token && chatId) {
+      try {
+        await axios.post(`${api.Url}/user/chats/${chatId}/read`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        // Optimistically update the UI by resetting unreadCount to 0
+        setChats(prevChats => 
+          prevChats.map(chat => 
+            (chat.chatId === targetId || chat._id === targetId || chat.chatId === chatId) 
+              ? { ...chat, unreadCount: 0 } 
+              : chat
+          )
+        );
+      } catch (error) {
+        console.error("Error marking chat as read:", error);
+      }
+    }
   };
 
   const handleStoryChatStart = (characterId) => {
@@ -175,23 +173,19 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
 
     // Sort: Unread first, then Time
     return result.sort((a, b) => {
-      // Calculate real unread status for sorting
+      const isUnreadA = (a.unreadCount > 0);
+      const isUnreadB = (b.unreadCount > 0);
       const timeA = new Date(a.lastMessageTime || 0).getTime();
-      const readTimeA = new Date(lastReadTimestamps[a._id] || 0).getTime();
-      const isUnreadA = timeA > readTimeA && a.unreadCount > 0;
-
       const timeB = new Date(b.lastMessageTime || 0).getTime();
-      const readTimeB = new Date(lastReadTimestamps[b._id] || 0).getTime();
-      const isUnreadB = timeB > readTimeB && b.unreadCount > 0;
 
       // Logic: Unread chats go to top
       if (isUnreadA && !isUnreadB) return -1;
       if (!isUnreadA && isUnreadB) return 1;
 
-      // Fallback: Sort by time
+      // Fallback: Sort by time descending
       return timeB - timeA;
     });
-  }, [chats, searchTerm, lastReadTimestamps]);
+  }, [chats, searchTerm]);
 
   // Helpers
   const formatTime = (timestamp) => {
@@ -359,11 +353,11 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
         )}
       </header>
 
-      <div className="status-section-wrapper">
+      {/* <div className="status-section-wrapper">
         <StatusStories onChatStart={handleStoryChatStart} />
-      </div>
+      </div> */}
 
-      <div className="search-container">
+      {/* <div className="search-container">
         <div className="search-input-wrapper">
           <Search className="search-icon" />
           <input
@@ -373,7 +367,7 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-      </div>
+      </div> */}
 
       <div className="chats-list-container">
         {isLoading ? (
@@ -390,21 +384,8 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
           </div>
         ) : processedChats.length > 0 ? (
           processedChats.map((chat) => {
-            // --- SMART READ LOGIC ---
-            const lastMsgTime = new Date(chat.lastMessageTime || 0).getTime();
-            const lastReadTime = new Date(lastReadTimestamps[chat._id] || 0).getTime();
-            
-            // It is unread ONLY if the message time is NEWER than when we last clicked
-            const hasNewMessage = lastMsgTime > lastReadTime;
-            
-            // Display Logic: Show count if API says > 0 AND it is physically new
-            const showBadge = chat.unreadCount > 0 && hasNewMessage;
-            
-            // If it's a simulated message (no unread count from API yet but we know it's new), 
-            // force at least '1' if time is new.
-            const displayCount = showBadge ? chat.unreadCount : (hasNewMessage ? 1 : 0);
-            
-            // Final Boolean for styling
+            // Setup true unread count from API
+            const displayCount = chat.unreadCount || 0;
             const isUnread = displayCount > 0;
 
             return (

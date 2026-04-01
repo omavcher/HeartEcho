@@ -598,6 +598,47 @@ exports.chatsDatas = async (req, res) => {
   }
 };
 
+exports.markChatAsRead = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const userId = req.user.id;
+
+    if (!mongoose.Types.ObjectId.isValid(chatId)) {
+      return res.status(400).json({ error: "Invalid Chat ID" });
+    }
+
+    const chat = await Chat.findById(chatId);
+    if (!chat) return res.status(404).json({ error: "Chat not found" });
+
+    // Ensure user is part of the chat
+    if (!chat.participants.includes(userId)) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    let isUpdated = false;
+    chat.messages.forEach((msg) => {
+      // If message is not sent by current user, mark it as read
+      if (msg.sender && msg.sender.toString() !== userId.toString() && !msg.status?.read) {
+        if (!msg.status) {
+          msg.status = { delivered: true, read: true };
+        } else {
+          msg.status.read = true;
+        }
+        isUpdated = true;
+      }
+    });
+
+    if (isUpdated) {
+      await chat.save();
+    }
+
+    res.status(200).json({ success: true, message: "Chat marked as read" });
+  } catch (error) {
+    console.error("Error marking chat as read:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 
 
 exports.latAichatmessage = async (req, res) => {
