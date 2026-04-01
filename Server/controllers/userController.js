@@ -629,6 +629,7 @@ exports.markChatAsRead = async (req, res) => {
     });
 
     if (isUpdated) {
+      chat.markModified('messages');
       await chat.save();
     }
 
