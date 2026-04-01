@@ -99,14 +99,8 @@ function ChatPageContent() {
         }
     }, [aiChatId]);
 
-    const handleChatBackBTN = (val) => {
-        if (typeof val === 'boolean') {
-            setChatBackBTN(val);
-        } else {
+    const handleChatBackBTN = () => {
             setChatBackBTN(prev => !prev);
-        }
-        // Force refresh chat list here so real unread counts update instantly when coming back
-        setRefreshChats(prev => !prev);
     };
 
     const handleChatSelection = (chatId) => {
