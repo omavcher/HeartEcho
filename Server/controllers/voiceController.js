@@ -156,34 +156,37 @@ STRICT RULES:
       });
     }
 
-    // --- 3. Call Sarvam AI for Audio (Direct Stream Collection) ---
+    // --- 3. Call Sarvam AI for Audio ---
     let audioBase64 = null;
     try {
       const sarvamRes = await axios.post(
-        "https://api.sarvam.ai/text-to-speech/stream",
+        "https://api.sarvam.ai/text-to-speech",
         {
-          text: aiResponseText, // Singular text as per working example
+          inputs: [aiResponseText],
           target_language_code: "hi-IN",
           speaker: speakerId,
-          model: "bulbul:v3", // Upgrading to Bulbul V3
-          speech_sample_rate: 22050,
-          output_audio_codec: "mp3",
-          enable_preprocessing: true
+          model: "bulbul:v1",
+          speech_sample_rate: 8000,
+          enable_preprocessing: true,
+          pace: 1.1
         },
         {
           headers: {
             "api-subscription-key": process.env.SARVAM_KEY || 'sk_t2esh0lg_j6qnk6vSfTOayifzc5WtUTiN',
             "Content-Type": "application/json"
           },
-          responseType: 'arraybuffer', // Capture raw audio stream bytes
           timeout: 15000
         }
       );
       
-      // Convert raw binary buffer to base64 for the frontend
-      audioBase64 = Buffer.from(sarvamRes.data).toString('base64');
+      // Get base64 audio directly from the JSON array
+      if (sarvamRes.data && sarvamRes.data.audios && sarvamRes.data.audios.length > 0) {
+        audioBase64 = sarvamRes.data.audios[0];
+      } else {
+        throw new Error("No audio returned from Sarvam.");
+      }
     } catch (ttsError) {
-      console.error("Sarvam TTS Error:", ttsError.message);
+      console.error("Sarvam TTS Error:", ttsError.response?.data || ttsError.message);
       return res.status(503).json({
         success: false,
         reason: "high_traffic",

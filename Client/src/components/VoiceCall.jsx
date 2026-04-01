@@ -162,7 +162,7 @@ export default function VoiceCall({ chatId, userName, avatar, onClose, token, on
         if (data.quotaTotal !== undefined) setQuotaTotal(data.quotaTotal);
         setStatusSync("speaking");
         setTranscript(data.text || text);
-        playAudioBuffer(`data:audio/mp3;base64,${data.audioBase64}`);
+        playAudioBuffer(`data:audio/wav;base64,${data.audioBase64}`);
       }
     } catch (error) {
       const reason = error.response?.data?.reason;
