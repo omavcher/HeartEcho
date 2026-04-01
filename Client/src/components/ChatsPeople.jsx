@@ -353,11 +353,13 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
         )}
       </header>
 
-      {/* <div className="status-section-wrapper">
-        <StatusStories onChatStart={handleStoryChatStart} />
-      </div> */}
+      {!searchTerm && (
+        <div className="status-section-wrapper">
+          <StatusStories onChatStart={handleStoryChatStart} />
+        </div>
+      )}
 
-      {/* <div className="search-container">
+      <div className="search-container">
         <div className="search-input-wrapper">
           <Search className="search-icon" />
           <input
@@ -367,7 +369,7 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-      </div> */}
+      </div>
 
       <div className="chats-list-container">
         {isLoading ? (
