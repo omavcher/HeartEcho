@@ -165,8 +165,8 @@ STRICT RULES:
           inputs: [aiResponseText],
           target_language_code: "hi-IN",
           speaker: speakerId,
-          model: "bulbul:v1",
-          speech_sample_rate: 8000,
+          model: "bulbul:v3",
+          speech_sample_rate: 24000,
           enable_preprocessing: true,
           pace: 1.1
         },

@@ -611,7 +611,11 @@ exports.markChatAsRead = async (req, res) => {
     if (!chat) return res.status(404).json({ error: "Chat not found" });
 
     // Ensure user is part of the chat
-    if (!chat.participants.includes(userId)) {
+    const isParticipant = Array.isArray(chat.participants) 
+      ? chat.participants.some(p => p.toString() === userId.toString()) 
+      : chat.participants?.toString() === userId.toString();
+
+    if (!isParticipant) {
       return res.status(403).json({ error: "Forbidden" });
     }
 
