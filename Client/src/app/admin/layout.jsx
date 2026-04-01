@@ -1,3 +1,5 @@
+'use client';
+
 import PropTypes from 'prop-types';
 import AdminPanel from '../../pages/AdminPanel';
 
