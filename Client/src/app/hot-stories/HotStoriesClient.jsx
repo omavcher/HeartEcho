@@ -14,9 +14,18 @@ export function HotStoriesClient({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedCity, setSelectedCity] = useState('All Cities');
-  const [sortBy, setSortBy] = useState('newest');
+  const [sortBy, setSortBy] = useState('latest');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
+
+  // Format views
+  const formatViews = (val) => {
+    if (!val) return '0K';
+    if (val >= 1000) {
+      return (val / 1000).toFixed(1).replace(/\.0$/, '') + 'M';
+    }
+    return `${val}K`;
+  };
 
   // Load recently viewed
   useEffect(() => {
@@ -38,7 +47,7 @@ export function HotStoriesClient({
         return matchesCat && matchesCity && matchesSearch;
       })
       .sort((a, b) => {
-        if (sortBy === 'popularity') return (b.readCount || 0) - (a.readCount || 0);
+        if (sortBy === 'popular') return (b.readCount || 0) - (a.readCount || 0);
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
   }, [stories, selectedCategory, selectedCity, searchQuery, sortBy]);
@@ -102,16 +111,16 @@ export function HotStoriesClient({
           <span className="feed-count-hotde4">{filteredStories.length} Stories available</span>
           <div className="sort-chips-hotde4">
             <button 
-              className={sortBy === 'newest' ? 'active-hotde4' : ''} 
-              onClick={() => setSortBy('newest')}
+              className={sortBy === 'latest' ? 'active-hotde4' : ''} 
+              onClick={() => setSortBy('latest')}
             >
-              New
+              Latest
             </button>
             <button 
-              className={sortBy === 'popularity' ? 'active-hotde4' : ''} 
-              onClick={() => setSortBy('popularity')}
+              className={sortBy === 'popular' ? 'active-hotde4' : ''} 
+              onClick={() => setSortBy('popular')}
             >
-              Trending
+              Popular
             </button>
           </div>
         </div>
@@ -141,7 +150,7 @@ export function HotStoriesClient({
                 <h4>{story.title}</h4>
                 <div className="card-meta-hotde4">
                   <span className="category-tag-hotde4">{story.category}</span>
-                  <span className="read-stat-hotde4">{story.readCount || 0}K reads</span>
+                  <span className="read-stat-hotde4">{formatViews(story.readCount)} reads</span>
                 </div>
               </div>
             </Link>
@@ -161,6 +170,22 @@ export function HotStoriesClient({
             </div>
             
             <div className="modal-body-hotde4">
+              <h5>Sort By</h5>
+              <div className="pill-grid-hotde4" style={{ marginBottom: '1.5rem' }}>
+                <button 
+                  className={`pill-hotde4 ${sortBy === 'latest' ? 'active-hotde4' : ''}`}
+                  onClick={() => setSortBy('latest')}
+                >
+                  Latest
+                </button>
+                <button 
+                  className={`pill-hotde4 ${sortBy === 'popular' ? 'active-hotde4' : ''}`}
+                  onClick={() => setSortBy('popular')}
+                >
+                  Popular
+                </button>
+              </div>
+
               <h5>Categories</h5>
               <div className="pill-grid-hotde4">
                 {['All', ...initialCategories].map(cat => (
