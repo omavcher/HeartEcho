@@ -166,9 +166,99 @@ export default async function StoryPage({ params }) {
     } catch (error) {
       console.error('Error fetching related stories:', error);
     }
+
+    // ── JSON-LD: Article Schema ──────────────────────────────────────────────
+    const pageUrl = `https://heartecho.in/hot-stories/${slug}`;
+    const description = storyData.description || storyData.excerpt || `${storyData.characterName}'s ${storyData.category} story from ${storyData.city}.`;
+
+    // Build a flat list of ALL images on this page for Google Images
+    const allImages = [
+      storyData.backgroundImage,
+      ...(storyData.imageAlbum || []),
+      storyData.characterAvatar,
+    ].filter(Boolean);
+
+    const articleSchema = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": pageUrl
+      },
+      "headline": storyData.title,
+      "description": description,
+      "datePublished": storyData.createdAt || new Date().toISOString(),
+      "dateModified": storyData.updatedAt || storyData.createdAt || new Date().toISOString(),
+      "author": {
+        "@type": "Organization",
+        "name": "HeartEcho",
+        "url": "https://heartecho.in"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "HeartEcho",
+        "url": "https://heartecho.in",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://heartecho.in/logo.webp",
+          "width": 200,
+          "height": 60
+        }
+      },
+      // Primary cover image — most important for Google Images
+      "image": {
+        "@type": "ImageObject",
+        "url": storyData.backgroundImage,
+        "contentUrl": storyData.backgroundImage,
+        "width": 800,
+        "height": 1200,
+        "caption": `${storyData.title} - ${storyData.characterName} ${storyData.category} story cover image from ${storyData.city}`,
+        "name": `${storyData.title} cover`,
+        "representativeOfPage": true
+      },
+      "keywords": `${storyData.category} story, ${storyData.city} romance, ${storyData.characterName}, HeartEcho, Hindi story, interactive story`,
+      "inLanguage": "en-IN",
+      "url": pageUrl
+    };
+
+    // ── JSON-LD: ImageGallery — explicitly lists EVERY image on the page ─────
+    // This is the single most effective signal for Google Images indexing
+    const imageGallerySchema = {
+      "@context": "https://schema.org",
+      "@type": "ImageGallery",
+      "name": `${storyData.title} - Image Gallery`,
+      "description": `Images from ${storyData.characterName}'s ${storyData.category} story set in ${storyData.city}`,
+      "url": pageUrl,
+      "associatedMedia": allImages.map((imgUrl, idx) => ({
+        "@type": "ImageObject",
+        "url": imgUrl,
+        "contentUrl": imgUrl,
+        "caption": idx === 0
+          ? `${storyData.title} - cover image featuring ${storyData.characterName} from ${storyData.city} on HeartEcho`
+          : idx === allImages.length - 1 && storyData.characterAvatar === imgUrl
+          ? `${storyData.characterName} - character avatar for ${storyData.title} on HeartEcho`
+          : `${storyData.title} - Scene ${idx} featuring ${storyData.characterName} in ${storyData.city} ${storyData.category} story`,
+        "name": idx === 0
+          ? `${storyData.title} cover`
+          : `${storyData.title} Scene ${idx}`,
+        "width": idx === 0 ? 800 : 720,
+        "height": idx === 0 ? 1200 : 1280,
+        "representativeOfPage": idx === 0
+      }))
+    };
     
     return (
       <>
+        {/* Article JSON-LD for story ranking */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        />
+        {/* ImageGallery JSON-LD — primary driver for Google Images */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(imageGallerySchema) }}
+        />
         <StoryPageClient 
           initialStory={storyData}
           initialRelatedStories={relatedStories}

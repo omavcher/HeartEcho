@@ -96,7 +96,12 @@ export function HotStoriesClient({
                 className="recent-item-hotde4"
               >
                 <div className="recent-avatar-hotde4">
-                  <img src={item.backgroundImage} alt="" />
+                  <img
+                    src={item.backgroundImage}
+                    alt={`${item.characterName} - ${item.title} thumbnail`}
+                    width={60}
+                    height={60}
+                  />
                 </div>
                 <span className="recent-name-hotde4">{item.characterName}</span>
               </Link>
@@ -125,16 +130,29 @@ export function HotStoriesClient({
           </div>
         </div>
 
-        <div className="stories-grid-hotde4">
-          {filteredStories.map((story) => (
+        <div className="stories-grid-hotde4" itemScope itemType="https://schema.org/ItemList">
+          {filteredStories.map((story, index) => (
             <Link 
               href={`/hot-stories/${story.slug}`} 
               key={story._id} 
               className="card-hotde4"
               onClick={() => handleStoryClick(story)}
+              itemScope
+              itemType="https://schema.org/CreativeWork"
+              itemProp="itemListElement"
             >
+              <meta itemProp="position" content={String(index + 1)} />
+              <meta itemProp="name" content={story.title} />
+              <meta itemProp="url" content={`https://heartecho.in/hot-stories/${story.slug}`} />
               <div className="image-box-hotde4">
-                <img src={story.backgroundImage} alt={story.title} loading="lazy" />
+                <img
+                  src={story.backgroundImage}
+                  alt={`${story.title} - ${story.characterName} ${story.category} story in ${story.city}`}
+                  loading="lazy"
+                  width={400}
+                  height={560}
+                  itemProp="image"
+                />
                 <div className="badge-layer-hotde4">
                   {story.readCount > 100 && (
                     <span className="hot-label-hotde4">

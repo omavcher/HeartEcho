@@ -59,9 +59,20 @@ export default function StoryPageClient({ initialStory, initialRelatedStories })
       result.push(<ReactMarkdown key={i} components={MarkdownComponents}>{p}</ReactMarkdown>);
       // Insert 9:16 Scene Images every 3 paragraphs
       if ((i + 1) % 3 === 0 && images[Math.floor(i / 3)]) {
+        const sceneIdx = Math.floor(i / 3);
         result.push(
-          <div key={`img-${i}`} className="story-album-image-container-cwdw4x">
-            <img src={images[Math.floor(i / 3)]} alt="Scene" className="story-album-image-cwdw4x" loading="lazy" />
+          <div key={`img-${i}`} className="story-album-image-container-cwdw4x" itemScope itemType="https://schema.org/ImageObject">
+            <img
+              src={images[sceneIdx]}
+              alt={`${story.title} - Scene ${sceneIdx + 1} featuring ${story.characterName} in ${story.city} ${story.category} story`}
+              className="story-album-image-cwdw4x"
+              loading="lazy"
+              width={720}
+              height={1280}
+              itemProp="contentUrl"
+            />
+            <meta itemProp="name" content={`${story.title} Scene ${sceneIdx + 1}`} />
+            <meta itemProp="caption" content={`${story.characterName} - ${story.category} story set in ${story.city}`} />
           </div>
         );
       }
@@ -70,7 +81,15 @@ export default function StoryPageClient({ initialStory, initialRelatedStories })
   };
 
   return (
-    <div className="container-cwdw4x">
+    <div
+      className="container-cwdw4x"
+      itemScope
+      itemType="https://schema.org/Article"
+    >
+      <meta itemProp="headline" content={story.title} />
+      <meta itemProp="author" content="HeartEcho" />
+      <meta itemProp="datePublished" content={story.createdAt || new Date().toISOString()} />
+      <meta itemProp="image" content={story.backgroundImage} />
       {/* HEADER CONTROLS */}
       <div className="header-controls-cwdw4x" style={{paddingTop: '20px'}}>
         <button onClick={() => router.push('/hot-stories')} className="dashboardButton-cwdw4x">
@@ -87,15 +106,33 @@ export default function StoryPageClient({ initialStory, initialRelatedStories })
 
       {/* HERO SECTION */}
       <div className="hero-cwdw4x">
-        <div className="backgroundImageContainer-cwdw4x">
-          <img src={story.backgroundImage} alt="" className="backgroundImage-cwdw4x" />
+        <div className="backgroundImageContainer-cwdw4x" itemScope itemType="https://schema.org/ImageObject">
+          <img
+            src={story.backgroundImage}
+            alt={`${story.title} - ${story.characterName} ${story.category} story cover image from ${story.city}`}
+            className="backgroundImage-cwdw4x"
+            width={800}
+            height={1200}
+            priority="true"
+            itemProp="contentUrl"
+          />
+          <meta itemProp="name" content={`${story.title} cover`} />
+          <meta itemProp="caption" content={`${story.characterName} - ${story.category} story in ${story.city} on HeartEcho`} />
           <span className="cityBadge-cwdw4x"><MapPin size={12}/> {story.city}</span>
         </div>
         <div className="heroContent-cwdw4x">
-          <h1 className="title-cwdw4x">{story.title}</h1>
+          <h1 className="title-cwdw4x" itemProp="name">{story.title}</h1>
           <div className="statsGrid-cwdw4x">
-            <div className="characterAvatarWrapper-cwdw4x">
-              <img src={story.characterAvatar} className="characterAvatar-cwdw4x" alt="" />
+            <div className="characterAvatarWrapper-cwdw4x" itemScope itemType="https://schema.org/Person">
+              <img
+                src={story.characterAvatar}
+                className="characterAvatar-cwdw4x"
+                alt={`${story.characterName} - character avatar for ${story.title}`}
+                width={60}
+                height={60}
+                itemProp="image"
+              />
+              <meta itemProp="name" content={story.characterName} />
             </div>
             <div className="statItem-cwdw4x">
               <span className="statLabel-cwdw4x">CHARACTER</span>
@@ -142,7 +179,13 @@ export default function StoryPageClient({ initialStory, initialRelatedStories })
           {initialRelatedStories.slice(0, 4).map((rel) => (
             <Link href={`/hot-stories/${rel.slug}`} key={rel._id} className="card-cwdw4x">
               <div className="relatedStoryImage-cwdw4x">
-                <img src={rel.backgroundImage} alt="" />
+                <img
+                  src={rel.backgroundImage}
+                  alt={`${rel.title} - ${rel.characterName} ${rel.category} story in ${rel.city}`}
+                  width={300}
+                  height={400}
+                  loading="lazy"
+                />
               </div>
               <div style={{padding: '8px'}}><h4 className="relatedStoryTitle-cwdw4x">{rel.title}</h4></div>
             </Link>
