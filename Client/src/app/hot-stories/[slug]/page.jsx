@@ -4,7 +4,6 @@ import StoryPageClient from './StoryPageClient';
 import Footer from '../../../components/Footer';
 import api from '../../../config/api';
 
-// Generate metadata dynamically
 export async function generateMetadata({ params }) {
   try {
     const { slug } = await params;
