@@ -41,7 +41,6 @@ export async function generateMetadata({ params }) {
           `${story.city} love stories`,
           `${story.city} ki kahani`,
         
-          // Decent Story Keywords
           'romantic story',
           'love story',
           'college romance story',
