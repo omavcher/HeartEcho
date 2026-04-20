@@ -799,18 +799,18 @@ exports.creatorLogin = async (req, res) => {
     });
 
     if (!creator) {
-      return res.status(401).json({
+      return res.status(404).json({
         success: false,
-        message: "Invalid referral ID or password"
+        message: "Creator not found or inactive"
       });
     }
 
-    // Check password
-    const isPasswordValid = await creator.comparePassword(password);
-    if (!isPasswordValid) {
+    // Verify password
+    const isMatch = await creator.comparePassword(password);
+    if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: "Invalid referral ID or password"
+        message: "Invalid password"
       });
     }
 
@@ -819,23 +819,129 @@ exports.creatorLogin = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Login successful",
       token,
       creator: {
         id: creator._id,
         name: creator.name,
         referralId: creator.referralId,
-        platform: creator.platform,
-        username: creator.username
+        stats: creator.stats
       }
     });
   } catch (error) {
-    console.error("Error in creator login:", error);
+    console.error("Creator login error:", error);
     res.status(500).json({
       success: false,
-      message: "Internal Server Error",
-      error: error.message,
+      message: "Internal server error"
     });
+  }
+};
+
+exports.getSignupConversionStats = async (req, res) => {
+  try {
+    const { type } = req.query; // 'daily' or 'monthly'
+
+    if (type === 'daily') {
+      // Last 7 days
+      const last7Days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = moment().subtract(i, "days").startOf("day");
+        last7Days.push(d.format("YYYY-MM-DD"));
+      }
+
+      const start = moment().subtract(6, "days").startOf("day").toDate();
+      const end = moment().endOf("day").toDate();
+
+      const signupStats = await User.aggregate([
+        { $match: { createdAt: { $gte: start, $lte: end } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            count: { $sum: 1 }
+          }
+        }
+      ]);
+
+      const conversionStats = await Payment.aggregate([
+        { $match: { date: { $gte: start, $lte: end } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+            count: { $addToSet: "$user" } // Unique users
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            count: { $size: "$count" }
+          }
+        }
+      ]);
+
+      const data = last7Days.map(date => {
+        const signup = signupStats.find(s => s._id === date);
+        const conversion = conversionStats.find(c => c._id === date);
+        return {
+          date: moment(date).format("MMM DD"),
+          signups: signup ? signup.count : 0,
+          conversions: conversion ? conversion.count : 0
+        };
+      });
+
+      return res.status(200).json({ success: true, data });
+
+    } else {
+      // Monthly for last 12 months
+      const last12Months = [];
+      for (let i = 11; i >= 0; i--) {
+        const d = moment().subtract(i, "months").startOf("month");
+        last12Months.push(d.format("YYYY-MM"));
+      }
+
+      const start = moment().subtract(11, "months").startOf("month").toDate();
+      const end = moment().endOf("month").toDate();
+
+      const signupStats = await User.aggregate([
+        { $match: { createdAt: { $gte: start, $lte: end } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+            count: { $sum: 1 }
+          }
+        }
+      ]);
+
+      const conversionStats = await Payment.aggregate([
+        { $match: { date: { $gte: start, $lte: end } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m", date: "$date" } },
+            count: { $addToSet: "$user" } // Unique users
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            count: { $size: "$count" }
+          }
+        }
+      ]);
+
+      const data = last12Months.map(month => {
+        const signup = signupStats.find(s => s._id === month);
+        const conversion = conversionStats.find(c => c._id === month);
+        return {
+          date: moment(month, "YYYY-MM").format("MMM YYYY"),
+          signups: signup ? signup.count : 0,
+          conversions: conversion ? conversion.count : 0
+        };
+      });
+
+      return res.status(200).json({ success: true, data });
+    }
+
+  } catch (error) {
+    console.error("Error fetching signup vs conversion stats:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 

@@ -2,7 +2,8 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
-  Tooltip, ResponsiveContainer, XAxis, YAxis, CartesianGrid, AreaChart, Area
+  Tooltip, ResponsiveContainer, XAxis, YAxis, CartesianGrid, AreaChart, Area,
+  BarChart, Bar, Legend
 } from "recharts";
 import {
   FaUsers, FaMoneyBillWave, FaEnvelope, FaUserCheck, FaChartLine
@@ -111,6 +112,37 @@ const dashboardStyles = `
   border-radius: 50%; animation: spin 1s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+.conversion-toggle-x30sn {
+  display: flex;
+  background: #222;
+  border-radius: 8px;
+  padding: 4px;
+}
+.toggle-btn-x30sn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: #888;
+  transition: all 0.3s;
+}
+.toggle-btn-x30sn.active {
+  background: #ff69b4;
+  color: #000;
+}
+.chart-grid-layout-x30sn {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+@media (max-width: 600px) {
+  .chart-grid-layout-x30sn {
+    grid-template-columns: 1fr;
+  }
+}
 `;
 
 const AdminDashboard = () => {
@@ -119,6 +151,8 @@ const AdminDashboard = () => {
   const [statsData, setStatsData] = useState({ totalUsers: 0, activeUsers: 0, totalRevenue: 0, messagesSent: 0 });
   const [graphData, setGraphData] = useState({ revenueTrend: [] });
   const [loading, setLoading] = useState(true);
+  const [conversionData, setConversionData] = useState([]);
+  const [conversionType, setConversionType] = useState("daily"); // daily or monthly
   const [notification, setNotification] = useState({ show: false, message: "", type: "error" });
 
   const getToken = useCallback(() => (typeof window !== 'undefined' ? localStorage.getItem("token") || "" : ""), []);
@@ -158,7 +192,24 @@ const AdminDashboard = () => {
     }
   }, [timePeriod, getToken]);
 
-  useEffect(() => { fetchDashboardData(); }, [fetchDashboardData, refresh]);
+  const fetchConversionStats = useCallback(async () => {
+    try {
+      const token = getToken();
+      const response = await axios.get(`${api.Url}/admin/signup-conversion-stats?type=${conversionType}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data.success) {
+        setConversionData(response.data.data);
+      }
+    } catch (err) {
+      console.error("Error fetching conversion stats", err);
+    }
+  }, [conversionType, getToken]);
+
+  useEffect(() => { 
+    fetchDashboardData();
+    fetchConversionStats();
+  }, [fetchDashboardData, fetchConversionStats, refresh]);
 
   return (
     <>
@@ -223,27 +274,64 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            <div className="chart-section-x30sn">
-              <div className="chart-head-x30sn">
-                <FaChartLine style={{color:'#ff69b4'}} />
-                <h3>Revenue Growth</h3>
+            <div className="chart-grid-layout-x30sn">
+              <div className="chart-section-x30sn">
+                <div className="chart-head-x30sn">
+                  <FaChartLine style={{color:'#ff69b4'}} />
+                  <h3>Revenue Growth</h3>
+                </div>
+                <div className="chart-area-x30sn">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={graphData.revenueTrend}>
+                      <defs>
+                        <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#ff69b4" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#ff69b4" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
+                      <XAxis dataKey="date" stroke="#888" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis stroke="#888" fontSize={12} tickLine={false} axisLine={false} />
+                      <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #333', color: '#fff' }} itemStyle={{color:'#ff69b4'}} />
+                      <Area type="monotone" dataKey="revenue" stroke="#ff69b4" fillOpacity={1} fill="url(#colorRev)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-              <div className="chart-area-x30sn">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={graphData.revenueTrend}>
-                    <defs>
-                      <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#ff69b4" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#ff69b4" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
-                    <XAxis dataKey="date" stroke="#888" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#888" fontSize={12} tickLine={false} axisLine={false} />
-                    <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #333', color: '#fff' }} itemStyle={{color:'#ff69b4'}} />
-                    <Area type="monotone" dataKey="revenue" stroke="#ff69b4" fillOpacity={1} fill="url(#colorRev)" />
-                  </AreaChart>
-                </ResponsiveContainer>
+
+              <div className="chart-section-x30sn">
+                <div className="chart-head-x30sn" style={{justifyContent: 'space-between'}}>
+                  <div style={{display:'flex', alignItems:'center', gap:10}}>
+                    <FaUsers style={{color:'#ff69b4'}} />
+                    <h3>Signup vs Conversion</h3>
+                  </div>
+                  <div className="conversion-toggle-x30sn">
+                    <button 
+                      className={`toggle-btn-x30sn ${conversionType === 'daily' ? 'active' : ''}`}
+                      onClick={() => setConversionType('daily')}
+                    >Daily</button>
+                    <button 
+                      className={`toggle-btn-x30sn ${conversionType === 'monthly' ? 'active' : ''}`}
+                      onClick={() => setConversionType('monthly')}
+                    >Monthly</button>
+                  </div>
+                </div>
+                <div className="chart-area-x30sn">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={conversionData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
+                      <XAxis dataKey="date" stroke="#888" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis stroke="#888" fontSize={12} tickLine={false} axisLine={false} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#000', border: '1px solid #333', color: '#fff' }}
+                        cursor={{fill: 'rgba(255, 105, 180, 0.1)'}}
+                      />
+                      <Legend verticalAlign="top" height={36}/>
+                      <Bar name="Signups" dataKey="signups" fill="#ff69b4" radius={[4, 4, 0, 0]} />
+                      <Bar name="Premium Conversions" dataKey="conversions" fill="#fff" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
           </>
