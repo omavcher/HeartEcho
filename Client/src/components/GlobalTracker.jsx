@@ -103,6 +103,11 @@ export default function GlobalTracker() {
         if (cleanKey.startsWith('utm_') || cleanKey === 'fbclid') {
           currentUtms[cleanKey] = value;
         }
+        
+        // Save referral code globally
+        if (cleanKey === 'ref' || cleanKey === 'referral_code' || cleanKey === 'referralId') {
+          localStorage.setItem('referralCode', value);
+        }
       });
     }
 
@@ -119,6 +124,11 @@ export default function GlobalTracker() {
         const value = decodeURIComponent((rest.join('=') || '').replace(/\+/g, ' '));
         if (cleanKey.startsWith('utm_') || cleanKey === 'fbclid') {
           currentUtms[cleanKey] = value;
+        }
+        
+        // Save referral code globally from raw search as fallback
+        if (cleanKey === 'ref' || cleanKey === 'referral_code' || cleanKey === 'referralId') {
+          localStorage.setItem('referralCode', value);
         }
       });
     }
