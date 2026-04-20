@@ -408,7 +408,7 @@ const ReferralDashboard = () => {
         </div>
       </div>
 
-      {/* Withdrawal Section */}
+      {/* Withdrawal Section
       <div className="ref-withdrawal-section">
         <div className="ref-section-header">
           <h2>Withdraw Earnings</h2>
@@ -483,7 +483,7 @@ const ReferralDashboard = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Charts and Analytics */}
       <div className="ref-analytics-section">
@@ -689,23 +689,6 @@ const ReferralDashboard = () => {
             <button onClick={copyReferralLink} className="ref-primary-button">
               <FaCopy /> Copy Link
             </button>
-          </div>
-          <div className="share-tips">
-            <h4>Earning Potential:</h4>
-            <div className="earning-breakdown">
-              <div className="earning-item">
-                <span className="earning-type">User Signup</span>
-                <span className="earning-amount">₹20 each</span>
-              </div>
-              <div className="earning-item">
-                <span className="earning-type">Subscription Purchase</span>
-                <span className="earning-amount">15% commission</span>
-              </div>
-              <div className="earning-item">
-                <span className="earning-type">Minimum Withdrawal</span>
-                <span className="earning-amount">₹1000</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
