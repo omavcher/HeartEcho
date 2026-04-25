@@ -104,9 +104,10 @@ export default function GlobalTracker() {
           currentUtms[cleanKey] = value;
         }
         
-        // Save referral code globally
+        // Save referral code globally in localStorage AND Cookies (30 days) for extreme reliability
         if (cleanKey === 'ref' || cleanKey === 'referral_code' || cleanKey === 'referralId') {
           localStorage.setItem('referralCode', value);
+          document.cookie = `referralCode=${value}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`;
         }
       });
     }
@@ -129,6 +130,7 @@ export default function GlobalTracker() {
         // Save referral code globally from raw search as fallback
         if (cleanKey === 'ref' || cleanKey === 'referral_code' || cleanKey === 'referralId') {
           localStorage.setItem('referralCode', value);
+          document.cookie = `referralCode=${value}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`;
         }
       });
     }

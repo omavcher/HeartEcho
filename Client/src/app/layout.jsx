@@ -100,6 +100,27 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        {/* Extremely High-Quality Zero-Lag Referral Tracker (Synchronous capture) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var p = window.location.search;
+                  if (p && (p.includes('ref=') || p.includes('referral'))) {
+                    var params = new URLSearchParams(p);
+                    var ref = params.get('ref') || params.get('referral_code') || params.get('referralId');
+                    if (ref) {
+                      localStorage.setItem('referralCode', ref);
+                      document.cookie = 'referralCode=' + encodeURIComponent(ref) + '; path=/; max-age=' + (30*24*60*60) + '; SameSite=Lax';
+                    }
+                  }
+                } catch(e) {}
+              })();
+            `
+          }}
+        />
+        
         {/* Google Adsense */}
         <script 
           async 

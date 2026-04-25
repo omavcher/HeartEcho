@@ -1187,6 +1187,13 @@ exports.updateReferralCreator = async (req, res) => {
       }
     }
 
+    // If updating password, handle hashing and plainPassword separately
+    if (updateData.password) {
+      updateData.plainPassword = updateData.password;
+      const bcrypt = require('bcryptjs');
+      updateData.password = await bcrypt.hash(updateData.password, 12);
+    }
+    
     const updatedCreator = await ReferralCreator.findByIdAndUpdate(
       id,
       updateData,

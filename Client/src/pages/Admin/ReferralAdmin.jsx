@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { 
   FaUserPlus, FaLink, FaMoneyBillWave, FaChartLine, FaSearch, 
   FaEdit, FaTrash, FaPlus, FaSync, FaCopy, FaShare, FaUsers, 
-  FaCoins, FaPercentage, FaDownload, FaRupeeSign
+  FaCoins, FaPercentage, FaDownload, FaRupeeSign, FaEye, FaEyeSlash
 } from "react-icons/fa";
 import {
   BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, 
@@ -166,6 +166,11 @@ const ReferralAdmin = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [analyticsPeriod, setAnalyticsPeriod] = useState("30d");
+  const [visiblePasswords, setVisiblePasswords] = useState({});
+
+  const togglePasswordVisibility = (id) => {
+    setVisiblePasswords((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const [newCreator, setNewCreator] = useState({
     name: "", platform: "instagram", username: "", commissionRate: 15, email: "", phone: ""
@@ -242,6 +247,22 @@ const ReferralAdmin = () => {
       setShowCreateModal(false);
       fetchAllData();
     } catch (e) { alert("Error creating creator"); }
+  };
+
+  const handleEdit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = getToken();
+      const payload = { ...editCreator };
+      if (payload.newPassword) {
+        payload.password = payload.newPassword;
+      } else {
+        delete payload.password;
+      }
+      await axios.put(`${api.Url}/admin/referral-creators/${editCreator._id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+      setEditCreator(null);
+      fetchAllData();
+    } catch (e) { alert("Error updating creator"); }
   };
 
   const handleDeleteCreator = async (id) => {
@@ -387,7 +408,26 @@ const ReferralAdmin = () => {
               )}
 
               <div className="ref-link-area-x30sn">
-                <span className="link-text-x30sn">ID: {creator.referralId}</span>
+                <div style={{display:'flex', justifyContent:'space-between'}}>
+                  <span className="link-text-x30sn">ID: {creator.referralId}</span>
+                  <span className="link-text-x30sn">Username: {creator.username}</span>
+                </div>
+                <div style={{display:'flex', alignItems:'center', gap:'8px', marginTop:'4px'}}>
+                  <span className="link-text-x30sn" style={{display:'inline', marginBottom:0, overflow:'visible'}}>
+                    Password: {visiblePasswords[creator._id] ? (creator.plainPassword || "[Not recorded - please edit]") : "********"}
+                  </span>
+                  <button type="button" style={{background:'none', border:'none', color:'#ccc', cursor:'pointer', padding:0, display:'flex'}} onClick={() => togglePasswordVisibility(creator._id)}>
+                    {visiblePasswords[creator._id] ? <FaEyeSlash size={12} /> : <FaEye size={12} />}
+                  </button>
+                </div>
+                <div style={{marginTop: '10px', padding: '8px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                  <span style={{fontSize: '11px', color: '#ff69b4', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', userSelect: 'all'}}>
+                    https://heartecho.in/?ref={creator.referralId}
+                  </span>
+                  <button type="button" style={{background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '0 4px', display: 'flex', transition: '0.2s'}} onClick={(e) => { navigator.clipboard.writeText(`https://heartecho.in/?ref=${creator.referralId}`); e.currentTarget.style.color = '#ff69b4'; setTimeout(() => e.currentTarget.style.color = '#fff', 1000); }} title="Copy Tracking URL">
+                    <FaCopy size={13} />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -415,8 +455,14 @@ const ReferralAdmin = () => {
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'15px'}}>
                 <div className="ref-form-group-x30sn">
                     <label>Platform</label>
-                    <select className="ref-form-input-x30sn" onChange={e => setNewCreator({...newCreator, platform:e.target.value})}>
-                        <option value="instagram">Instagram</option><option value="youtube">YouTube</option>
+                    <select className="ref-form-input-x30sn" defaultValue="instagram" onChange={e => setNewCreator({...newCreator, platform:e.target.value})}>
+                        <option value="instagram">Instagram</option>
+                        <option value="youtube">YouTube</option>
+                        <option value="facebook">Facebook</option>
+                        <option value="tiktok">TikTok</option>
+                        <option value="twitter">Twitter</option>
+                        <option value="website">Website</option>
+                        <option value="other">Other</option>
                     </select>
                 </div>
                 <div className="ref-form-group-x30sn">
@@ -424,13 +470,65 @@ const ReferralAdmin = () => {
                     <input className="ref-form-input-x30sn" type="number" defaultValue="15" onChange={e => setNewCreator({...newCreator, commissionRate:e.target.value})} />
                 </div>
               </div>
-              <div className="ref-form-group-x30sn">
-                <label>Username</label>
-                <input className="ref-form-input-x30sn" type="text" required onChange={e => setNewCreator({...newCreator, username:e.target.value})} />
+              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'15px'}}>
+                <div className="ref-form-group-x30sn">
+                  <label>Username</label>
+                  <input className="ref-form-input-x30sn" type="text" required onChange={e => setNewCreator({...newCreator, username:e.target.value})} />
+                </div>
+                <div className="ref-form-group-x30sn">
+                  <label>Password</label>
+                  <input className="ref-form-input-x30sn" type="text" required onChange={e => setNewCreator({...newCreator, password:e.target.value})} />
+                </div>
               </div>
               <div style={{display:'flex', gap:10, marginTop:20}}>
                 <button type="submit" className="ref-btn-x30sn primary" style={{flex:1}}>Create Partner</button>
                 <button type="button" className="ref-btn-x30sn" style={{flex:1}} onClick={() => setShowCreateModal(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* EDIT MODAL */}
+      {editCreator && (
+        <div className="ref-modal-overlay-x30sn">
+          <div className="ref-modal-content-x30sn">
+            <h3 style={{color:'#fff', marginBottom:'20px'}}>Edit Partner</h3>
+            <form onSubmit={handleEdit}>
+              <div className="ref-form-group-x30sn">
+                <label>Full Name</label>
+                <input className="ref-form-input-x30sn" type="text" required value={editCreator.name} onChange={e => setEditCreator({...editCreator, name:e.target.value})} />
+              </div>
+              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'15px'}}>
+                <div className="ref-form-group-x30sn">
+                    <label>Platform</label>
+                    <select className="ref-form-input-x30sn" value={editCreator.platform} onChange={e => setEditCreator({...editCreator, platform:e.target.value})}>
+                        <option value="instagram">Instagram</option>
+                        <option value="youtube">YouTube</option>
+                        <option value="facebook">Facebook</option>
+                        <option value="tiktok">TikTok</option>
+                        <option value="twitter">Twitter</option>
+                        <option value="website">Website</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div className="ref-form-group-x30sn">
+                    <label>Commission %</label>
+                    <input className="ref-form-input-x30sn" type="number" value={editCreator.commissionRate} onChange={e => setEditCreator({...editCreator, commissionRate:e.target.value})} />
+                </div>
+              </div>
+              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'15px'}}>
+                <div className="ref-form-group-x30sn">
+                  <label>Username</label>
+                  <input className="ref-form-input-x30sn" type="text" required value={editCreator.username} onChange={e => setEditCreator({...editCreator, username:e.target.value})} />
+                </div>
+                <div className="ref-form-group-x30sn">
+                  <label>Password (Leave blank to keep)</label>
+                  <input className="ref-form-input-x30sn" type="text" onChange={e => setEditCreator({...editCreator, newPassword:e.target.value})} placeholder="New password" />
+                </div>
+              </div>
+              <div style={{display:'flex', gap:10, marginTop:20}}>
+                <button type="submit" className="ref-btn-x30sn primary" style={{flex:1}}>Save Changes</button>
+                <button type="button" className="ref-btn-x30sn" style={{flex:1}} onClick={() => setEditCreator(null)}>Cancel</button>
               </div>
             </form>
           </div>

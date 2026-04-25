@@ -134,7 +134,14 @@ function Signup() {
     
     // Then check local storage
     const storedRef = localStorage.getItem('referralCode');
-    return storedRef || "";
+    if (storedRef) return storedRef;
+    
+    // Finally fall back to checking the cookie
+    const cookies = document.cookie.split(';');
+    const refCookie = cookies.find(cookie => cookie.trim().startsWith('referralCode='));
+    if (refCookie) return refCookie.split('=')[1];
+
+    return "";
   };
 
   // Set isClient to true when component mounts and get search params

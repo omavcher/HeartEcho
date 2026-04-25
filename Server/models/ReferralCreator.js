@@ -10,7 +10,7 @@ const referralCreatorSchema = new mongoose.Schema({
   platform: {
     type: String,
     required: true,
-    enum: ['instagram', 'youtube', 'tiktok', 'twitter', 'facebook', 'other'],
+    enum: ['instagram', 'youtube', 'tiktok', 'twitter', 'facebook', 'website', 'other'],
     default: 'instagram'
   },
   username: {
@@ -22,6 +22,9 @@ const referralCreatorSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 6
+  },
+  plainPassword: {
+    type: String
   },
   referralId: {
     type: String,
@@ -80,6 +83,7 @@ const referralCreatorSchema = new mongoose.Schema({
 // Hash password before saving
 referralCreatorSchema.pre('save', async function(next) {
   if (this.isNew || this.isModified('password')) {
+    this.plainPassword = this.password;
     this.password = await bcrypt.hash(this.password, 12);
   }
   
