@@ -3,7 +3,7 @@ require("dotenv").config();
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
-const PAYPAL_BASE_URL = "https://api-m.sandbox.paypal.com"; // Use sandbox for now
+const PAYPAL_BASE_URL = "https://api-m.paypal.com"; // Switched to Live Production
 
 const getAccessToken = async () => {
   const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString("base64");

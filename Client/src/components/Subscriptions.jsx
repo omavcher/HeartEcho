@@ -503,6 +503,7 @@ export default function Subscriptions() {
     "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "AUmOEhueJWmyPp3-PPpJ1T8CEegGjsko-hHmKLq2jahucYM5iOFSXQ6kVIe4AY-IxB3l2exZ-QbbW4KA",
     currency: "USD",
     intent: "capture",
+    environment: "production",
   };
   return (
     <PayPalScriptProvider options={initialOptions}>
