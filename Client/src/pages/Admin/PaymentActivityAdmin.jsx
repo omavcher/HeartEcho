@@ -145,17 +145,36 @@ const PaymentActivityAdmin = () => {
   // --- CHART DATA ---
   const tiersData = useMemo(() => {
     if (!data?.pricingTiers) return [];
-    const colors = { 40: '#FFBB28', 49: '#ff69b4', 399: '#0088FE' };
-    return data.pricingTiers.map(tier => ({
-      name: `₹${tier._id} Plan`,
-      value: tier.count,
-      color: colors[tier._id] || '#888'
-    }));
+    const colors = { 40: '#FFBB28', 49: '#ff69b4', 399: '#0088FE', 1.49: '#ff69b4', 9: '#0088FE', 19: '#A020F0' };
+    return data.pricingTiers.map(tier => {
+      const amount = tier._id.amount;
+      const cur = tier._id.currency || 'INR';
+      const symbol = cur === 'INR' ? '₹' : '$';
+      return {
+        name: `${symbol}${amount} Plan`,
+        value: tier.count,
+        color: colors[amount] || '#888'
+      };
+    });
   }, [data]);
 
+  const transactionChartData = useMemo(() => {
+    return transactions.slice(0, 10).reverse().map(txn => ({
+      date: txn.date,
+      displayAmount: txn.currency === 'USD' ? txn.rupees * 83 : txn.rupees,
+      originalAmount: txn.rupees,
+      currency: txn.currency || 'INR'
+    }));
+  }, [transactions]);
+
   // --- HELPERS ---
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
+  const formatCurrency = (amount, currency = 'INR') => {
+    const cur = currency || 'INR';
+    return new Intl.NumberFormat(cur === 'INR' ? 'en-IN' : 'en-US', { 
+      style: 'currency', 
+      currency: cur, 
+      maximumFractionDigits: cur === 'INR' ? 0 : 2 
+    }).format(amount);
   };
 
   const formatDate = (iso) => {
@@ -227,7 +246,7 @@ const PaymentActivityAdmin = () => {
             <span className="pay-kpi-label-x30sn">Avg. Order Value</span>
             <div className="pay-kpi-icon-x30sn" style={{color:'#4facfe', background:'rgba(79,172,254,0.1)'}}><FaCreditCard/></div>
           </div>
-          <div className="pay-kpi-value-x30sn">₹{data?.revenue?.averageOrderValue || 0}</div>
+          <div className="pay-kpi-value-x30sn">{formatCurrency(data?.revenue?.averageOrderValue || 0)}</div>
         </div>
       </div>
 
@@ -237,13 +256,16 @@ const PaymentActivityAdmin = () => {
         <div className="pay-chart-box-x30sn">
           <div className="pay-chart-title-x30sn">Recent Transaction Volume</div>
           <ResponsiveContainer width="100%" height={250}>
-            
-            <BarChart data={transactions.slice(0, 7).reverse()}> 
+            <BarChart data={transactionChartData}> 
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#222" />
               <XAxis dataKey="date" tickFormatter={(t) => new Date(t).getDate()} stroke="#666" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis stroke="#666" fontSize={12} tickLine={false} axisLine={false} />
-              <Tooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} contentStyle={{background:'#000', border:'1px solid #333'}} />
-              <Bar dataKey="rupees" fill="#ff69b4" radius={[4,4,0,0]} barSize={30} />
+              <Tooltip 
+                cursor={{fill: 'rgba(255,255,255,0.05)'}} 
+                contentStyle={{background:'#000', border:'1px solid #333'}} 
+                formatter={(value, name, props) => [formatCurrency(props.payload.originalAmount, props.payload.currency), 'Revenue']}
+              />
+              <Bar dataKey="displayAmount" fill="#ff69b4" radius={[4,4,0,0]} barSize={30} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -300,7 +322,7 @@ const PaymentActivityAdmin = () => {
                       </div>
                     </td>
                     <td>
-                      <span className="pay-amount-x30sn">{formatCurrency(txn.rupees)}</span>
+                      <span className="pay-amount-x30sn">{formatCurrency(txn.rupees, txn.currency)}</span>
                     </td>
                     <td>
                       <span className="pay-id-x30sn">{txn.transaction_id}</span>

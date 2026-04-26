@@ -786,7 +786,7 @@ exports.deleteMessage = async (req, res) => {
 // Updated paymentSave function with your dark theme HTML
 exports.paymentSave = async (req, res) => {
   try {
-    const { rupees, transaction_id } = req.body;
+    const { rupees, transaction_id, currency } = req.body;
     const userId = req.body.user || (req.user ? (req.user.id || req.user._id) : null);
 
     if (!userId || !rupees || !transaction_id) {
@@ -810,14 +810,14 @@ exports.paymentSave = async (req, res) => {
     let subscriptionTier = "none";
     let audioCallQuota = 0;
 
-    if (rupeesNum === 49) {
+    if (rupeesNum === 49 || rupeesNum === 1.49) {
       expiryDate.setMonth(expiryDate.getMonth() + 1);
       subscriptionTier = "monthly";
-    } else if (rupeesNum === 399) {
+    } else if (rupeesNum === 399 || rupeesNum === 9) {
       expiryDate.setFullYear(expiryDate.getFullYear() + 1);
       subscriptionTier = "yearly";
       audioCallQuota = 10; // 10 minutes limit
-    } else if (rupeesNum === 999) {
+    } else if (rupeesNum === 999 || rupeesNum === 19) {
       expiryDate.setFullYear(expiryDate.getFullYear() + 1);
       subscriptionTier = "yearly_pro";
       audioCallQuota = 9999; // Unlimited
@@ -827,6 +827,7 @@ exports.paymentSave = async (req, res) => {
     const payment = new Payment({
       user: userId,
       rupees: rupeesNum,
+      currency: currency || (rupeesNum < 40 ? "USD" : "INR"), // Auto-detect if not provided
       transaction_id,
       expiry_date: expiryDate,
     });
@@ -850,7 +851,16 @@ exports.paymentSave = async (req, res) => {
     );
 
     // 🚀 APPLE-STYLE DARK THEME EMAIL TEMPLATE
-    const planName = rupeesNum === 49 ? "Monthly" : "Yearly";
+    const planName = rupeesNum === 49 || rupeesNum === 1.49 ? "Monthly" : 
+                    (rupeesNum === 999 || rupeesNum === 19 ? "Yearly Pro" : "Yearly");
+    const currencySymbol = payment.currency === "USD" ? "$" : "₹";
+    const amountStr = `${currencySymbol}${payment.rupees}`;
+    
+    // Localization for footer text
+    const footerText = payment.currency === "USD" 
+      ? `Still cheaper than your daily coffee (${currencySymbol}${(payment.rupees/365).toFixed(2)}/day).`
+      : `Still cheaper than your daily cutting chai (₹${(payment.rupees/365).toFixed(2)}/day).`;
+
     const emailHTML = `
 <!DOCTYPE html>
 <html>
@@ -895,11 +905,11 @@ exports.paymentSave = async (req, res) => {
           </tr>
           <tr style="border-bottom: 1px solid #2c2c2e;">
             <td style="padding: 12px 0; color: #8e8e93; font-size: 15px;">Amount Paid</td>
-            <td style="padding: 12px 0; color: #ffffff; font-size: 15px; text-align: right; font-weight: 500;">₹${rupees}</td>
+            <td style="padding: 12px 0; color: #ffffff; font-size: 15px; text-align: right; font-weight: 500;">${amountStr}</td>
           </tr>
           <tr style="border-bottom: 1px solid #2c2c2e;">
             <td style="padding: 12px 0; color: #8e8e93; font-size: 15px;">Valid Until</td>
-            <td style="padding: 12px 0; color: #ffffff; font-size: 15px; text-align: right; font-weight: 500;">${expiryDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</td>
+            <td style="padding: 12px 0; color: #ffffff; font-size: 15px; text-align: right; font-weight: 500;">${expiryDate.toLocaleDateString(payment.currency === 'USD' ? 'en-US' : 'en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</td>
           </tr>
           <tr>
             <td style="padding: 12px 0; color: #8e8e93; font-size: 15px;">Transaction ID</td>
@@ -925,7 +935,7 @@ exports.paymentSave = async (req, res) => {
       </div>
 
       <p style="text-align: center; color: #48484a; font-size: 13px; margin-top: 40px; font-style: italic;">
-        Still cheaper than your daily cutting chai (₹1.09/day).
+        ${footerText}
       </p>
     </div>
 

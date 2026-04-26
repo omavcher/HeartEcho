@@ -19,8 +19,12 @@ import AiLiveView from "../components/AiLiveView";
 
 export default function Home() {
   const [serverStatus, setServerStatus] = useState(null);
+  const [country, setCountry] = useState('IN');
 
   useEffect(() => {
+    const savedCountry = localStorage.getItem('user_country');
+    if (savedCountry) setCountry(savedCountry);
+
     const fetchServerStatus = async () => {
       try {
         const response = await axios.get(`${api.Url}/server-status`);
@@ -49,9 +53,11 @@ export default function Home() {
         </section>
 
         {/* ─── 2.5. LIVE STORIES ──────────────────────────────── */}
-        <section className="section-spacer">
-          <HomeLiveStories />
-        </section>
+        {country === 'IN' && (
+          <section className="section-spacer">
+            <HomeLiveStories />
+          </section>
+        )}
 
 
       
@@ -65,7 +71,9 @@ export default function Home() {
 
 
         {/* ─── 9. STORIES ─────────────────────────────────────── */}
-        <section><HomeRandomStories /></section>
+        {country === 'IN' && (
+          <section><HomeRandomStories /></section>
+        )}
 
 
         {/* ─── 8. REFERRAL ────────────────────────────────────── */}

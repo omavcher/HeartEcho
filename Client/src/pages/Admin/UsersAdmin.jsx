@@ -478,9 +478,9 @@ const UsersAdmin = () => {
                    value={subModal.tier} 
                    onChange={e => setSubModal({...subModal, tier: e.target.value})}
                  >
-                   <option value="monthly">Monthly (₹49)</option>
-                   <option value="yearly">Yearly (₹399)</option>
-                   <option value="yearly_pro">Ultimate (₹999)</option>
+                   <option value="monthly">Monthly (₹49 / $1.49)</option>
+                   <option value="yearly">Yearly (₹399 / $9)</option>
+                   <option value="yearly_pro">Ultimate (₹999 / $19)</option>
                  </select>
 
                  <label style={{fontSize:12, color:'#999'}}>Admin Password</label>

@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema({
   termsAccepted: { type: Boolean, default: false },
   subscribeNews: { type: Boolean, default: false },
   selectedInterests: [{ type: String }],
+  country: { type: String, default: "IN" },
 
   // Subscription Management
   joinedAt: { type: Date, default: Date.now },

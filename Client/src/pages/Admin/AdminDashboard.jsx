@@ -148,7 +148,7 @@ const dashboardStyles = `
 const AdminDashboard = () => {
   const [refresh, setRefresh] = useState(false);
   const [timePeriod, setTimePeriod] = useState("month");
-  const [statsData, setStatsData] = useState({ totalUsers: 0, activeUsers: 0, totalRevenue: 0, messagesSent: 0 });
+  const [statsData, setStatsData] = useState({ totalUsers: 0, activeUsers: 0, totalRevenue: 0, messagesSent: 0, revenueByCurrency: { INR: 0, USD: 0 } });
   const [graphData, setGraphData] = useState({ revenueTrend: [] });
   const [loading, setLoading] = useState(true);
   const [conversionData, setConversionData] = useState([]);
@@ -176,11 +176,12 @@ const AdminDashboard = () => {
         activeUsers: data.activeUsers || 0,
         totalRevenue: data.paymentsData || 0,
         messagesSent: data.messageQuotaData || 0,
+        revenueByCurrency: data.revenueByCurrency || { INR: 0, USD: 0 }
       });
 
       const revenueTrendMapped = data.revenueTrend?.map(item => ({
         date: item._id ? new Date(item._id).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A',
-        revenue: item.revenue || 0
+        revenue: Math.round(item.totalInINR || 0)
       })) || [];
 
       setGraphData({ revenueTrend: revenueTrendMapped });
@@ -268,9 +269,12 @@ const AdminDashboard = () => {
               <div className="stat-card-x30sn">
                 <div className="stat-header-x30sn">
                   <div className="stat-icon-x30sn"><FaMoneyBillWave /></div>
-                  <span className="stat-label-x30sn">Revenue</span>
+                  <span className="stat-label-x30sn">Revenue (Est. INR)</span>
                 </div>
-                <h3 className="stat-value-x30sn">₹{statsData.totalRevenue}</h3>
+                <h3 className="stat-value-x30sn" style={{ fontSize: '24px' }}>₹{statsData.totalRevenue.toLocaleString()}</h3>
+                <div style={{ marginTop: '8px', fontSize: '12px', color: '#888' }}>
+                  ₹{statsData.revenueByCurrency.INR.toLocaleString()} + ${statsData.revenueByCurrency.USD.toLocaleString()}
+                </div>
               </div>
             </div>
 
@@ -292,7 +296,11 @@ const AdminDashboard = () => {
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
                       <XAxis dataKey="date" stroke="#888" fontSize={12} tickLine={false} axisLine={false} />
                       <YAxis stroke="#888" fontSize={12} tickLine={false} axisLine={false} />
-                      <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #333', color: '#fff' }} itemStyle={{color:'#ff69b4'}} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#000', border: '1px solid #333', color: '#fff' }} 
+                        itemStyle={{color:'#ff69b4'}} 
+                        formatter={(value) => [`₹${value.toLocaleString()}`, 'Total Revenue (Est. INR)']}
+                      />
                       <Area type="monotone" dataKey="revenue" stroke="#ff69b4" fillOpacity={1} fill="url(#colorRev)" />
                     </AreaChart>
                   </ResponsiveContainer>

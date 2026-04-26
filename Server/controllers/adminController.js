@@ -109,11 +109,17 @@ exports.dashboardData = async (req, res) => {
       // Total users ever registered
       const usersData = await User.countDocuments();
 
-      // Total revenue ever
+      // Total revenue ever (grouped by currency)
       const paymentsData = await Payment.aggregate([
-          { $group: { _id: null, totalRevenue: { $sum: "$rupees" } } }
+          { $group: { _id: "$currency", totalRevenue: { $sum: "$rupees" } } }
       ]);
-      const totalRevenue = paymentsData.length > 0 ? paymentsData[0].totalRevenue : 0;
+      const revenueByCurrency = paymentsData.reduce((acc, curr) => {
+          acc[curr._id || "INR"] = curr.totalRevenue;
+          return acc;
+      }, { INR: 0, USD: 0 });
+      
+      // Estimated total in INR for summary (assuming 1 USD = 83 INR)
+      const totalRevenue = revenueByCurrency.INR + (revenueByCurrency.USD * 83);
 
       // Total messages sent by all users
       const messageQuotaData = await Chat.aggregate([
@@ -136,7 +142,15 @@ exports.dashboardData = async (req, res) => {
           { 
               $group: { 
                   _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } }, 
-                  revenue: { $sum: "$rupees" } 
+                  totalInINR: { 
+                    $sum: {
+                      $cond: [
+                        { $eq: ["$currency", "USD"] },
+                        { $multiply: ["$rupees", 83] },
+                        "$rupees"
+                      ]
+                    }
+                  } 
               } 
           },
           { $sort: { _id: 1 } }
@@ -148,6 +162,7 @@ exports.dashboardData = async (req, res) => {
       return res.status(200).json({
           usersData,
           paymentsData: totalRevenue,
+          revenueByCurrency,
           messageQuotaData: totalMessages,
           activeUsers: totalActiveUsers,
           revenueTrend,
@@ -1959,28 +1974,40 @@ exports.getPaymentAnalytics = async (req, res) => {
       {
         $facet: {
           totalRevenue: [
-            { $group: { _id: null, total: { $sum: "$rupees" } } }
+            { $group: { _id: "$currency", total: { $sum: "$rupees" } } }
           ],
           thisMonthRevenue: [
             { $match: { date: { $gte: startOfMonth } } },
-            { $group: { _id: null, total: { $sum: "$rupees" }, count: { $sum: 1 } } }
+            { $group: { _id: "$currency", total: { $sum: "$rupees" }, count: { $sum: 1 } } }
           ],
           prevMonthRevenue: [
             { $match: { date: { $gte: startOfPrevMonth, $lte: endOfPrevMonth } } },
-            { $group: { _id: null, total: { $sum: "$rupees" } } }
+            { $group: { _id: "$currency", total: { $sum: "$rupees" } } }
           ],
           paymentDistribution: [
-             { $group: { _id: "$rupees", count: { $sum: 1 } } },
-             { $sort: { _id: 1 } }
+             { $group: { _id: { amount: "$rupees", currency: "$currency" }, count: { $sum: 1 } } },
+             { $sort: { "_id.amount": 1 } }
           ]
         }
       }
     ]);
 
-    const totalRev = stats[0].totalRevenue[0]?.total || 0;
-    const currentMonthRev = stats[0].thisMonthRevenue[0]?.total || 0;
-    const prevMonthRev = stats[0].prevMonthRevenue[0]?.total || 0;
-    const salesCount = stats[0].thisMonthRevenue[0]?.count || 0;
+    const revenueSummary = (arr) => arr.reduce((acc, curr) => {
+      const curType = curr._id || "INR";
+      acc[curType] = curr.total;
+      acc.totalInINR = (acc.totalInINR || 0) + (curType === "USD" ? curr.total * 83 : curr.total);
+      acc.count = (acc.count || 0) + (curr.count || 0);
+      return acc;
+    }, { INR: 0, USD: 0, totalInINR: 0, count: 0 });
+
+    const totalRevStats = revenueSummary(stats[0].totalRevenue);
+    const thisMonthRevStats = revenueSummary(stats[0].thisMonthRevenue);
+    const prevMonthRevStats = revenueSummary(stats[0].prevMonthRevenue);
+
+    const totalRev = totalRevStats.totalInINR;
+    const currentMonthRev = thisMonthRevStats.totalInINR;
+    const prevMonthRev = prevMonthRevStats.totalInINR;
+    const salesCount = thisMonthRevStats.count;
 
     // 2. Calculate Growth Percentage
     let growthRate = 0;

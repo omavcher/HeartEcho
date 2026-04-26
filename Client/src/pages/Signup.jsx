@@ -40,7 +40,8 @@ function Signup() {
     subscribeNews: false,
     age: "",
     gender: "",
-    selectedInterests: []
+    selectedInterests: [],
+    country: "IN"
   });
 
   const [isSignup, setIsSignup] = useState(false);
@@ -391,10 +392,12 @@ function Signup() {
         .then((data) => setIp(data.ip))
         .catch((error) => console.error("Error fetching IP:", error));
 
-      fetch("http://ip-api.com/json")
+      fetch("https://ipapi.co/json/")
         .then((response) => response.json())
         .then((data) => {
-          setCoordinates({ lat: data.lat, lon: data.lon });
+          setCoordinates({ lat: data.latitude, lon: data.longitude });
+          setFormData(prev => ({ ...prev, country: data.country_code || "IN" }));
+          localStorage.setItem('user_country', data.country_code || "IN");
         })
         .catch((error) => console.error("Error fetching location:", error));
     }

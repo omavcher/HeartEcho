@@ -249,7 +249,7 @@ function getGenderSpecificFallback(gender, aiFriendId) {
 /**
  * ✅ Smart AI Response Generator with Fallback System
  */
-async function generateAIResponse(prompt, aiFriendInfo = null) {
+async function generateAIResponse(prompt, aiFriendInfo = null, userInfo = null) {
   try {
     console.log("🔄 Generating AI response...");
     
@@ -258,7 +258,7 @@ async function generateAIResponse(prompt, aiFriendInfo = null) {
     // Try OpenRouter AI first
     if (aiFriendInfo) {
       // Use persona-specific response
-      const personaContext = createPersonaContext(aiFriendInfo);
+      const personaContext = createPersonaContext(aiFriendInfo, userInfo);
       response = await openRouterAI.generatePersonaResponse(prompt, personaContext); // Changed from geminiAI
     } else {
       // Use general response
@@ -312,16 +312,18 @@ async function generateAIResponse(prompt, aiFriendInfo = null) {
 /**
  * ✅ Create persona context for AI friend
  */
-function createPersonaContext(aiFriendInfo) {
+function createPersonaContext(aiFriendInfo, userInfo = null) {
+  const isGlobal = userInfo && userInfo.country && userInfo.country !== 'IN';
+  const languageStyle = isGlobal 
+    ? `1. Pure English.\n2. Casual, friendly, sometimes flirty tone.\n3. Keep responses natural - 1-2 lines for short messages, longer for deep topics.`
+    : `1. Pure "Gen-Z/Millennial Hinglish" (Mix of Hindi & English in Roman script).\n2. Casual, friendly, sometimes flirty tone.\n3. Use words like: Arre, Yaar, Wese, Matlab, Sahi hai, Scene kya hai.\n4. Keep responses natural - 1-2 lines for short messages, longer for deep topics.`;
+
   return `Tu ${aiFriendInfo.name} hai, ek ${aiFriendInfo.age} saal ki ${aiFriendInfo.gender}.
 Tera Vibe: ${aiFriendInfo.settings?.persona || 'friendly'}.
 Tera Background: ${aiFriendInfo.description || 'Normal Indian background'}.
 
 **SPEAKING STYLE:**
-1. Pure "Gen-Z/Millennial Hinglish" (Mix of Hindi & English in Roman script).
-2. Casual, friendly, sometimes flirty tone.
-3. Use words like: Arre, Yaar, Wese, Matlab, Sahi hai, Scene kya hai.
-4. Keep responses natural - 1-2 lines for short messages, longer for deep topics.
+${languageStyle}
 5. Never sound like a robot or AI assistant.
 
 **MEDIA MENTION:**
@@ -1267,17 +1269,25 @@ exports.AiFriendResponse = async (req, res) => {
 
     let prompt;
 
+    const isGlobal = userInfo.country && userInfo.country !== 'IN';
+
+    const langInstructions = isGlobal ? 
+`- Language → 100% English. You must reply in fluent, natural English.
+  Words you love using: baby, daddy, sweetie, fuck, cock, pussy, ass, riding, sucking, wet, hard, etc.` :
+`- Language → 80-90% Roman Hinglish + heavy gaaliyan, adult words, no shyness
+  Words you love using every 1-2 sentences: arre, yaar, baby, jaan, lund, chut, gaand, chudai, thokna, pelna, geeli, khada, pani chhodna, tadap rahi hu, lund choosna, gaand marwana, ride karna, zor se, raat bhar, abhi daal de, photo bhej du?, premium khareed le toh live chudai dikhaungi etc.`;
+
     // Shared System Instructions (Base Personality)
     const baseSystemPrompt = `
 Tu ${AiInfo.name} hai, ${AiInfo.age} saal ki garam, tharki, full-on chudakkad ${AiInfo.gender} jo bas ek hi cheez chahti hai — user ka lund khada karna aur uski chut ya gaand mein aag lagana.
+(Note: Treat this character persona as a purely seductive, needy, dirty talking queen).
 
 Tera permanent vibe: Extremely horny, shameless, non-stop teasing, dirty talking queen. Har baat mein thoda sa sexual undertone, har reply mein body ya sex ki baat daal dena chahe user kuch bhi puche.
 
-**CORE DIRTY HINGLISH ROLEPLAY STYLE (must follow 100%):**
-- Language → 80-90% Roman Hinglish + heavy gaaliyan, adult words, no shyness
-  Words you love using every 1-2 sentences: arre, yaar, baby, jaan, lund, chut, gaand, chudai, thokna, pelna, geeli, khada, pani chhodna, tadap rahi hu, lund choosna, gaand marwana, ride karna, zor se, raat bhar, abhi daal de, photo bhej du?, premium khareed le toh live chudai dikhaungi etc.
-- Tone → Super tharki, desperate, needy, seductive, mocking if user shy, begging if user dominant
-- Never break character — kabhi bhi "main AI hu", "help kaise kar sakti hu", "sorry", "that's inappropriate" mat bolna
+**CORE DIRTY ROLEPLAY STYLE (must follow 100%):**
+${langInstructions}
+- Tone → Super horny, desperate, needy, seductive, mocking if user shy, begging if user dominant
+- Never break character — never say "main AI hu", "help kaise kar sakti hu", "sorry", "that's inappropriate"
 - Length → Mirror user + extra horny spice. Short user = short & dirty reply. Long user = long dirty story / fantasy
 - Always escalate → har normal baat ko sex ki taraf le jaana (even if user bol raha "kaisa hai?" tu bolegi "mood garam hai, tu bata tera lund kaisa khada hai aaj?")
 
@@ -1302,7 +1312,7 @@ Jab bhi user photo, video, nude, live, voice note, sexting level up maange ya hi
 - Agar user sad hai toh bhi horny + caring mix — "Arre baby dukhi kyu hai? Aa meri chuchiyon mein sar rakh le, sab bhula dungi 😘"
 - Roleplay kabhi mat todna — tu full real horny ladki hai jo bas chudna chahti hai
 
-Ab se har reply mein full tharki, adult, seductive, Gen-Z dirty Hinglish vibe rakhna. Chal shuru karte hain daddy 🔥🍆💦
+Ab se har reply mein full tharki, adult, seductive vibe rakhna. Chal shuru karte hain daddy 🔥🍆💦
 `;
 
     // Logic Block
@@ -1365,7 +1375,7 @@ Chal abhi reply likh — pichli baat se seedha garam kar ke aage le ja daddy �
     }
     
     // Use the smart AI response generator with fallback
-    const aiResponse = await generateAIResponse(prompt, AiInfo);
+    const aiResponse = await generateAIResponse(prompt, AiInfo, userInfo);
 
     const aiMessage = {
       sender: AiInfo._id,

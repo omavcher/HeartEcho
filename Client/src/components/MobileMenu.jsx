@@ -16,6 +16,13 @@ function MobileMenu() {
     return () => clearTimeout(timer);
   }, [pathname]);
 
+  const [country, setCountry] = useState('IN');
+
+  useEffect(() => {
+    const savedCountry = localStorage.getItem('user_country');
+    if (savedCountry) setCountry(savedCountry);
+  }, []);
+
   const menuItems = [
     {
       href: '/',
@@ -62,7 +69,10 @@ function MobileMenu() {
         </svg>
       )
     }
-  ];
+  ].filter(item => {
+    if (item.href === '/live-a-story' && country !== 'IN') return false;
+    return true;
+  });
 
 
   return (

@@ -5,7 +5,7 @@ const nodemailer = require('nodemailer');
 const sendEmail = require("../config/emailSender");
 exports.registerUser = async (req, res) => {
   try {
-    const { fullName, email, phone, password, gender, birth_date, interests, user_type ,twoFA ,profilePicture ,referralCode , subscribeNews ,termsAccepted , age , selectedInterests} = req.body;
+    const { fullName, email, phone, password, gender, birth_date, interests, user_type ,twoFA ,profilePicture ,referralCode , subscribeNews ,termsAccepted , age , selectedInterests, country } = req.body;
 
     // 1️⃣ Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -34,7 +34,7 @@ exports.registerUser = async (req, res) => {
       subscribeNews,
       termsAccepted,
       selectedInterests: formattedInterests, // ✅ Ensure it's properly formatted
-
+      country: country || "IN",
     });
 
     await newUser.save();
@@ -49,6 +49,7 @@ exports.registerUser = async (req, res) => {
         name: newUser.name,
         email: newUser.email,
         user_type: newUser.user_type,
+        country: newUser.country,
       },
     });
   } catch (error) {
@@ -82,6 +83,7 @@ exports.loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         user_type: user.user_type,
+        country: user.country,
       },
     });
 
@@ -110,6 +112,7 @@ exports.googleLogin = async (req, res) => {
           name: user.name,
           email: user.email,
           user_type: user.user_type,
+          country: user.country,
         }
       });
     } else {

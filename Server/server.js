@@ -492,6 +492,7 @@ app.use("/api/v1/api/tracking", require("./routes/trackingRoutes"));
 app.use("/api/v1/api/guest", require("./routes/guestRoutes"));
 app.use("/api/v1/api/live-story", require("./routes/liveStoryRoute"));
 app.use("/api/v1/api/ai-live", require("./routes/aiLiveRoutes"));
+app.use("/api/v1/api/paypal", require("./routes/paypalRoutes"));
 
 //
 // Start Server

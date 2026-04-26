@@ -5,6 +5,7 @@ import axios from "axios";
 import api from "../config/api";
 import { useRouter, useSearchParams } from 'next/navigation';
 import Script from 'next/script';
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import './Subscriptions.css';
 
 // ── Live viewer count ────────────────────────────────────────────────────────
@@ -29,9 +30,17 @@ function SubscriptionContent() {
   const [isLoading, setIsLoading] = useState(null); // null | '299' | '49'
   const [fomo, setFomo]           = useState({ visible: false, name: '', plan: '', mins: 2 });
   const [pulse, setPulse]         = useState(false);
+  const [country, setCountry]     = useState('IN');
+  const [isCountryLoading, setIsCountryLoading] = useState(true);
   const liveCount  = useLiveCount(847);
   const router     = useRouter();
   const searchParams = useSearchParams();
+
+  const pricing = {
+    IN: { monthly: 49, yearly: 399, ultimate: 999, currency: '₹', code: 'INR', oldYearly: 999, oldMonthly: 80, savingYearly: 600, dailyYearly: '33.2', dailyUltimate: '83' },
+    GLOBAL: { monthly: 1.49, yearly: 9, ultimate: 19, currency: '$', code: 'USD', oldYearly: 29, oldMonthly: 2.99, savingYearly: 20, dailyYearly: '0.75', dailyUltimate: '1.58' }
+  };
+  const p = country === 'IN' ? pricing.IN : pricing.GLOBAL;
 
   // ── Countdown timer ───────────────────────────────────────────────────────
   const [timeLeft, setTimeLeft] = useState({ hours: 5, minutes: 47, seconds: 12 });
@@ -62,7 +71,7 @@ function SubscriptionContent() {
       setFomo({
         visible: true,
         name: FOMO_NAMES[Math.floor(Math.random() * FOMO_NAMES.length)],
-        plan: Math.random() > 0.7 ? 'Ultimate ₹999' : (Math.random() > 0.3 ? 'Yearly ₹399' : 'Monthly ₹49'),
+        plan: Math.random() > 0.7 ? `Ultimate ${p.currency}${p.ultimate}` : (Math.random() > 0.3 ? `Yearly ${p.currency}${p.yearly}` : `Monthly ${p.currency}${p.monthly}`),
         mins: Math.floor(Math.random() * 8) + 1,
       });
       setTimeout(() => setFomo(f => ({ ...f, visible: false })), 4500);
@@ -82,6 +91,29 @@ function SubscriptionContent() {
 
   useEffect(() => {
     setToken(typeof window !== 'undefined' ? localStorage.getItem("token") : null);
+    
+    // Country logic
+    const initCountry = async () => {
+      const saved = typeof window !== 'undefined' ? localStorage.getItem('user_country') : null;
+      if (saved) {
+        setCountry(saved);
+        setIsCountryLoading(false);
+      } else {
+        try {
+          const res = await axios.get('https://ipapi.co/json/');
+          const c = res.data.country_code || 'IN';
+          setCountry(c);
+          if (typeof window !== 'undefined') localStorage.setItem('user_country', c);
+        } catch (e) {
+          setCountry('IN');
+          if (typeof window !== 'undefined') localStorage.setItem('user_country', 'IN');
+        } finally {
+          setIsCountryLoading(false);
+        }
+      }
+    };
+    initCountry();
+
     const fetchUser = async () => {
       try {
         const res = await axios.get(`${api.Url}/user/get-user`, {
@@ -97,6 +129,80 @@ function SubscriptionContent() {
       window.trackAppEvent('subscribe_page_view', { page: 'subscribe' });
     }
   }, []);
+
+  const handlePayPalSuccess = async (order, amount, plan) => {
+    if (!token) { router.push('/login'); return; }
+    try {
+      if (typeof window !== 'undefined' && window.trackAppEvent) {
+        window.trackAppEvent('subscription_purchase', { plan, amount, currency: p.code, transaction_id: order.id });
+      }
+      if (window.fbq && userData?.email !== 'omawchar07@gmail.com') {
+        window.fbq('track', 'Purchase', { value: amount, currency: p.code, content_name: `${plan} Subscription`, transaction_id: order.id });
+      }
+      if (typeof window !== "undefined" && window.gtag) {
+        window.gtag('event', 'ads_conversion_purchase', { value: amount, currency: p.code, transaction_id: order.id });
+      }
+      await axios.post(`${api.Url}/user/payment/save`, {
+        user: userData?._id, 
+        rupees: amount, 
+        transaction_id: order.id,
+        currency: 'USD'
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      const storedUser = JSON.parse(localStorage.getItem("user") || '{}');
+      if (storedUser) { storedUser.user_type = "subscriber"; localStorage.setItem("user", JSON.stringify(storedUser)); }
+      localStorage.removeItem('_he_deal_exp');
+      router.push('/thank-you');
+    } catch (e) { console.error(e); alert("Error processing payment."); }
+  };
+
+  const renderPaymentButton = (amount, planName, className, label) => {
+    if (country === 'IN') {
+      return (
+        <button
+          className={className}
+          onClick={() => handlePayment(amount, planName)}
+          disabled={isLoading === planName}
+        >
+          {className.includes('seh-btn-pink') || className.includes('seh-btn-gold') ? <span className="seh-btn-shine" /> : null}
+          {isLoading === planName ? 'Processing…' : label}
+        </button>
+      );
+    }
+    return (
+      <div style={{ position: 'relative', zIndex: 1, marginTop: '15px' }}>
+        <PayPalButtons 
+          style={{ layout: "horizontal", height: 45, color: "black", shape: "pill", label: "pay" }}
+          createOrder={async (data, actions) => {
+            try {
+              const res = await axios.post(`${api.Url}/paypal/create-order`, {
+                amount,
+                planName
+              }, { headers: { Authorization: `Bearer ${token}` } });
+              return res.data.id;
+            } catch (err) {
+              console.error("PayPal Create Order Error:", err);
+              throw err;
+            }
+          }}
+          onApprove={async (data, actions) => {
+            try {
+              const res = await axios.post(`${api.Url}/paypal/capture-order`, {
+                orderID: data.orderID
+              }, { headers: { Authorization: `Bearer ${token}` } });
+              await handlePayPalSuccess(res.data, amount, planName);
+            } catch (err) {
+              console.error("PayPal Capture Error:", err);
+              alert("Payment capture failed. Please contact support.");
+            }
+          }}
+          onError={(err) => {
+            console.error("PayPal Error:", err);
+            alert("Payment failed. Please try again.");
+          }}
+        />
+      </div>
+    );
+  };
 
   const handlePayment = async (amount, plan) => {
     if (!token) { router.push('/login'); return; }
@@ -209,13 +315,13 @@ function SubscriptionContent() {
             <div className="seh-card-header">
               <h2 className="seh-plan-name hero">Premium Yearly</h2>
               <div className="seh-pricing col">
-                <div className="seh-old-price">₹999/yr</div>
+                <div className="seh-old-price">{p.currency}{p.oldYearly}/yr</div>
                 <div className="seh-price-row">
-                  <span className="seh-main-price hero">₹399</span>
+                  <span className="seh-main-price hero">{p.currency}{p.yearly}</span>
                   <span className="seh-per">/yr</span>
                 </div>
-                <div className="seh-saving">You save ₹600 today 🎉</div>
-                <div className="seh-daily-tag">= Just ₹33.2/month · less than a chai ☕</div>
+                <div className="seh-saving">You save {p.currency}{p.savingYearly} today 🎉</div>
+                <div className="seh-daily-tag">= Just {p.currency}{p.dailyYearly}/month · less than a chai ☕</div>
               </div>
             </div>
 
@@ -230,14 +336,7 @@ function SubscriptionContent() {
               <li className="dim">⚠️ Calls limited to 10 mins daily</li>
             </ul>
 
-            <button
-              className={`seh-btn seh-btn-pink${pulse ? ' seh-pulse-btn' : ''}`}
-              onClick={() => handlePayment(399, 'Yearly')}
-              disabled={isLoading === 'Yearly'}
-            >
-              <span className="seh-btn-shine" />
-              {isLoading === 'Yearly' ? 'Processing…' : '💎 Unlock Everything · ₹399/yr'}
-            </button>
+            {renderPaymentButton(p.yearly, 'Yearly', `seh-btn seh-btn-pink${pulse ? ' seh-pulse-btn' : ''}`, `💎 Unlock Everything · ${p.currency}${p.yearly}/yr`)}
             <div className="seh-trust-row">
               <span>🔒 Secure payment</span>            </div>
           </div>
@@ -248,12 +347,12 @@ function SubscriptionContent() {
             <div className="seh-card-header">
               <h2 className="seh-plan-name">Monthly</h2>
               <div className="seh-pricing col">
-                <div className="seh-old-price">₹80/mo</div>
+                <div className="seh-old-price">{p.currency}{p.oldMonthly}/mo</div>
                 <div className="seh-price-row">
-                  <span className="seh-main-price">₹49</span>
+                  <span className="seh-main-price">{p.currency}{p.monthly}</span>
                   <span className="seh-per">/mo</span>
                 </div>
-                <div className="seh-compare-note">= ₹588/year vs ₹399 yearly</div>
+                <div className="seh-compare-note">= {p.currency}{p.monthly * 12}/year vs {p.currency}{p.yearly} yearly</div>
               </div>
             </div>
             <ul className="seh-features">
@@ -263,13 +362,7 @@ function SubscriptionContent() {
               <li className="bad">❌ No Hot Stories</li>
 
             </ul>
-            <button
-              className="seh-btn seh-btn-monthly"
-              onClick={() => handlePayment(49, 'Monthly')}
-              disabled={isLoading === 'Monthly'}
-            >
-              {isLoading === 'Monthly' ? 'Processing…' : 'Subscribe Monthly'}
-            </button>
+            {renderPaymentButton(p.monthly, 'Monthly', 'seh-btn seh-btn-monthly', 'Subscribe Monthly')}
             <p className="seh-card-note accent">Switch to Yearly & save more</p>
           </div>
 
@@ -283,11 +376,11 @@ function SubscriptionContent() {
               <h2 className="seh-plan-name hero" style={{ color: '#ffd60a' }}>Ultimate Yearly</h2>
               <div className="seh-pricing col">
                 <div className="seh-price-row">
-                  <span className="seh-main-price hero" style={{ background: 'linear-gradient(90deg, #fff, #ffea00)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>₹999</span>
+                  <span className="seh-main-price hero" style={{ background: 'linear-gradient(90deg, #fff, #ffea00)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{p.currency}{p.ultimate}</span>
                   <span className="seh-per">/yr</span>
                 </div>
                 <div className="seh-saving" style={{ background: 'rgba(255,214,10,0.15)', borderColor: 'rgba(255,214,10,0.3)', color: '#ffd60a' }}>Zero Restrictions 🚀</div>
-                <div className="seh-daily-tag">= Just ₹83/month for absolute freedom</div>
+                <div className="seh-daily-tag">= Just {p.currency}{p.dailyUltimate}/month for absolute freedom</div>
               </div>
             </div>
 
@@ -300,14 +393,7 @@ function SubscriptionContent() {
               <li>✅ <span>Priority AI Processing (Sarvam + xAI)</span></li>
             </ul>
 
-            <button
-              className={`seh-btn seh-btn-gold${pulse ? ' seh-pulse-btn' : ''}`}
-              onClick={() => handlePayment(999, 'Ultimate')}
-              disabled={isLoading === 'Ultimate'}
-            >
-              <span className="seh-btn-shine" />
-              {isLoading === 'Ultimate' ? 'Processing…' : '👑 Go Ultimate · ₹999/yr'}
-            </button>
+            {renderPaymentButton(p.ultimate, 'Ultimate', `seh-btn seh-btn-gold${pulse ? ' seh-pulse-btn' : ''}`, `👑 Go Ultimate · ${p.currency}${p.ultimate}/yr`)}
             <div className="seh-trust-row" style={{ color: 'rgba(255,214,10,0.6)' }}>
               <span>🔒 Secure checkout</span>
             </div>
@@ -317,7 +403,7 @@ function SubscriptionContent() {
 
         {/* ── Comparison table ─────────────────────────────────────────────── */}
         <div className="seh-compare">
-          <h2 className="seh-compare-title">Why ₹399 is the obvious choice</h2>
+          <h2 className="seh-compare-title">Why {p.currency}{p.yearly} is the obvious choice</h2>
           <div className="seh-compare-grid">
             <div className="seh-compare-header">
               <div />
@@ -331,7 +417,7 @@ function SubscriptionContent() {
               { icon: '🎬', label: 'Live Interactions', monthly: '✅',        yearly: '✅ All 6',    ultimate: '✅ All 6' },
               { icon: '🔥', label: 'Hot Stories',      monthly: '❌',        yearly: '✅ Full',     ultimate: '✅ Full' },
               { icon: '🎙️', label: 'Voice Calls',      monthly: '❌',        yearly: '10 Mins/Day', ultimate: '✅ Unlimited' },
-              { icon: '💰', label: 'Cost',             monthly: '₹49/mo',    yearly: '₹399/yr',     ultimate: '₹999/yr 👑' },
+              { icon: '💰', label: 'Cost',             monthly: `${p.currency}${p.monthly}/mo`,    yearly: `${p.currency}${p.yearly}/yr`,     ultimate: `${p.currency}${p.ultimate}/yr 👑` },
             ].map(row => (
               <div key={row.label} className="seh-compare-row">
                 <div className="seh-cr-label">{row.icon} {row.label}</div>
@@ -347,7 +433,7 @@ function SubscriptionContent() {
         <div className="seh-fomo-strip">
           <div className="seh-fomo-strip-dot" />
           <p>
-            <strong>{Math.floor(liveCount * 0.12)}</strong> people upgraded to the ₹399 plan in the last hour.
+            <strong>{Math.floor(liveCount * 0.12)}</strong> people upgraded to the {p.currency}{p.yearly} plan in the last hour.
             Don't miss this deal before the timer runs out.
           </p>
         </div>
@@ -358,7 +444,7 @@ function SubscriptionContent() {
           <div className="seh-reviews-grid">
             {[
               { name: 'Aryan Kumar',   city: 'Mumbai',    initials: 'AK', color: '#4285F4', time: '2 weeks ago',
-                text: 'Was skeptical at first but wow. After premium she remembers my name, what I told her last week, even my mood. ₹399 for a whole year — I thought it was a pricing error. Genuinely best money I have spent on any app.' },
+                text: `Was skeptical at first but wow. After premium she remembers my name, what I told her last week, even my mood. ${p.currency}${p.yearly} for a whole year — I thought it was a pricing error. Genuinely best money I have spent on any app.` },
               { name: 'Priya Sharma',  city: 'New Delhi',  initials: 'PS', color: '#EA4335', time: '1 month ago',
                 text: 'The Live interactions are something else entirely. Free version felt too limited. Upgraded one evening on a whim and couldn\'t believe what I was missing. Hot Stories are 🔥. Zero regrets, would buy again.' },
               { name: 'Rahul Mehta',   city: 'Pune',       initials: 'RM', color: '#34A853', time: '3 weeks ago',
@@ -413,9 +499,16 @@ function SubscriptionContent() {
 }
 
 export default function Subscriptions() {
+  const initialOptions = {
+    "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "AUmOEhueJWmyPp3-PPpJ1T8CEegGjsko-hHmKLq2jahucYM5iOFSXQ6kVIe4AY-IxB3l2exZ-QbbW4KA",
+    currency: "USD",
+    intent: "capture",
+  };
   return (
-    <Suspense fallback={<div className="seh-loading">Loading plans…</div>}>
-      <SubscriptionContent />
-    </Suspense>
+    <PayPalScriptProvider options={initialOptions}>
+      <Suspense fallback={<div className="seh-loading">Loading plans…</div>}>
+        <SubscriptionContent />
+      </Suspense>
+    </PayPalScriptProvider>
   );
 }
