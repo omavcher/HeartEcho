@@ -43,9 +43,9 @@ const applyWatermarkToImage = async (file) => {
 
         // 1. Draw Logo (Top Left)
         if (logo) {
-          const logoWidth = Math.max(40, Math.floor(canvas.width * 0.15));
+          const logoWidth = Math.max(25, Math.floor(canvas.width * 0.08));
           const logoHeight = (logo.height / logo.width) * logoWidth;
-          const padding = Math.max(10, Math.floor(canvas.width * 0.03));
+          const padding = Math.max(8, Math.floor(canvas.width * 0.02));
           
           ctx.shadowColor = 'rgba(255, 255, 255, 0.7)';
           ctx.shadowBlur = 10;
