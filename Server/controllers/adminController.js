@@ -408,22 +408,82 @@ exports.UserALLDtaa = async (req,res) =>{
 }
 
 
-exports.aiAllModelData = async (req,res) =>{
-    try {
-      const aiusers = await PrebuiltAIFriend.find({});
+exports.aiAllModelData = async (req, res) => {
+  try {
+    const aiusers = await PrebuiltAIFriend.aggregate([
+      {
+        $lookup: {
+          from: "chats",
+          let: { friendId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    { $eq: ["$aiParticipants", "$$friendId"] },
+                    { $in: ["$$friendId", { $ifNull: ["$aiParticipants", []] }] }
+                  ]
+                }
+              }
+            },
+            {
+              $lookup: {
+                from: "users",
+                localField: "participants",
+                foreignField: "_id",
+                as: "user"
+              }
+            },
+            {
+              $unwind: {
+                path: "$user",
+                preserveNullAndEmptyArrays: false
+              }
+            },
+            {
+              $match: {
+                "user.email": { $ne: "omawchar07@gmail.com" }
+              }
+            },
+            {
+              $unwind: "$messages"
+            },
+            {
+              $match: {
+                "messages.senderModel": "User"
+              }
+            },
+            {
+              $count: "count"
+            }
+          ],
+          as: "messageStats"
+        }
+      },
+      {
+        $addFields: {
+          messageCount: { $ifNull: [{ $arrayElemAt: ["$messageStats.count", 0] }, 0] }
+        }
+      },
+      {
+        $project: {
+          messageStats: 0
+        }
+      },
+      { $sort: { messageCount: -1 } }
+    ]);
 
-       return res.status(200).json({
-        aiusers
-          });
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-          return res.status(500).json({ 
-              success: false,
-              error: "Internal server error" 
-          });
-    }
-  
+    return res.status(200).json({
+      aiusers
+    });
+  } catch (error) {
+    console.error("Error fetching AI friend data with stats:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Internal server error"
+    });
   }
+};
 
 
 

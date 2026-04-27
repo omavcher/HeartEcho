@@ -4,7 +4,8 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { 
   FaRobot, FaTrash, FaEdit, FaSearch, FaPlus, FaSync,
   FaDownload, FaChartPie, FaPlay, FaTimes, FaVideo,
-  FaCloudUploadAlt, FaCheck, FaSpinner, FaMars, FaVenus, FaCircle
+  FaCloudUploadAlt, FaCheck, FaSpinner, FaMars, FaVenus, FaCircle,
+  FaComment, FaSortAmountDown, FaSortAmountUp
 } from "react-icons/fa";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend
@@ -262,6 +263,7 @@ const AIFriendsAdmin = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGender, setSelectedGender] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [sortOrder, setSortOrder] = useState("high-to-low");
   const [editFriend, setEditFriend] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -474,17 +476,28 @@ const AIFriendsAdmin = () => {
     maleCount: aiFriends.filter(f => f.gender === "male").length,
     femaleCount: aiFriends.filter(f => f.gender === "female").length,
     activeCount: aiFriends.filter(f => f.isActive !== false).length,
-    inactiveCount: aiFriends.filter(f => f.isActive === false).length
+    inactiveCount: aiFriends.filter(f => f.isActive === false).length,
+    totalMessages: aiFriends.reduce((acc, f) => acc + (f.messageCount || 0), 0)
   }), [aiFriends]);
 
   const filteredAIFriends = useMemo(() => {
-    return aiFriends.filter(friend => {
+    let result = aiFriends.filter(friend => {
       const matchGender = selectedGender === "all" || friend.gender === selectedGender;
       const matchStatus = selectedStatus === "all" || (selectedStatus === "active" ? friend.isActive !== false : friend.isActive === false);
-      const matchSearch = friend.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchSearch = friend.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          friend.description?.toLowerCase().includes(searchTerm.toLowerCase());
       return matchGender && matchStatus && matchSearch;
     });
-  }, [aiFriends, selectedGender, selectedStatus, searchTerm]);
+
+    // Sorting
+    result.sort((a, b) => {
+      const countA = a.messageCount || 0;
+      const countB = b.messageCount || 0;
+      return sortOrder === "high-to-low" ? countB - countA : countA - countB;
+    });
+
+    return result;
+  }, [aiFriends, selectedGender, selectedStatus, searchTerm, sortOrder]);
 
   // --- Actions ---
   const handleEditSubmit = async (e) => {
@@ -599,6 +612,10 @@ const AIFriendsAdmin = () => {
                 <div className="fif-stat-info-x30sn"><h3>Female</h3><p>{stats.femaleCount}</p></div>
             </div>
             <div className="fif-stat-card-x30sn">
+                <div className="fif-stat-icon-x30sn" style={{color:'#ffdf00', background:'rgba(255,223,0,0.1)'}}><FaComment/></div>
+                <div className="fif-stat-info-x30sn"><h3>Total Msgs</h3><p>{stats.totalMessages}</p></div>
+            </div>
+            <div className="fif-stat-card-x30sn">
                 <div className="fif-stat-icon-x30sn" style={{color:'#00F260', background:'rgba(0,242,96,0.1)'}}><FaCircle size={14}/></div>
                 <div className="fif-stat-info-x30sn"><h3>Active</h3><p>{stats.activeCount}</p></div>
             </div>
@@ -662,6 +679,10 @@ const AIFriendsAdmin = () => {
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
             </select>
+            <select className="fif-select-x30sn" value={sortOrder} onChange={e => setSortOrder(e.target.value)}>
+                <option value="high-to-low">Usage: High to Low</option>
+                <option value="low-to-high">Usage: Low to High</option>
+            </select>
         </div>
 
         {/* GRID */}
@@ -682,6 +703,10 @@ const AIFriendsAdmin = () => {
                     <div className="fif-card-body-x30sn">
                         <h4 className="fif-card-name-x30sn">{friend.name}</h4>
                         <div className="fif-card-rel-x30sn">{friend.relationship} • {friend.age}y</div>
+                        <div style={{display:'flex', alignItems:'center', gap:6, fontSize:12, color:'#aaa', marginBottom:10}}>
+                            <FaComment style={{color:'#ff69b4'}} size={10}/> 
+                            <span>{friend.messageCount || 0} messages received</span>
+                        </div>
                         <p className="fif-card-desc-x30sn">{friend.description}</p>
                         
                         <div className="fif-tags-x30sn">
