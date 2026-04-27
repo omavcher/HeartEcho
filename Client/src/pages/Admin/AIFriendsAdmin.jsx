@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import axios from "axios";
 import api from '../../config/api';
+import { applyWatermark } from '../../utils/mediaUtils';
 
 // ------------------- CSS STYLES (Pure Black & Pink Theme) -------------------
 const styles = `
@@ -286,15 +287,19 @@ const AIFriendsAdmin = () => {
   const uploadToCloudflareR2 = async (file, type = 'image', onProgress = null) => {
     const token = getToken();
     const folder = type === 'image' ? 'ai_friends/images' : 'ai_friends/videos';
+
+    // Apply watermark before upload
+    const processedFile = await applyWatermark(file);
+
     const { data } = await axios.post(
       `${api.Url}/live-story/admin/presign`,
-      { folder, filename: file.name, contentType: file.type },
+      { folder, filename: processedFile.name, contentType: processedFile.type },
       { headers: { Authorization: `Bearer ${token}` } }
     );
     if (!data.success) throw new Error(data.message || "Failed to get upload URL");
 
-    await axios.put(data.uploadUrl, file, {
-      headers: { "Content-Type": file.type },
+    await axios.put(data.uploadUrl, processedFile, {
+      headers: { "Content-Type": processedFile.type },
       onUploadProgress: (e) => {
         if (onProgress && e.total) onProgress(Math.round((e.loaded / e.total) * 100));
       },

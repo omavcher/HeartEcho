@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import api from '../../config/api';
 import { FaCloudUploadAlt, FaTimes, FaUser, FaImage, FaMagic } from 'react-icons/fa';
+import { applyWatermark } from '../../utils/mediaUtils';
 
 // ------------------- CSS STYLES (Pure Black & Pink) -------------------
 const styles = `
@@ -245,15 +246,19 @@ const CreateStoryPage = () => {
   const uploadToCloudflareR2 = async (file, folderName = 'story-media') => {
     try {
       const token = localStorage.getItem("token") || "";
+
+      // Apply watermark before upload
+      const processedFile = await applyWatermark(file);
+
       const { data } = await axios.post(
         `${api.Url}/live-story/admin/presign`,
-        { folder: `create-story/${folderName}`, filename: file.name, contentType: file.type },
+        { folder: `create-story/${folderName}`, filename: processedFile.name, contentType: processedFile.type },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!data.success) throw new Error("Failed to get upload URL");
 
-      await axios.put(data.uploadUrl, file, {
-        headers: { "Content-Type": file.type }
+      await axios.put(data.uploadUrl, processedFile, {
+        headers: { "Content-Type": processedFile.type }
       });
 
       return data.cdnUrl;

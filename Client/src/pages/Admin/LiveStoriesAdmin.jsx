@@ -6,23 +6,27 @@ import {
   FaSave, FaImage, FaFilm, FaUpload, FaSpinner, FaLink, FaTimes
 } from "react-icons/fa";
 import api from "../../config/api";
+import { applyWatermark } from "../../utils/mediaUtils";
 import "./LiveStoriesAdmin.css";
 
 const CDN = "https://cdn.heartecho.in";
 
 // ── Helper: upload one file directly to Cloudflare R2 ─────────────────────────
 const uploadFileToR2 = async (file, folder, token, onProgress) => {
+  // Apply watermark before upload
+  const processedFile = await applyWatermark(file);
+
   // 1. Get a pre-signed PUT URL from our backend
   const { data } = await axios.post(
     `${api.Url}/live-story/admin/presign`,
-    { folder, filename: file.name, contentType: file.type },
+    { folder, filename: processedFile.name, contentType: processedFile.type },
     { headers: { Authorization: `Bearer ${token}` } }
   );
   if (!data.success) throw new Error("Failed to get upload URL");
 
   // 2. PUT the file directly to R2
-  await axios.put(data.uploadUrl, file, {
-    headers: { "Content-Type": file.type },
+  await axios.put(data.uploadUrl, processedFile, {
+    headers: { "Content-Type": processedFile.type },
     onUploadProgress: (e) => {
       if (onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
     },
