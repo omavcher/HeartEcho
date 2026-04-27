@@ -29,11 +29,13 @@ export const applyWatermark = async (file) => {
  * Watermarks a video using Canvas and MediaRecorder.
  * Note: This process takes as long as the video duration.
  */
-const applyWatermarkToVideo = (file) => {
+const applyWatermarkToVideo = async (file) => {
+  const logo = await loadLogo().catch(() => null);
+
   return new Promise((resolve, reject) => {
     const video = document.createElement('video');
     video.src = URL.createObjectURL(file);
-    video.muted = true; // Stay silent during processing
+    video.muted = true; 
     video.playsInline = true;
     
     video.onloadedmetadata = () => {
@@ -42,9 +44,8 @@ const applyWatermarkToVideo = (file) => {
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext('2d');
 
-      const stream = canvas.captureStream(30); // 30 FPS
+      const stream = canvas.captureStream(30); 
       
-      // Try to capture audio if possible
       try {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const source = audioContext.createMediaElementSource(video);
@@ -54,7 +55,7 @@ const applyWatermarkToVideo = (file) => {
           stream.addTrack(destination.stream.getAudioTracks()[0]);
         }
       } catch (e) {
-        console.warn("Audio capture failed, video will be silent:", e);
+        console.warn("Audio capture failed:", e);
       }
 
       const recorder = new MediaRecorder(stream, {
@@ -81,20 +82,45 @@ const applyWatermarkToVideo = (file) => {
 
       const draw = () => {
         if (video.paused || video.ended) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        // Watermark
+        // Dynamic animation (fading/pulsing like premium watermarks)
+        const time = video.currentTime;
+        const opacity = 0.6 + 0.2 * Math.sin(time * 1.5); // Pulse between 0.4 and 0.8
+        ctx.globalAlpha = opacity;
+
+        // 1. Draw Logo (Top Left)
+        if (logo) {
+          const logoWidth = Math.max(40, Math.floor(canvas.width * 0.15));
+          const logoHeight = (logo.height / logo.width) * logoWidth;
+          const padding = Math.max(10, Math.floor(canvas.width * 0.03));
+          
+          ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+          ctx.shadowBlur = 8;
+          ctx.drawImage(logo, padding, padding, logoWidth, logoHeight);
+          ctx.shadowBlur = 0;
+        }
+
+        // 2. Draw Text (Bottom Right)
         const fontSize = Math.max(16, Math.floor(canvas.width * 0.04));
-        ctx.font = `600 ${fontSize}px "Inter", sans-serif`;
-        ctx.fillStyle = 'rgba(255, 105, 180, 0.7)';
+        ctx.font = `italic 700 ${fontSize}px "Inter", sans-serif`;
+        
+        // Visibility: Dark color with white glow
+        ctx.fillStyle = 'rgba(20, 20, 20, 0.9)'; 
+        ctx.shadowColor = 'white';
+        ctx.shadowBlur = 12;
         ctx.textAlign = 'right';
         ctx.textBaseline = 'bottom';
         
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-        ctx.shadowBlur = 4;
+        const paddingText = Math.max(10, Math.floor(canvas.width * 0.03));
         
-        const padding = Math.max(10, Math.floor(canvas.width * 0.02));
-        ctx.fillText('heartecho.in', canvas.width - padding, canvas.height - padding);
+        // Subtle animation on text position (optional, keeping it simple but "proper")
+        const yOffset = Math.sin(time * 2) * 2; 
+        ctx.fillText('heartecho.in', canvas.width - paddingText, canvas.height - paddingText + yOffset);
+        
+        ctx.globalAlpha = 1.0;
+        ctx.shadowBlur = 0;
         
         requestAnimationFrame(draw);
       };
@@ -109,7 +135,9 @@ const applyWatermarkToVideo = (file) => {
 /**
  * Watermarks an image using Canvas.
  */
-const applyWatermarkToImage = (file) => {
+const applyWatermarkToImage = async (file) => {
+  const logo = await loadLogo().catch(() => null);
+
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -120,42 +148,59 @@ const applyWatermarkToImage = (file) => {
         canvas.height = img.height;
         const ctx = canvas.getContext('2d');
         
-        // Draw original image
         ctx.drawImage(img, 0, 0);
 
-        // Watermark settings
-        // Responsive font size based on image width
+        // 1. Draw Logo (Top Left)
+        if (logo) {
+          const logoWidth = Math.max(40, Math.floor(canvas.width * 0.15));
+          const logoHeight = (logo.height / logo.width) * logoWidth;
+          const padding = Math.max(10, Math.floor(canvas.width * 0.03));
+          
+          ctx.shadowColor = 'rgba(255, 255, 255, 0.7)';
+          ctx.shadowBlur = 10;
+          ctx.drawImage(logo, padding, padding, logoWidth, logoHeight);
+          ctx.shadowBlur = 0;
+        }
+
+        // 2. Draw Text (Bottom Right)
         const fontSize = Math.max(16, Math.floor(img.width * 0.04));
-        ctx.font = `600 ${fontSize}px "Inter", sans-serif`;
+        ctx.font = `italic 700 ${fontSize}px "Inter", sans-serif`;
         
-        // Styles from user: pink color, 70% opacity
-        // Pink color #ff69b4 with 0.7 opacity
-        ctx.fillStyle = 'rgba(255, 105, 180, 0.7)';
+        // Visibility: Dark color with white glow
+        ctx.fillStyle = 'rgba(20, 20, 20, 0.9)';
+        ctx.shadowColor = 'white';
+        ctx.shadowBlur = 15;
         ctx.textAlign = 'right';
         ctx.textBaseline = 'bottom';
 
-        // Add a subtle shadow for better readability on bright backgrounds
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-        ctx.shadowBlur = 4;
-        ctx.shadowOffsetX = 2;
-        ctx.shadowOffsetY = 2;
+        const paddingText = Math.max(10, Math.floor(img.width * 0.03));
+        ctx.fillText('heartecho.in', canvas.width - paddingText, canvas.height - paddingText);
 
-        const padding = Math.max(10, Math.floor(img.width * 0.02));
-        ctx.fillText('heartecho.in', canvas.width - padding, canvas.height - padding);
-
-        // Export as Blob then File
         canvas.toBlob((blob) => {
           if (blob) {
             resolve(new File([blob], file.name, { type: file.type }));
           } else {
             reject(new Error("Canvas toBlob failed"));
           }
-        }, file.type, 0.9); // 0.9 quality
+        }, file.type, 0.9);
       };
       img.onerror = () => reject(new Error("Image load failed"));
       img.src = e.target.result;
     };
     reader.onerror = () => reject(new Error("FileReader failed"));
     reader.readAsDataURL(file);
+  });
+};
+
+/**
+ * Loads the brand logo from public directory
+ */
+const loadLogo = () => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = '/heartecho_b.png';
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
   });
 };
