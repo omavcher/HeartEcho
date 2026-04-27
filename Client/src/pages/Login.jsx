@@ -66,12 +66,12 @@ function Login() {
     // Then check URL params directly from window
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
-      const fromParam = urlParams.get('from');
+      const fromParam = urlParams.get('from') || urlParams.get('redirect');
       if (fromParam) {
         try {
           return decodeURIComponent(fromParam);
         } catch (error) {
-          console.error('Error decoding from parameter:', error);
+          console.error('Error decoding from/redirect parameter:', error);
           return '/';
         }
       }
@@ -87,17 +87,17 @@ function Login() {
     if (typeof window !== 'undefined') {
       fetch("https://api.ipify.org?format=json")
         .then((response) => response.json())
-        .then((data) => setIp(data.ip))
-        .catch((error) => console.error("Error fetching IP:", error));
-
-      // Use HTTPS to avoid mixed content warnings
-      fetch("https://ip-api.com/json")
+        .then((data) => {
+          setIp(data.ip);
+          // Use the IP to get detailed location
+          return fetch(`https://ip-api.com/json/${data.ip}`);
+        })
         .then((response) => response.json())
         .then((data) => {
           setCoordinates({ lat: data.lat, lon: data.lon });
-          setLocationUser(data.regionName);
+          setLocationUser(data.regionName || data.city);
         })
-        .catch((error) => console.error("Error fetching location:", error));
+        .catch((error) => console.error("Error fetching IP/Location:", error));
     }
   }, []); // Removed searchParams dependency
 

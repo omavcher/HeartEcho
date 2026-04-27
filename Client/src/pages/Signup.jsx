@@ -109,12 +109,12 @@ function Signup() {
     
     // Then check URL params
     const urlParams = new URLSearchParams(window.location.search);
-    const fromParam = urlParams.get('from');
+    const fromParam = urlParams.get('from') || urlParams.get('redirect');
     if (fromParam) {
       try {
         return decodeURIComponent(fromParam);
       } catch (error) {
-        console.error('Error decoding from parameter:', error);
+        console.error('Error decoding from/redirect parameter:', error);
         return '/';
       }
     }
@@ -389,17 +389,18 @@ function Signup() {
       
       fetch("https://api.ipify.org?format=json")
         .then((response) => response.json())
-        .then((data) => setIp(data.ip))
-        .catch((error) => console.error("Error fetching IP:", error));
-
-      fetch("https://ipapi.co/json/")
+        .then((data) => {
+          setIp(data.ip);
+          return fetch(`https://ip-api.com/json/${data.ip}`);
+        })
         .then((response) => response.json())
         .then((data) => {
-          setCoordinates({ lat: data.latitude, lon: data.longitude });
-          setFormData(prev => ({ ...prev, country: data.country_code || "IN" }));
-          localStorage.setItem('user_country', data.country_code || "IN");
+          setCoordinates({ lat: data.lat, lon: data.lon });
+          const cCode = data.countryCode || "IN";
+          setFormData(prev => ({ ...prev, country: cCode }));
+          localStorage.setItem('user_country', cCode);
         })
-        .catch((error) => console.error("Error fetching location:", error));
+        .catch((error) => console.error("Error fetching IP/Location:", error));
     }
   }, [isClient]);
 

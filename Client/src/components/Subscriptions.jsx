@@ -100,11 +100,18 @@ function SubscriptionContent() {
         setIsCountryLoading(false);
       } else {
         try {
-          const res = await axios.get('https://ipapi.co/json/');
-          const c = res.data.country_code || 'IN';
+          // Get IP first
+          const ipRes = await axios.get('https://api.ipify.org?format=json');
+          const userIp = ipRes.data.ip;
+          
+          // Get location details using IP
+          const locRes = await axios.get(`https://ip-api.com/json/${userIp}`);
+          const c = locRes.data.countryCode || 'IN';
+          
           setCountry(c);
           if (typeof window !== 'undefined') localStorage.setItem('user_country', c);
         } catch (e) {
+          console.error("Location detection error:", e);
           setCountry('IN');
           if (typeof window !== 'undefined') localStorage.setItem('user_country', 'IN');
         } finally {
@@ -131,7 +138,11 @@ function SubscriptionContent() {
   }, []);
 
   const handlePayPalSuccess = async (order, amount, plan) => {
-    if (!token) { router.push('/login'); return; }
+    if (!token) { 
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/subscribe';
+      router.push(`/login?from=${encodeURIComponent(currentPath)}`); 
+      return; 
+    }
     try {
       if (typeof window !== 'undefined' && window.trackAppEvent) {
         window.trackAppEvent('subscription_purchase', { plan, amount, currency: p.code, transaction_id: order.id });
@@ -205,7 +216,11 @@ function SubscriptionContent() {
   };
 
   const handlePayment = async (amount, plan) => {
-    if (!token) { router.push('/login'); return; }
+    if (!token) { 
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/subscribe';
+      router.push(`/login?from=${encodeURIComponent(currentPath)}`); 
+      return; 
+    }
     setIsLoading(plan);
     try {
       // Track checkout initiation
