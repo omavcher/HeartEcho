@@ -497,6 +497,40 @@ exports.aiAllModelData = async (req,res) =>{
     }
   };
   
+  // Create a single Prebuilt AI Friend
+  exports.createAIFriend = async (req, res) => {
+    try {
+      const data = req.body;
+      
+      // Validate required fields
+      const requiredFields = ["gender", "relationship", "age", "name"];
+      for (const field of requiredFields) {
+        if (!(field in data) || !data[field]) {
+          return res.status(400).json({
+            success: false,
+            message: `Missing or invalid required field: ${field}`,
+          });
+        }
+      }
+
+      const newFriend = new PrebuiltAIFriend(data);
+      await newFriend.save();
+
+      res.status(201).json({
+        success: true,
+        message: "AI Friend created successfully",
+        data: newFriend,
+      });
+    } catch (error) {
+      console.error("Error creating AI Friend:", error);
+      res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
+        error: error.message,
+      });
+    }
+  };
+
   // Edit (Update) a Prebuilt AI Friend
   exports.updateAIFriend = async (req, res) => {
     try {

@@ -23,6 +23,7 @@ router.post('/put-alldata/multipel', controller.PutAIFrindData);
 
 router.delete("/aiuser-data/:id", controller.deleteAIFriend);
 router.put("/aiuser-data/:id", controller.updateAIFriend);
+router.post("/aiuser-data", controller.createAIFriend);
 router.post("/aiuser-data/multiple", controller.PutAIFrindData);
 
 
