@@ -421,7 +421,12 @@ exports.aiAllModelData = async (req, res) => {
                 $expr: {
                   $or: [
                     { $eq: ["$aiParticipants", "$$friendId"] },
-                    { $in: ["$$friendId", { $ifNull: ["$aiParticipants", []] }] }
+                    {
+                      $and: [
+                        { $isArray: "$aiParticipants" },
+                        { $in: ["$$friendId", "$aiParticipants"] }
+                      ]
+                    }
                   ]
                 }
               }
