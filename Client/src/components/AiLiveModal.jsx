@@ -334,6 +334,8 @@ export default function AiLiveModal({ model, onClose }) {
               onEnded={handleVideoEnded}
               onError={() => setVideoError(true)}
               poster={model.avatar}
+              controlsList="nodownload"
+              onContextMenu={(e) => e.preventDefault()}
             />
           ) : (
             <div className="alvm-fallback">

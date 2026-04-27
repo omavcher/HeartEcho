@@ -543,7 +543,15 @@ const AIFriendsAdmin = () => {
                 <button className="fif-preview-close-x30sn">×</button>
                 {previewMedia.type === 'image' ? 
                     <img src={previewMedia.url} className="fif-preview-content-x30sn" onClick={e=>e.stopPropagation()} /> :
-                    <video src={previewMedia.url} controls autoPlay className="fif-preview-content-x30sn" onClick={e=>e.stopPropagation()} />
+                    <video 
+                        src={previewMedia.url} 
+                        controls 
+                        autoPlay 
+                        controlsList="nodownload"
+                        onContextMenu={(e) => e.preventDefault()}
+                        className="fif-preview-content-x30sn" 
+                        onClick={e=>e.stopPropagation()} 
+                    />
                 }
             </div>
         )}
@@ -874,7 +882,13 @@ const AIFriendsAdmin = () => {
                                     <div className="fif-media-grid-x30sn">
                                         {editFriend.video_gallery.filter(Boolean).map((url, i) => (
                                             <div key={i} className="fif-media-item-x30sn">
-                                                <video src={url} onClick={() => setPreviewMedia({type:'video', url})} style={{cursor:'pointer'}}/>
+                                                <video 
+                                                    src={url} 
+                                                    controlsList="nodownload"
+                                                    onContextMenu={(e) => e.preventDefault()}
+                                                    onClick={() => setPreviewMedia({type:'video', url})} 
+                                                    style={{cursor:'pointer'}}
+                                                />
                                                 <button type="button" className="fif-media-remove-x30sn" onClick={() => {
                                                     const newGal = [...editFriend.video_gallery];
                                                     newGal.splice(i, 1);

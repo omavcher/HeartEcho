@@ -800,6 +800,8 @@ function LiveStoryContent() {
                                     autoPlay
                                     playsInline
                                     controls={false}
+                                    controlsList="nodownload"
+                                    onContextMenu={(e) => e.preventDefault()}
                                     onEnded={handleMovieEnd}
                                     className="ls-movie-player"
                                 />

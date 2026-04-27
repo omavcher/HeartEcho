@@ -81,6 +81,8 @@ const MediaMessage = ({ message, isSubscribed, remainingQuota, onSubscribe }) =>
              <video 
               src={mediaUrl} 
               controls={hasAccess}
+              controlsList="nodownload"
+              onContextMenu={(e) => e.preventDefault()}
               className={`media-content-video ${!hasAccess ? 'blurred' : ''}`}
             />
             {!hasAccess && <div className="play-overlay"><Play fill="white" size={24} /></div>}

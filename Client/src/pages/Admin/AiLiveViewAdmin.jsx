@@ -117,7 +117,14 @@ const MediaUploadField = ({ label, icon, folder, accept, multiple, value, onChan
           {previews.map((src, i) => (
             <div className="preview-thumb-ls" key={`new-${i}`}>
               {isVideo ? (
-                <video src={src} className="thumb-media-ls" muted playsInline />
+                <video 
+                  src={src} 
+                  className="thumb-media-ls" 
+                  muted 
+                  playsInline 
+                  controlsList="nodownload"
+                  onContextMenu={(e) => e.preventDefault()}
+                />
               ) : (
                 <img src={src} className="thumb-media-ls" alt="preview" />
               )}
@@ -139,7 +146,14 @@ const MediaUploadField = ({ label, icon, folder, accept, multiple, value, onChan
             existingUrls.map((url, i) => (
               <div className="preview-thumb-ls existing-ls" key={`existing-${i}`}>
                 {isVideo ? (
-                  <video src={url} className="thumb-media-ls" muted playsInline />
+                  <video 
+                    src={url} 
+                    className="thumb-media-ls" 
+                    muted 
+                    playsInline 
+                    controlsList="nodownload"
+                    onContextMenu={(e) => e.preventDefault()}
+                  />
                 ) : (
                   <img src={url} className="thumb-media-ls" alt="saved" />
                 )}
