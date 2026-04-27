@@ -263,8 +263,6 @@ const AIFriendsAdmin = () => {
   const [selectedGender, setSelectedGender] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [editFriend, setEditFriend] = useState(null);
-  const [showAddSection, setShowAddSection] = useState(false);
-  const [jsonInput, setJsonInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [previewMedia, setPreviewMedia] = useState({ type: null, url: null });
@@ -496,23 +494,31 @@ const AIFriendsAdmin = () => {
         // Clean data
         const payload = {
             ...editFriend,
-            interests: typeof editFriend.interests === 'string' ? editFriend.interests.split(',').map(s=>s.trim()) : editFriend.interests,
-            img_gallery: editFriend.img_gallery.filter(x=>x),
-            video_gallery: editFriend.video_gallery.filter(x=>x)
+            interests: typeof editFriend.interests === 'string' 
+              ? editFriend.interests.split(',').map(s => s.trim()).filter(Boolean) 
+              : editFriend.interests,
+            img_gallery: (editFriend.img_gallery || []).filter(x => x),
+            video_gallery: (editFriend.video_gallery || []).filter(x => x)
         };
-        await axios.put(`${api.Url}/admin/aiuser-data/${editFriend._id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+
+        if (editFriend._id) {
+            // Update existing
+            await axios.put(`${api.Url}/admin/aiuser-data/${editFriend._id}`, payload, { 
+                headers: { Authorization: `Bearer ${token}` } 
+            });
+        } else {
+            // Create new
+            await axios.post(`${api.Url}/admin/aiuser-data`, payload, { 
+                headers: { Authorization: `Bearer ${token}` } 
+            });
+        }
+
         setEditFriend(null);
         fetchAllData();
-    } catch (e) { alert("Update failed"); }
-  };
-
-  const handleAddMultiple = async () => {
-      if(!jsonInput.trim()) return alert("Empty JSON");
-      try {
-          const token = getToken();
-          await axios.post(`${api.Url}/admin/put-alldata/multipel`, JSON.parse(jsonInput), { headers: { Authorization: `Bearer ${token}` } });
-          setJsonInput(""); setShowAddSection(false); fetchAllData();
-      } catch (e) { alert("Failed to add from JSON"); }
+    } catch (e) { 
+        console.error(e);
+        alert(editFriend._id ? "Update failed" : "Creation failed"); 
+    }
   };
 
   const handleDelete = async (id) => {
@@ -552,8 +558,20 @@ const AIFriendsAdmin = () => {
                 <button className="fif-btn-x30sn" onClick={fetchAllData} disabled={refreshing}>
                     <FaSync className={refreshing ? 'spinner' : ''}/> Sync
                 </button>
-                <button className="fif-btn-x30sn" onClick={() => setShowAddSection(!showAddSection)}>
-                    <FaPlus /> Bulk Add
+                <button className="fif-btn-x30sn primary" onClick={() => setEditFriend({
+                    name: "",
+                    relationship: "Stranger",
+                    gender: "female",
+                    age: 20,
+                    description: "",
+                    interests: "",
+                    avatar_img: "",
+                    avatar_motion_video: "",
+                    img_gallery: [],
+                    video_gallery: [],
+                    isActive: true
+                })}>
+                    <FaPlus /> Add New Companion
                 </button>
             </div>
         </div>
@@ -614,19 +632,6 @@ const AIFriendsAdmin = () => {
             </div>
         </div>
 
-        {/* BULK ADD */}
-        {showAddSection && (
-            <div className="fif-filters-x30sn" style={{flexDirection:'column', alignItems:'flex-start'}}>
-                <h3 style={{margin:0, color:'#fff'}}>Paste JSON Data</h3>
-                <textarea 
-                    className="fif-json-area-x30sn" 
-                    value={jsonInput} 
-                    onChange={e => setJsonInput(e.target.value)}
-                    placeholder='[{"name": "...", "gender": "female" ...}]'
-                />
-                <button className="fif-btn-x30sn primary" onClick={handleAddMultiple}>Process JSON</button>
-            </div>
-        )}
 
         {/* FILTERS */}
         <div className="fif-filters-x30sn">
@@ -699,7 +704,7 @@ const AIFriendsAdmin = () => {
             <div className="fif-modal-overlay-x30sn">
                 <div className="fif-modal-content-x30sn">
                     <div className="fif-modal-header-x30sn">
-                        <h3>Edit Profile</h3>
+                        <h3>{editFriend._id ? "Edit Companion Profile" : "Create New AI Companion"}</h3>
                         <button className="fif-close-btn-x30sn" onClick={() => setEditFriend(null)}>×</button>
                     </div>
                     <form onSubmit={handleEditSubmit} className="fif-modal-body-x30sn">
@@ -885,7 +890,9 @@ const AIFriendsAdmin = () => {
                         
                         <div style={{marginTop:20, display:'flex', justifyContent:'flex-end', gap:10}}>
                             <button type="button" className="fif-btn-x30sn" onClick={() => setEditFriend(null)}>Cancel</button>
-                            <button type="submit" className="fif-btn-x30sn primary">Save Changes</button>
+                            <button type="submit" className="fif-btn-x30sn primary">
+                                {editFriend._id ? "Save Changes" : "Create Companion"}
+                            </button>
                         </div>
                     </form>
                 </div>
