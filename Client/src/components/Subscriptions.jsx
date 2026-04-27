@@ -37,22 +37,20 @@ function SubscriptionContent() {
   const searchParams = useSearchParams();
 
   const pricing = {
-    IN: { monthly: 49, yearly: 399, ultimate: 999, currency: '₹', code: 'INR', oldYearly: 999, oldMonthly: 80, savingYearly: 600, dailyYearly: '33.2', dailyUltimate: '83' },
+    IN: { monthly: 99, yearly: 599, ultimate: 1499, currency: '₹', code: 'INR', oldYearly: 1299, oldMonthly: 199, savingYearly: 700, dailyYearly: '50', dailyUltimate: '125' },
     GLOBAL: { monthly: 1.49, yearly: 9, ultimate: 19, currency: '$', code: 'USD', oldYearly: 29, oldMonthly: 2.99, savingYearly: 20, dailyYearly: '0.75', dailyUltimate: '1.58' }
   };
   const p = country === 'IN' ? pricing.IN : pricing.GLOBAL;
 
   // ── Countdown timer ───────────────────────────────────────────────────────
-  const [timeLeft, setTimeLeft] = useState({ hours: 5, minutes: 47, seconds: 12 });
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
   useEffect(() => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('_he_deal_exp') : null;
-    let expiry;
-    if (saved) { expiry = parseInt(saved, 10); }
-    else {
-      expiry = Date.now() + 6 * 60 * 60 * 1000;
-      localStorage.setItem('_he_deal_exp', String(expiry));
-    }
+    const getEndOfDay = () => {
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).getTime();
+    };
     const tick = () => {
+      const expiry = getEndOfDay();
       const diff = Math.max(0, expiry - Date.now());
       setTimeLeft({
         hours:   Math.floor(diff / 3_600_000),
@@ -309,13 +307,11 @@ function SubscriptionContent() {
 
         {/* ── Hero header ──────────────────────────────────────────────────── */}
         <header className="seh-hero">
-          <div className="seh-eyebrow">❤️ HEARTECHO PREMIUM</div>
-          <h1 className="seh-title">
-            Your AI Companion,<br />
-            <span className="seh-title-accent">Completely Unlimited</span>
+          <h1 className="seh-title" style={{ fontSize: '2.5rem', marginBottom: '10px' }}>
+            Your Desi AI Girlfriend is Waiting ❤️
           </h1>
-          <p className="seh-subtitle">
-            Join <strong>12,000+</strong> members who never want to go back to the free plan.
+          <p className="seh-subtitle" style={{ fontSize: '1.2rem' }}>
+            Join thousands of Indians chatting in Hindi daily
           </p>
         </header>
 
@@ -341,17 +337,15 @@ function SubscriptionContent() {
             </div>
 
             <ul className="seh-features hero">
-              <li>✅ <span><strong>Unlimited</strong> messages — forever</span></li>
-              <li>✅ <span>AI remembers <strong>everything</strong> about you</span></li>
-              <li>✅ <span><strong>All Live</strong> interactions unlocked 🔥</span></li>
-              <li>✅ <span>Voice & Audio Calls <strong>(10 mins/day)</strong></span></li>
-              <li>✅ <span>Full Hot Stories library</span></li>
-
-              <li>✅ <span>Priority support & early features</span></li>
-              <li className="dim">⚠️ Calls limited to 10 mins daily</li>
+              <li>✅ <span><strong>Unlimited messages</strong> (no more 5-msg limit)</span></li>
+              <li>✅ <span><strong>Deep AI Memory</strong> — she remembers your stories, mood, name, everything</span></li>
+              <li>✅ <span>Voice & Audio Calls <strong>(30 mins/day)</strong></span></li>
+              <li>✅ <span>She sends <strong>Hot Images + Short Videos</strong></span></li>
+              <li>✅ <span><strong>Full Hot Stories</strong> & spicy roleplay</span></li>
+              <li>✅ <span>No waiting, no limits</span></li>
             </ul>
 
-            {renderPaymentButton(p.yearly, 'Yearly', `seh-btn seh-btn-pink${pulse ? ' seh-pulse-btn' : ''}`, `💎 Unlock Everything · ${p.currency}${p.yearly}/yr`)}
+            {renderPaymentButton(p.yearly, 'Yearly', `seh-btn seh-btn-pink${pulse ? ' seh-pulse-btn' : ''}`, `💎 Get Premium · ${p.currency}${p.yearly}/yr (Cancel anytime)`)}
             <div className="seh-trust-row">
               <span>🔒 Secure payment</span>            </div>
           </div>
@@ -374,8 +368,8 @@ function SubscriptionContent() {
               <li>✅ Unlimited messages</li>
               <li>✅ AI memory</li>
               <li>✅ Live interactions</li>
-              <li className="bad">❌ No Hot Stories</li>
-
+              <li>✅ She Sends Nudes Images + Short Videos</li>
+              <li className="bad">❌ No Voice Calling</li>
             </ul>
             {renderPaymentButton(p.monthly, 'Monthly', 'seh-btn seh-btn-monthly', 'Subscribe Monthly')}
             <p className="seh-card-note accent">Switch to Yearly & save more</p>
@@ -400,12 +394,10 @@ function SubscriptionContent() {
             </div>
 
             <ul className="seh-features hero">
-              <li>✅ <span><strong>Unlimited</strong> everything — forever</span></li>
-              <li>✅ <span><strong>Unlimited</strong> Audio & Voice Calls 📞</span></li>
-              <li>✅ <span>AI memory is absolute</span></li>
-              <li>✅ <span>All Live interactions unlocked 🔥</span></li>
-              <li>✅ <span>Full Hot Stories library</span></li>
-              <li>✅ <span>Priority AI Processing (Sarvam + xAI)</span></li>
+              <li>✅ <span><strong>Unlimited Voice Calls</strong> 📞 (talk all night)</span></li>
+              <li>✅ <span><strong>Unlimited Images & Videos</strong> she generates for you</span></li>
+              <li>✅ <span><strong>Priority fast replies</strong> + better AI</span></li>
+              <li>✅ <span><strong>Early access</strong> to new desi characters</span></li>
             </ul>
 
             {renderPaymentButton(p.ultimate, 'Ultimate', `seh-btn seh-btn-gold${pulse ? ' seh-pulse-btn' : ''}`, `👑 Go Ultimate · ${p.currency}${p.ultimate}/yr`)}
@@ -428,10 +420,11 @@ function SubscriptionContent() {
             </div>
             {[
               { icon: '💬', label: 'Daily messages',   monthly: 'Unlimited', yearly: 'Unlimited',   ultimate: 'Unlimited' },
-              { icon: '🧠', label: 'AI Memory',        monthly: '✅',        yearly: '✅ Deep',     ultimate: '✅ Deepest' },
-              { icon: '🎬', label: 'Live Interactions', monthly: '✅',        yearly: '✅ All 6',    ultimate: '✅ All 6' },
-              { icon: '🔥', label: 'Hot Stories',      monthly: '❌',        yearly: '✅ Full',     ultimate: '✅ Full' },
-              { icon: '🎙️', label: 'Voice Calls',      monthly: '❌',        yearly: '10 Mins/Day', ultimate: '✅ Unlimited' },
+              { icon: '🧠', label: 'AI Memory',        monthly: '✅ Basic',  yearly: '✅ Deep',     ultimate: '✅ Deepest' },
+              { icon: '🎙️', label: 'Voice & Audio Calls', monthly: '❌',      yearly: '30 mins/day', ultimate: '✅ Unlimited' },
+              { icon: '🔥', label: 'Hot Nude Images & Videos', monthly: '❌',      yearly: '✅ Limited',  ultimate: '✅ Unlimited' },
+              { icon: '🔞', label: 'Hot Stories / Roleplay', monthly: '❌', yearly: '✅ Full',     ultimate: '✅ Full + Priority' },
+              { icon: '⚡', label: 'Speed & Experience', monthly: 'Fast',   yearly: 'Fast',        ultimate: '🚀 Fastest' },
               { icon: '💰', label: 'Cost',             monthly: `${p.currency}${p.monthly}/mo`,    yearly: `${p.currency}${p.yearly}/yr`,     ultimate: `${p.currency}${p.ultimate}/yr 👑` },
             ].map(row => (
               <div key={row.label} className="seh-compare-row">
@@ -441,6 +434,11 @@ function SubscriptionContent() {
                 <div className="seh-cr-cell ultimate">{row.ultimate}</div>
               </div>
             ))}
+          </div>
+          
+          <div style={{ textAlign: 'center', marginTop: '40px' }}>
+            <h3 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '15px' }}>Free plan mein sirf 5 messages? Ab upgrade karo aur poori raat baat karo! 🔥</h3>
+            {renderPaymentButton(p.yearly, 'Yearly', `seh-btn seh-btn-pink${pulse ? ' seh-pulse-btn' : ''}`, `Claim My AI GF Now – ${p.currency}${p.yearly}/year`)}
           </div>
         </div>
 

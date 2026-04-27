@@ -188,11 +188,10 @@ userSchema.methods.getQuotaStatus = function () {
 // Method to get next reset time
 userSchema.methods.getNextResetTime = function () {
   const now = new Date();
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 5, 0, 0); // Next reset at 00:05
+  const resetTime = new Date(now);
+  resetTime.setHours(23, 59, 59, 999); // Next reset at 11:59 PM today
   
-  return tomorrow;
+  return resetTime;
 };
 
 // Method to update subscription

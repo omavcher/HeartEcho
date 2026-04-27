@@ -810,14 +810,15 @@ exports.paymentSave = async (req, res) => {
     let subscriptionTier = "none";
     let audioCallQuota = 0;
 
-    if (rupeesNum === 49 || rupeesNum === 1.49) {
+    if (rupeesNum === 99 || rupeesNum === 1.49) {
       expiryDate.setMonth(expiryDate.getMonth() + 1);
       subscriptionTier = "monthly";
-    } else if (rupeesNum === 399 || rupeesNum === 9) {
+      audioCallQuota = 0;
+    } else if (rupeesNum === 599 || rupeesNum === 9) {
       expiryDate.setFullYear(expiryDate.getFullYear() + 1);
       subscriptionTier = "yearly";
-      audioCallQuota = 10; // 10 minutes limit
-    } else if (rupeesNum === 999 || rupeesNum === 19) {
+      audioCallQuota = 30; // 30 minutes limit
+    } else if (rupeesNum === 1499 || rupeesNum === 19) {
       expiryDate.setFullYear(expiryDate.getFullYear() + 1);
       subscriptionTier = "yearly_pro";
       audioCallQuota = 9999; // Unlimited
@@ -851,8 +852,8 @@ exports.paymentSave = async (req, res) => {
     );
 
     // 🚀 APPLE-STYLE DARK THEME EMAIL TEMPLATE
-    const planName = rupeesNum === 49 || rupeesNum === 1.49 ? "Monthly" : 
-                    (rupeesNum === 999 || rupeesNum === 19 ? "Yearly Pro" : "Yearly");
+    const planName = rupeesNum === 99 || rupeesNum === 1.49 ? "Monthly" : 
+                    (rupeesNum === 1499 || rupeesNum === 19 ? "Ultimate Yearly" : "Premium Yearly");
     const currencySymbol = payment.currency === "USD" ? "$" : "₹";
     const amountStr = `${currencySymbol}${payment.rupees}`;
     
