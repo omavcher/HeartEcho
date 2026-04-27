@@ -159,6 +159,18 @@ exports.dashboardData = async (req, res) => {
       // Latest 10 AI friends created (lifetime)
       const notifications = await AIFriend.find().sort({ createdAt: -1 }).limit(10);
 
+      // User breakdown by country
+      const countryBreakdown = await User.aggregate([
+          { $group: { _id: "$country", count: { $sum: 1 } } },
+          { $sort: { count: -1 } }
+      ]);
+
+      const formattedCountryBreakdown = countryBreakdown.map(item => ({
+          country: item._id || "Unknown",
+          count: item.count,
+          percentage: ((item.count / usersData) * 100).toFixed(1)
+      }));
+
       return res.status(200).json({
           usersData,
           paymentsData: totalRevenue,
@@ -166,7 +178,8 @@ exports.dashboardData = async (req, res) => {
           messageQuotaData: totalMessages,
           activeUsers: totalActiveUsers,
           revenueTrend,
-          notifications
+          notifications,
+          countryBreakdown: formattedCountryBreakdown
       });
 
   } catch (error) {

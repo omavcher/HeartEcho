@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
   Tooltip, ResponsiveContainer, XAxis, YAxis, CartesianGrid, AreaChart, Area,
-  BarChart, Bar, Legend
+  BarChart, Bar, Legend, PieChart, Pie, Cell
 } from "recharts";
 import {
   FaUsers, FaMoneyBillWave, FaEnvelope, FaUserCheck, FaChartLine
@@ -134,10 +134,24 @@ const dashboardStyles = `
 }
 .chart-grid-layout-x30sn {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 20px;
   margin-top: 20px;
 }
+.country-list-x30sn {
+  margin-top: 20px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.country-item-x30sn {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #222;
+}
+.country-name-x30sn { color: #fff; font-weight: 500; }
+.country-stats-x30sn { color: #888; font-size: 13px; }
+.country-count-x30sn { color: #ff69b4; font-weight: 600; margin-right: 8px; }
 @media (max-width: 600px) {
   .chart-grid-layout-x30sn {
     grid-template-columns: 1fr;
@@ -148,7 +162,14 @@ const dashboardStyles = `
 const AdminDashboard = () => {
   const [refresh, setRefresh] = useState(false);
   const [timePeriod, setTimePeriod] = useState("month");
-  const [statsData, setStatsData] = useState({ totalUsers: 0, activeUsers: 0, totalRevenue: 0, messagesSent: 0, revenueByCurrency: { INR: 0, USD: 0 } });
+  const [statsData, setStatsData] = useState({ 
+    totalUsers: 0, 
+    activeUsers: 0, 
+    totalRevenue: 0, 
+    messagesSent: 0, 
+    revenueByCurrency: { INR: 0, USD: 0 },
+    countryBreakdown: [] 
+  });
   const [graphData, setGraphData] = useState({ revenueTrend: [] });
   const [loading, setLoading] = useState(true);
   const [conversionData, setConversionData] = useState([]);
@@ -176,7 +197,8 @@ const AdminDashboard = () => {
         activeUsers: data.activeUsers || 0,
         totalRevenue: data.paymentsData || 0,
         messagesSent: data.messageQuotaData || 0,
-        revenueByCurrency: data.revenueByCurrency || { INR: 0, USD: 0 }
+        revenueByCurrency: data.revenueByCurrency || { INR: 0, USD: 0 },
+        countryBreakdown: data.countryBreakdown || []
       });
 
       const revenueTrendMapped = data.revenueTrend?.map(item => ({
@@ -339,6 +361,54 @@ const AdminDashboard = () => {
                       <Bar name="Premium Conversions" dataKey="conversions" fill="#fff" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="chart-section-x30sn" style={{ gridColumn: '1 / -1' }}>
+                <div className="chart-head-x30sn">
+                  <FaUsers style={{color:'#ff69b4'}} />
+                  <h3>User Distribution by Country</h3>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '300px', height: '300px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={statsData.countryBreakdown}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={80}
+                          outerRadius={110}
+                          paddingAngle={5}
+                          dataKey="count"
+                          nameKey="country"
+                        >
+                          {statsData.countryBreakdown.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={[ '#ff69b4', '#ffffff', '#888888', '#ff1493', '#ffc0cb' ][index % 5]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#000', border: '1px solid #333', color: '#fff', borderRadius: '8px' }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div style={{ flex: '1', minWidth: '300px' }}>
+                    <div className="country-list-x30sn" style={{ maxHeight: '300px' }}>
+                      {statsData.countryBreakdown.map((item, idx) => (
+                        <div key={idx} className="country-item-x30sn" style={{ padding: '12px 0' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: [ '#ff69b4', '#ffffff', '#888888', '#ff1493', '#ffc0cb' ][idx % 5] }}></div>
+                            <span className="country-name-x30sn" style={{ fontSize: '16px' }}>{item.country}</span>
+                          </div>
+                          <div className="country-stats-x30sn">
+                            <span className="country-count-x30sn" style={{ fontSize: '16px' }}>{item.count} Users</span>
+                            <span style={{ fontSize: '16px', color: '#ff69b4' }}>{item.percentage}%</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
