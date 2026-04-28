@@ -55,9 +55,19 @@ const userSchema = new mongoose.Schema({
   login_details: [{ type: mongoose.Schema.Types.ObjectId, ref: "LoginDetail" }],
   tickets: [{ type: mongoose.Schema.Types.ObjectId, ref: "Ticket" }],
   chats: [{ type: mongoose.Schema.Types.ObjectId, ref: "Chat" }],
-  ai_friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "AIFriend" }]
+  ai_friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "AIFriend" }],
+
+  // Push Notifications
+  fcmToken: { type: String, default: "" },
+  isMobileUser: { type: Boolean, default: false }
 }, {
   timestamps: true
+});
+
+// Sync isMobileUser with fcmToken presence
+userSchema.pre('save', function(next) {
+  this.isMobileUser = !!(this.fcmToken && this.fcmToken.trim() !== "");
+  next();
 });
 
 // Pre-save middleware to ensure quota consistency

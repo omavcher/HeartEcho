@@ -29,6 +29,7 @@ import PaymentActivityAdmin from "./Admin/PaymentActivityAdmin.jsx";
 import LiveStoriesAdmin from "./Admin/LiveStoriesAdmin.jsx";
 import AiLiveViewAdmin from "./Admin/AiLiveViewAdmin.jsx";
 import DeletedAccountsAdmin from "./Admin/DeletedAccountsAdmin.jsx";
+import NotificationsAdmin from "./Admin/NotificationsAdmin.jsx";
 
 const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
   const pathname = usePathname();
@@ -72,7 +73,8 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
     { path: "/admin/payment-activity", label: "Payment Activity", icon: <MdPayment />, countKey: "payments" },
     { path: "/admin/deleted-accounts", label: "Deleted Accounts", icon: <FaUsers />, countKey: "deletedAccounts" },
     { path: "/admin/live-stories", label: "Live Stories AI", icon: <FaGem /> },
-    { path: "/admin/ai-live-view", label: "AI Live View", icon: <FaGem /> }
+    { path: "/admin/ai-live-view", label: "AI Live View", icon: <FaGem /> },
+    { path: "/admin/notifications", label: "Push Notifications", icon: <FaExclamationCircle /> }
   ];
 
   return (
@@ -185,6 +187,7 @@ const AdminPanel = () => {
         '/admin/deleted-accounts': <div className="content-wrapper-x30sn"><DeletedAccountsAdmin /></div>,
         '/admin/live-stories': <div className="content-wrapper-x30sn"><LiveStoriesAdmin /></div>,
         '/admin/ai-live-view': <div className="content-wrapper-x30sn"><AiLiveViewAdmin /></div>,
+        '/admin/notifications': <div className="content-wrapper-x30sn"><NotificationsAdmin /></div>,
 
     };
     // If the path matches edit story dynamic route

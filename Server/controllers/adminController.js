@@ -12,6 +12,7 @@ const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");
 const DeletedAccount = require("../models/DeletedAccount");
 const ReferralCreator = require("../models/ReferralCreator");
 const { generateCreatorToken, verifyReferralCreator } = require('../utils/jwt');
+const { sendPushNotification, sendMulticastNotification } = require("../utils/notificationService");
 // Get all deleted accounts
 exports.getDeletedAccounts = async (req, res) => {
   try {
@@ -808,6 +809,53 @@ exports.aiAllModelData = async (req, res) => {
       });
     }
   };
+
+exports.sendCustomNotification = async (req, res) => {
+  try {
+    const { target, userIds, title, body, data } = req.body;
+    // target: 'all' or 'specific'
+
+    if (target === 'all') {
+      const users = await User.find({ fcmToken: { $ne: "" } }).select("fcmToken");
+      const tokens = users.map(u => u.fcmToken).filter(t => t);
+      
+      if (tokens.length === 0) {
+        return res.status(400).json({ success: false, message: "No users with FCM tokens found" });
+      }
+
+      // Send in batches of 500 (Firebase limit)
+      const batches = [];
+      for (let i = 0; i < tokens.length; i += 500) {
+        batches.push(tokens.slice(i, i + 500));
+      }
+
+      for (const batch of batches) {
+        await sendMulticastNotification(batch, title, body, data);
+      }
+
+      return res.json({ success: true, message: `Notification sent to ${tokens.length} users` });
+    } else if (target === 'specific') {
+      if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ success: false, message: "No users specified" });
+      }
+
+      const users = await User.find({ _id: { $in: userIds }, fcmToken: { $ne: "" } }).select("fcmToken");
+      const tokens = users.map(u => u.fcmToken).filter(t => t);
+
+      if (tokens.length === 0) {
+        return res.status(400).json({ success: false, message: "Specified users don't have FCM tokens" });
+      }
+
+      await sendMulticastNotification(tokens, title, body, data);
+      return res.json({ success: true, message: `Notification sent to ${tokens.length} users` });
+    } else {
+      return res.status(400).json({ success: false, message: "Invalid target" });
+    }
+  } catch (error) {
+    console.error("Error sending admin notification:", error);
+    res.status(500).json({ success: false, message: "Error sending notification", error: error.message });
+  }
+};
 
 // Delete a ticket
 exports.deleteTicket = async (req, res) => {

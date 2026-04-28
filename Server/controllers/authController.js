@@ -224,3 +224,22 @@ exports.PutAIFrindData = async (req, res) => {
     });
   }
 };
+
+exports.updateFcmToken = async (req, res) => {
+  try {
+    const { fcmToken } = req.body;
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    user.fcmToken = fcmToken || "";
+    await user.save(); // This triggers the pre-save hook to update isMobileUser
+    
+    res.json({ success: true, message: "FCM Token updated successfully", isMobileUser: user.isMobileUser });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error updating token", error: error.message });
+  }
+};
