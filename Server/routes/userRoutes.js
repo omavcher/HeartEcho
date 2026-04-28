@@ -1,5 +1,6 @@
 const express = require("express");
 const controller = require("../controllers/userController");
+const authController = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -37,6 +38,9 @@ router.post("/check-quota", authMiddleware, controller.checkMessageQuota);
 // Upgrade routes (prorated billing)
 router.post("/payment/upgrade", authMiddleware, controller.upgradeSubscription);
 router.get("/payment/upgrade-pricing", authMiddleware, controller.getUpgradePricing);
+
+// FCM Token (Push Notifications) - called by Flutter app on login/signup
+router.post("/update-fcm-token", authMiddleware, authController.updateFcmToken);
 
 
 module.exports = router;
