@@ -77,6 +77,7 @@ router.get("/chats-data", authMiddleware, controller.getAllChatsDataToday);
 router.get("/login-activity",authMiddleware, controller.getLoginAnalytics)
 router.get("/payment-activity",authMiddleware, controller.getPaymentAnalytics)
 router.post("/send-notification", authMiddleware, controller.sendCustomNotification);
+router.get("/device-stats", authMiddleware, controller.getDeviceStats);
 
 module.exports = router;
 

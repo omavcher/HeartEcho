@@ -2231,3 +2231,16 @@ exports.getPaymentAnalytics = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+exports.getDeviceStats = async (req, res) => {
+  try {
+    const [mobileUsers, totalUsers] = await Promise.all([
+      User.countDocuments({ isMobileUser: true }),
+      User.countDocuments()
+    ]);
+    const webUsers = totalUsers - mobileUsers;
+    res.json({ success: true, data: { mobileUsers, webUsers, totalUsers } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};

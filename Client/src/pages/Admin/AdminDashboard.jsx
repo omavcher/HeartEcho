@@ -6,7 +6,7 @@ import {
   BarChart, Bar, Legend, PieChart, Pie, Cell
 } from "recharts";
 import {
-  FaUsers, FaMoneyBillWave, FaEnvelope, FaUserCheck, FaChartLine
+  FaUsers, FaMoneyBillWave, FaEnvelope, FaUserCheck, FaChartLine, FaMobileAlt, FaDesktop
 } from "react-icons/fa";
 import { IoMdRefresh } from "react-icons/io";
 import api from "../../config/api";
@@ -175,6 +175,7 @@ const AdminDashboard = () => {
   const [conversionData, setConversionData] = useState([]);
   const [conversionType, setConversionType] = useState("daily"); // daily or monthly
   const [notification, setNotification] = useState({ show: false, message: "", type: "error" });
+  const [deviceStats, setDeviceStats] = useState({ mobileUsers: 0, webUsers: 0 });
 
   const getToken = useCallback(() => (typeof window !== 'undefined' ? localStorage.getItem("token") || "" : ""), []);
 
@@ -215,6 +216,18 @@ const AdminDashboard = () => {
     }
   }, [timePeriod, getToken]);
 
+  const fetchDeviceStats = useCallback(async () => {
+    try {
+      const token = getToken();
+      const res = await axios.get(`${api.Url}/admin/device-stats`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) setDeviceStats(res.data.data);
+    } catch (err) {
+      console.error("Error fetching device stats", err);
+    }
+  }, [getToken]);
+
   const fetchConversionStats = useCallback(async () => {
     try {
       const token = getToken();
@@ -232,7 +245,8 @@ const AdminDashboard = () => {
   useEffect(() => { 
     fetchDashboardData();
     fetchConversionStats();
-  }, [fetchDashboardData, fetchConversionStats, refresh]);
+    fetchDeviceStats();
+  }, [fetchDashboardData, fetchConversionStats, fetchDeviceStats, refresh]);
 
   return (
     <>
@@ -296,6 +310,35 @@ const AdminDashboard = () => {
                 <h3 className="stat-value-x30sn" style={{ fontSize: '24px' }}>₹{statsData.totalRevenue.toLocaleString()}</h3>
                 <div style={{ marginTop: '8px', fontSize: '12px', color: '#888' }}>
                   ₹{statsData.revenueByCurrency.INR.toLocaleString()} + ${statsData.revenueByCurrency.USD.toLocaleString()}
+                </div>
+              </div>
+            </div>
+
+            {/* Device Stats Row */}
+            <div className="dash-grid-x30sn" style={{marginBottom: 30}}>
+              <div className="stat-card-x30sn" style={{'--card-color': '#00b4d8'}}>
+                <div className="stat-header-x30sn">
+                  <div className="stat-icon-x30sn" style={{background:'rgba(0,180,216,0.1)', color:'#00b4d8'}}><FaMobileAlt /></div>
+                  <span className="stat-label-x30sn">Mobile App Users</span>
+                </div>
+                <h3 className="stat-value-x30sn">{deviceStats.mobileUsers}</h3>
+                <div style={{marginTop:8, fontSize:12, color:'#555'}}>
+                  {deviceStats.mobileUsers + deviceStats.webUsers > 0
+                    ? `${((deviceStats.mobileUsers / (deviceStats.mobileUsers + deviceStats.webUsers)) * 100).toFixed(1)}% of total`
+                    : 'No data yet'}
+                </div>
+              </div>
+
+              <div className="stat-card-x30sn">
+                <div className="stat-header-x30sn">
+                  <div className="stat-icon-x30sn"><FaDesktop /></div>
+                  <span className="stat-label-x30sn">Web Users</span>
+                </div>
+                <h3 className="stat-value-x30sn">{deviceStats.webUsers}</h3>
+                <div style={{marginTop:8, fontSize:12, color:'#555'}}>
+                  {deviceStats.mobileUsers + deviceStats.webUsers > 0
+                    ? `${((deviceStats.webUsers / (deviceStats.mobileUsers + deviceStats.webUsers)) * 100).toFixed(1)}% of total`
+                    : 'No data yet'}
                 </div>
               </div>
             </div>
