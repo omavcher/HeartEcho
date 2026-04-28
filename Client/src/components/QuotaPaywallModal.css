@@ -1,0 +1,626 @@
+/* ================================================================
+   QuotaPaywallModal.css
+   Prefix: qpm-
+   Shown when user's free message quota is exhausted.
+   ================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* ── Variables ────────────────────────────────────────────────── */
+:root {
+  --qpm-pink:      #ce4085;
+  --qpm-pink-lt:   #ff7eb3;
+  --qpm-pink-dk:   #9b1a5a;
+  --qpm-gold:      #ffd60a;
+  --qpm-green:     #34d399;
+  --qpm-bg:        #0a0a0a;
+  --qpm-card:      #111;
+  --qpm-border:    rgba(255,255,255,0.09);
+  --qpm-muted:     rgba(255,255,255,0.45);
+  --qpm-ease:      cubic-bezier(0.25,0.46,0.45,0.94);
+}
+
+/* ── Overlay ──────────────────────────────────────────────────── */
+.qpm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0,0,0,0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: qpmFadeIn 0.3s var(--qpm-ease) both;
+  font-family: 'Inter', sans-serif;
+}
+
+@keyframes qpmFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Modal shell ─────────────────────────────────────────────── */
+.qpm-modal {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--qpm-bg);
+  border: 1px solid rgba(206,64,133,0.25);
+  border-radius: 28px;
+  display: flex;
+  flex-direction: row;   /* side-by-side on desktop */
+  box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(206,64,133,0.15);
+  animation: qpmSlideUp 0.38s var(--qpm-ease) both;
+  scrollbar-width: none;
+}
+.qpm-modal::-webkit-scrollbar { display: none; }
+
+@keyframes qpmSlideUp {
+  from { opacity: 0; transform: translateY(32px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Close button ────────────────────────────────────────────── */
+.qpm-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.2s;
+  line-height: 1;
+}
+.qpm-close:hover { background: rgba(255,255,255,0.18); transform: scale(1.1); }
+
+/* ════════════════════════════════════════════════════════════════
+   LEFT — Video Panel
+   ════════════════════════════════════════════════════════════════ */
+.qpm-video-panel {
+  width: 45%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  border-radius: 28px 0 0 28px;
+  overflow: hidden;
+}
+
+/* 16:9 enforced wrapper */
+.qpm-video-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* Video — hidden until ready, fades in */
+.qpm-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.qpm-video-visible { opacity: 1; }
+
+/* ── Skeleton shimmer (shows while video loads) ──────────────── */
+.qpm-video-skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #1a0a14 0%, #0d0d0d 50%, #1a0514 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+/* Animated shimmer sweep */
+.qpm-skeleton-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(206,64,133,0.08) 40%,
+    rgba(206,64,133,0.14) 50%,
+    rgba(206,64,133,0.08) 60%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: qpmShimmerSweep 1.6s ease-in-out infinite;
+}
+@keyframes qpmShimmerSweep {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* Heart icon in centre of skeleton */
+.qpm-skeleton-logo {
+  font-size: 2.5rem;
+  z-index: 3;
+  animation: qpmHeartBeat 1.2s ease-in-out infinite;
+  filter: drop-shadow(0 0 16px rgba(206,64,133,0.7));
+}
+@keyframes qpmHeartBeat {
+  0%,100% { transform: scale(1);    }
+  50%      { transform: scale(1.18); }
+}
+
+/* Gradient overlay on video for readability */
+.qpm-video-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.0)  50%,
+    rgba(0,0,0,0.55) 100%
+  );
+  pointer-events: none;
+}
+
+/* Badge overlaid on video */
+.qpm-video-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(0,0,0,0.6);
+  border: 1px solid rgba(206,64,133,0.5);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 50px;
+  backdrop-filter: blur(6px);
+  letter-spacing: 0.04em;
+}
+
+/* Stat strip below video */
+.qpm-stat-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 16px 12px;
+  flex: 1;
+  background: #080808;
+}
+.qpm-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.qpm-stat-num {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #fff;
+}
+.qpm-stat-lbl {
+  font-size: 0.67rem;
+  color: var(--qpm-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.qpm-stat-div {
+  width: 1px;
+  height: 32px;
+  background: var(--qpm-border);
+  flex-shrink: 0;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   RIGHT — Content Panel
+   ════════════════════════════════════════════════════════════════ */
+.qpm-content-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 28px 28px 24px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.qpm-content-panel::-webkit-scrollbar { display: none; }
+
+/* ── Countdown bar ────────────────────────────────────────────── */
+.qpm-countdown-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, rgba(206,64,133,0.12), rgba(155,26,90,0.08));
+  border: 1px solid rgba(206,64,133,0.25);
+  border-radius: 12px;
+  padding: 8px 14px;
+}
+.qpm-fire {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--qpm-pink-lt);
+  text-transform: uppercase;
+}
+.qpm-timer {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 1rem;
+  font-weight: 900;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.qpm-digit {
+  background: rgba(0,0,0,0.4);
+  padding: 3px 7px;
+  border-radius: 6px;
+  min-width: 28px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+/* ── Hero text ────────────────────────────────────────────────── */
+.qpm-hero-text { display: flex; flex-direction: column; gap: 6px; }
+.qpm-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--qpm-pink-lt);
+  opacity: 0.9;
+}
+.qpm-title {
+  font-size: clamp(1.3rem, 2.5vw, 1.75rem);
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  color: #fff;
+  margin: 0;
+}
+.qpm-title-accent {
+  background: linear-gradient(90deg, var(--qpm-pink), var(--qpm-pink-lt));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.qpm-subtitle {
+  font-size: 0.85rem;
+  color: var(--qpm-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Plans container ─────────────────────────────────────────── */
+.qpm-plans {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Base plan card ──────────────────────────────────────────── */
+.qpm-plan {
+  border-radius: 18px;
+  padding: 18px 18px 14px;
+  border: 1.5px solid var(--qpm-border);
+  background: var(--qpm-card);
+  position: relative;
+  transition: transform 0.22s var(--qpm-ease), box-shadow 0.22s var(--qpm-ease);
+}
+
+/* ── Hero plan (Yearly) ──────────────────────────────────────── */
+.qpm-plan-hero {
+  border-color: var(--qpm-pink);
+  background: linear-gradient(145deg, #180d14, #0f0f0f);
+  box-shadow: 0 0 0 1px rgba(206,64,133,0.3), 0 12px 36px rgba(206,64,133,0.15);
+}
+.qpm-plan-hero:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 0 1px var(--qpm-pink), 0 20px 50px rgba(206,64,133,0.3);
+}
+
+/* ── Monthly plan ────────────────────────────────────────────── */
+.qpm-plan-mono {
+  border-color: rgba(206,64,133,0.18);
+}
+.qpm-plan-mono:hover { transform: translateY(-2px); }
+
+/* ── Plan badge (absolutely positioned) ─────────────────────── */
+.qpm-plan-badge {
+  position: absolute;
+  top: -12px;
+  left: 16px;
+  background: linear-gradient(90deg, var(--qpm-pink-dk), var(--qpm-pink), var(--qpm-pink-lt));
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  padding: 3px 12px;
+  border-radius: 50px;
+  box-shadow: 0 4px 14px rgba(206,64,133,0.5);
+  animation: qpmBadgePulse 2s ease-in-out infinite;
+}
+@keyframes qpmBadgePulse {
+  0%,100% { box-shadow: 0 4px 14px rgba(206,64,133,0.5); }
+  50%      { box-shadow: 0 4px 22px rgba(206,64,133,0.85); }
+}
+
+/* ── Plan layout ─────────────────────────────────────────────── */
+.qpm-plan-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  margin-top: 4px;
+}
+.qpm-plan-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 3px;
+}
+.qpm-plan-saving {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--qpm-green);
+  background: rgba(52,211,153,0.1);
+  border: 1px solid rgba(52,211,153,0.25);
+  padding: 2px 8px;
+  border-radius: 50px;
+  display: inline-block;
+}
+.qpm-plan-price-col {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+.qpm-plan-price {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -1.5px;
+  background: linear-gradient(90deg, #fff, #ffc0dd);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+}
+.qpm-plan-price-sm {
+  font-size: 1.6rem;
+  background: none;
+  -webkit-text-fill-color: rgba(255,255,255,0.7);
+}
+.qpm-plan-per {
+  font-size: 0.8rem;
+  color: var(--qpm-muted);
+}
+
+/* ── Feature list ────────────────────────────────────────────── */
+.qpm-plan-features {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.qpm-plan-features li {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.4;
+}
+.qpm-plan-features li strong { color: #fff; }
+
+/* ── Plan note ───────────────────────────────────────────────── */
+.qpm-plan-note {
+  text-align: center;
+  font-size: 0.68rem;
+  color: rgba(206,64,133,0.6);
+  margin: 6px 0 0;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.qpm-btn {
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 13px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.qpm-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+
+/* Pink gradient CTA */
+.qpm-btn-pink {
+  background: linear-gradient(90deg, var(--qpm-pink-dk), var(--qpm-pink), #e879a8);
+  background-size: 200% 100%;
+  animation: qpmBtnGrad 3s ease infinite;
+  color: #fff;
+  box-shadow: 0 8px 26px rgba(206,64,133,0.45);
+}
+.qpm-btn-pink:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 36px rgba(206,64,133,0.65);
+}
+.qpm-btn-pink:active:not(:disabled) { transform: scale(0.98); }
+
+@keyframes qpmBtnGrad {
+  0%,100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+/* Shine sweep on pink button */
+.qpm-btn-shine {
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
+  transform: skewX(-20deg);
+  animation: qpmShine 3.5s infinite;
+}
+@keyframes qpmShine {
+  0%   { left: -100%; }
+  18%  { left: 200%; }
+  100% { left: 200%; }
+}
+
+/* Pulse animation on CTA */
+.qpm-pulse {
+  animation: qpmBtnPop 0.6s ease !important;
+}
+@keyframes qpmBtnPop {
+  0%  { transform: scale(1); }
+  40% { transform: scale(1.04); }
+  100%{ transform: scale(1); }
+}
+
+/* Monthly button — subtle */
+.qpm-btn-mono {
+  background: rgba(206,64,133,0.1);
+  border: 1px solid rgba(206,64,133,0.3);
+  color: var(--qpm-pink-lt);
+  font-size: 0.9rem;
+}
+.qpm-btn-mono:hover:not(:disabled) {
+  background: rgba(206,64,133,0.18);
+  transform: translateY(-2px);
+}
+
+/* ── Trust row ───────────────────────────────────────────────── */
+.qpm-trust-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.28);
+  border-top: 1px solid var(--qpm-border);
+  padding-top: 14px;
+  margin-top: auto;
+}
+
+/* ── FOMO toast (bottom-left) ────────────────────────────────── */
+.qpm-fomo-toast {
+  position: fixed;
+  bottom: 28px;
+  left: 24px;
+  background: #1a1a1a;
+  border: 1px solid rgba(206,64,133,0.35);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: 280px;
+  z-index: 100001;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  transform: translateY(140%);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275), opacity 0.3s;
+  pointer-events: none;
+}
+.qpm-fomo-toast.visible { transform: translateY(0); opacity: 1; }
+.qpm-fomo-toast p { margin: 0; font-size: 0.78rem; color: #eee; line-height: 1.4; }
+.qpm-fomo-toast span { color: var(--qpm-pink-lt); font-weight: 700; }
+.qpm-fomo-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--qpm-green); flex-shrink: 0;
+  box-shadow: 0 0 6px var(--qpm-green);
+  animation: qpmDotPulse 1.4s ease-in-out infinite;
+}
+@keyframes qpmDotPulse {
+  0%,100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.5); opacity: 0.5; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Tablet / Small desktop (768–960px) ──────────────────────── */
+@media (max-width: 960px) {
+  .qpm-modal { max-width: 720px; }
+  .qpm-video-panel { width: 42%; }
+  .qpm-content-panel { padding: 22px 20px 18px; gap: 14px; }
+  .qpm-title { font-size: 1.35rem; }
+}
+
+/* ── Mobile — stack vertically ────────────────────────────────── */
+@media (max-width: 680px) {
+  .qpm-overlay { padding: 0; align-items: flex-end; }
+
+  .qpm-modal {
+    flex-direction: column;   /* video on top, content below */
+    max-width: 100%;
+    max-height: 96vh;
+    border-radius: 24px 24px 0 0;
+    border-bottom: none;
+    animation: qpmSlideUpMobile 0.38s var(--qpm-ease) both;
+  }
+  @keyframes qpmSlideUpMobile {
+    from { transform: translateY(100%); opacity: 0.8; }
+    to   { transform: translateY(0);   opacity: 1;   }
+  }
+
+  /* Video panel full width, shorter height on mobile */
+  .qpm-video-panel {
+    width: 100%;
+    border-radius: 24px 24px 0 0;
+    flex-shrink: 0;
+  }
+
+  /* On mobile show video in 16:9 */
+  .qpm-video-wrapper {
+    aspect-ratio: 16 / 9;
+    max-height: 210px;
+  }
+
+  .qpm-stat-strip { padding: 10px 12px; }
+  .qpm-stat-num   { font-size: 1rem; }
+
+  /* Content panel scrollable */
+  .qpm-content-panel {
+    padding: 16px 16px 24px;
+    gap: 12px;
+  }
+
+  .qpm-title { font-size: 1.25rem; }
+
+  .qpm-countdown-bar { padding: 7px 12px; }
+
+  .qpm-plan { padding: 16px 14px 12px; }
+
+  .qpm-plan-price { font-size: 1.7rem; }
+
+  .qpm-close { top: 10px; right: 10px; }
+
+  .qpm-fomo-toast { bottom: 12px; left: 12px; max-width: calc(100vw - 24px); }
+}
+
+/* ── Very small phones (≤380px) ──────────────────────────────── */
+@media (max-width: 380px) {
+  .qpm-title     { font-size: 1.1rem; }
+  .qpm-btn       { font-size: 0.88rem; padding: 13px; }
+  .qpm-plan-features li { font-size: 0.78rem; }
+  .qpm-trust-row { gap: 8px 14px; font-size: 0.62rem; }
+}

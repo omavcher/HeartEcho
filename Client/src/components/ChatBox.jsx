@@ -10,6 +10,7 @@ import api from "../config/api";
 import { useRouter } from 'next/navigation';
 import LoginModal from "./LoginModel";
 import VoiceCall from './VoiceCall';
+import QuotaPaywallModal from './QuotaPaywallModal';
 
 // --- CONFIGURATION ---
 const QUOTA_COSTS = { TEXT: 1, IMAGE: 15, VIDEO: 20 };
@@ -131,6 +132,8 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
   const [showCallPaywall, setShowCallPaywall] = useState(false);
   const [subscriptionTier, setSubscriptionTier] = useState("none");
   const [upgradeInfo, setUpgradeInfo] = useState(null);
+  const [showQuotaPaywall, setShowQuotaPaywall] = useState(false);
+  const [quotaUserData, setQuotaUserData] = useState(null);
   
   // Logic Flags
   const [isBotMessageEnabled, setIsBotMessageEnabled] = useState(true);
@@ -170,6 +173,38 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
     // Kill any pending auto-message timer on unmount
     return () => clearAutoMsgTimer();
   }, [chatId]);
+
+  // --- AUTO-SHOW PAYWALL when quota exhausted ---
+  const reShowTimerRef = useRef(null);
+
+  useEffect(() => {
+    // When data finishes loading and user has no quota left, auto-pop the paywall
+    if (!isLoading && !isSubscribed && remainingQuota <= 0 && !isGuest) {
+      const t = setTimeout(() => {
+        try {
+          const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+          setQuotaUserData(storedUser);
+        } catch (e) { /* ignore */ }
+        setShowQuotaPaywall(true);
+      }, 1500); // slight delay so chat renders first
+      return () => clearTimeout(t);
+    }
+  }, [isLoading, isSubscribed, remainingQuota, isGuest]);
+
+  // Re-show paywall 20s after user closes it (if still not subscribed)
+  const handlePaywallClose = useCallback(() => {
+    setShowQuotaPaywall(false);
+    if (!isSubscribed) {
+      reShowTimerRef.current = setTimeout(() => {
+        setShowQuotaPaywall(true);
+      }, 20000);
+    }
+  }, [isSubscribed]);
+
+  // Clean up re-show timer on unmount
+  useEffect(() => () => {
+    if (reShowTimerRef.current) clearTimeout(reShowTimerRef.current);
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -333,20 +368,12 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
       if (typeof window !== 'undefined' && window.trackAppEvent) {
         window.trackAppEvent('quota_exhausted', { chatId, remainingQuota: 0 });
       }
-      setIsTyping(true);
-      setTimeout(() => {
-        setIsTyping(false);
-        const quotaExhaustedReply = {
-          _id: `quota-ai-${Date.now()}`,
-          sender: "ai",
-          text: "Quota khatam ho gaya aaj ka, kal milte hain daddy! Premium khareed le toh raat bhar pelunga 😏",
-          time: new Date().toISOString(),
-          mediaType: "text",
-          isRead: true,
-          isBold: true
-        };
-        setMessages(prev => [...prev, quotaExhaustedReply]);
-      }, 1000);
+      // Show the premium paywall video modal
+      try {
+        const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+        setQuotaUserData(storedUser);
+      } catch (e) { /* ignore */ }
+      setShowQuotaPaywall(true);
       return;
     }
 
@@ -535,6 +562,15 @@ const CallPaywallModal = ({ tier, upgradeInfo, onClose, onUpgrade }) => {
     <div className="chat-box-container">
       <style>{STYLES}</style>
       
+      {showQuotaPaywall && (
+        <QuotaPaywallModal
+          onClose={handlePaywallClose}
+          aiName={userProfile?.name}
+          userData={quotaUserData}
+          token={token}
+        />
+      )}
+
       {showCallPaywall && (
         <CallPaywallModal
           tier={subscriptionTier}
