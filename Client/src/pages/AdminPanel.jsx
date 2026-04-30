@@ -65,7 +65,7 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
     { path: "/admin/stories", label: "Stories", icon: <MdHistoryEdu /> },
     { path: "/admin/ai-friends", label: "AI Friends", icon: <FaRobot /> },
     { path: "/admin/complaints", label: "Complaints", icon: <FaExclamationCircle />, countKey: "complaints" },
-    { path: "/admin/referral", label: "Referral Program", icon: <FaUserPlus />, countKey: "referrals" },
+    { path: "/admin/referral", label: "Referral Intelligence", icon: <FaUserPlus />, countKey: "referrals" },
     { path: "/admin/create-story", label: "Create Story", icon: <FaGem /> },
     { path: "/admin/chats", label: "Chats", icon: <MdChat /> },
     { path: "/admin/analytics", label: "Tracking & Analytics", icon: <MdAnalytics /> },
