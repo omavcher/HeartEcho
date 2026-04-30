@@ -7,7 +7,7 @@ const admin = require("../config/firebaseAdmin");
  * @param {string} body - Notification body
  * @param {object} data - Optional data payload
  */
-const sendPushNotification = async (fcmToken, title, body, data = {}) => {
+const sendPushNotification = async (fcmToken, title, body, data = {}, imageUrl = null) => {
   if (!fcmToken) {
     console.log("No FCM token provided, skipping notification.");
     return;
@@ -17,6 +17,7 @@ const sendPushNotification = async (fcmToken, title, body, data = {}) => {
     notification: {
       title: title,
       body: body,
+      ...(imageUrl && { image: imageUrl })
     },
     data: data,
     token: fcmToken,
@@ -39,13 +40,14 @@ const sendPushNotification = async (fcmToken, title, body, data = {}) => {
  * @param {string} body - Notification body
  * @param {object} data - Optional data payload
  */
-const sendMulticastNotification = async (tokens, title, body, data = {}) => {
+const sendMulticastNotification = async (tokens, title, body, data = {}, imageUrl = null) => {
   if (!tokens || tokens.length === 0) return;
 
   const message = {
     notification: {
       title,
       body,
+      ...(imageUrl && { image: imageUrl })
     },
     data,
     tokens,

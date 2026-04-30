@@ -812,7 +812,7 @@ exports.aiAllModelData = async (req, res) => {
 
 exports.sendCustomNotification = async (req, res) => {
   try {
-    const { target, userIds, title, body, data } = req.body;
+    const { target, userIds, title, body, data, imageUrl } = req.body;
     // target: 'all' or 'specific'
 
     if (target === 'all') {
@@ -830,7 +830,7 @@ exports.sendCustomNotification = async (req, res) => {
       }
 
       for (const batch of batches) {
-        await sendMulticastNotification(batch, title, body, data);
+        await sendMulticastNotification(batch, title, body, data, imageUrl);
       }
 
       return res.json({ success: true, message: `Notification sent to ${tokens.length} users` });
@@ -846,7 +846,7 @@ exports.sendCustomNotification = async (req, res) => {
         return res.status(400).json({ success: false, message: "Specified users don't have FCM tokens" });
       }
 
-      await sendMulticastNotification(tokens, title, body, data);
+      await sendMulticastNotification(tokens, title, body, data, imageUrl);
       return res.json({ success: true, message: `Notification sent to ${tokens.length} users` });
     } else {
       return res.status(400).json({ success: false, message: "Invalid target" });

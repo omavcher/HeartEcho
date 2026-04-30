@@ -299,6 +299,14 @@ const notificationStyles = `
   line-height: 1.3;
 }
 
+.notif-image-preview-x30sn {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
 .send-btn-x30sn {
   width: 100%;
   background: linear-gradient(45deg, #ff69b4, #b042ff);
@@ -403,6 +411,7 @@ const NotificationsAdmin = () => {
   const [target, setTarget] = useState("all"); // "all" or "specific"
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -477,6 +486,7 @@ const NotificationsAdmin = () => {
         target,
         title,
         body,
+        imageUrl,
         userIds: target === 'specific' ? selectedUsers.map(u => u._id) : []
       };
 
@@ -488,6 +498,7 @@ const NotificationsAdmin = () => {
         setStatus({ type: 'success', message: res.data.message });
         setTitle("");
         setBody("");
+        setImageUrl("");
         setSelectedUsers([]);
       }
     } catch (err) {
@@ -635,6 +646,18 @@ const NotificationsAdmin = () => {
               <div className="char-count-x30sn">{body.length}/150</div>
             </div>
 
+            <div className="form-group-x30sn">
+              <label className="form-label-x30sn">Image URL (Optional)</label>
+              <input 
+                type="text" 
+                className="form-input-x30sn" 
+                placeholder="https://example.com/image.png"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+              />
+              <div className="char-count-x30sn">Direct link to an image (PNG/JPG)</div>
+            </div>
+
             <button 
               className="send-btn-x30sn"
               disabled={loading || !title || !body || (target === 'specific' && selectedUsers.length === 0)}
@@ -675,6 +698,14 @@ const NotificationsAdmin = () => {
                     <span className="notif-body-preview-x30sn">
                       {body || "Your notification message will appear here. Keep it concise for better engagement."}
                     </span>
+                    {imageUrl && (
+                      <img 
+                        src={imageUrl} 
+                        className="notif-image-preview-x30sn" 
+                        alt="Preview"
+                        onError={(e) => e.target.style.display = 'none'}
+                      />
+                    )}
                   </div>
                 </div>
               )}
