@@ -10,6 +10,7 @@ const nodemailer = require("nodemailer");
 const Payment = require("../models/Payment");
 const axios = require("axios");
 const DeletedAccount = require("../models/DeletedAccount");
+const ReferralCreator = require("../models/ReferralCreator");
 
 require("dotenv").config();
 const sendEmail = async (to, subject, html) => {
@@ -851,6 +852,36 @@ exports.paymentSave = async (req, res) => {
       { new: true }
     );
 
+    // 💰 REFERRAL COMMISSION TRACKING
+    if (existingUser.referredBy && rupeesNum >= 99) {
+      try {
+        const creator = await ReferralCreator.findById(existingUser.referredBy);
+        if (creator && creator.isActive !== false) {
+          // Mapping logic:
+          // 99 plan -> 0 commission
+          // 599 plan -> 99 for commission
+          // 1499 plan -> 599 for commission
+          let mappedAmount = 0;
+          if (rupeesNum >= 1499) mappedAmount = 599;
+          else if (rupeesNum >= 599) mappedAmount = 99;
+
+          if (mappedAmount > 0) {
+            const commissionAmount = parseFloat((mappedAmount * (creator.commissionRate / 100)).toFixed(2));
+            
+            await ReferralCreator.findByIdAndUpdate(creator._id, {
+              $inc: {
+                totalEarnings: commissionAmount,
+                pendingEarnings: commissionAmount
+              }
+            });
+            console.log(`✅ Referral commission of ₹${commissionAmount} attributed to ${creator.name}`);
+          }
+        }
+      } catch (err) {
+        console.error("❌ Error processing referral commission:", err);
+      }
+    }
+
     // 🚀 APPLE-STYLE DARK THEME EMAIL TEMPLATE
     const planName = rupeesNum === 99 || rupeesNum === 1.49 ? "Monthly" : 
                     (rupeesNum === 1499 || rupeesNum === 19 ? "Ultimate Yearly" : "Premium Yearly");
@@ -1150,6 +1181,38 @@ exports.upgradeSubscription = async (req, res) => {
       },
       { new: true }
     );
+
+    // 💰 REFERRAL COMMISSION TRACKING FOR UPGRADES
+    if (updatedUser.referredBy && rupeesNum >= 99) {
+      try {
+        const creator = await ReferralCreator.findById(updatedUser.referredBy);
+        if (creator && creator.isActive !== false) {
+          // Mapping logic for upgrades:
+          // In upgrade, rupeesNum is usually the difference.
+          // However, the rule says "if they purchase 599 show 99".
+          // If it's a fresh purchase of 999 (Ultimate), mapped is 599.
+          // If it's an upgrade (difference 599), we should probably treat it as the "Ultimate" tier upgrade.
+          
+          let mappedAmount = 0;
+          if (rupeesNum >= 999) mappedAmount = 599; // Fresh Ultimate purchase
+          else if (rupeesNum === 599) mappedAmount = 99; // Upgrade from Yearly to Ultimate
+          
+          if (mappedAmount > 0) {
+            const commissionAmount = parseFloat((mappedAmount * (creator.commissionRate / 100)).toFixed(2));
+            
+            await ReferralCreator.findByIdAndUpdate(creator._id, {
+              $inc: {
+                totalEarnings: commissionAmount,
+                pendingEarnings: commissionAmount
+              }
+            });
+            console.log(`✅ Referral upgrade commission of ₹${commissionAmount} attributed to ${creator.name}`);
+          }
+        }
+      } catch (err) {
+        console.error("❌ Error processing referral upgrade commission:", err);
+      }
+    }
 
     return res.status(200).json({
       success: true,

@@ -1250,18 +1250,24 @@ exports.getCreatorDashboard = async (req, res) => {
     referredUsers.forEach(user => {
       if (user.payment_history && user.payment_history.length > 0) {
         user.payment_history.forEach(payment => {
-          if (payment.rupees && payment.rupees >= 20) {
-            totalSubscriptionRevenue += payment.rupees;
-            subscriptionDetails.push({
-              userName: user.name,
-              userEmail: user.email,
-              planType: determinePlanType(payment.rupees),
-              amount: formatToTwoDecimals(payment.rupees),
-              purchaseDate: payment.date,
-              transactionId: payment.transaction_id,
-              expiryDate: payment.expiry_date,
-              status: payment.expiry_date && new Date(payment.expiry_date) > new Date() ? 'active' : 'expired'
-            });
+          if (payment.rupees) {
+            const mappedAmount = mapReferralAmount(payment.rupees);
+            
+            // If mapped amount is 0, we treat it as if they didn't purchase (per user request)
+            if (mappedAmount > 0) {
+              totalSubscriptionRevenue += mappedAmount;
+              subscriptionDetails.push({
+                userName: user.name,
+                userEmail: user.email,
+                planType: determinePlanType(payment.rupees), // Still show actual plan type or mapped? Mapping usually hides actual tier.
+                actualPlanType: determinePlanType(payment.rupees),
+                amount: formatToTwoDecimals(mappedAmount),
+                purchaseDate: payment.date,
+                transactionId: payment.transaction_id,
+                expiryDate: payment.expiry_date,
+                status: payment.expiry_date && new Date(payment.expiry_date) > new Date() ? 'active' : 'expired'
+              });
+            }
           }
         });
       }
@@ -1477,18 +1483,22 @@ exports.getCreatorByReferralId = async (req, res) => {
     referredUsers.forEach(user => {
       if (user.payment_history && user.payment_history.length > 0) {
         user.payment_history.forEach(payment => {
-          if (payment.rupees && payment.rupees >= 20) {
-            totalSubscriptionRevenue += payment.rupees;
-            subscriptionDetails.push({
-              userName: user.name,
-              userEmail: user.email,
-              planType: determinePlanType(payment.rupees),
-              amount: formatToTwoDecimals(payment.rupees), // Format to 2 decimal places
-              purchaseDate: payment.date,
-              transactionId: payment.transaction_id,
-              expiryDate: payment.expiry_date,
-              status: payment.expiry_date && new Date(payment.expiry_date) > new Date() ? 'active' : 'expired'
-            });
+          if (payment.rupees) {
+            const mappedAmount = mapReferralAmount(payment.rupees);
+            
+            if (mappedAmount > 0) {
+              totalSubscriptionRevenue += mappedAmount;
+              subscriptionDetails.push({
+                userName: user.name,
+                userEmail: user.email,
+                planType: determinePlanType(payment.rupees),
+                amount: formatToTwoDecimals(mappedAmount),
+                purchaseDate: payment.date,
+                transactionId: payment.transaction_id,
+                expiryDate: payment.expiry_date,
+                status: payment.expiry_date && new Date(payment.expiry_date) > new Date() ? 'active' : 'expired'
+              });
+            }
           }
         });
       }
@@ -1581,6 +1591,16 @@ exports.getCreatorByReferralId = async (req, res) => {
   }
 };
 
+// Helper function to map referral amounts based on business rules
+// 99 plan -> 0 (Not counted as purchase)
+// 599 plan -> 99 (Recorded as 99 plan)
+// 1499 plan -> 599 (Recorded as 599 plan)
+function mapReferralAmount(actualAmount) {
+  if (actualAmount >= 1499) return 599;
+  if (actualAmount >= 599) return 99;
+  return 0; // 99 plan or less returns 0 (not counted)
+}
+
 // Helper function to format numbers to 2 decimal places
 function formatToTwoDecimals(number) {
   if (typeof number !== 'number' || isNaN(number)) {
@@ -1591,10 +1611,10 @@ function formatToTwoDecimals(number) {
 
 // Helper function to determine plan type based on payment amount
 function determinePlanType(amount) {
-  if (amount >= 399) return "Yearly Plan";
-  if (amount >= 99) return "Monthly Plan";
-  if (amount >= 49) return "Quarterly Plan";
-  return "Basic Plan";
+  if (amount >= 1499) return "Ultimate Plan";
+  if (amount >= 599) return "Premium Plan";
+  if (amount >= 99) return "Basic Plan";
+  return "Free Trial";
 }
 
 // Helper function to generate earnings history
@@ -1644,7 +1664,8 @@ async function generateEarningsHistory(creatorId) {
           const paymentMonthKey = `${months[paymentDate.getMonth()]} ${paymentDate.getFullYear()}`;
           
           if (monthlyEarnings[paymentMonthKey]) {
-            monthlyEarnings[paymentMonthKey].subscriptionRevenue += payment.rupees || 0;
+            const mappedAmount = mapReferralAmount(payment.rupees);
+            monthlyEarnings[paymentMonthKey].subscriptionRevenue += mappedAmount;
           }
         });
       }
@@ -1773,7 +1794,7 @@ exports.getReferralAnalytics = async (req, res) => {
       { $sort: { _id: 1 } }
     ]);
 
-    // Get creator performance
+    // Get creator performance with detailed activity
     const creatorPerformance = await ReferralCreator.aggregate([
       {
         $lookup: {
@@ -1792,6 +1813,23 @@ exports.getReferralAnalytics = async (req, res) => {
           commissionRate: 1,
           referralCount: 1,
           totalEarnings: 1,
+          activeSubscribers: {
+            $size: {
+              $filter: {
+                input: "$referredUsers",
+                as: "user",
+                cond: { 
+                  $and: [
+                    { $eq: ["$$user.user_type", "subscriber"] },
+                    { $or: [
+                      { $eq: ["$$user.subscriptionExpiry", null] },
+                      { $gt: ["$$user.subscriptionExpiry", new Date()] }
+                    ]}
+                  ]
+                }
+              }
+            }
+          },
           conversionRate: {
             $cond: [
               { $gt: ["$referralCount", 0] },
@@ -1813,11 +1851,21 @@ exports.getReferralAnalytics = async (req, res) => {
       { $sort: { referralCount: -1 } }
     ]);
 
+    // Get detailed activity for referred users (last 50)
+    const detailedActivity = await User.find({
+      referredBy: { $exists: true, $ne: null }
+    })
+    .populate('referredBy', 'name username')
+    .sort({ createdAt: -1 })
+    .limit(50)
+    .select('name email user_type joinedAt messageQuota messagesUsedToday lastQuotaReset referredBy');
+
     res.status(200).json({
       success: true,
       analytics: {
         referralTrend: referralTrend || [],
         creatorPerformance: creatorPerformance || [],
+        detailedActivity: detailedActivity || [],
         period
       }
     });
