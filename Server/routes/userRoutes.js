@@ -39,8 +39,12 @@ router.post("/check-quota", authMiddleware, controller.checkMessageQuota);
 router.post("/payment/upgrade", authMiddleware, controller.upgradeSubscription);
 router.get("/payment/upgrade-pricing", authMiddleware, controller.getUpgradePricing);
 
+const adminController = require("../controllers/adminController");
+
 // FCM Token (Push Notifications) - called by Flutter app on login/signup
 router.post("/update-fcm-token", authMiddleware, authController.updateFcmToken);
 
+// Track Notification Clicks (called by Flutter app when notification is opened)
+router.post("/track-notification-click", authMiddleware, adminController.trackNotificationClick);
 
 module.exports = router;

@@ -10,6 +10,35 @@ import axios from "axios";
 import api from "../../config/api";
 
 const notificationStyles = `
+.history-table-x30sn {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.history-table-x30sn th {
+  text-align: left;
+  font-size: 11px;
+  color: #666;
+  padding: 10px;
+  border-bottom: 1px solid #222;
+}
+
+.history-table-x30sn td {
+  padding: 12px 10px;
+  font-size: 13px;
+  border-bottom: 1px solid #111;
+}
+
+.open-badge-x30sn {
+  background: rgba(0, 255, 0, 0.1);
+  color: #00ff00;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .notif-root-x30sn {
   color: #fff;
   font-family: 'Inter', sans-serif;
@@ -418,6 +447,7 @@ const NotificationsAdmin = () => {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null); // { type: 'success' | 'error', message: '' }
   const [stats, setStats] = useState({ totalUsers: 0, mobileUsers: 0 });
+  const [history, setHistory] = useState([]);
 
   const getToken = useCallback(() => (typeof window !== 'undefined' ? localStorage.getItem("token") || "" : ""), []);
 
@@ -440,9 +470,24 @@ const NotificationsAdmin = () => {
     }
   }, [getToken]);
 
+  const fetchHistory = useCallback(async () => {
+    try {
+      const token = getToken();
+      const res = await axios.get(`${api.Url}/admin/notification-history`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        setHistory(res.data.data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch history", err);
+    }
+  }, [getToken]);
+
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    fetchHistory();
+  }, [fetchData, fetchHistory]);
 
   const filteredUsers = useMemo(() => {
     if (!searchQuery) return [];
@@ -500,6 +545,7 @@ const NotificationsAdmin = () => {
         setBody("");
         setImageUrl("");
         setSelectedUsers([]);
+        fetchHistory(); // Refresh history
       }
     } catch (err) {
       setStatus({ 
@@ -724,8 +770,62 @@ const NotificationsAdmin = () => {
                     Use emojis to increase open rates by up to 25%. Keep titles under 40 characters for full visibility on all devices.
                 </p>
             </div>
+
+            <div style={{marginTop: 15, background:'#0a0a0a', padding:15, borderRadius:12, border:'1px solid #ff69b433'}}>
+                <div style={{display:'flex', gap:10, alignItems:'center', marginBottom:10}}>
+                    <FaUser style={{color:'#ff69b4'}}/>
+                    <span style={{fontSize:13, fontWeight:700}}>Personalization Tag</span>
+                </div>
+                <p style={{fontSize:12, color:'#888', margin:0, lineHeight:1.4}}>
+                    Use <strong>{`{name}`}</strong> in your title or body to automatically insert the user's full name. 
+                    <br/><br/>
+                    <code style={{color:'#ff69b4', fontSize:11}}>Hey {`{name}`}, check this out!</code>
+                </p>
+            </div>
           </div>
 
+        </div>
+
+        {/* History Section */}
+        <div className="card-x30sn" style={{marginTop: 30, width: '100%'}}>
+            <div className="card-title-x30sn"><FaBell /> Notification Campaign History</div>
+            <div style={{overflowX: 'auto'}}>
+                <table className="history-table-x30sn">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Campaign Message</th>
+                            <th>Target</th>
+                            <th>Sent To</th>
+                            <th>Opens</th>
+                            <th>Open Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {history.length > 0 ? history.map(h => (
+                            <tr key={h._id}>
+                                <td style={{color: '#666', fontSize: 11}}>{new Date(h.sentAt).toLocaleDateString()}</td>
+                                <td>
+                                    <div style={{fontWeight: 700}}>{h.title}</div>
+                                    <div style={{fontSize: 11, color: '#888', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 300}}>{h.body}</div>
+                                </td>
+                                <td style={{textTransform: 'capitalize'}}>{h.target}</td>
+                                <td style={{fontWeight: 700}}>{h.recipientsCount}</td>
+                                <td>
+                                    <span className="open-badge-x30sn">{h.opensCount || 0}</span>
+                                </td>
+                                <td style={{color: '#ff69b4', fontWeight: 800}}>
+                                    {h.recipientsCount > 0 ? Math.round(((h.opensCount || 0) / h.recipientsCount) * 100) : 0}%
+                                </td>
+                            </tr>
+                        )) : (
+                            <tr>
+                                <td colSpan="6" style={{textAlign: 'center', color: '#444', padding: 40}}>No campaign history available</td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
         </div>
       </div>
     </>

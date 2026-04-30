@@ -12,7 +12,8 @@ const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");
 const DeletedAccount = require("../models/DeletedAccount");
 const ReferralCreator = require("../models/ReferralCreator");
 const { generateCreatorToken, verifyReferralCreator } = require('../utils/jwt');
-const { sendPushNotification, sendMulticastNotification } = require("../utils/notificationService");
+const { sendPushNotification, sendMulticastNotification, sendEachPersonalizedNotification } = require("../utils/notificationService");
+const NotificationLog = require("../models/NotificationLog");
 // Get all deleted accounts
 exports.getDeletedAccounts = async (req, res) => {
   try {
@@ -812,48 +813,116 @@ exports.aiAllModelData = async (req, res) => {
 
 exports.sendCustomNotification = async (req, res) => {
   try {
-    const { target, userIds, title, body, data, imageUrl } = req.body;
-    // target: 'all' or 'specific'
+    const { target, userIds, title, body, data = {}, imageUrl } = req.body;
+    
+    // Create a log entry first to get an ID for tracking
+    const logEntry = new NotificationLog({
+      title,
+      body,
+      imageUrl,
+      target
+    });
+    await logEntry.save();
 
+    // Prepare common data payload with tracking ID
+    const enrichedData = {
+      ...data,
+      notificationId: logEntry._id.toString(),
+      click_action: "FLUTTER_NOTIFICATION_CLICK" // Common for Flutter
+    };
+
+    let users = [];
     if (target === 'all') {
-      const users = await User.find({ fcmToken: { $ne: "" } }).select("fcmToken");
-      const tokens = users.map(u => u.fcmToken).filter(t => t);
-      
-      if (tokens.length === 0) {
-        return res.status(400).json({ success: false, message: "No users with FCM tokens found" });
-      }
-
-      // Send in batches of 500 (Firebase limit)
-      const batches = [];
-      for (let i = 0; i < tokens.length; i += 500) {
-        batches.push(tokens.slice(i, i + 500));
-      }
-
-      for (const batch of batches) {
-        await sendMulticastNotification(batch, title, body, data, imageUrl);
-      }
-
-      return res.json({ success: true, message: `Notification sent to ${tokens.length} users` });
-    } else if (target === 'specific') {
-      if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
-        return res.status(400).json({ success: false, message: "No users specified" });
-      }
-
-      const users = await User.find({ _id: { $in: userIds }, fcmToken: { $ne: "" } }).select("fcmToken");
-      const tokens = users.map(u => u.fcmToken).filter(t => t);
-
-      if (tokens.length === 0) {
-        return res.status(400).json({ success: false, message: "Specified users don't have FCM tokens" });
-      }
-
-      await sendMulticastNotification(tokens, title, body, data, imageUrl);
-      return res.json({ success: true, message: `Notification sent to ${tokens.length} users` });
+      users = await User.find({ fcmToken: { $ne: "" } }).select("fcmToken name");
     } else {
-      return res.status(400).json({ success: false, message: "Invalid target" });
+      users = await User.find({ _id: { $in: userIds }, fcmToken: { $ne: "" } }).select("fcmToken name");
     }
+
+    if (users.length === 0) {
+      return res.status(400).json({ success: false, message: "No users with FCM tokens found" });
+    }
+
+    const hasPersonalization = title.includes("{name}") || body.includes("{name}");
+
+    if (hasPersonalization) {
+      // Send personalized messages
+      const messages = users.map(user => {
+        const personalizedTitle = title.replace(/{name}/g, user.name || "User");
+        const personalizedBody = body.replace(/{name}/g, user.name || "User");
+        
+        return {
+          token: user.fcmToken,
+          notification: {
+            title: personalizedTitle,
+            body: personalizedBody,
+            ...(imageUrl && { image: imageUrl })
+          },
+          data: enrichedData
+        };
+      });
+
+      // Firebase sendEach limit is 500
+      for (let i = 0; i < messages.length; i += 500) {
+        const batch = messages.slice(i, i + 500);
+        await sendEachPersonalizedNotification(batch);
+      }
+    } else {
+      // Send multicast (standard)
+      const tokens = users.map(u => u.fcmToken);
+      for (let i = 0; i < tokens.length; i += 500) {
+        const batch = tokens.slice(i, i + 500);
+        await sendMulticastNotification(batch, title, body, enrichedData, imageUrl);
+      }
+    }
+
+    // Update log with recipient count
+    logEntry.recipientsCount = users.length;
+    await logEntry.save();
+
+    return res.json({ 
+      success: true, 
+      message: `Notification sent to ${users.length} users`,
+      notificationId: logEntry._id
+    });
   } catch (error) {
     console.error("Error sending admin notification:", error);
     res.status(500).json({ success: false, message: "Error sending notification", error: error.message });
+  }
+};
+
+exports.trackNotificationClick = async (req, res) => {
+  try {
+    const { notificationId } = req.body;
+    const userId = req.user.id; // From authMiddleware
+
+    if (!notificationId) {
+      return res.status(400).json({ success: false, message: "Notification ID is required" });
+    }
+
+    const log = await NotificationLog.findById(notificationId);
+    if (!log) {
+      return res.status(404).json({ success: false, message: "Notification log not found" });
+    }
+
+    // Check if user already clicked (unique opens)
+    const alreadyClicked = log.uniqueOpens.includes(userId);
+    
+    await NotificationLog.findByIdAndUpdate(notificationId, {
+      $inc: { opensCount: 1 },
+      $push: { 
+        clicks: { 
+          user: userId, 
+          clickedAt: new Date(),
+          platform: req.headers['user-agent'] 
+        },
+        ...(!alreadyClicked && { uniqueOpens: userId })
+      }
+    });
+
+    res.json({ success: true, message: "Click tracked successfully" });
+  } catch (error) {
+    console.error("Error tracking notification click:", error);
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 
@@ -2276,6 +2345,20 @@ exports.getPaymentAnalytics = async (req, res) => {
     });
   } catch (error) {
     console.error("Payment Analytics Error:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+exports.getNotificationHistory = async (req, res) => {
+  try {
+    const history = await NotificationLog.find()
+      .sort({ sentAt: -1 })
+      .limit(20)
+      .lean();
+    
+    res.json({ success: true, data: history });
+  } catch (error) {
+    console.error("Error fetching notification history:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };

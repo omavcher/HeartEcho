@@ -63,7 +63,25 @@ const sendMulticastNotification = async (tokens, title, body, data = {}, imageUr
   }
 };
 
+/**
+ * Sends individual personalized notifications
+ * @param {object[]} messages - Array of FCM message objects
+ */
+const sendEachPersonalizedNotification = async (messages) => {
+  if (!messages || messages.length === 0) return;
+
+  try {
+    const response = await admin.messaging().sendEach(messages);
+    console.log(`${response.successCount} personalized messages were sent successfully`);
+    return response;
+  } catch (error) {
+    console.error("Error sending personalized messages:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   sendPushNotification,
   sendMulticastNotification,
+  sendEachPersonalizedNotification,
 };
