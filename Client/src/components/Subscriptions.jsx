@@ -255,7 +255,8 @@ function SubscriptionContent() {
           localStorage.removeItem('_he_deal_exp');
           router.push('/thank-you');
         },
-        prefill: { name: userData?.name, contact: userData?.phone_number },
+        prefill: { name: userData?.name, email: userData?.email, contact: userData?.phone_number },
+        notes: { userId: userData?._id, email: userData?.email },
         theme: { color: '#ce4085' }
       };
       new window.Razorpay(options).open();

@@ -811,18 +811,18 @@ exports.paymentSave = async (req, res) => {
     let subscriptionTier = "none";
     let audioCallQuota = 0;
 
-    if (rupeesNum === 99 || rupeesNum === 1.49) {
-      expiryDate.setMonth(expiryDate.getMonth() + 1);
-      subscriptionTier = "monthly";
-      audioCallQuota = 0;
-    } else if (rupeesNum === 599 || rupeesNum === 9) {
-      expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-      subscriptionTier = "yearly";
-      audioCallQuota = 30; // 30 minutes limit
-    } else if (rupeesNum === 1499 || rupeesNum === 19) {
+    if (rupeesNum >= 1000 || (rupeesNum >= 15 && rupeesNum < 40)) {
       expiryDate.setFullYear(expiryDate.getFullYear() + 1);
       subscriptionTier = "yearly_pro";
       audioCallQuota = 9999; // Unlimited
+    } else if (rupeesNum >= 400 || (rupeesNum >= 7 && rupeesNum < 15)) {
+      expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+      subscriptionTier = "yearly";
+      audioCallQuota = 30; // 30 minutes limit
+    } else {
+      expiryDate.setMonth(expiryDate.getMonth() + 1);
+      subscriptionTier = "monthly";
+      audioCallQuota = 0;
     }
 
     // Create new payment entry
@@ -998,7 +998,142 @@ exports.paymentSave = async (req, res) => {
     res.status(500).json({ error: "Error saving payment and updating user" });
   }
 };
+const crypto = require("crypto");
 
+exports.razorpayWebhook = async (req, res) => {
+  try {
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    
+    // Handle body depending on whether express.json() already parsed it
+    let bodyStr;
+    let data;
+    
+    if (Buffer.isBuffer(req.body)) {
+      bodyStr = req.body.toString('utf8');
+      data = JSON.parse(bodyStr);
+    } else {
+      // It was already parsed by express.json()
+      data = req.body;
+      bodyStr = JSON.stringify(req.body);
+    }
+    
+    // Only verify if secret is defined
+    if (secret) {
+      const shasum = crypto.createHmac('sha256', secret);
+      shasum.update(bodyStr);
+      const digest = shasum.digest('hex');
+      const signature = req.headers['x-razorpay-signature'];
+      if (digest !== signature) {
+        return res.status(400).send('Invalid signature');
+      }
+    }
+
+    if (data.event === 'payment.captured' || data.event === 'payment.authorized') {
+      const paymentEntity = data.payload.payment.entity;
+      const transaction_id = paymentEntity.id;
+      const amountPaise = paymentEntity.amount;
+      const rupeesNum = amountPaise / 100;
+      const currency = paymentEntity.currency || 'INR';
+      
+      let userId = paymentEntity.notes?.userId;
+      let email = paymentEntity.email || paymentEntity.notes?.email;
+      let existingUser = null;
+      
+      if (userId) {
+        existingUser = await User.findById(userId);
+      } else if (email) {
+        existingUser = await User.findOne({ email });
+      } else {
+        const contact = paymentEntity.contact;
+        if (contact) {
+          existingUser = await User.findOne({ phone_number: contact });
+        }
+      }
+      
+      if (!existingUser) {
+        return res.status(200).send('User not found but payment recorded by razorpay.');
+      }
+      
+      const existingPayment = await Payment.findOne({ transaction_id });
+      if (existingPayment) {
+        return res.status(200).send('Payment already processed');
+      }
+      
+      let expiryDate = new Date();
+      if (existingUser.subscriptionExpiry && existingUser.subscriptionExpiry > expiryDate) {
+        expiryDate = new Date(existingUser.subscriptionExpiry);
+      }
+      
+      let subscriptionTier = "none";
+      let audioCallQuota = 0;
+
+      if (rupeesNum >= 1000 || (rupeesNum >= 15 && rupeesNum < 40)) {
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+        subscriptionTier = "yearly_pro";
+        audioCallQuota = 9999;
+      } else if (rupeesNum >= 400 || (rupeesNum >= 7 && rupeesNum < 15)) {
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+        subscriptionTier = "yearly";
+        audioCallQuota = 30;
+      } else {
+        expiryDate.setMonth(expiryDate.getMonth() + 1);
+        subscriptionTier = "monthly";
+        audioCallQuota = 0;
+      }
+
+      const payment = new Payment({
+        user: existingUser._id,
+        rupees: rupeesNum,
+        currency,
+        transaction_id,
+        expiry_date: expiryDate,
+      });
+
+      await payment.save();
+
+      await User.findByIdAndUpdate(
+        existingUser._id,
+        {
+          $set: { 
+            user_type: "subscriber", 
+            subscriptionExpiry: expiryDate,
+            subscriptionTier,
+            audioCallQuota,
+            messageQuota: 999 
+          },
+          $push: { payment_history: payment._id },
+        }
+      );
+      
+      // Referral Tracking
+      if (existingUser.referredBy && rupeesNum >= 99) {
+        try {
+          const creator = await ReferralCreator.findById(existingUser.referredBy);
+          if (creator && creator.isActive !== false) {
+            let mappedAmount = 0;
+            if (rupeesNum >= 1499) mappedAmount = 599;
+            else if (rupeesNum >= 599) mappedAmount = 99;
+
+            if (mappedAmount > 0) {
+              const commissionAmount = parseFloat((mappedAmount * (creator.commissionRate / 100)).toFixed(2));
+              await ReferralCreator.findByIdAndUpdate(creator._id, {
+                $inc: {
+                  totalEarnings: commissionAmount,
+                  pendingEarnings: commissionAmount
+                }
+              });
+            }
+          }
+        } catch (err) {}
+      }
+    }
+    
+    res.status(200).send('OK');
+  } catch (error) {
+    console.error("Razorpay Webhook Error:", error);
+    res.status(500).send('Webhook Error');
+  }
+};
 
 exports.getPaymentData = async (req, res) => {
   try {

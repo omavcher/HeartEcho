@@ -27,6 +27,7 @@ router.get("/get-pre-ai", controller.getAllPreAIFriends );
 router.get("/get-chat-data", authMiddleware, controller.getChatData );
 router.delete("/chats/:chatId/messages/:messageId", authMiddleware, controller.deleteMessage );
 router.post('/payment/save', authMiddleware , controller.paymentSave);
+router.post('/webhook/razorpay', express.raw({type: 'application/json'}), controller.razorpayWebhook);
 router.get('/payment-details', authMiddleware , controller.getPaymentData);
 
 
