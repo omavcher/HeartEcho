@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import axios from "axios";
 import { Search, Crown, MessageSquare, X, Check, CheckCheck } from "lucide-react";
 import api from "../config/api";
-import StatusStories from "./StatusStories";
+
 
 // --- MOCK NOTIFICATION COMPONENT ---
 const PopNoti = ({ message, type, isVisible, onClose }) => {
@@ -353,11 +353,7 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
         )}
       </header>
 
-      {!searchTerm && (
-        <div className="status-section-wrapper">
-          <StatusStories onChatStart={handleStoryChatStart} />
-        </div>
-      )}
+
 
       <div className="search-container">
         <div className="search-input-wrapper">
