@@ -4,8 +4,12 @@ import Footer from '../../components/Footer';
 import { FaChevronDown, FaSearch } from 'react-icons/fa';
 
 export const metadata = {
-  title: "FAQ | Help Center",
-  description: "Find answers to common questions about our AI companions platform."
+  title: "FAQ & Help Center",
+  description: "Find answers to common questions about HeartEcho AI. Learn how our virtual Indian AI companions work, our privacy policies, and billing details.",
+  keywords: ["HeartEcho AI FAQ", "AI companion help", "virtual girlfriend questions", "Indian AI chat support"],
+  alternates: {
+    canonical: 'https://heartecho.in/faq',
+  }
 };
 
 export default function FAQPage() {

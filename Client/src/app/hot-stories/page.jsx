@@ -111,7 +111,7 @@ export async function generateMetadata() {
   }));
 
   return {
-    title: "HeartEcho Stories: Private Hindi Roleplay & Interactive Romance",
+    title: { absolute: "HeartEcho Stories: Private Hindi Roleplay & Interactive Romance" },
     description: `Explore ${storyCount}+ private Hindi intimate and interactive roleplay stories. Discover uninterrupted desi tales with companions, college friends, and local characters. Featuring AI-generated visuals and voice notes. 100% secure and Indian-made.`,
     
     keywords: [

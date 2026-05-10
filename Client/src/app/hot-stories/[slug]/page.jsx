@@ -27,7 +27,7 @@ export async function generateMetadata({ params }) {
     const description = story.description || story.excerpt || '';
     
     return {
-      title: `${story.title} - ${story.characterName} ki Hot ${story.category} Story | HeartEcho`,
+      title: { absolute: `${story.title} - ${story.characterName} ki Hot ${story.category} Story | HeartEcho` },
       description: description.length > 155 ? 
         description.substring(0, 152) + '...' : 
         description || `Read ${story.characterName}'s ${story.category} story from ${story.city}.`,
