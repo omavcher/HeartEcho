@@ -1,36 +1,13 @@
 "use client";
 import React, { useState } from 'react';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import api from '../config/api';
 
-// Placeholder image (Same as before for consistency)
-const placeholderImageUrl = "./auth/login_di_img.webp";
-
-// --- Icons & Graphics ---
-
-// Using the same waveform to imply "Voice/Chat" awaits inside
-const AudioWaveform = ({ className = '' }) => (
-    <svg className={className} viewBox="0 0 100 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {[5, 15, 25, 35, 45, 55, 65, 75, 85].map((x, index) => (
-            <rect 
-                key={index}
-                x={x} 
-                y={25 - [10, 20, 15, 25, 5, 25, 15, 20, 10][index]} 
-                width="6" 
-                height={[20, 40, 30, 50, 10, 50, 30, 40, 20][index]} 
-                rx="3" 
-                fill="#ec4899"
-                className="animate-pulse-bar"
-                style={{ animationDelay: `${index * 0.1}s` }}
-            />
-        ))}
-    </svg>
-);
-
-// Login / User Icon
-const LoginIcon = () => (
-    <svg className="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-    </svg>
-);
+const placeholderImageUrl = "/auth/login_di_img.webp";
+const googleClientId = "273920667679-85i343d6q2eibbc7e597ougsflo7u6c0.apps.googleusercontent.com";
 
 const CloseIcon = () => (
     <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,40 +18,98 @@ const CloseIcon = () => (
 const LoginModal = ({ onClose, mode = "login" }) => {
     const isGuest = mode === "guest";
     const [isOpen, setIsOpen] = useState(true);
+    
+    // Auth State
+    const [formData, setFormData] = useState({ email: "", password: "" });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
 
     const handleClose = () => {
         setIsOpen(false);
         if (onClose) onClose();
-    }
+    };
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+        setErrorMsg("");
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!formData.email || !formData.password) {
+            setErrorMsg("Please fill in all fields.");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const res = await axios.post(`${api.Url}/auth/login`, formData);
+            const { token, user } = res.data;
+        
+            Cookies.set("token", token, { expires: 7 });
+            localStorage.setItem("user", JSON.stringify(user));
+            localStorage.setItem("token", token);
+
+            if (typeof window !== "undefined") {
+                if (user?.email !== 'omawchar07@gmail.com') {
+                    if (window.fbq) window.fbq('track', 'Login');
+                    if (window.trackAppEvent) window.trackAppEvent('login_success');
+                }
+            }
+            
+            // Reload page to apply auth state seamlessly
+            window.location.reload();
+        } catch (error) {
+            setErrorMsg(error.response?.data?.msg || "Invalid credentials.");
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleGoogleSuccess = async (response) => {
+        setIsSubmitting(true);
+        const userData = jwtDecode(response.credential);
+      
+        try {
+            const res = await axios.post(`${api.Url}/auth/google-login`, { email: userData.email });
+      
+            if (res.data.token) {
+                Cookies.set("token", res.data.token, { expires: 7 });
+                localStorage.setItem("token", res.data.token);
+                localStorage.setItem("user", JSON.stringify(res.data.user));
+
+                if (typeof window !== "undefined") {
+                    if (res.data.user?.email !== 'omawchar07@gmail.com') {
+                        if (window.fbq) window.fbq('track', 'Login');
+                        if (window.trackAppEvent) window.trackAppEvent('login_success');
+                    }
+                }
+                
+                window.location.reload();
+            } else if (res.data.user === null && res.data.message === "New user, please complete registration") {
+                window.location.href = "/signup";
+            }
+        } catch (error) {
+            setErrorMsg("Google Login Failed.");
+            setIsSubmitting(false);
+        }
+    };
 
     if (!isOpen) return null;
 
     return (
         <>
             <div className="modal-overlay font-inter">
-                
-                {/* Main Card */}
                 <div className="modal-card">
-                    
-                    {/* Close Button */}
-                    <button 
-                        onClick={() => setIsOpen(false)} 
-                        className="modal-close-btn"
-                        aria-label="Close modal"
-                    >
+                    <button onClick={handleClose} className="modal-close-btn" aria-label="Close modal">
                         <CloseIcon />
                     </button>
 
                     {/* --- Left Side (Image) --- */}
                     <div className="modal-image-section">
-                        
-                        {/* Mobile Background Shapes */}
                         <div className="mobile-decor-bg">
                             <div className="decor-shape shape-1"></div>
                             <div className="decor-shape shape-2"></div>
                         </div>
-
-                        {/* Character Image */}
                         <div className="image-container">
                             <img 
                                 src={placeholderImageUrl} 
@@ -86,51 +121,76 @@ const LoginModal = ({ onClose, mode = "login" }) => {
                         </div>
                     </div>
 
-                    {/* --- Right Side (Login Content) --- */}
+                    {/* --- Right Side (Login Form) --- */}
                     <div className="modal-content-section">
-                        
                         <div className="content-header">
-                            <div className="waveform-wrapper">
-                                <AudioWaveform className="waveform-svg" />
-                            </div>
-                            
                             <div className="title-group">
                                 <span className="eyebrow">{isGuest ? "FREE LIMIT REACHED" : "WELCOME BACK"}</span>
-                                <h2 className="main-title">{isGuest ? "Sign Up for More" : "Continue Chatting"}</h2>
+                                <h2 className="main-title">{isGuest ? "Sign Up for More" : "Quick Login"}</h2>
                             </div>
-                        </div>
-
-                        <div className="content-body">
-                            <p className="description-text">
+                            <p className="description-text mt-2">
                                 {isGuest 
-                                    ? "Your 2 free guest messages are over! Create a free account now to get daily free messages and save your chats." 
-                                    : "Please log in to access your saved conversations, voice messages, and personalized settings."}
+                                    ? "Your free guest messages are over! Log in or create an account to continue chatting." 
+                                    : "Please log in to access your saved conversations and settings."}
                             </p>
                         </div>
 
-                        {/* CTA Button */}
-                        <a href={isGuest ? "/signup" : "/login"} className="cta-button">
-                            <LoginIcon />
-                            <span>{isGuest ? "Create Free Account" : "Log In to Account"}</span>
-                            <div className="glow-effect"></div>
-                        </a>
+                        {errorMsg && <div className="error-message">{errorMsg}</div>}
 
-                        {/* Optional subtle footer link */}
-                        <div className="footer-link">
-                            {isGuest ? (
-                                <a href="/login" className="link-highlight"><span>Already have an account? Log In</span></a>
-                            ) : (
-                                <a href="/signup" className="link-highlight"><span>Don't have an account? Sign Up</span></a>
-                            )}
+                        <div className="form-container">
+                            <GoogleOAuthProvider clientId={googleClientId}>
+                                <div className="google-btn-wrapper">
+                                    <GoogleLogin
+                                        onSuccess={handleGoogleSuccess}
+                                        onError={() => setErrorMsg("Google Login Failed.")}
+                                        theme="filled_black"
+                                        size="large"
+                                        shape="rectangular"
+                                        width="100%"
+                                        text="continue_with"
+                                    />
+                                </div>
+                            </GoogleOAuthProvider>
+
+                            <div className="divider">
+                                <span>Or login with email</span>
+                            </div>
+
+                            <form onSubmit={handleSubmit} className="login-form">
+                                <input 
+                                    type="email" 
+                                    name="email" 
+                                    placeholder="Email Address" 
+                                    value={formData.email} 
+                                    onChange={handleChange} 
+                                    className="form-input"
+                                    required 
+                                />
+                                <input 
+                                    type="password" 
+                                    name="password" 
+                                    placeholder="Password" 
+                                    value={formData.password} 
+                                    onChange={handleChange} 
+                                    className="form-input"
+                                    required 
+                                />
+                                <button type="submit" className="cta-button" disabled={isSubmitting}>
+                                    {isSubmitting ? <span className="spinner"></span> : "Log In"}
+                                    {!isSubmitting && <div className="glow-effect"></div>}
+                                </button>
+                            </form>
+                        </div>
+
+                        <div className="footer-link mt-4">
+                            <span>Don't have an account? </span>
+                            <a href="/signup" className="link-highlight">Sign Up Now</a>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* --- STYLES --- */}
             <style jsx global>{`
-                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
                 :root {
                     --color-primary: #ec4899;
                     --color-bg-dark: #121212;
@@ -139,12 +199,14 @@ const LoginModal = ({ onClose, mode = "login" }) => {
                 }
 
                 .font-inter { font-family: 'Inter', sans-serif; }
+                .mt-2 { margin-top: 0.5rem; }
+                .mt-4 { margin-top: 1.5rem; }
 
                 /* Overlay */
                 .modal-overlay {
                     position: fixed;
                     inset: 0;
-                    z-index: 9999;
+                    z-index: 99999;
                     display: flex;
                     justify-content: center;
                     align-items: center;
@@ -158,7 +220,7 @@ const LoginModal = ({ onClose, mode = "login" }) => {
                 .modal-card {
                     position: relative;
                     width: 100%;
-                    max-width: 340px;
+                    max-width: 360px;
                     background-color: var(--color-bg-dark);
                     border: 1px solid #333;
                     border-radius: 24px;
@@ -166,10 +228,9 @@ const LoginModal = ({ onClose, mode = "login" }) => {
                     flex-direction: column;
                     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
                     overflow: visible; 
-                    margin-top: 50px; /* Space for pop-out */
+                    margin-top: 50px;
                 }
 
-                /* Close Button */
                 .modal-close-btn {
                     position: absolute;
                     top: 12px;
@@ -189,21 +250,7 @@ const LoginModal = ({ onClose, mode = "login" }) => {
 
                 /* Image Section */
                 .modal-image-section {
-                    position: relative;
-                    width: 100%;
-                    display: flex;
-                    justify-content: center;
-                    z-index: 10;
-                }
-
-                .image-container {
-                    position: relative;
-                    width: 160px;
-                    height: 220px;
-                    margin-top: -60px;
-                    border-radius: 16px;
-                    box-shadow: var(--shadow-glow);
-                    z-index: 20;
+                    display: none; /* Hide on mobile for a cleaner, faster look */
                 }
 
                 .profile-image {
@@ -224,11 +271,7 @@ const LoginModal = ({ onClose, mode = "login" }) => {
                     z-index: 0;
                     pointer-events: none;
                 }
-                .decor-shape {
-                    position: absolute;
-                    border-radius: 12px;
-                    opacity: 0.6;
-                }
+                .decor-shape { position: absolute; border-radius: 12px; opacity: 0.6; }
                 .shape-1 {
                     width: 140px; height: 180px;
                     background: linear-gradient(45deg, #ec4899, #f87171);
@@ -244,20 +287,12 @@ const LoginModal = ({ onClose, mode = "login" }) => {
 
                 /* Content Section */
                 .modal-content-section {
-                    padding: 3rem 1.5rem 2rem 1.5rem;
+                    padding: 2rem 1.5rem;
                     text-align: center;
                     color: white;
                     display: flex;
                     flex-direction: column;
-                    gap: 1.5rem;
                 }
-
-                .waveform-wrapper {
-                    width: 120px;
-                    height: 40px;
-                    margin: 0 auto 1rem auto;
-                }
-                .waveform-svg { width: 100%; height: 100%; color: var(--color-primary); }
 
                 .title-group { display: flex; flex-direction: column; gap: 0.25rem; }
                 
@@ -265,12 +300,12 @@ const LoginModal = ({ onClose, mode = "login" }) => {
                     font-size: 0.75rem;
                     letter-spacing: 0.1em;
                     text-transform: uppercase;
-                    color: var(--color-text-dim);
-                    font-weight: 600;
+                    color: var(--color-primary);
+                    font-weight: 700;
                 }
                 
                 .main-title {
-                    font-size: 1.75rem;
+                    font-size: 1.5rem;
                     font-weight: 800;
                     line-height: 1.1;
                     background: linear-gradient(to right, #fff, #fbcfe8);
@@ -278,11 +313,53 @@ const LoginModal = ({ onClose, mode = "login" }) => {
                     -webkit-text-fill-color: transparent;
                 }
 
-                .description-text {
-                    font-size: 0.9rem;
-                    line-height: 1.5;
-                    color: var(--color-text-dim);
+                .description-text { font-size: 0.85rem; line-height: 1.4; color: var(--color-text-dim); }
+
+                .error-message {
+                    background: rgba(239, 68, 68, 0.1);
+                    color: #f87171;
+                    padding: 8px;
+                    border-radius: 8px;
+                    font-size: 0.85rem;
+                    margin-top: 1rem;
+                    border: 1px solid rgba(239, 68, 68, 0.3);
                 }
+
+                .form-container { margin-top: 1.25rem; }
+                
+                .google-btn-wrapper { width: 100%; display: flex; justify-content: center; }
+
+                .divider {
+                    display: flex;
+                    align-items: center;
+                    text-align: center;
+                    margin: 1rem 0;
+                    color: #555;
+                    font-size: 0.75rem;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                }
+                .divider::before, .divider::after {
+                    content: '';
+                    flex: 1;
+                    border-bottom: 1px solid #333;
+                }
+                .divider span { padding: 0 10px; }
+
+                .login-form { display: flex; flex-direction: column; gap: 0.75rem; }
+
+                .form-input {
+                    width: 100%;
+                    padding: 12px 14px;
+                    background: #1a1a1a;
+                    border: 1px solid #333;
+                    border-radius: 12px;
+                    color: white;
+                    font-size: 0.9rem;
+                    outline: none;
+                    transition: border-color 0.2s;
+                }
+                .form-input:focus { border-color: var(--color-primary); }
 
                 /* CTA Button */
                 .cta-button {
@@ -290,36 +367,30 @@ const LoginModal = ({ onClose, mode = "login" }) => {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    gap: 0.75rem;
                     width: 100%;
-                    padding: 1rem;
+                    padding: 12px;
                     background: linear-gradient(90deg, #ec4899 0%, #db2777 100%);
-                    border-radius: 14px;
+                    border-radius: 12px;
                     color: white;
                     font-weight: 700;
                     font-size: 1rem;
-                    text-decoration: none;
+                    border: none;
+                    cursor: pointer;
                     transition: transform 0.2s, box-shadow 0.2s;
                     overflow: hidden;
-                    box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+                    margin-top: 0.5rem;
                 }
-                .cta-button:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 8px 25px rgba(236, 72, 153, 0.5);
+                .cta-button:hover:not(:disabled) {
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
                 }
-                .cta-button:active { transform: scale(0.98); }
+                .cta-button:disabled { opacity: 0.7; cursor: not-allowed; }
 
-                .icon-svg { width: 20px; height: 20px; }
-
-                .footer-link {
-                    font-size: 0.8rem;
-                    color: #888;
-                }
+                .footer-link { font-size: 0.8rem; color: #888; }
                 .link-highlight {
-                    color: white;
+                    color: var(--color-primary);
                     text-decoration: none;
                     font-weight: 600;
-                    margin-left: 4px;
                 }
                 .link-highlight:hover { text-decoration: underline; }
 
@@ -341,78 +412,56 @@ const LoginModal = ({ onClose, mode = "login" }) => {
                     from { opacity: 0; transform: scale(0.95); }
                     to { opacity: 1; transform: scale(1); }
                 }
-                .animate-pulse-bar {
-                    animation: pulseHeight 1.5s ease-in-out infinite;
-                    transform-origin: bottom;
+
+                .spinner {
+                    width: 20px; height: 20px;
+                    border: 3px solid rgba(255,255,255,0.3);
+                    border-top-color: white;
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
                 }
-                @keyframes pulseHeight {
-                    0%, 100% { transform: scaleY(0.5); }
-                    50% { transform: scaleY(1); }
-                }
+                @keyframes spin { to { transform: rotate(360deg); } }
 
                 /* --- DESKTOP (MD+) --- */
                 @media (min-width: 768px) {
                     .modal-card {
-                        max-width: 750px;
-                        height: 420px;
+                        max-width: 800px;
                         flex-direction: row;
-                        overflow: hidden; 
                         margin-top: 0;
                         padding: 0;
-                        align-items: stretch;
                         border: 1px solid #2a2a2a;
                     }
 
-                    /* Desktop Image (Left) */
-                    .modal-image-section {
-                        width: 42%;
-                        flex-shrink: 0;
-                        height: auto;
-                        margin: 0;
-                        padding: 0;
+                    .modal-image-section { 
+                        display: flex;
+                        width: 45%; 
+                        position: relative;
+                        justify-content: center;
+                        z-index: 10;
                     }
-
                     .mobile-decor-bg { display: none; }
-
                     .image-container {
-                        width: 100%;
-                        height: 100%;
-                        margin: 0;
-                        border-radius: 0;
-                        box-shadow: none;
-                        border: none;
+                        position: relative;
+                        width: 100%; height: 100%;
+                        margin: 0; border-radius: 0;
+                        box-shadow: none; border: none;
+                        z-index: 20;
                     }
-
                     .profile-image {
-                        width: 100%;
-                        height: 100%;
-                        border-radius: 0;
-                        border: none;
+                        width: 100%; height: 100%; object-fit: cover;
+                        border-radius: 0; border: none;
                         mask-image: linear-gradient(to right, black 80%, transparent 100%);
                     }
 
-                    /* Desktop Content (Right) */
                     .modal-content-section {
-                        width: 58%;
-                        padding: 3rem;
+                        width: 55%;
+                        padding: 2.5rem;
                         text-align: left;
-                        justify-content: center;
-                        align-items: flex-start;
                         background: linear-gradient(to left, #121212 0%, #1a1a1a 100%);
                     }
 
-                    .waveform-wrapper { margin: 0 0 1.5rem 0; width: 140px; }
-
                     .title-group { gap: 0.5rem; }
-                    .main-title { font-size: 2.25rem; }
-
-                    .cta-button {
-                        width: auto;
-                        padding: 1rem 3rem;
-                        margin-top: 1rem;
-                    }
-                    
-                    .footer-link { margin-top: 1rem; }
+                    .main-title { font-size: 2rem; }
                 }
             `}</style>
         </>

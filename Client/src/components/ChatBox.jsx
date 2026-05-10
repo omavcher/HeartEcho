@@ -598,9 +598,7 @@ const CallPaywallModal = ({ tier, upgradeInfo, onClose, onUpgrade }) => {
       )}
 
       {showLoginModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999 }}>
-            <LoginModal onClose={() => setShowLoginModal(false)} mode={isGuest ? "guest" : "login"} />
-        </div>
+        <LoginModal onClose={() => setShowLoginModal(false)} mode={isGuest ? "guest" : "login"} />
       )}
 
       <PopNoti 
