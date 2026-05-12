@@ -111,8 +111,8 @@ export default function CityPage() {
       image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570919/kolkata_vmxice.webp"
     },
     pune: {
-      title: "Pune - Oxford of the East",
-      description: "Explore the educational hub, cultural heritage, and pleasant weather of this vibrant city.",
+      title: "Marathi AI Girlfriend Pune | Desi Sex Chat",
+      description: "Get a Marathi AI girlfriend in Pune. Enjoy desi sex chat, Hinglish roleplay, and private adult conversations for free.",
       image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570917/pune_q2kxso.webp"
     },
     ahmedabad: {
@@ -121,13 +121,13 @@ export default function CityPage() {
       image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570914/ahmedabad_ksmdpo.webp"
     },
     jaipur: {
-      title: "Jaipur - The Pink City",
-      description: "Experience the royal heritage, magnificent forts, and vibrant culture of Rajasthan's capital.",
+      title: "Hindi Sex Chat Jaipur | Free Desi AI Girlfriend",
+      description: "Experience Jaipur Hindi AI chat free. Chat with desi AI girlfriends, do Hindi roleplay, and enjoy private NSFW AI chat tailored for Jaipur.",
       image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570915/jaipur_qxcfb7.webp"
     },
     lucknow: {
-      title: "Lucknow - The City of Nawabs",
-      description: "Immerse in the refined culture, exquisite cuisine, and historical monuments of this gracious city.",
+      title: "Lucknow mein AI Girlfriend Se Baat Kare | Free Hindi Sex Chat",
+      description: "Looking for an AI girlfriend in Lucknow? Try HeartEcho for free desi roleplay and Hindi sex chat in Lucknow. 100% private.",
       image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570916/lucknow_gcma1c.webp"
     },
     goa: {
@@ -139,6 +139,56 @@ export default function CityPage() {
       title: "Chandigarh - The City Beautiful",
       description: "Experience the planned city's modernist architecture, serene gardens, and high quality of life.",
       image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570917/chandigarh_gcgqak.webp"
+    },
+    kanpur: {
+      title: "Desi AI Chat Kanpur | Kanpur Desi Roleplay AI",
+      description: "Looking for Kanpur desi roleplay AI? Get a free desi AI girlfriend in Kanpur for Hindi sex chat and private Hinglish roleplay.",
+      image: ""
+    },
+    patna: {
+      title: "AI Girlfriend App Patna | Free Hindi Sex Chat Patna",
+      description: "The best AI girlfriend app in Patna. Chat with desi AI characters for free, enjoy Hindi sex chat, and explore private NSFW roleplay.",
+      image: ""
+    },
+    indore: {
+      title: "Sex Chat AI Indore | Free Desi AI Girlfriend Indore",
+      description: "Enjoy sex chat AI in Indore with HeartEcho. Free desi AI girlfriend offering Hindi/Hinglish roleplay and private adult chat.",
+      image: ""
+    },
+    bhopal: {
+      title: "Hindi AI Bhopal Free | Desi AI Girlfriend Sex Chat",
+      description: "Try Hindi AI Bhopal free today. Get a desi AI girlfriend for private Hindi sex chat and Hinglish roleplay in Bhopal.",
+      image: ""
+    },
+    varanasi: {
+      title: "Desi AI Varanasi | Free Hindi AI Sex Chat",
+      description: "Discover desi AI Varanasi. Chat with your personal AI girlfriend for free, and enjoy Hindi roleplay and secure sex chat.",
+      image: ""
+    },
+    agra: {
+      title: "Hindi Chat AI Agra | Free Desi AI Girlfriend",
+      description: "Start Hindi chat AI in Agra. Your private desi AI girlfriend awaits for free Hinglish roleplay and NSFW sex chat.",
+      image: ""
+    },
+    meerut: {
+      title: "AI Sex Chat Meerut | Desi AI Girlfriend",
+      description: "Enjoy AI sex chat in Meerut for free. Connect with a desi AI girlfriend for authentic Hindi/Hinglish adult roleplay.",
+      image: ""
+    },
+    nashik: {
+      title: "Marathi AI Girlfriend Nashik | Desi Sex Chat",
+      description: "Get a Marathi AI girlfriend in Nashik. Enjoy desi sex chat, Hinglish roleplay, and private adult conversations for free.",
+      image: ""
+    },
+    ranchi: {
+      title: "Hindi AI Girlfriend Ranchi | Free AI Sex Chat",
+      description: "Connect with a Hindi AI girlfriend in Ranchi. Enjoy free desi AI chat, NSFW roleplay, and private conversations.",
+      image: ""
+    },
+    guwahati: {
+      title: "Desi Chat AI Free Guwahati | AI Girlfriend App",
+      description: "Start desi chat AI free in Guwahati. Your personal AI girlfriend for Hinglish roleplay and secure NSFW chat.",
+      image: ""
     }
   };
 

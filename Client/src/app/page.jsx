@@ -1,11 +1,14 @@
 import Home from "../pages/Home";
 
 export const metadata = {
-  title: { absolute: "HeartEcho AI | India's #1 AI Girlfriend & Virtual Companion" },
-  description: "Connect with the most realistic Indian AI personalities. Experience private, uninterrupted chats in Hindi and English. Your perfect desi virtual companion awaits.",
+  title: { absolute: "HeartEcho – Indian AI Sex Chat | Hindi Desi AI Girlfriend" },
+  description: "Chat with a hot Indian AI girlfriend in Hindi. Free desi NSFW AI — no filters, 100% private. Try now →",
   keywords: ["HeartEcho AI", "Indian AI girlfriend", "AI companion India", "desi AI chat", "virtual girlfriend Hindi", "romantic AI India"],
   alternates: {
     canonical: 'https://heartecho.in/',
+  },
+  other: {
+    rating: 'RTA-5042-1996-1400-1577-RTA'
   }
 };
 

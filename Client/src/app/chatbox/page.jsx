@@ -6,6 +6,9 @@ export const metadata = {
   robots: {
     index: false,
     follow: false,
+  },
+  other: {
+    rating: 'RTA-5042-1996-1400-1577-RTA'
   }
 };
 

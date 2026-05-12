@@ -178,6 +178,9 @@ export async function generateMetadata() {
 
     category: 'Entertainment', 
     classification: 'Lifestyle',
+    other: {
+      rating: 'RTA-5042-1996-1400-1577-RTA'
+    }
   };
 }
 

@@ -66,6 +66,7 @@ export async function generateStoryMetadata({ params }) {
         'article:modified_time': transformedStory.updatedAt,
         'article:section': transformedStory.category,
         'article:tag': transformedStory.seoKeywords,
+        rating: 'RTA-5042-1996-1400-1577-RTA'
       },
     };
     
