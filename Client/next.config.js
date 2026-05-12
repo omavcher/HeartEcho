@@ -1,16 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // ─── Image Optimization (auto WebP/AVIF conversion) ───────────────
+  // ─── Image Optimization ───────────────────────────────────────────
+  // unoptimized: true → bypasses Vercel's paid Image Optimization API.
+  // Local images are pre-compressed with Sharp (76MB+ savings done).
+  // Cloudinary images are pre-optimized from Cloudinary CDN directly.
+  // Fixes: OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED error.
   images: {
+    unoptimized: true,           // Serve images as-is (already Sharp-compressed)
     remotePatterns: [
       { protocol: 'https', hostname: 'res.cloudinary.com' },
       { protocol: 'https', hostname: 'thumbs.dreamstime.com' },
       { protocol: 'https', hostname: 'cdn.heartecho.in' },
     ],
-    formats: ['image/avif', 'image/webp'],   // serve smallest format
-    minimumCacheTTL: 31536000,               // cache images 1 year
-    deviceSizes: [360, 640, 750, 828, 1080, 1200],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    minimumCacheTTL: 31536000,   // Still cache 1 year on client side
   },
 
   // ─── Build & Bundle Optimizations ─────────────────────────────────
