@@ -42,15 +42,12 @@ export default function ClientLayout({ children }) {
     document.addEventListener('contextmenu', handleContextMenu);
     document.addEventListener('keydown', handleKeyDown);
 
-    // 3. DevTools freeze trap (If DevTools was already open before visiting, it halts execution)
-    const devToolsTrap = setInterval(() => {
-      debugger;
-    }, 100);
+    // 3. DevTools detection (passive check - no performance impact)
+    // Removed aggressive setInterval(debugger) trap - it hurts all users' performance
 
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('keydown', handleKeyDown);
-      clearInterval(devToolsTrap);
     };
   }, []);
   return (

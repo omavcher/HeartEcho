@@ -387,11 +387,30 @@ function AIFriends() {
   `;
 
   useEffect(() => {
+    const CACHE_KEY = 'aif_models';
+    const CACHE_TIME_KEY = 'aif_models_time';
+    const CACHE_TTL = 5 * 60 * 1000;
+
+    const cached = sessionStorage.getItem(CACHE_KEY);
+    const cachedTime = sessionStorage.getItem(CACHE_TIME_KEY);
+    const now = Date.now();
+
+    if (cached && cachedTime && (now - parseInt(cachedTime)) < CACHE_TTL) {
+      const models = JSON.parse(cached);
+      setAiModels(models);
+      setFilteredModels(models);
+      setLoading(false);
+      return;
+    }
+
     axios
       .get(`${api.Url}/user/get-pre-ai`)
       .then((response) => {
-        setAiModels(response.data.data);
-        setFilteredModels(response.data.data);
+        const models = response.data.data;
+        setAiModels(models);
+        setFilteredModels(models);
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify(models));
+        sessionStorage.setItem(CACHE_TIME_KEY, now.toString());
         setLoading(false);
       })
       .catch((error) => {
@@ -538,6 +557,10 @@ function AIFriends() {
                   src={model.avatar_img} 
                   alt={model.name}
                   className="ai-card-media-38f3a ai-model-image-38f3a image-visible-38f3a"
+                  loading="lazy"
+                  decoding="async"
+                  width={300}
+                  height={533}
                 />
 
                 

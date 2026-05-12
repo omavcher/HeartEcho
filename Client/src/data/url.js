@@ -1,3 +1,3 @@
-// data/url.js
-const url ='https://www.heartecho.in';
+// data/url.js — MUST match the canonical domain in layout.jsx (non-www)
+const url = 'https://heartecho.in';
 export default url;

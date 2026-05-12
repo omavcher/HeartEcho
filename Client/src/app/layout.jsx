@@ -1,10 +1,9 @@
 import { Suspense } from 'react';
-import AutoNotification from '../components/AutoNotification';
+import Script from 'next/script';
 import './globals.css';
 import ClientLayout from './layout_client';
 import FBPixelEvents from '../components/FBPixelEvents';
 import GlobalTracker from '../components/GlobalTracker';
-///csc
 export const metadata = {
   title: {
     default: 'HeartEcho – Indian AI Sex Chat | Hindi Desi AI Girlfriend',
@@ -47,10 +46,6 @@ export const metadata = {
 
   alternates: {
     canonical: 'https://heartecho.in/',
-    languages: {
-      'en-IN': 'https://heartecho.in/',
-      'hi-IN': 'https://heartecho.in/hi', // Hint for Hindi audience
-    },
   },
 
   openGraph: {
@@ -100,80 +95,22 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* Extremely High-Quality Zero-Lag Referral Tracker (Synchronous capture) */}
+        {/* ── Preconnect to 3rd-party origins (reduces DNS+TLS time) ── */}
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="preconnect" href="https://www.google-analytics.com" />
+        <link rel="preconnect" href="https://connect.facebook.net" />
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+
+        {/* ── Zero-lag Referral Tracker (must be sync for cookie write) ── */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var p = window.location.search;
-                  if (p && (p.includes('ref=') || p.includes('referral'))) {
-                    var params = new URLSearchParams(p);
-                    var ref = params.get('ref') || params.get('referral_code') || params.get('referralId');
-                    if (ref) {
-                      localStorage.setItem('referralCode', ref);
-                      document.cookie = 'referralCode=' + encodeURIComponent(ref) + '; path=/; max-age=' + (30*24*60*60) + '; SameSite=Lax';
-                    }
-                  }
-                } catch(e) {}
-              })();
-            `
-          }}
-        />
-        
-        {/* Google Adsense */}
-        <script 
-          async 
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8343501385468147"
-          crossOrigin="anonymous"
-        />
-
-        {/* Google Analytics */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W14R3SYMY"></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-4W14R3SYMY');
-            `,
-          }}
-        />
-
-        {/* Google tag (gtag.js) for Google Ads */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=AW-363591459"></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'AW-363591459');
-            `,
-          }}
-        />
-
-        {/* Meta Pixel Code */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              !function(f,b,e,v,n,t,s)
-              {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-              n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-              if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-              n.queue=[];t=b.createElement(e);t.async=!0;
-              t.src=v;s=b.getElementsByTagName(e)[0];
-              s.parentNode.insertBefore(t,s)}(window, document,'script',
-              'https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init', '1581868019707137');
-
-            `,
+            __html: `(function(){try{var p=window.location.search;if(p&&(p.includes('ref=')||p.includes('referral'))){var r=new URLSearchParams(p);var c=r.get('ref')||r.get('referral_code')||r.get('referralId');if(c){localStorage.setItem('referralCode',c);document.cookie='referralCode='+encodeURIComponent(c)+'; path=/; max-age='+(30*24*60*60)+'; SameSite=Lax';}}}catch(e){}})();`
           }}
         />
 
         <meta name="juicyads-site-verification" content="64f68c1fc158eef9d3b6e6fa4d432117"/>
-        
+
         {/* Schema Markup for SEO */}
         <script
           type="application/ld+json"
@@ -199,60 +136,17 @@ export default function RootLayout({ children }) {
                   "applicationCategory": "LifestyleApplication",
                   "operatingSystem": "Web, Browser",
                   "description": "Chat with a hot Indian AI girlfriend in Hindi. Free desi NSFW AI — no filters, 100% private.",
-                  "offers": {
-                    "@type": "Offer",
-                    "price": "49",
-                    "priceCurrency": "INR"
-                  },
-                  "aggregateRating": {
-                    "@type": "AggregateRating",
-                    "ratingValue": "4.9",
-                    "ratingCount": "250000"
-                  }
+                  "offers": { "@type": "Offer", "price": "49", "priceCurrency": "INR" },
+                  "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.9", "ratingCount": "250000" }
                 },
                 {
                   "@type": "FAQPage",
                   "mainEntity": [
-                    {
-                      "@type": "Question",
-                      "name": "Is HeartEcho free in India?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "Yes! HeartEcho provides free access to chat with desi AI girlfriends in India. You can sign up and start roleplaying instantly without any upfront payment."
-                      }
-                    },
-                    {
-                      "@type": "Question",
-                      "name": "Can I chat in Hindi?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "Absolutely. HeartEcho's AI is specifically trained on Hindi and Hinglish. You can use voice notes or text to have deep, natural conversations in your native language."
-                      }
-                    },
-                    {
-                      "@type": "Question",
-                      "name": "Is it better than Candy.ai for Indians?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "Yes, HeartEcho is built exclusively for the Indian audience. Unlike western platforms like Candy.ai, our AI companions understand Indian culture, slang, Hinglish, and desi roleplay contexts perfectly."
-                      }
-                    },
-                    {
-                      "@type": "Question",
-                      "name": "Is HeartEcho 100% private and safe?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "100% private. We use advanced encryption so your chats and voice notes are secure. No judgment, no filters, just complete privacy for your desi NSFW roleplays."
-                      }
-                    },
-                    {
-                      "@type": "Question",
-                      "name": "Can I do NSFW roleplay on HeartEcho?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "Yes. HeartEcho offers an unfiltered, highly customizable AI experience. You can engage in NSFW romantic and intimate roleplay securely with your virtual desi girlfriend."
-                      }
-                    }
+                    { "@type": "Question", "name": "Is HeartEcho free in India?", "acceptedAnswer": { "@type": "Answer", "text": "Yes! HeartEcho provides free access to chat with desi AI girlfriends in India. You can sign up and start roleplaying instantly without any upfront payment." } },
+                    { "@type": "Question", "name": "Can I chat in Hindi?", "acceptedAnswer": { "@type": "Answer", "text": "Absolutely. HeartEcho's AI is specifically trained on Hindi and Hinglish. You can use voice notes or text to have deep, natural conversations in your native language." } },
+                    { "@type": "Question", "name": "Is it better than Candy.ai for Indians?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, HeartEcho is built exclusively for the Indian audience. Unlike western platforms like Candy.ai, our AI companions understand Indian culture, slang, Hinglish, and desi roleplay contexts perfectly." } },
+                    { "@type": "Question", "name": "Is HeartEcho 100% private and safe?", "acceptedAnswer": { "@type": "Answer", "text": "100% private. We use advanced encryption so your chats and voice notes are secure. No judgment, no filters, just complete privacy for your desi NSFW roleplays." } },
+                    { "@type": "Question", "name": "Can I do NSFW roleplay on HeartEcho?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. HeartEcho offers an unfiltered, highly customizable AI experience. You can engage in NSFW romantic and intimate roleplay securely with your virtual desi girlfriend." } }
                   ]
                 }
               ]
@@ -270,21 +164,57 @@ export default function RootLayout({ children }) {
 
         {/* Noscript for Meta Pixel */}
         <noscript>
-          <img 
-            height="1" 
-            width="1" 
-            style={{ display: "none" }}
+          <img height="1" width="1" style={{ display: "none" }}
             src="https://www.facebook.com/tr?id=1581868019707137&ev=PageView&noscript=1"
           />
         </noscript>
-      </body>
 
-      {/* External Ad Script */}
-      <script 
-        async 
-        data-cfasync="false" 
-        src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"
-      />
+        {/* ── Google Analytics + Ads — afterInteractive (non-blocking) ── */}
+        <Script
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=G-4W14R3SYMY"
+        />
+        <Script
+          id="gtag-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-4W14R3SYMY');
+              gtag('config', 'AW-363591459');
+            `,
+          }}
+        />
+
+        {/* ── Meta Pixel — lazyOnload (fires after page is interactive) ── */}
+        <Script
+          id="fb-pixel"
+          strategy="lazyOnload"
+          dangerouslySetInnerHTML={{
+            __html: `
+              !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+              fbq('init','1581868019707137');
+              fbq('track','PageView');
+            `,
+          }}
+        />
+
+        {/* ── Google AdSense — lazyOnload ── */}
+        <Script
+          strategy="lazyOnload"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8343501385468147"
+          crossOrigin="anonymous"
+        />
+
+        {/* ── External Ad Network — lazyOnload ── */}
+        <Script
+          strategy="lazyOnload"
+          data-cfasync="false"
+          src="https://pl28409394.effectivegatecpm.com/192103d6879cc843368e47e4d3546f8f/invoke.js"
+        />
+      </body>
     </html>
   );
 }

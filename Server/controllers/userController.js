@@ -704,6 +704,9 @@ exports.getAllPreAIFriends = async (req, res) => {
     const allFriends = await PrebuiltAIFriend.find();
     const shuffledFriends = shuffleArray(allFriends);
 
+    // Cache for 5 minutes in browser/CDN, stale-while-revalidate for seamless updates
+    res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
+
     res.status(200).json({
       success: true,
       message: "All AI Friends retrieved successfully in random order!",

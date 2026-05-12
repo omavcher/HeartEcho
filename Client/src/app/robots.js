@@ -1,10 +1,13 @@
 export default function robots() {
-    return {
-      rules: {
+  return {
+    rules: [
+      {
         userAgent: '*',
         allow: '/',
-        disallow: '/admin/',
+        disallow: ['/admin/', '/api/'],
       },
-      sitemap: 'https://heartecho.in/sitemap.xml',
-    }
-  }
+    ],
+    sitemap: 'https://heartecho.in/sitemap.xml',
+    host: 'https://heartecho.in',  // Tells crawlers the canonical host (non-www)
+  };
+}

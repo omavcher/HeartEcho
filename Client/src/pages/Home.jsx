@@ -1,21 +1,24 @@
 'use client';
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import Link from "next/link";
 import axios from "axios";
 import "../styles/Home.css";
+import dynamic from "next/dynamic";
 
-// Components
+// ── Critical above-fold components (eager) ──────────────────────────────────
 import HomeAiModels from "../components/HomeAiModels";
-import StepsHome from "../components/StepsHome";
-import HomeFAQ from "../components/HomeFAQ";
-import HomeCosAi from "../components/HomeCosAi";
-import Footer from "../components/Footer";
-import HomeSubscriptions from "../components/HomeSubscriptions";
-import HomeReferralSection from "../components/HomeReferralSection";
-import api from "../config/api";
-import HomeRandomStories from "../components/HomeRandomStories";
-import HomeLiveStories from "../components/HomeLiveStories";
 import AiLiveView from "../components/AiLiveView";
+
+// ── Below-fold components (lazy-loaded) ─────────────────────────────────────
+const StepsHome          = dynamic(() => import("../components/StepsHome"),          { ssr: false });
+const HomeFAQ            = dynamic(() => import("../components/HomeFAQ"),            { ssr: false });
+const HomeCosAi          = dynamic(() => import("../components/HomeCosAi"),          { ssr: false });
+const Footer             = dynamic(() => import("../components/Footer"),             { ssr: false });
+const HomeSubscriptions  = dynamic(() => import("../components/HomeSubscriptions"),  { ssr: false });
+const HomeReferralSection= dynamic(() => import("../components/HomeReferralSection"),{ ssr: false });
+const HomeRandomStories  = dynamic(() => import("../components/HomeRandomStories"),  { ssr: false });
+const HomeLiveStories    = dynamic(() => import("../components/HomeLiveStories"),    { ssr: false });
+import api from "../config/api";
 
 export default function Home() {
   const [serverStatus, setServerStatus] = useState(null);
@@ -55,34 +58,53 @@ export default function Home() {
         {/* ─── 2.5. LIVE STORIES ──────────────────────────────── */}
         {country === 'IN' && (
           <section className="section-spacer">
-            <HomeLiveStories />
+            <Suspense fallback={null}>
+              <HomeLiveStories />
+            </Suspense>
           </section>
         )}
 
-
-      
-
-      
         {/* ─── 5. HOW IT WORKS ────────────────────────────────── */}
-        <section className="steps-section"><StepsHome /></section>
+        <section className="steps-section">
+          <Suspense fallback={null}>
+            <StepsHome />
+          </Suspense>
+        </section>
 
         {/* ─── 6. PRICING ─────────────────────────────────────── */}
-        <section className="section-spacer"><HomeSubscriptions /></section>
-
+        <section className="section-spacer">
+          <Suspense fallback={null}>
+            <HomeSubscriptions />
+          </Suspense>
+        </section>
 
         {/* ─── 9. STORIES ─────────────────────────────────────── */}
         {country === 'IN' && (
-          <section><HomeRandomStories /></section>
+          <section>
+            <Suspense fallback={null}>
+              <HomeRandomStories />
+            </Suspense>
+          </section>
         )}
 
-
         {/* ─── 8. REFERRAL ────────────────────────────────────── */}
-        <section className="section-spacer"><HomeReferralSection /></section>
+        <section className="section-spacer">
+          <Suspense fallback={null}>
+            <HomeReferralSection />
+          </Suspense>
+        </section>
+
         {/* ─── 10. FAQ ────────────────────────────────────────── */}
-        <section className="section-spacer"><HomeFAQ /></section>
+        <section className="section-spacer">
+          <Suspense fallback={null}>
+            <HomeFAQ />
+          </Suspense>
+        </section>
 
       </main>
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </>
   );
 }

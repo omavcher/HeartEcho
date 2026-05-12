@@ -18,9 +18,26 @@ function HomeAiModels() {
 
   useEffect(() => {
     const fetchAiModels = async () => {
+      const CACHE_KEY = 'ham_models';
+      const CACHE_TIME_KEY = 'ham_models_time';
+      const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
       try {
+        const cached = sessionStorage.getItem(CACHE_KEY);
+        const cachedTime = sessionStorage.getItem(CACHE_TIME_KEY);
+        const now = Date.now();
+
+        if (cached && cachedTime && (now - parseInt(cachedTime)) < CACHE_TTL) {
+          setAiModels(JSON.parse(cached));
+          setLoading(false);
+          return;
+        }
+
         const response = await axios.get(`${api.Url}/user/get-pre-ai`);
-        setAiModels(response.data.data);
+        const models = response.data.data;
+        setAiModels(models);
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify(models));
+        sessionStorage.setItem(CACHE_TIME_KEY, now.toString());
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to load AI models. Please try again.");
@@ -145,7 +162,8 @@ function HomeAiModels() {
                     width={270}
                     height={480}
                     className="model-image-d32ud portrait-image-d32ud image-visible-d32ud"
-                    priority={index < 4}
+                   priority={index < 2}
+                   loading={index < 2 ? 'eager' : 'lazy'}
                   />
                   
                   <div className="model-overlay-d32ud">

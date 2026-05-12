@@ -7,12 +7,12 @@ export const metadata = {
   description: "HeartEcho vs Talkie AI comparison for India. HeartEcho wins with Hindi/Hinglish chat, desi AI characters, Indian cultural understanding, and a free tier. See why Indians prefer HeartEcho.",
   keywords: ["heartecho vs talkie ai", "talkie ai india", "best ai girlfriend india 2026", "hindi ai girlfriend app", "indian ai chat", "desi ai girlfriend", "talkie ai alternative india", "ai girlfriend hindi free"],
   alternates: {
-    canonical: 'https://www.heartecho.in/heartecho-vs-talkie',
+    canonical: 'https://heartecho.in/heartecho-vs-talkie',
   },
   openGraph: {
     title: "HeartEcho vs Talkie AI – Which is Best for India in 2026?",
     description: "HeartEcho vs Talkie AI: The honest comparison for Indian users. Hindi chat, desi personas, free tier — see who wins.",
-    url: 'https://www.heartecho.in/heartecho-vs-talkie',
+    url: 'https://heartecho.in/heartecho-vs-talkie',
   },
   robots: {
     index: true,
@@ -81,7 +81,7 @@ const articleSchema = {
   "headline": "HeartEcho vs Talkie AI – Which AI Girlfriend App is Best for India in 2026?",
   "description": "A detailed comparison of HeartEcho and Talkie AI for Indian users, covering Hindi support, desi personas, pricing, adult content, and cultural relevance.",
   "author": { "@type": "Organization", "name": "HeartEcho" },
-  "publisher": { "@type": "Organization", "name": "HeartEcho", "url": "https://www.heartecho.in" },
+  "publisher": { "@type": "Organization", "name": "HeartEcho", "url": "https://heartecho.in" },
   "datePublished": "2026-01-01",
   "dateModified": "2026-05-01"
 };
