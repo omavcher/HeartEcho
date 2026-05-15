@@ -21,7 +21,7 @@ function Terms() {
           </p>
 
           <div className="terms-heart-x30sn">💞</div>
-
+{/*  */}
           <section className="pol-section-x30sn">
             <h2>Creating Safe Connections</h2>
             <ul>
