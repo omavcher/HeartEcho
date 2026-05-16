@@ -132,7 +132,7 @@ STRICT RULES:
         "https://openrouter.ai/api/v1/chat/completions",
         {
           // We use grok-beta or a fast model
-          model: "x-ai/grok-4.1-fast", 
+          model: "x-ai/grok-4.3", 
           messages: [
             { role: "system", content: contextPrompt },
             { role: "user", content: text }

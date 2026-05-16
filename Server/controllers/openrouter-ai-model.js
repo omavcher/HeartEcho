@@ -5,7 +5,7 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 // Default model to use (can be changed per request)
-const DEFAULT_MODEL = "x-ai/grok-4.1-fast";
+const DEFAULT_MODEL = "x-ai/grok-4.3";
 
 /**
  * ✅ Generate AI Response using OpenRouter
@@ -99,7 +99,7 @@ async function generatePersonaResponse(prompt, personaContext) {
     console.log("🔄 Generating persona response with OpenRouter...");
     
     // Use a model that's good for creative, conversational responses
-    const model = "x-ai/grok-4.1-fast"; // Good for creative conversations
+    const model = "x-ai/grok-4.3"; // Good for creative conversations
     
     const response = await fetch(OPENROUTER_API_URL, {
       method: "POST",
@@ -192,7 +192,7 @@ async function generatePersonaResponseFallback(prompt, personaContext) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "x-ai/grok-4.1-fast", // Lightweight fallback
+        model: "x-ai/grok-4.3", // Lightweight fallback
         messages: [
           {
             role: "system",
