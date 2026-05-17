@@ -7,7 +7,6 @@
     --border-x30sn: #333333;
   }
   
-  /* ROOT LAYOUT */
   .cnt-root-x30sn {
     background-color: var(--bg-black-x30sn);
     color: var(--text-main-x30sn);
