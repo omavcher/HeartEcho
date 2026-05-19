@@ -168,7 +168,7 @@ export default function RootLayout({ children }) {
             src="https://www.facebook.com/tr?id=1581868019707137&ev=PageView&noscript=1"
           />
         </noscript>
-
+<meta name="yandex-verification" content="f941558c4f5b4230" />
         {/* ── Google Analytics + Ads — afterInteractive (non-blocking) ── */}
         <Script
           strategy="afterInteractive"

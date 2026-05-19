@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const rateLimit = require("express-rate-limit");
 const connectDB = require("./config/db");
 const axios = require("axios");
 const cron = require("node-cron");
@@ -12,6 +13,16 @@ connectDB();
 const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+// 🛡️ Global IP-based rate limiter (broad safety net against abuse/DoS)
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 500, // 500 requests per 15 min per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many requests. Please try again later." }
+});
+app.use(globalLimiter);
 
 const FRONTEND = process.env.FRONTEND || "https://www.heartecho.in";
 

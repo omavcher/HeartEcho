@@ -259,10 +259,13 @@ async function generateAIResponse(prompt, aiFriendInfo = null, userInfo = null) 
     if (aiFriendInfo) {
       // Use persona-specific response
       const personaContext = createPersonaContext(aiFriendInfo, userInfo);
-      response = await openRouterAI.generatePersonaResponse(prompt, personaContext); // Changed from geminiAI
+      response = await openRouterAI.generatePersonaResponse(prompt, personaContext, userInfo); // Passing userInfo for efficiency
     } else {
       // Use general response
-      response = await openRouterAI.generateAIResponse(prompt); // Changed from geminiAI
+      response = await openRouterAI.generateAIResponse(prompt, { 
+         model: (userInfo && userInfo.subscriptionTier && userInfo.subscriptionTier !== "none" && userInfo.subscriptionTier !== "monthly") ? "x-ai/grok-4.3" : "x-ai/grok-4.3",
+         maxTokens: (userInfo && userInfo.subscriptionTier === "yearly_pro") ? 400 : 150
+      }); 
     }
     
     // Check if we got a valid response from OpenRouter

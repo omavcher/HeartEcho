@@ -215,12 +215,22 @@ userSchema.methods.updateSubscription = async function (durationType) {
 
   if (durationType === "monthly") {
     newExpiry.setMonth(newExpiry.getMonth() + 1);
+    this.subscriptionTier = "monthly";
+    this.audioCallQuota = 0; // No voice on monthly
   } else if (durationType === "yearly") {
     newExpiry.setFullYear(newExpiry.getFullYear() + 1);
+    this.subscriptionTier = "yearly";
+    this.audioCallQuota = 30; // 30 mins/day voice
+  } else if (durationType === "yearly_pro") {
+    newExpiry.setFullYear(newExpiry.getFullYear() + 1);
+    this.subscriptionTier = "yearly_pro";
+    this.audioCallQuota = 999; // Unlimited voice
   } else if (durationType === "lifetime") {
     this.subscriptionExpiry = null; // Never expires
+    this.subscriptionTier = "yearly_pro"; // Ultimate tier
     this.user_type = "subscriber";
     this.messageQuota = 999;
+    this.audioCallQuota = 999;
     return await this.save();
   }
 

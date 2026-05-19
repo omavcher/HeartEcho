@@ -89,7 +89,7 @@ async function generateAIResponse(prompt, options = {}) {
 /**
  * ✅ Generate Persona-Specific Response using OpenRouter
  */
-async function generatePersonaResponse(prompt, personaContext) {
+async function generatePersonaResponse(prompt, personaContext, userInfo = null) {
   try {
     if (!OPENROUTER_API_KEY) {
       console.error("❌ OpenRouter API Key is missing!");
@@ -98,8 +98,24 @@ async function generatePersonaResponse(prompt, personaContext) {
 
     console.log("🔄 Generating persona response with OpenRouter...");
     
-    // Use a model that's good for creative, conversational responses
-    const model = "x-ai/grok-4.3"; // Good for creative conversations
+    // Choose model and tokens based on user subscription to optimize cost and efficiency
+    let model = "google/gemini-2.5-flash"; // Extremely low cost & fast for free users
+    let max_tokens = 100;
+    
+    if (userInfo && userInfo.subscriptionTier) {
+      if (userInfo.subscriptionTier === "yearly_pro") {
+        model = "x-ai/grok-4.3"; // Ultimate premium model
+        max_tokens = 400; // Deepest memory, longest response allowed
+      } else if (userInfo.subscriptionTier === "yearly") {
+        model = "x-ai/grok-4.3"; // Premium model
+        max_tokens = 250; // Good response length
+      } else if (userInfo.subscriptionTier === "monthly") {
+        model = "google/gemini-2.5-pro"; // Better than flash, still cost efficient
+        max_tokens = 150;
+      }
+    }
+    
+    console.log(`🧠 Selected Model: ${model} | Max Tokens: ${max_tokens} | Tier: ${userInfo ? userInfo.subscriptionTier : 'free'}`);
     
     const response = await fetch(OPENROUTER_API_URL, {
       method: "POST",
@@ -121,7 +137,7 @@ async function generatePersonaResponse(prompt, personaContext) {
             content: prompt
           }
         ],
-        max_tokens: 100,
+        max_tokens: max_tokens,
         temperature: 0.85, // Slightly higher for more creative responses
         top_p: 0.95,
         frequency_penalty: 0.2,
@@ -192,7 +208,7 @@ async function generatePersonaResponseFallback(prompt, personaContext) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "x-ai/grok-4.3", // Lightweight fallback
+        model: "google/gemini-2.5-flash", // Truly lightweight and cheap fallback
         messages: [
           {
             role: "system",

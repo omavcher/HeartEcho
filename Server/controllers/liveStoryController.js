@@ -297,7 +297,7 @@ exports.sendChatMessage = async (req, res) => {
     try {
       // Get AI Response
       // We pass the personaContext as the system prompt and the instructions as a specific directive
-      const aiResponseText = await generatePersonaResponse(fullPrompt, personaContext);
+      const aiResponseText = await generatePersonaResponse(fullPrompt, personaContext, user);
       
       const aiMessage = { sender: "ai", text: aiResponseText, time: new Date() };
       chat.messages.push(aiMessage);

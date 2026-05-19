@@ -7,6 +7,7 @@ const maleReplies = require("../data/maleReplies");
 const authMiddleware = require("../middleware/authMiddleware");
 const User = require("../models/User");
 const mongoose = require("mongoose");
+const { tierBasedRateLimiter } = require("../middleware/rateLimiter");
 
 // Track sent messages per chat to avoid repetition
 const chatMessageHistory = new Map();
@@ -95,7 +96,7 @@ function getFreshReply(chatId, gender, firstName) {
 }
 
 // POST /bots/bots-message - Send a bot message (matching your real chat logic)
-router.post("/bots-message", authMiddleware, async (req, res) => {
+router.post("/bots-message", authMiddleware, tierBasedRateLimiter, async (req, res) => {
   try {
     const userId = req.user.id;
     const { aiFriendId } = req.body; // Changed from chatId to aiFriendId

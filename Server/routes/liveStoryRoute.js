@@ -2,6 +2,7 @@ const express = require("express");
 const controller = require("../controllers/liveStoryController");
 const authMiddleware = require("../middleware/authMiddleware");
 const { generatePresignedPutUrl } = require("../utils/s3Upload");
+const { tierBasedRateLimiter } = require("../middleware/rateLimiter");
 
 const router = express.Router();
 
@@ -58,7 +59,7 @@ router.get("/stories/:slug", controller.getPublicStoryBySlug);
 
 // ─── User Chat Routes ─────────────────────────────────────────────────────────
 router.get("/:storySlug/chat", authMiddleware, controller.getUserChat);
-router.post("/:storySlug/chat/send", authMiddleware, controller.sendChatMessage);
+router.post("/:storySlug/chat/send", authMiddleware, tierBasedRateLimiter, controller.sendChatMessage);
 router.delete("/:storySlug/chat/message/:messageId", authMiddleware, controller.deleteMessage);
 
 module.exports = router;
