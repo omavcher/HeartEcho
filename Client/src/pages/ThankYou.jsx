@@ -1,11 +1,19 @@
 // components/ThankYou.tsx
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import '../styles/ThankYou.css';
 
 const ThankYou = () => {
   const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window._mpevt = window._mpevt || [];
+      window._mpevt.push(['Heartecho._event', 'heartechosub', '1', '86400']);
+    }
+  }, []);
 
   const handleContinue = () => {
     router.push('/');

@@ -111,6 +111,22 @@ export default function RootLayout({ children }) {
 
         <meta name="juicyads-site-verification" content="64f68c1fc158eef9d3b6e6fa4d432117"/>
 
+        {/* ── TrafficJunky Head Integration ── */}
+        <meta httpEquiv="Delegate-CH" content="sec-ch-ua https://ads.trafficjunky.net; sec-ch-ua-arch https://ads.trafficjunky.net; sec-ch-ua-full-version-list https://ads.trafficjunky.net; sec-ch-ua-mobile https://ads.trafficjunky.net; sec-ch-ua-model https://ads.trafficjunky.net; sec-ch-ua-platform https://ads.trafficjunky.net; sec-ch-ua-platform-version https://ads.trafficjunky.net;" />
+        <script
+          type="text/javascript"
+          dangerouslySetInnerHTML={{
+            __html: `
+              var _mpevt = _mpevt || [];
+              (function(){
+                var u=(("https:" == document.location.protocol) ? "https://static.trafficjunky.com/js/mp.min.js" : "http://static.trafficjunky.com/js/mp.min.js");
+                var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0]; g.type='text/javascript'; g.defer=true; g.async=true;g.src=u;
+                s.parentNode.insertBefore(g,s);
+              })();
+            `
+          }}
+        />
+
         {/* Schema Markup for SEO */}
         <script
           type="application/ld+json"
