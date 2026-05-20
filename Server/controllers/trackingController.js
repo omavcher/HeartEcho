@@ -1,4 +1,5 @@
 const TrackingEvent = require('../models/TrackingEvent');
+const TrackingSummary = require('../models/TrackingSummary');
 const User = require('../models/User');
 const Payment = require('../models/Payment');
 
@@ -369,5 +370,65 @@ exports.getAnalytics = async (req, res) => {
   } catch (error) {
     console.error("Analytics Error:", error);
     res.status(500).json({ error: 'Server error fetching analytics' });
+  }
+};
+
+exports.optimizeEvents = async (req, res) => {
+  try {
+    const { olderThanDays, deleteAll } = req.body;
+    let query = {};
+    if (!deleteAll && olderThanDays) {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - parseInt(olderThanDays));
+      query = { createdAt: { $lt: cutoff } };
+    }
+
+    // Check how many we will optimize
+    const totalEventsOptimized = await TrackingEvent.countDocuments(query);
+    if (totalEventsOptimized === 0) {
+      return res.status(200).json({ success: true, message: 'No events found to optimize based on the selected criteria.' });
+    }
+
+    // Aggregate counts by eventType
+    const eventCountsData = await TrackingEvent.aggregate([
+      { $match: query },
+      { $group: { _id: '$eventType', count: { $sum: 1 } } }
+    ]);
+    
+    const countMap = {};
+    eventCountsData.forEach(e => countMap[e._id] = e.count);
+    
+    // Unique sessions
+    const uniqueSessionsArr = await TrackingEvent.aggregate([
+      { $match: query },
+      { $group: { _id: '$sessionId' } },
+      { $count: "total" }
+    ]);
+    const uniqueSessions = uniqueSessionsArr.length > 0 ? uniqueSessionsArr[0].total : 0;
+    
+    const firstEvent = await TrackingEvent.findOne(query).sort({ createdAt: 1 });
+    const lastEvent = await TrackingEvent.findOne(query).sort({ createdAt: -1 });
+
+    const summary = new TrackingSummary({
+      periodStart: firstEvent ? firstEvent.createdAt : null,
+      periodEnd: lastEvent ? lastEvent.createdAt : null,
+      totalEventsOptimized,
+      uniqueSessions,
+      eventCounts: countMap,
+      notes: deleteAll ? 'All events optimized and removed' : `Events older than ${olderThanDays} days optimized`
+    });
+    
+    await summary.save();
+    
+    // Delete the optimized events
+    await TrackingEvent.deleteMany(query);
+    
+    res.status(200).json({ 
+      success: true, 
+      message: `Successfully optimized ${totalEventsOptimized} events. Data was summarized and raw records were deleted.` 
+    });
+  } catch (error) {
+    console.error("Optimization Error:", error);
+    res.status(500).json({ error: 'Server error during optimization' });
   }
 };

@@ -168,27 +168,10 @@ export default function GlobalTracker() {
   }, [pathname, searchParams]);
 
   // Global click listener for key UI elements
-  // We'll specifically look for funnel elements
+  // Disabled granular click tracking to reduce database load based on user request.
+  // We will only track manual trigger events for user conversions and page views.
   useEffect(() => {
-    const handleClick = (e) => {
-      const target = e.target.closest('button, a, [role="button"]');
-      if (target) {
-        let text = target.innerText?.slice(0, 50)?.trim() || target.title || target.ariaLabel || 'unknown';
-        const id = target.id || '';
-        const className = typeof target.className === 'string' ? target.className : '';
-        
-        let evtType = 'click';
-        // Categorize special clicks
-        if (text.toLowerCase().includes('subscribe') || text.toLowerCase().includes('plan') || text.toLowerCase().includes('buy')) {
-          evtType = 'funnel_click';
-        }
-
-        trackEvent(evtType, { text, id, className, tagName: target.tagName });
-      }
-    };
-
-    document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
+    // Click tracking disabled.
   }, [pathname]);
 
   // Flush on unload

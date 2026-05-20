@@ -224,6 +224,10 @@ export default function TrackingAdmin() {
     eventType: '', page: 1, limit: 50
   });
 
+  const [showOptModal, setShowOptModal] = useState(false);
+  const [optLoading, setOptLoading] = useState(false);
+  const [optDays, setOptDays] = useState("30");
+
   const fetch = useCallback(async () => {
     setLoading(true);
     try {
@@ -242,6 +246,25 @@ export default function TrackingAdmin() {
   useEffect(() => { fetch(); }, [fetch]);
 
   const handleFilter = e => setFilter(p => ({ ...p, [e.target.name]: e.target.value, page: 1 }));
+
+  const handleOptimize = async () => {
+    if (!window.confirm(`Are you sure you want to optimize events ${optDays === 'all' ? 'completely (delete all raw data)' : `older than ${optDays} days`}? This action cannot be undone.`)) return;
+    setOptLoading(true);
+    try {
+      const token = localStorage.getItem('token') || '';
+      const payload = optDays === 'all' ? { deleteAll: true } : { olderThanDays: parseInt(optDays) };
+      const res = await axios.post(`${api.Url}/tracking/optimize`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert(res.data.message);
+      setShowOptModal(false);
+      fetch();
+    } catch(e) {
+      alert(e.response?.data?.error || 'Failed to optimize tracking database');
+    } finally {
+      setOptLoading(false);
+    }
+  };
 
   /* Derived Data */
   const timeSeriesData = useMemo(() => {
@@ -303,7 +326,6 @@ export default function TrackingAdmin() {
     { id:'funnel',     label:'Conversion Funnel', icon:<FaFunnelDollar/> },
     { id:'ads',        label:'Ad Sources',        icon:<FaFacebook/> },
     { id:'landing',    label:'Landing Pages',     icon:<MdLandscape/> },
-    { id:'log',        label:'Event Log',         icon:<FaEye/> },
   ];
 
   return (
@@ -317,7 +339,12 @@ export default function TrackingAdmin() {
             <h1 className="trk-title">Marketing Intelligence</h1>
             <div className="trk-sub">Ad attribution · Conversion funnel · User journey · Growth analytics</div>
           </div>
-          <button className="trk-sync" onClick={fetch} title="Refresh"><FaSync/></button>
+          <div style={{display:'flex',gap:12}}>
+            <button className="trk-sync" onClick={() => setShowOptModal(true)} title="Optimize Database" style={{ width: 'auto', padding: '0 12px', fontSize: 12, gap: 6 }}>
+              <FaChartLine/> Optimize DB
+            </button>
+            <button className="trk-sync" onClick={fetch} title="Refresh"><FaSync/></button>
+          </div>
         </header>
 
         {/* TABS */}
@@ -923,133 +950,39 @@ export default function TrackingAdmin() {
               </>
             )}
 
-            {/* ══════════ USER JOURNEY TAB ══════════ */}
-            {tab === 'log' && (
-              <div className="trk-log">
-                <div className="trk-section-title">
-                  <FaUsers/> User Activity Log
-                  <span style={{fontSize:11,color:'#444',fontWeight:400,marginLeft:'auto'}}>
-                    {data.userJourney?.length} unique users/sessions · Page {data.currentPage}/{data.totalPages}
-                  </span>
-                </div>
-                <div className="trk-scroll">
-                  <table className="log-table">
-                    <thead>
-                      <tr>
-                        <th>User / Session</th>
-                        <th>Events Triggered</th>
-                        <th>Landing → Last Page</th>
-                        <th>Source</th>
-                        <th>First Seen → Last Seen</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(data.userJourney||[]).map((u, i) => {
-                        const isAd = u.hasFbclid || u.utmMedium === 'paid' || u.utmMedium === 'cpc';
-                        const isOrganic = u.referrer && !isAd;
-                        const timeDiff = u.lastSeen && u.firstSeen
-                          ? Math.round((new Date(u.lastSeen) - new Date(u.firstSeen)) / 1000) : 0;
-                        const dur = timeDiff < 60 ? `${timeDiff}s` : timeDiff < 3600 ? `${Math.round(timeDiff/60)}m` : `${(timeDiff/3600).toFixed(1)}h`;
-                        return (
-                          <tr key={i}>
-                            {/* IDENTITY */}
-                            <td>
-                              {u.user ? (
-                                <div className="user-cell">
-                                  <img src={u.user.profile_picture||'https://cdn-icons-png.flaticon.com/512/149/149071.png'} className="u-avatar" alt=""/>
-                                  <div>
-                                    <div style={{fontWeight:700,color:'#fff',fontSize:12}}>{u.user.name}</div>
-                                    <div style={{fontSize:10,color:'#555'}}>{u.user.email}</div>
-                                    <span className={`badge badge-${u.user.user_type==='subscriber'?'paid':'free'}`} style={{fontSize:9,marginTop:3}}>
-                                      {u.user.user_type==='subscriber'?'Premium':'Free'}
-                                    </span>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div>
-                                  <div style={{color:'#888',fontStyle:'italic',fontSize:12}}>Anonymous</div>
-                                  <div style={{fontSize:9,color:'#333',marginTop:2}}>{u.deviceType} · {u.ip?.split(',')[0]}</div>
-                                </div>
-                              )}
-                              <div style={{fontSize:9,color:'#333',marginTop:3}}>sess: {String(u.sessionId||'').substring(0,16)}…</div>
-                            </td>
-
-                            {/* EVENTS */}
-                            <td>
-                              <div style={{fontWeight:900,fontSize:20,color:'#ff69b4',lineHeight:1}}>{u.totalEvents}</div>
-                              <div style={{fontSize:9,color:'#555',marginBottom:7}}>total events</div>
-                              <div style={{display:'flex',flexWrap:'wrap',gap:3}}>
-                                {(u.eventTypes||[]).map(et => (
-                                  <span key={et} className={getBadgeClass(et)} style={{fontSize:8,padding:'2px 5px'}}>
-                                    {et.replace(/_/g,' ')}
-                                  </span>
-                                ))}
-                              </div>
-                              {timeDiff > 0 && <div style={{fontSize:9,color:'#444',marginTop:5}}>⏱ {dur} on site</div>}
-                            </td>
-
-                            {/* PAGES */}
-                            <td>
-                              <div style={{fontSize:11,color:'#00bcd4',fontWeight:600,marginBottom:4}}>↳ {u.landingPage||'/'}</div>
-                              {u.lastPage && u.lastPage !== u.landingPage && (
-                                <div style={{fontSize:10,color:'#555'}}>last: {u.lastPage}</div>
-                              )}
-                            </td>
-
-                            {/* SOURCE */}
-                            <td>
-                              {isAd ? (
-                                <span className="badge badge-fb"><FaFacebook/> FB Ad</span>
-                              ) : isOrganic ? (
-                                <span className="badge badge-organic"><FaGlobe style={{fontSize:9}}/> Organic</span>
-                              ) : (
-                                <span className="badge badge-direct">Direct</span>
-                              )}
-                              {u.utmCampaign && <div style={{marginTop:5}}><span className="utm-pill">camp: {u.utmCampaign}</span></div>}
-                              {u.utmSource && <div><span className="utm-pill">src: {u.utmSource}</span></div>}
-                            </td>
-
-                            {/* TIMES */}
-                            <td style={{color:'#888',fontSize:11}}>
-                              <div>{u.firstSeen ? new Date(u.firstSeen).toLocaleString([],{dateStyle:'short',timeStyle:'short'}) : '—'}</div>
-                              <div style={{color:'#333',margin:'3px 0',fontSize:10}}>↓</div>
-                              <div style={{color:'#ccc'}}>{u.lastSeen ? new Date(u.lastSeen).toLocaleString([],{dateStyle:'short',timeStyle:'short'}) : '—'}</div>
-                            </td>
-
-                            {/* STATUS */}
-                            <td>
-                              <div style={{display:'flex',flexDirection:'column',gap:4}}>
-                                {u.user?.user_type === 'subscriber' || u.converted ? (
-                                  <span className="badge badge-paid" style={{fontSize:9}}><FaCrown style={{fontSize:8}}/> Paid</span>
-                                ) : (
-                                  <span className="badge badge-free" style={{fontSize:9}}>Free</span>
-                                )}
-                                {u.loggedIn ? <span className="badge badge-ls" style={{fontSize:9}}>Logged In</span> : null}
-                                {u.signedUp ? <span className="badge badge-sc" style={{fontSize:9}}>Signed Up</span> : null}
-                                {u.converted ? <span className="badge badge-sp" style={{fontSize:9}}>Converted ✓</span> : null}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                      {(!data.userJourney || data.userJourney.length === 0) && (
-                        <tr><td colSpan="6" style={{textAlign:'center',padding:50,color:'#444'}}>No user activity found for selected filters</td></tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                {data.totalPages > 1 && (
-                  <div className="trk-pg">
-                    <button className="trk-pg-btn" disabled={data.currentPage<=1} onClick={()=>setFilter(p=>({...p,page:p.page-1}))}>← Prev</button>
-                    <span style={{color:'#666',fontSize:12}}>Page <strong style={{color:'#fff'}}>{data.currentPage}</strong> of {data.totalPages}</span>
-                    <button className="trk-pg-btn" disabled={data.currentPage>=data.totalPages} onClick={()=>setFilter(p=>({...p,page:p.page+1}))}>Next →</button>
-                  </div>
-                )}
-              </div>
-            )}
+            {/* Event Log tab removed as requested */}
           </>
         )}
+
+        {/* OPTIMIZE MODAL */}
+        {showOptModal && (
+          <div style={{position:'fixed',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.8)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999,animation:'trk-fade 0.2s'}}>
+            <div style={{background:'#0a0a0a',border:'1px solid #333',borderRadius:16,padding:24,width:400,maxWidth:'90%'}}>
+              <h3 style={{marginTop:0,color:'#ff69b4',display:'flex',alignItems:'center',gap:8}}>
+                <FaChartLine/> Database Optimization
+              </h3>
+              <p style={{fontSize:13,color:'#ccc',lineHeight:1.6}}>
+                Tracking events can consume significant database space. This tool calculates high-level aggregates (like total views and conversions), saves them securely, and deletes the raw tracking events to save space.
+              </p>
+              <div style={{marginTop:20,marginBottom:20}}>
+                <label style={{display:'block',fontSize:11,color:'#888',textTransform:'uppercase',letterSpacing:1,marginBottom:8,fontWeight:700}}>Select Range to Optimize:</label>
+                <select className="trk-inp" style={{width:'100%',background:'#111'}} value={optDays} onChange={e => setOptDays(e.target.value)}>
+                  <option value="30">Older than 30 Days</option>
+                  <option value="60">Older than 60 Days</option>
+                  <option value="90">Older than 90 Days</option>
+                  <option value="all">All Events (Delete Everything except summaries)</option>
+                </select>
+              </div>
+              <div style={{display:'flex',gap:12,justifyContent:'flex-end'}}>
+                <button onClick={() => setShowOptModal(false)} className="trk-pg-btn" style={{background:'transparent'}} disabled={optLoading}>Cancel</button>
+                <button onClick={handleOptimize} className="trk-pg-btn" style={{background:optLoading?'#333':'#ff69b4',color:'#000',borderColor:optLoading?'#333':'#ff69b4',fontWeight:700}} disabled={optLoading}>
+                  {optLoading ? 'Optimizing...' : 'Confirm Optimize'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </>
   );

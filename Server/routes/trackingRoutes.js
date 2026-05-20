@@ -11,4 +11,7 @@ router.post('/record', trackingController.recordEvent);
 // Protected route to view analytics
 router.get('/analytics', authMiddleware, trackingController.getAnalytics);
 
+// Protected route to optimize/delete old events
+router.post('/optimize', authMiddleware, trackingController.optimizeEvents);
+
 module.exports = router;
