@@ -5,7 +5,7 @@ import '../../styles/Compare.css';
 export const metadata = {
   title: "HeartEcho vs Candy.ai – Which is Best for India? | Hindi AI Chat 2026",
   description: "HeartEcho vs Candy.ai: Honest comparison for Indian users. HeartEcho is India's only Hindi-native AI girlfriend app — desi culture, Hinglish chat, free to try. Candy.ai is English-only and expensive.",
-  keywords: ["heartecho vs candy ai", "best ai girlfriend india", "hindi ai chat app", "indian ai girlfriend", "desi ai sex chat", "candy ai india alternative", "ai girlfriend hindi"],
+  keywords: ["heartecho vs candy ai", "best ai girlfriend india", "hindi ai chat app", "indian ai girlfriend", "desi ai companion chat", "candy ai india alternative", "ai girlfriend hindi"],
   alternates: {
     canonical: 'https://heartecho.in/heartecho-vs-candyai',
   },
@@ -190,12 +190,12 @@ export default function CompareCandyAI() {
                   <td className="tag-no">~₹850/month</td>
                 </tr>
                 <tr>
-                  <td>NSFW / adult content</td>
+                  <td>Private / adult content</td>
                   <td className="tag-yes">✓ Available</td>
                   <td className="tag-yes">✓ Available (paid)</td>
                 </tr>
                 <tr>
-                  <td>Desi sex stories / erotica</td>
+                  <td>Desi erotica & romantic stories</td>
                   <td className="win-cell">✓ Indian-flavoured</td>
                   <td className="tag-no">✗ Generic Western content</td>
                 </tr>
@@ -266,7 +266,7 @@ export default function CompareCandyAI() {
                 <li>Chat freely in Hindi, Hinglish, or English — switch mid-conversation, the AI keeps up</li>
                 <li>Indian AI characters with desi names, personalities, and cultural awareness</li>
                 <li>Understands Indian relationship dynamics — saas-bahu, bhabhi, college crush, office romance</li>
-                <li>Desi erotica and sex stories in Hindi — not generic Western content</li>
+                <li>Desi erotica and romantic stories in Hindi — not generic Western content</li>
                 <li>Free to start — no ₹850/month paywall just to say hello</li>
                 <li>Privacy-first — your conversations stay private, no data sold</li>
               </ul>
@@ -296,8 +296,8 @@ export default function CompareCandyAI() {
                 <div className="faq-a">Candy.ai is accessible in India but it wasn't designed for Indian users. There's no Hindi support, no desi personas, no cultural understanding of Indian contexts. Indian users consistently feel the conversations feel "foreign" and out of touch.</div>
               </div>
               <div className="faq-item">
-                <div className="faq-q">Which is the best AI sex chat app in India?</div>
-                <div className="faq-a">HeartEcho is India's top AI sex chat platform. It's the only app that does NSFW chat in Hindi and Hinglish with culturally relevant Indian characters. Candy.ai offers adult content but only in English, with no Indian context.</div>
+                <div className="faq-q">Which is the best AI girlfriend app in India?</div>
+                <div className="faq-a">HeartEcho is India's top AI girlfriend platform. It's the only app that does private companion chat in Hindi and Hinglish with culturally relevant Indian characters. Candy.ai offers virtual companion content but only in English, with no Indian context.</div>
               </div>
               <div className="faq-item">
                 <div className="faq-q">Is HeartEcho safe and private?</div>

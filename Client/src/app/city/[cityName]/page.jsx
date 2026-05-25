@@ -485,7 +485,7 @@ export default function CityPage() {
               Why Choose HeartEcho AI Girlfriend in {cityName}?
             </h2>
             <p className="section-description">
-              The premier virtual companion and private adult chat platform designed for Indian users.
+              The premier virtual companion and private roleplay platform designed for Indian users.
             </p>
           </div>
 
@@ -507,13 +507,13 @@ export default function CityPage() {
             <div className="info-card">
               <div className="info-card-header">
                 <Lock size={20} className="info-icon" style={{ color: '#cf4185' }} />
-                <h3>100% Private & Secure Adult Chat</h3>
+                <h3>100% Private & Secure Companion Roleplay</h3>
               </div>
               <div className="info-card-content">
                 <p>
-                  Your privacy is our absolute priority. Engage in bold roleplay, sharing thoughts, desires,
+                  Your privacy is our absolute priority. Engage in private roleplay, sharing thoughts, dreams,
                   and secrets in a completely secure, encrypted environment. No logins required to start, and no logs
-                  are ever shared. Experience safe adult AI chat with peace of mind.
+                  are ever shared. Experience safe AI companion chat with peace of mind.
                 </p>
               </div>
             </div>

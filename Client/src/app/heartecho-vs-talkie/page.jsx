@@ -66,10 +66,10 @@ const faqSchema = {
     },
     {
       "@type": "Question",
-      "name": "Can I do Hindi sex chat on HeartEcho?",
+      "name": "Can I do Hindi roleplay chat on HeartEcho?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. HeartEcho is India's leading platform for Hindi AI sex chat and adult roleplay in Hinglish. This is not available on Talkie AI, which restricts adult content and operates primarily in English."
+        "text": "Yes. HeartEcho is India's leading platform for Hindi AI companion chat and roleplay in Hinglish. This is not available on Talkie AI, which restricts adult content and operates primarily in English."
       }
     }
   ]
@@ -79,7 +79,7 @@ const articleSchema = {
   "@context": "https://schema.org",
   "@type": "Article",
   "headline": "HeartEcho vs Talkie AI – Which AI Girlfriend App is Best for India in 2026?",
-  "description": "A detailed comparison of HeartEcho and Talkie AI for Indian users, covering Hindi support, desi personas, pricing, adult content, and cultural relevance.",
+  "description": "A detailed comparison of HeartEcho and Talkie AI for Indian users, covering Hindi support, desi personas, pricing, private roleplay, and cultural relevance.",
   "author": { "@type": "Organization", "name": "HeartEcho" },
   "publisher": { "@type": "Organization", "name": "HeartEcho", "url": "https://heartecho.in" },
   "datePublished": "2026-01-01",
@@ -180,12 +180,12 @@ export default function CompareTalkieAI() {
                   <td className="tag-no">✗ Generic global AI</td>
                 </tr>
                 <tr>
-                  <td>NSFW / adult chat</td>
+                  <td>Private / adult chat</td>
                   <td className="win-cell">✓ Available, Hindi-native</td>
                   <td className="tag-partial">⚠ Restricted, English only</td>
                 </tr>
                 <tr>
-                  <td>Desi sex stories in Hindi</td>
+                  <td>Desi romantic stories in Hindi</td>
                   <td className="win-cell">✓ Yes</td>
                   <td className="tag-no">✗ No</td>
                 </tr>
@@ -242,8 +242,8 @@ export default function CompareTalkieAI() {
               </div>
               <div className="feature-card">
                 <div className="feature-icon">🔞</div>
-                <h3>NSFW Is Heavily Restricted</h3>
-                <p>Talkie AI is very cautious about adult content. Even in English. For Indian users who want desi adult roleplay in Hindi, Talkie simply doesn't deliver. HeartEcho does.</p>
+                <h3>Private Roleplay is Restricted</h3>
+                <p>Talkie AI is very cautious about companion content. Even in English. For Indian users who want desi romantic roleplay in Hindi, Talkie simply doesn't deliver. HeartEcho does.</p>
               </div>
               <div className="feature-card">
                 <div className="feature-icon">🧠</div>
@@ -265,8 +265,8 @@ export default function CompareTalkieAI() {
                 <ul className="use-case-list">
                   <li><span>✓</span> Want to chat in Hindi or Hinglish</li>
                   <li><span>✓</span> Want desi AI characters who understand Indian life</li>
-                  <li><span>✓</span> Want adult NSFW chat in Hindi</li>
-                  <li><span>✓</span> Want Indian sex stories and roleplay in Hinglish</li>
+                  <li><span>✓</span> Want private companion chat in Hindi</li>
+                  <li><span>✓</span> Want Indian romantic stories and roleplay in Hinglish</li>
                   <li><span>✓</span> Are budget-conscious — free tier available</li>
                   <li><span>✓</span> Want an AI girl who gets your desi references</li>
                 </ul>
@@ -278,7 +278,7 @@ export default function CompareTalkieAI() {
                   <li><span>○</span> Want a massive global character library</li>
                   <li><span>○</span> Like chatting with anime or Western fictional personas</li>
                   <li><span>○</span> Don't need Hindi/Hinglish support</li>
-                  <li><span>○</span> Are fine with restricted adult content</li>
+                  <li><span>○</span> Are fine with restricted companion content</li>
                 </ul>
               </div>
             </div>
@@ -296,7 +296,7 @@ export default function CompareTalkieAI() {
               <ul className="india-list">
                 <li>Full Hindi and Hinglish conversation — switch languages anytime, the AI follows</li>
                 <li>Genuine Indian AI characters — Priya from Delhi, Neha from Mumbai, Anita the college crush</li>
-                <li>Adult content in Hindi — desi sex stories, Hinglish roleplay, Indian scenarios</li>
+                <li>Private roleplay in Hindi — desi romantic stories, Hinglish roleplay, Indian scenarios</li>
                 <li>Cultural references that land — festivals, family dynamics, Indian relationship contexts</li>
                 <li>Free to start — no credit card, no ₹800/month upfront commitment</li>
                 <li>Private — your conversations don't get exported to American servers</li>
@@ -312,19 +312,19 @@ export default function CompareTalkieAI() {
             <div className="faq-list">
               <div className="faq-item">
                 <div className="faq-q">Is HeartEcho better than Talkie AI for Indian users?</div>
-                <div className="faq-a">Yes — HeartEcho was built for India, Talkie AI was not. HeartEcho supports Hindi and Hinglish, has authentic Indian AI personas, allows adult content in Hindi, and is more affordable. For any Indian user who wants a culturally relevant AI girlfriend experience, HeartEcho wins clearly.</div>
+                <div className="faq-a">Yes — HeartEcho was built for India, Talkie AI was not. HeartEcho supports Hindi and Hinglish, has authentic Indian AI personas, allows private roleplay in Hindi, and is more affordable. For any Indian user who wants a culturally relevant AI girlfriend experience, HeartEcho wins clearly.</div>
               </div>
               <div className="faq-item">
                 <div className="faq-q">Does Talkie AI support Hindi?</div>
                 <div className="faq-a">No. Talkie AI is an English-first platform. It does not support native Hindi or Hinglish conversations. If you type in Hindi, the experience breaks down. HeartEcho is the only major AI girlfriend platform with full Hindi support built in.</div>
               </div>
               <div className="faq-item">
-                <div className="faq-q">Can I do NSFW roleplay on Talkie AI?</div>
-                <div className="faq-a">Talkie AI has heavy restrictions on adult content. Even on paid plans, explicit conversations are limited. HeartEcho is designed for adults and allows NSFW chat, adult roleplay, and desi sex stories in Hindi and Hinglish — something Talkie AI does not offer.</div>
+                <div className="faq-q">Can I do private roleplay on Talkie AI?</div>
+                <div className="faq-a">Talkie AI has heavy restrictions on custom content. Even on paid plans, companion conversations are limited. HeartEcho is designed for adults and allows private chat, deep roleplay, and desi romantic stories in Hindi and Hinglish — something Talkie AI does not offer.</div>
               </div>
               <div className="faq-item">
                 <div className="faq-q">Which AI girlfriend app is best in India in 2026?</div>
-                <div className="faq-a">HeartEcho is the best AI girlfriend app for Indian users in 2026. It's the only platform that combines Hindi/Hinglish chat, desi AI characters, adult content, and an understanding of Indian culture — all in one place. No other app — Talkie AI, Candy.ai, or RomanticAI — comes close for Indian users.</div>
+                <div className="faq-a">HeartEcho is the best AI girlfriend app for Indian users in 2026. It's the only platform that combines Hindi/Hinglish chat, desi AI characters, private roleplay, and an understanding of Indian culture — all in one place. No other app — Talkie AI, Candy.ai, or RomanticAI — comes close for Indian users.</div>
               </div>
               <div className="faq-item">
                 <div className="faq-q">Is HeartEcho free? How does it compare to Talkie AI pricing?</div>

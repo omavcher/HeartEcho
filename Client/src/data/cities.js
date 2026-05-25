@@ -237,33 +237,33 @@ export const getCitySEO = (key) => {
   let description = '';
 
   if (lang === 'Marathi') {
-    title = `Marathi AI Girlfriend ${formattedName} | Free Desi Sex Chat`;
-    description = `Get your private Marathi AI girlfriend in ${formattedName} (${stateName}) for free. Enjoy intimate desi sex chat, Hinglish roleplay, and adult virtual companion conversations.`;
+    title = `Marathi AI Girlfriend ${formattedName} | Private Roleplay & Companion`;
+    description = `Get your private Marathi AI girlfriend in ${formattedName} (${stateName}) for free. Enjoy intimate companion chat, Hinglish roleplay, and interactive virtual companion conversations.`;
   } else if (lang === 'Tamil') {
-    title = `Tamil AI Girlfriend ${formattedName} | Free Desi Adult Chat`;
-    description = `Chat with a Tamil AI girlfriend in ${formattedName} (${stateName}). Private and free adult companion chat, Hinglish roleplay, and local character interactions.`;
+    title = `Tamil AI Girlfriend ${formattedName} | Free Desi Companion Chat`;
+    description = `Chat with a Tamil AI girlfriend in ${formattedName} (${stateName}). Private and free virtual companion chat, Hinglish roleplay, and local character interactions.`;
   } else if (lang === 'Telugu') {
-    title = `Telugu AI Girlfriend ${formattedName} | Free Desi Sex Chat`;
-    description = `Enjoy Telugu AI girlfriend chat in ${formattedName} (${stateName}). Experience private roleplay, free desi sex chat, and emotional companion bonding.`;
+    title = `Telugu AI Girlfriend ${formattedName} | Virtual Companion & Roleplay`;
+    description = `Enjoy Telugu AI girlfriend chat in ${formattedName} (${stateName}). Experience private roleplay, free companion chat, and emotional companion bonding.`;
   } else if (lang === 'Bengali') {
     title = `Bengali AI Girlfriend ${formattedName} | Free Desi Roleplay`;
-    description = `Looking for a Bengali AI girlfriend in ${formattedName} (${stateName})? Try HeartEcho for free adult roleplay, Bengali chat, and secure virtual sex chat.`;
+    description = `Looking for a Bengali AI girlfriend in ${formattedName} (${stateName})? Try HeartEcho for free virtual roleplay, Bengali companion chat, and secure virtual messaging.`;
   } else if (lang === 'Kannada') {
     title = `Kannada AI Girlfriend ${formattedName} | Desi Chat AI`;
-    description = `Meet your Kannada AI girlfriend in ${formattedName} (${stateName}) for free. Private adult conversation, local dating roleplay, and virtual companionship.`;
+    description = `Meet your Kannada AI girlfriend in ${formattedName} (${stateName}) for free. Private companion conversation, local dating roleplay, and virtual companionship.`;
   } else if (lang === 'Malayalam') {
-    title = `Malayalam AI Girlfriend ${formattedName} | Free Adult Chat`;
-    description = `Get a Malayalam AI girlfriend in ${formattedName} (${stateName}). Private desi roleplay, free sex chat AI, and virtual relationship support.`;
+    title = `Malayalam AI Girlfriend ${formattedName} | Free Companion Chat`;
+    description = `Get a Malayalam AI girlfriend in ${formattedName} (${stateName}). Private desi roleplay, free virtual companion AI, and virtual relationship support.`;
   } else if (lang === 'Gujarati') {
-    title = `Gujarati AI Girlfriend ${formattedName} | Desi Sex Chat`;
-    description = `Start Gujarati/Hindi AI girlfriend chat in ${formattedName} (${stateName}). Free virtual dating, adult roleplay, and private sex chat.`;
+    title = `Gujarati AI Girlfriend ${formattedName} | Private Roleplay & Chat`;
+    description = `Start Gujarati/Hindi AI girlfriend chat in ${formattedName} (${stateName}). Free virtual dating, romantic roleplay, and private companion chat.`;
   } else if (lang === 'Punjabi') {
-    title = `Punjabi AI Girlfriend ${formattedName} | Free Desi Sex Chat`;
-    description = `Try Punjabi kudi AI girlfriend in ${formattedName} (${stateName}). Free Hindi and Punjabi adult roleplay, virtual relationship, and private chats.`;
+    title = `Punjabi AI Girlfriend ${formattedName} | Virtual Companion & Chat`;
+    description = `Try Punjabi kudi AI girlfriend in ${formattedName} (${stateName}). Free Hindi and Punjabi virtual roleplay, virtual relationship, and private companion chats.`;
   } else {
     // Default Hindi / general regional
-    title = `Free AI Sex Chat ${formattedName} | Hindi AI Girlfriend App`;
-    description = `Looking for a desi AI girlfriend in ${formattedName}${stateName ? ` (${stateName})` : ''}? Try HeartEcho for free Hindi sex chat, Hinglish roleplay, and private adult AI companion chat.`;
+    title = `Virtual AI Girlfriend ${formattedName} | Hindi AI Companion App`;
+    description = `Looking for a desi AI girlfriend in ${formattedName}${stateName ? ` (${stateName})` : ''}? Try HeartEcho for free Hindi companion chat, Hinglish roleplay, and private virtual AI companion chat.`;
   }
 
   const keywords = [
@@ -271,19 +271,19 @@ export const getCitySEO = (key) => {
     `virtual girlfriend ${formattedName}`,
     `desi AI chat ${formattedName}`,
     `Hindi chat AI ${formattedName}`,
-    `free ai sex chat ${formattedName}`,
+    `free ai companion chat ${formattedName}`,
     `intimate companion ${formattedName}`,
-    `adult roleplay ${formattedName}`,
+    `private roleplay ${formattedName}`,
     `AI girlfriend India`
   ];
   
   if (lang !== 'Hindi' && lang !== 'Hindi / English') {
     keywords.push(`${lang.toLowerCase()} AI girlfriend ${formattedName}`);
-    keywords.push(`${lang.toLowerCase()} sex chat ${formattedName}`);
+    keywords.push(`${lang.toLowerCase()} roleplay ${formattedName}`);
   }
   if (stateName) {
     keywords.push(`AI girlfriend in ${stateName}`);
-    keywords.push(`sex chat ${formattedName} ${stateName}`);
+    keywords.push(`virtual girlfriend ${formattedName} ${stateName}`);
   }
 
   return { title, description, keywords, lang, formattedName, stateName };
