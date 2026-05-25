@@ -2,6 +2,7 @@ import url from "../data/url";
 import { blogPosts } from "../data/blogPosts";
 import api from '../config/api';
 import axios from "axios";
+import { citiesList } from "../data/cities";
 
 export default async function sitemap() {
   const now = new Date();
@@ -27,15 +28,9 @@ export default async function sitemap() {
     priority: path === '/' ? 1 : 0.8,
   }));
 
-  // City routes (dynamic)
-  const cities = [
-    'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai',
-    'Kolkata', 'Pune', 'Ahmedabad', 'Jaipur', 'Lucknow',
-    'Goa', 'Chandigarh', 'Other'
-  ];
-
-  const cityRoutes = cities.map((city) => ({
-    url: `${url}/city/${city.toLowerCase()}`,
+  // City routes (dynamic - all 170+ cities from citiesList)
+  const cityRoutes = citiesList.map((city) => ({
+    url: `${url}/city/${city.key}`,
     lastModified: now,
     changeFrequency: 'weekly',
     priority: 0.7,

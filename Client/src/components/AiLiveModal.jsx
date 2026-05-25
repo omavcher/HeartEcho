@@ -101,14 +101,14 @@ function PaywallOverlay({ onClose, actionLabel }) {
           </h3>
           <p className="alvm-paywall-desc">
             This interaction is for <strong>Premium members only</strong>.
-            Get <strong>everything unlimited</strong> for a whole year at just ₹399.
+            Get <strong>everything unlimited</strong> for a whole year at just ₹599.
           </p>
         </div>
 
         {/* Price anchor */}
         <div className="alvm-paywall-price-anchor">
-          <span className="alvm-pwa-old">₹999/yr</span>
-          <span className="alvm-pwa-new">₹399<span>/yr</span></span>
+          <span className="alvm-pwa-old">₹1499/yr</span>
+          <span className="alvm-pwa-new">₹599<span>/yr</span></span>
           <span className="alvm-pwa-save">Save ₹600 🎉</span>
         </div>
 
@@ -135,7 +135,7 @@ function PaywallOverlay({ onClose, actionLabel }) {
           <span className="alvm-paywall-cta-icon">💎</span>
           <div className="alvm-paywall-cta-text">
             <span className="alvm-cta-main">Unlock Everything</span>
-            <span className="alvm-cta-price">₹399/year · that's ₹33.2/month</span>
+            <span className="alvm-cta-price">₹599/year · that's ₹33.2/month</span>
           </div>
           <div className="alvm-paywall-cta-shine" />
         </Link>

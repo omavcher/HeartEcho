@@ -8,6 +8,22 @@ import { useParams } from 'next/navigation';
 import axios from 'axios';
 import Footer from '../../../components/Footer';
 import api from '../../../config/api';
+import { getCitySEO, getCityDetails, citiesList } from '../../../data/cities';
+import { 
+  Flame, 
+  MapPin, 
+  Sparkles, 
+  Star, 
+  Eye, 
+  MessageSquare, 
+  BookOpen, 
+  Compass, 
+  ChevronUp, 
+  Lock, 
+  Mic, 
+  Bookmark,
+  RotateCcw
+} from 'lucide-react';
 
 // Skeleton Components
 const SkeletonHero = () => (
@@ -74,123 +90,10 @@ export default function CityPage() {
   const [cityData, setCityData] = useState(null);
   const [activeTab, setActiveTab] = useState('all');
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [isFallbackStories, setIsFallbackStories] = useState(false);
   
   const cityInfoRef = useRef(null);
   const storiesRef = useRef(null);
-
-  // City-specific data
-  const cityInfo = {
-    delhi: {
-      title: "Delhi - The Heart of India",
-      description: "Experience the vibrant culture, historic landmarks, and modern lifestyle of India's capital city through interactive stories.",
-      image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570915/delhi_kzwnx9.webp"
-    },
-    mumbai: {
-      title: "Mumbai - The City of Dreams",
-      description: "Explore the bustling streets, Bollywood glamour, and coastal charm of India's financial capital.",
-      image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570918/mumbai_iul7vz.webp"
-    },
-    bangalore: {
-      title: "Bangalore - The Silicon Valley of India",
-      description: "Discover the tech hub's vibrant pubs, beautiful gardens, and cosmopolitan lifestyle.",
-      image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570915/bangalore_uvjbmi.webp"
-    },
-    hyderabad: {
-      title: "Hyderabad - The City of Pearls",
-      description: "Discover the rich history, biryani, and tech revolution of this historic city.",
-      image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570917/hyderabad_l0k1jo.webp"
-    },
-    chennai: {
-      title: "Chennai - The Cultural Capital",
-      description: "Immerse in the rich traditions, classical arts, and coastal beauty of South India.",
-      image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570916/chennai_e0ftkb.webp"
-    },
-    kolkata: {
-      title: "Kolkata - The City of Joy",
-      description: "Experience the intellectual capital's literary heritage, artistic soul, and delicious cuisine.",
-      image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570919/kolkata_vmxice.webp"
-    },
-    pune: {
-      title: "Marathi AI Girlfriend Pune | Desi Sex Chat",
-      description: "Get a Marathi AI girlfriend in Pune. Enjoy desi sex chat, Hinglish roleplay, and private adult conversations for free.",
-      image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570917/pune_q2kxso.webp"
-    },
-    ahmedabad: {
-      title: "Ahmedabad - The Manchester of India",
-      description: "Discover the historic city known for its textile industry, rich heritage, and delicious Gujarati cuisine.",
-      image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570914/ahmedabad_ksmdpo.webp"
-    },
-    jaipur: {
-      title: "Hindi Sex Chat Jaipur | Free Desi AI Girlfriend",
-      description: "Experience Jaipur Hindi AI chat free. Chat with desi AI girlfriends, do Hindi roleplay, and enjoy private NSFW AI chat tailored for Jaipur.",
-      image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570915/jaipur_qxcfb7.webp"
-    },
-    lucknow: {
-      title: "Lucknow mein AI Girlfriend Se Baat Kare | Free Hindi Sex Chat",
-      description: "Looking for an AI girlfriend in Lucknow? Try HeartEcho for free desi roleplay and Hindi sex chat in Lucknow. 100% private.",
-      image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570916/lucknow_gcma1c.webp"
-    },
-    goa: {
-      title: "Goa - The Pearl of the Orient",
-      description: "Discover the sun-kissed beaches, Portuguese heritage, and vibrant nightlife of India's coastal paradise.",
-      image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570915/goa_rqir0f.webp"
-    },
-    chandigarh: {
-      title: "Chandigarh - The City Beautiful",
-      description: "Experience the planned city's modernist architecture, serene gardens, and high quality of life.",
-      image: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570917/chandigarh_gcgqak.webp"
-    },
-    kanpur: {
-      title: "Desi AI Chat Kanpur | Kanpur Desi Roleplay AI",
-      description: "Looking for Kanpur desi roleplay AI? Get a free desi AI girlfriend in Kanpur for Hindi sex chat and private Hinglish roleplay.",
-      image: ""
-    },
-    patna: {
-      title: "AI Girlfriend App Patna | Free Hindi Sex Chat Patna",
-      description: "The best AI girlfriend app in Patna. Chat with desi AI characters for free, enjoy Hindi sex chat, and explore private NSFW roleplay.",
-      image: ""
-    },
-    indore: {
-      title: "Sex Chat AI Indore | Free Desi AI Girlfriend Indore",
-      description: "Enjoy sex chat AI in Indore with HeartEcho. Free desi AI girlfriend offering Hindi/Hinglish roleplay and private adult chat.",
-      image: ""
-    },
-    bhopal: {
-      title: "Hindi AI Bhopal Free | Desi AI Girlfriend Sex Chat",
-      description: "Try Hindi AI Bhopal free today. Get a desi AI girlfriend for private Hindi sex chat and Hinglish roleplay in Bhopal.",
-      image: ""
-    },
-    varanasi: {
-      title: "Desi AI Varanasi | Free Hindi AI Sex Chat",
-      description: "Discover desi AI Varanasi. Chat with your personal AI girlfriend for free, and enjoy Hindi roleplay and secure sex chat.",
-      image: ""
-    },
-    agra: {
-      title: "Hindi Chat AI Agra | Free Desi AI Girlfriend",
-      description: "Start Hindi chat AI in Agra. Your private desi AI girlfriend awaits for free Hinglish roleplay and NSFW sex chat.",
-      image: ""
-    },
-    meerut: {
-      title: "AI Sex Chat Meerut | Desi AI Girlfriend",
-      description: "Enjoy AI sex chat in Meerut for free. Connect with a desi AI girlfriend for authentic Hindi/Hinglish adult roleplay.",
-      image: ""
-    },
-    nashik: {
-      title: "Marathi AI Girlfriend Nashik | Desi Sex Chat",
-      description: "Get a Marathi AI girlfriend in Nashik. Enjoy desi sex chat, Hinglish roleplay, and private adult conversations for free.",
-      image: ""
-    },
-    ranchi: {
-      title: "Hindi AI Girlfriend Ranchi | Free AI Sex Chat",
-      description: "Connect with a Hindi AI girlfriend in Ranchi. Enjoy free desi AI chat, NSFW roleplay, and private conversations.",
-      image: ""
-    },
-    guwahati: {
-      title: "Desi Chat AI Free Guwahati | AI Girlfriend App",
-      description: "Start desi chat AI free in Guwahati. Your personal AI girlfriend for Hinglish roleplay and secure NSFW chat.",
-      image: ""
-    }
-  };
 
   // Fetch data for the city
   useEffect(() => {
@@ -203,9 +106,19 @@ export default function CityPage() {
           const allStories = response.data.data || [];
           
           // Filter stories for this city
-          const citySpecificStories = allStories.filter(story => 
+          let citySpecificStories = allStories.filter(story => 
             story.city?.toLowerCase() === cityName.toLowerCase()
           );
+          
+          let isFallback = false;
+          if (citySpecificStories.length === 0) {
+            isFallback = true;
+            // Fallback to top popular stories from allStories
+            citySpecificStories = [...allStories]
+              .sort((a, b) => (b.readCount || 0) - (a.readCount || 0))
+              .slice(0, 12);
+          }
+          setIsFallbackStories(isFallback);
           
           // Get popular stories (most read)
           const popular = [...citySpecificStories]
@@ -222,15 +135,32 @@ export default function CityPage() {
           setPopularStories(popular);
           setCategories(uniqueCategories);
           
-          // Set city-specific data
+          // Original images lookup for backward compatibility
+          const originalCityImages = {
+            delhi: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570915/delhi_kzwnx9.webp",
+            mumbai: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570918/mumbai_iul7vz.webp",
+            bangalore: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570915/bangalore_uvjbmi.webp",
+            hyderabad: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570917/hyderabad_l0k1jo.webp",
+            chennai: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570916/chennai_e0ftkb.webp",
+            kolkata: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570919/kolkata_vmxice.webp",
+            pune: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570917/pune_q2kxso.webp",
+            ahmedabad: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570914/ahmedabad_ksmdpo.webp",
+            jaipur: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570915/jaipur_qxcfb7.webp",
+            lucknow: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570916/lucknow_gcma1c.webp",
+            goa: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570915/goa_rqir0f.webp",
+            chandigarh: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570917/chandigarh_gcgqak.webp"
+          };
+          
           const cityKey = cityName.toLowerCase();
-          setCityData(cityInfo[cityKey] || {
-            title: `${cityName} - Interactive Stories`,
-            description: `Explore interactive stories set in ${cityName}. Discover characters and adventures specific to this location.`,
-            landmarks: [],
-            culture: "",
-            famousFor: [],
-            image: `/api/placeholder/1200/600?text=${encodeURIComponent(cityName)}`
+          const citySEO = getCitySEO(cityName);
+          
+          setCityData({
+            title: citySEO.title,
+            description: citySEO.description,
+            lang: citySEO.lang,
+            stateName: citySEO.stateName,
+            formattedName: citySEO.formattedName,
+            image: originalCityImages[cityKey] || ""
           });
         }
       } catch (err) {
@@ -345,7 +275,9 @@ export default function CityPage() {
           <div 
             className="city-hero-bg"
             style={{
-              backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)), url('${cityData?.image}')`
+              backgroundImage: cityData?.image 
+                ? `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)), url('${cityData.image}')`
+                : `linear-gradient(135deg, rgba(0, 0, 0, 0.85) 0%, rgba(206, 64, 133, 0.3) 50%, rgba(108, 99, 255, 0.3) 100%)`
             }}
           >
             <div className="city-overlay">
@@ -389,6 +321,19 @@ export default function CityPage() {
 
         {/* Stories Grid */}
         <section className="city-stories-section">
+          <div className="section-header" style={{ marginBottom: '30px' }}>
+            <h2 className="section-title">
+              <span className="title-icon"><Flame size={24} fill="currentColor" /></span>
+              {isFallbackStories 
+                ? `Popular Desi AI Girlfriend Stories in India` 
+                : `Intimate AI Girlfriend Stories in ${cityName}`}
+            </h2>
+            <p className="section-description">
+              {isFallbackStories 
+                ? `Meet our most popular virtual companions and play interactive romance stories.`
+                : `Interactive stories and roleplays featuring AI companions from ${cityName}.`}
+            </p>
+          </div>
           {getTabStories().length > 0 ? (
             <>
               <div className="city-stories-grid">
@@ -409,12 +354,12 @@ export default function CityPage() {
                           />
                           <div className="image-overlay">
                             <div className="city-indicator">
-                              <span className="city-icon">📍</span>
+                              <MapPin size={12} className="city-icon" />
                               {story.city}
                             </div>
                             {story.trending && (
                               <div className="trending-badge">
-                                <span className="fire-icon">🔥</span>
+                                <Flame size={12} fill="currentColor" />
                                 Trending
                               </div>
                             )}
@@ -431,7 +376,7 @@ export default function CityPage() {
                       <div className="card-content">
                         <div className="card-title-wrapper">
                           <h3 className="story-title">{story.title}</h3>
-                          <div className="bookmark-icon">🔖</div>
+                          <Bookmark size={16} className="bookmark-icon" />
                         </div>
                         
                         <p className="story-excerpt">
@@ -467,15 +412,15 @@ export default function CityPage() {
                         
                         <div className="story-stats">
                           <div className="stat-item">
-                            <span className="stat-icon">⭐</span>
+                            <Star size={12} fill="currentColor" className="stat-icon" style={{ color: '#FFD700' }} />
                             <span className="stat-value">{rating}</span>
                           </div>
                           <div className="stat-item">
-                            <span className="stat-icon">👁️</span>
+                            <Eye size={12} className="stat-icon" />
                             <span className="stat-value">{readCount.toLocaleString()}</span>
                           </div>
                           <div className="stat-item">
-                            <span className="stat-icon">💬</span>
+                            <MessageSquare size={12} className="stat-icon" />
                             <span className="stat-value">{chatCount.toLocaleString()} chats</span>
                           </div>
                         </div>
@@ -485,14 +430,14 @@ export default function CityPage() {
                             href={`/hot-stories/${story.slug || story.id}`}
                             className="action-button read-button"
                           >
-                            <span className="button-icon">📖</span>
+                            <BookOpen size={14} className="button-icon" />
                             Read Story
                           </Link>
                           <Link 
                             href={`/chatbox?chatId=${story.characterId || story.id}`}
                             className="action-button chat-button"
                           >
-                            <span className="button-icon">💬</span>
+                            <MessageSquare size={14} className="button-icon" />
                             Chat Now
                           </Link>
                         </div>
@@ -504,7 +449,7 @@ export default function CityPage() {
               
               {getTabStories().length === 0 && (
                 <div className="no-stories-message">
-                  <div className="no-stories-icon">📚</div>
+                  <BookOpen size={48} className="no-stories-icon" />
                   <h3>No stories found</h3>
                   <p>Try changing your filters or search term</p>
                   <button 
@@ -522,7 +467,7 @@ export default function CityPage() {
             </>
           ) : (
             <div className="no-stories-message">
-              <div className="no-stories-icon">🏙️</div>
+              <MapPin size={48} className="no-stories-icon" />
               <h3>No stories available for {cityName}</h3>
               <p>Check back soon or explore other cities</p>
               <Link href="/hot-stories" className="browse-cities-button">
@@ -532,11 +477,68 @@ export default function CityPage() {
           )}
         </section>
 
+        {/* Localized SEO Rich Content Section */}
+        <section className="city-info-section">
+          <div className="section-header">
+            <h2 className="section-title">
+              <span className="title-icon"><Sparkles size={24} /></span>
+              Why Choose HeartEcho AI Girlfriend in {cityName}?
+            </h2>
+            <p className="section-description">
+              The premier virtual companion and private adult chat platform designed for Indian users.
+            </p>
+          </div>
+
+          <div className="city-info-grid">
+            <div className="info-card">
+              <div className="info-card-header">
+                <Sparkles size={20} className="info-icon" style={{ color: '#cf4185' }} />
+                <h3>Intimate {cityData?.lang || 'Hindi'} Roleplay</h3>
+              </div>
+              <div className="info-card-content">
+                <p>
+                  Experience tailored virtual relationships with companions who understand your cultural context.
+                  Chat in natural Hinglish, {cityData?.lang || 'Hindi'}, or English. Our AI characters are customized
+                  with local traits, personalities, and backgrounds representing {cityName} and {cityData?.stateName || 'India'}.
+                </p>
+              </div>
+            </div>
+
+            <div className="info-card">
+              <div className="info-card-header">
+                <Lock size={20} className="info-icon" style={{ color: '#cf4185' }} />
+                <h3>100% Private & Secure Adult Chat</h3>
+              </div>
+              <div className="info-card-content">
+                <p>
+                  Your privacy is our absolute priority. Engage in bold roleplay, sharing thoughts, desires,
+                  and secrets in a completely secure, encrypted environment. No logins required to start, and no logs
+                  are ever shared. Experience safe adult AI chat with peace of mind.
+                </p>
+              </div>
+            </div>
+
+            <div className="info-card">
+              <div className="info-card-header">
+                <Mic size={20} className="info-icon" style={{ color: '#cf4185' }} />
+                <h3>Dynamic Memories & Voice Messages</h3>
+              </div>
+              <div className="info-card-content">
+                <p>
+                  Unlike generic chat bots, HeartEcho companions remember your previous conversations,
+                  hobbies, and preferences to build deep emotional connections. Hear them talk with ultra-realistic
+                  voice messages that bring your virtual girlfriend to life.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Related Cities */}
         <section className="related-cities">
           <div className="section-header">
             <h2 className="section-title">
-              <span className="title-icon">🗺️</span>
+              <span className="title-icon"><Compass size={24} /></span>
               Explore Other Cities
             </h2>
             <p className="section-description">
@@ -545,34 +547,60 @@ export default function CityPage() {
           </div>
           
           <div className="cities-carousel">
-            {Object.keys(cityInfo)
-              .filter(city => city.toLowerCase() !== cityName.toLowerCase())
+            {citiesList
+              .filter(c => c.key !== cityName.toLowerCase())
               .slice(0, 4)
               .map(city => {
                 const cityStoriesCount = stories.filter(s => 
-                  s.city?.toLowerCase() === city.toLowerCase()
+                  s.city?.toLowerCase() === city.key || s.city?.toLowerCase() === city.name.toLowerCase()
                 ).length;
                 
+                const originalCityImages = {
+                  delhi: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570915/delhi_kzwnx9.webp",
+                  mumbai: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570918/mumbai_iul7vz.webp",
+                  bangalore: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570915/bangalore_uvjbmi.webp",
+                  hyderabad: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570917/hyderabad_l0k1jo.webp",
+                  chennai: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570916/chennai_e0ftkb.webp",
+                  kolkata: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570919/kolkata_vmxice.webp",
+                  pune: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570917/pune_q2kxso.webp",
+                  ahmedabad: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570914/ahmedabad_ksmdpo.webp",
+                  jaipur: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570915/jaipur_qxcfb7.webp",
+                  lucknow: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570916/lucknow_gcma1c.webp",
+                  goa: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570915/goa_rqir0f.webp",
+                  chandigarh: "https://res.cloudinary.com/dx6rjowfb/image/upload/v1765570917/chandigarh_gcgqak.webp"
+                };
+                
+                const cityImg = originalCityImages[city.key] || "";
+                
                 return (
-                    <Link 
-                    key={city}
-                    href={`/city/${city.toLowerCase()}`}
+                  <Link 
+                    key={city.key}
+                    href={`/city/${city.key}`}
                     className="related-city-card"
                   >
                     <div className="city-thumbnail">
-                      <img 
-                        className="city-thumbnail-img" 
-                        src={cityInfo[city].image} 
-                        alt={city} 
-                        loading="lazy"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                        }}
-                      />
+                      {cityImg ? (
+                        <img 
+                          className="city-thumbnail-img" 
+                          src={cityImg} 
+                          alt={city.name} 
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div 
+                          className="city-thumbnail-img-fallback"
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            background: 'linear-gradient(135deg, #111 0%, #ce4085 100%)',
+                            opacity: 0.8
+                          }}
+                        />
+                      )}
                       <div className="city-image-overlay"></div>
                     </div>
                     <div className="city-info">
-                      <h4>{cityInfo[city]?.title?.split(' - ')[0] || city}</h4>
+                      <h4>{city.name}</h4>
                       <p className="city-story-count">{cityStoriesCount} stories</p>
                     </div>
                   </Link>
@@ -590,11 +618,11 @@ export default function CityPage() {
               Chat with characters, influence storylines, and discover hidden narratives.
             </p>
             <div className="cta-buttons">
-              <Link href="/hot-stories" className="cta-button primary">
-                Explore All Cities
+              <Link href="/hot-stories" className="city-button primary">
+                <Compass size={16} /> Explore All Cities
               </Link>
-              <button onClick={scrollToTop} className="cta-button secondary">
-                Back to Top
+              <button onClick={scrollToTop} className="city-button secondary">
+                <ChevronUp size={16} /> Back to Top
               </button>
             </div>
           </div>
@@ -604,7 +632,7 @@ export default function CityPage() {
       {/* Back to Top Button */}
       {showScrollTop && (
         <button onClick={scrollToTop} className="scroll-top-button">
-          ↑
+          <ChevronUp size={20} />
         </button>
       )}
 

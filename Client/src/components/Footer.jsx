@@ -33,6 +33,46 @@ const SocialIcon = ({ href, path, label }) => (
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
+  const targetCities = [
+    { name: 'Mumbai', key: 'mumbai' },
+    { name: 'Delhi', key: 'delhi' },
+    { name: 'Bangalore', key: 'bangalore' },
+    { name: 'Hyderabad', key: 'hyderabad' },
+    { name: 'Ahmedabad', key: 'ahmedabad' },
+    { name: 'Chennai', key: 'chennai' },
+    { name: 'Kolkata', key: 'kolkata' },
+    { name: 'Pune', key: 'pune' },
+    { name: 'Jaipur', key: 'jaipur' },
+    { name: 'Lucknow', key: 'lucknow' },
+    { name: 'Kanpur', key: 'kanpur' },
+    { name: 'Nagpur', key: 'nagpur' },
+    { name: 'Indore', key: 'indore' },
+    { name: 'Patna', key: 'patna' },
+    { name: 'Vadodara', key: 'vadodara' },
+    { name: 'Ludhiana', key: 'ludhiana' },
+    { name: 'Coimbatore', key: 'coimbatore' },
+    { name: 'Agra', key: 'agra' },
+    { name: 'Madurai', key: 'madurai' },
+    { name: 'Nashik', key: 'nashik' },
+    { name: 'Faridabad', key: 'faridabad' },
+    { name: 'Meerut', key: 'meerut' },
+    { name: 'Rajkot', key: 'rajkot' },
+    { name: 'Varanasi', key: 'varanasi' },
+    { name: 'Srinagar', key: 'srinagar' },
+    { name: 'Aurangabad', key: 'aurangabad' },
+    { name: 'Dhanbad', key: 'dhanbad' },
+    { name: 'Amritsar', key: 'amritsar' },
+    { name: 'Navi Mumbai', key: 'navi-mumbai' },
+    { name: 'Ranchi', key: 'ranchi' },
+    { name: 'Guwahati', key: 'guwahati' },
+    { name: 'Goa', key: 'goa' },
+    { name: 'Chandigarh', key: 'chandigarh' },
+    { name: 'Mysore', key: 'mysore' },
+    { name: 'Gurgaon', key: 'gurgaon' },
+    { name: 'Noida', key: 'noida' },
+    { name: 'Ghaziabad', key: 'ghaziabad' }
+  ];
+
   return (
     <footer className="seh-footer">
       <style>{`
@@ -204,6 +244,48 @@ export default function Footer() {
           display: inline-flex;
           align-items: center;
           gap: 6px;
+        }
+
+        .seh-footer-locations {
+          grid-column: 1 / -1;
+          border-top: 1px solid var(--seh-border);
+          padding-top: 2rem;
+          margin-top: 1rem;
+          text-align: left;
+        }
+
+        .seh-locations-title {
+          font-size: 0.85rem;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          color: #fff;
+          margin-bottom: 1rem;
+          font-weight: 700;
+          opacity: 0.8;
+        }
+
+        .seh-locations-cloud {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px 16px;
+          line-height: 1.8;
+        }
+
+        .seh-locations-cloud a {
+          color: var(--seh-muted);
+          text-decoration: none;
+          font-size: 0.85rem;
+          transition: all 0.2s ease;
+        }
+
+        .seh-locations-cloud a:hover {
+          color: var(--seh-pink);
+        }
+
+        .seh-locations-divider {
+          color: rgba(255, 255, 255, 0.15);
+          font-size: 0.85rem;
+          user-select: none;
         }
 
         /* Bottom Bar */
@@ -391,6 +473,19 @@ export default function Footer() {
               <li><Link href="/reviews" style={{color: '#ffd60a', fontWeight: '600'}}>⭐ Reviews</Link></li>
               <li><Link href="/blog">Blog</Link></li>
             </ul>
+          </div>
+        </div>
+
+        {/* Location Links Cloud */}
+        <div className="seh-footer-locations">
+          <h4 className="seh-locations-title">AI Girlfriend in Indian Cities</h4>
+          <div className="seh-locations-cloud">
+            {targetCities.map((c, index) => (
+              <React.Fragment key={c.key}>
+                <Link href={`/city/${c.key}`}>AI Girlfriend {c.name}</Link>
+                {index < targetCities.length - 1 && <span className="seh-locations-divider">•</span>}
+              </React.Fragment>
+            ))}
           </div>
         </div>
       </div>
