@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   FaUsers, FaRobot, FaExclamationCircle, FaChartBar, FaBars, 
-  FaTimes, FaChevronRight, FaUserPlus, FaGem 
+  FaTimes, FaChevronRight, FaUserPlus, FaGem, FaEnvelope 
 } from "react-icons/fa";
 import { MdHistoryEdu, MdDashboard, MdChat, MdPayment, MdAnalytics } from "react-icons/md";
 import { CiEdit } from "react-icons/ci";
@@ -30,6 +30,7 @@ import LiveStoriesAdmin from "./Admin/LiveStoriesAdmin.jsx";
 import AiLiveViewAdmin from "./Admin/AiLiveViewAdmin.jsx";
 import DeletedAccountsAdmin from "./Admin/DeletedAccountsAdmin.jsx";
 import NotificationsAdmin from "./Admin/NotificationsAdmin.jsx";
+import EmailMarketingAdmin from "./Admin/EmailMarketingAdmin.jsx";
 
 const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
   const pathname = usePathname();
@@ -74,7 +75,8 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
     { path: "/admin/deleted-accounts", label: "Deleted Accounts", icon: <FaUsers />, countKey: "deletedAccounts" },
     { path: "/admin/live-stories", label: "Live Stories AI", icon: <FaGem /> },
     { path: "/admin/ai-live-view", label: "AI Live View", icon: <FaGem /> },
-    { path: "/admin/notifications", label: "Push Notifications", icon: <FaExclamationCircle /> }
+    { path: "/admin/notifications", label: "Push Notifications", icon: <FaExclamationCircle /> },
+    { path: "/admin/email-marketing", label: "Email Marketing", icon: <FaEnvelope /> }
   ];
 
   return (
@@ -188,6 +190,7 @@ const AdminPanel = () => {
         '/admin/live-stories': <div className="content-wrapper-x30sn"><LiveStoriesAdmin /></div>,
         '/admin/ai-live-view': <div className="content-wrapper-x30sn"><AiLiveViewAdmin /></div>,
         '/admin/notifications': <div className="content-wrapper-x30sn"><NotificationsAdmin /></div>,
+        '/admin/email-marketing': <div className="content-wrapper-x30sn"><EmailMarketingAdmin /></div>,
 
     };
     // If the path matches edit story dynamic route

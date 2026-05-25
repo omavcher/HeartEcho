@@ -13,6 +13,10 @@ const User = require("./models/User");
 dotenv.config();
 connectDB();
 
+// Seed default email templates
+const seedDefaultTemplates = require("./utils/seedTemplates");
+seedDefaultTemplates();
+
 const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
@@ -512,6 +516,11 @@ app.use("/api/v1/api/guest", require("./routes/guestRoutes"));
 app.use("/api/v1/api/live-story", require("./routes/liveStoryRoute"));
 app.use("/api/v1/api/ai-live", require("./routes/aiLiveRoutes"));
 app.use("/api/v1/api/paypal", require("./routes/paypalRoutes"));
+app.use("/api/v1/api/email-marketing", require("./routes/emailMarketingRoutes"));
+
+// Start email marketing queue processor background worker
+const { startQueueProcessor } = require("./utils/emailQueueProcessor");
+startQueueProcessor();
 
 //
 // Start Server
