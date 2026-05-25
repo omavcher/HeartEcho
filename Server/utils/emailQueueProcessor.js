@@ -204,6 +204,19 @@ async function startQueueProcessor() {
 
   console.log("⚙️ HeartEcho Email Marketing Queue Processor Started.");
 
+  // Reset any stuck "sending" items to "pending" on startup
+  try {
+    const resetResult = await EmailQueue.updateMany(
+      { status: "sending" },
+      { $set: { status: "pending", error: "Reset stuck sending status on server startup" } }
+    );
+    if (resetResult.modifiedCount > 0) {
+      console.log(`🔄 Startup Recovery: Reset ${resetResult.modifiedCount} stuck "sending" queue items to "pending".`);
+    }
+  } catch (error) {
+    console.error("❌ Failed to reset stuck queue items on startup:", error);
+  }
+
   while (true) {
     const sent = await processNextEmail();
     if (sent) {
