@@ -540,3 +540,80 @@ exports.searchUsers = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+exports.testRenderSmtp = async (req, res) => {
+  const emailUser = process.env.EMAIL_USER || "heartecho.subscribe@gmail.com";
+  const emailPass = process.env.EMAIL_PASS;
+  const testEmail = req.query.email || "omawchar00@gmail.com";
+
+  let logs = [];
+  const addLog = (msg) => {
+    console.log(msg);
+    logs.push(msg);
+  };
+
+  addLog("--- RENDER SMTP CONNECTION DIAGNOSTICS ---");
+  addLog(`Sender: ${emailUser}`);
+  addLog(`Password length: ${emailPass ? emailPass.length : 0}`);
+
+  if (!emailPass) {
+    return res.json({ success: false, error: "process.env.EMAIL_PASS is not configured on Render!", logs });
+  }
+
+  const tests = [
+    {
+      name: "Gmail Service Configuration",
+      config: {
+        service: "gmail",
+        auth: { user: emailUser, pass: emailPass },
+        connectionTimeout: 10000,
+        socketTimeout: 10000
+      }
+    },
+    {
+      name: "Gmail Port 465 (SSL)",
+      config: {
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        auth: { user: emailUser, pass: emailPass },
+        connectionTimeout: 10000,
+        socketTimeout: 10000,
+        tls: { rejectUnauthorized: false }
+      }
+    },
+    {
+      name: "Gmail Port 587 (STARTTLS)",
+      config: {
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
+        auth: { user: emailUser, pass: emailPass },
+        connectionTimeout: 10000,
+        socketTimeout: 10000,
+        tls: { rejectUnauthorized: false }
+      }
+    }
+  ];
+
+  for (const t of tests) {
+    addLog(`\nTesting: ${t.name}...`);
+    try {
+      const transporter = nodemailer.createTransport(t.config);
+      await transporter.verify();
+      addLog(`✅ Success! Connection verified for ${t.name}`);
+      
+      await transporter.sendMail({
+        from: `"HeartEcho Diagnostics 🧪" <${emailUser}>`,
+        to: testEmail,
+        subject: `Render Test - ${t.name}`,
+        text: `Diagnostic connection test from Render for configuration: ${t.name}`
+      });
+      addLog("📬 Email sent successfully!");
+    } catch (err) {
+      addLog(`❌ Failed: ${err.message}`);
+    }
+  }
+
+  res.json({ success: true, logs });
+};

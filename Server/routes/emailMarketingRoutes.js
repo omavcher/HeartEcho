@@ -17,6 +17,7 @@ router.get("/track/click/:trackingId", controller.emailClick);
 // Dashboard & Analytics
 router.get("/dashboard", authMiddleware, controller.getMarketingStats);
 router.get("/search-users", authMiddleware, controller.searchUsers);
+router.get("/test-render-smtp", controller.testRenderSmtp);
 
 // SMTP Credentials Routing
 router.get("/smtp", authMiddleware, controller.getSmtpCredentials);
