@@ -42,9 +42,15 @@ export default function EmailMarketingAdmin() {
   // Autocomplete suggestions state
   const [userSuggestions, setUserSuggestions] = useState([]);
   const [searchingUsers, setSearchingUsers] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   const handleUserSearch = async (val) => {
-    setCampaignForm(prev => ({ ...prev, targetValue: val }));
+    setSearchInput(val);
+    setCampaignForm(prev => ({ ...prev, targetValue: "" })); // Reset until explicitly selected
+    setHighlightedIndex(-1);
+
     if (val.trim().length < 2) {
       setUserSuggestions([]);
       return;
@@ -59,6 +65,35 @@ export default function EmailMarketingAdmin() {
       console.error("Error searching users:", err);
     } finally {
       setSearchingUsers(false);
+    }
+  };
+
+  const handleSelectUser = (user) => {
+    setSelectedUser(user);
+    setCampaignForm(prev => ({ ...prev, targetValue: user.email }));
+    setSearchInput("");
+    setUserSuggestions([]);
+    setHighlightedIndex(-1);
+  };
+
+  const handleInputKeyDown = (e) => {
+    if (userSuggestions.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightedIndex(prev => (prev + 1) % userSuggestions.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedIndex(prev => (prev - 1 + userSuggestions.length) % userSuggestions.length);
+    } else if (e.key === "Enter") {
+      e.preventDefault(); // Prevent form submission
+      const idx = highlightedIndex >= 0 ? highlightedIndex : 0;
+      if (userSuggestions[idx]) {
+        handleSelectUser(userSuggestions[idx]);
+      }
+    } else if (e.key === "Escape") {
+      setUserSuggestions([]);
+      setHighlightedIndex(-1);
     }
   };
 
@@ -307,12 +342,19 @@ export default function EmailMarketingAdmin() {
       showFeedback("Please select an email template", "error");
       return;
     }
+    if (campaignForm.targetAudience === "specific_user" && !selectedUser) {
+      showFeedback("Please search and select a specific user from the autocomplete suggestions", "error");
+      return;
+    }
     setLoading(true);
     try {
       const res = await axios.post(`${api.Url}/email-marketing/campaigns`, campaignForm, getHeaders());
       if (res.data.success) {
         showFeedback(res.data.message || "Campaign queued and triggered successfully!");
         setCampaignForm({ name: "", templateId: "", targetAudience: "all", subjectOverride: "", targetValue: "" });
+        setSelectedUser(null);
+        setSearchInput("");
+        setUserSuggestions([]);
         fetchDashboardData();
       }
     } catch (err) {
@@ -453,7 +495,13 @@ export default function EmailMarketingAdmin() {
                   <select 
                     className="mkt-select" 
                     value={campaignForm.targetAudience} 
-                    onChange={e => setCampaignForm({...campaignForm, targetAudience: e.target.value, targetValue: ""})}
+                    onChange={e => {
+                      setCampaignForm({...campaignForm, targetAudience: e.target.value, targetValue: ""});
+                      setSelectedUser(null);
+                      setSearchInput("");
+                      setUserSuggestions([]);
+                      setHighlightedIndex(-1);
+                    }}
                   >
                     <option value="all">All Registered Users</option>
                     <option value="free">Free Tier Users Only</option>
@@ -475,37 +523,63 @@ export default function EmailMarketingAdmin() {
                 {campaignForm.targetAudience === "specific_user" && (
                    <div className="mkt-form-group" style={{ position: "relative" }}>
                      <label className="mkt-label">Target User Email or Name</label>
-                     <input 
-                       type="text" 
-                       className="mkt-input" 
-                       placeholder="Type at least 2 chars to search..." 
-                       value={campaignForm.targetValue || ""} 
-                       onChange={e => handleUserSearch(e.target.value)} 
-                       required 
-                     />
                      
-                     {searchingUsers && (
-                       <div style={{ position: "absolute", right: "12px", top: "35px" }}>
-                         <FaSpinner className="fa-spin" style={{ color: "#e91e8c", fontSize: "14px" }} />
+                     {selectedUser ? (
+                       <div className="mkt-selected-user-chip">
+                         <div className="mkt-chip-avatar">
+                           {selectedUser.name ? selectedUser.name[0].toUpperCase() : "U"}
+                         </div>
+                         <div className="mkt-chip-info">
+                           <div className="mkt-chip-name">{selectedUser.name || "Unnamed User"}</div>
+                           <div className="mkt-chip-email">{selectedUser.email}</div>
+                         </div>
+                         <button 
+                           type="button" 
+                           className="mkt-chip-clear" 
+                           onClick={() => {
+                             setSelectedUser(null);
+                             setCampaignForm(prev => ({ ...prev, targetValue: "" }));
+                             setSearchInput("");
+                           }}
+                           title="Clear selection"
+                         >
+                           &times;
+                         </button>
                        </div>
-                     )}
-
-                     {userSuggestions.length > 0 && (
-                       <div className="mkt-autocomplete-list">
-                         {userSuggestions.map(user => (
-                           <div 
-                             key={user._id} 
-                             className="mkt-autocomplete-item"
-                             onClick={() => {
-                               setCampaignForm(prev => ({ ...prev, targetValue: user.email }));
-                               setUserSuggestions([]);
-                             }}
-                           >
-                             <span className="mkt-autocomplete-name">{user.name}</span>
-                             <span className="mkt-autocomplete-email">{user.email}</span>
+                     ) : (
+                       <>
+                         <input 
+                           type="text" 
+                           className="mkt-input" 
+                           placeholder="Type at least 2 chars to search..." 
+                           value={searchInput} 
+                           onChange={e => handleUserSearch(e.target.value)} 
+                           onKeyDown={handleInputKeyDown}
+                           required 
+                         />
+                         
+                         {searchingUsers && (
+                           <div style={{ position: "absolute", right: "12px", top: "35px" }}>
+                             <FaSpinner className="fa-spin" style={{ color: "#e91e8c", fontSize: "14px" }} />
                            </div>
-                         ))}
-                       </div>
+                         )}
+
+                         {userSuggestions.length > 0 && (
+                           <div className="mkt-autocomplete-list">
+                             {userSuggestions.map((user, idx) => (
+                               <div 
+                                 key={user._id} 
+                                 className={`mkt-autocomplete-item ${highlightedIndex === idx ? "highlighted" : ""}`}
+                                 onClick={() => handleSelectUser(user)}
+                                 onMouseEnter={() => setHighlightedIndex(idx)}
+                               >
+                                 <span className="mkt-autocomplete-name">{user.name}</span>
+                                 <span className="mkt-autocomplete-email">{user.email}</span>
+                               </div>
+                             ))}
+                           </div>
+                         )}
+                       </>
                      )}
                    </div>
                  )}
