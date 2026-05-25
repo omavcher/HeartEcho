@@ -517,3 +517,26 @@ exports.getMarketingStats = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+exports.searchUsers = async (req, res) => {
+  const { q } = req.query;
+  try {
+    if (!q || q.trim().length < 2) {
+      return res.json({ success: true, data: [] });
+    }
+    const searchStr = q.trim();
+    const escapedQ = searchStr.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const users = await User.find({
+      $or: [
+        { email: { $regex: new RegExp(escapedQ, "i") } },
+        { name: { $regex: new RegExp(escapedQ, "i") } }
+      ]
+    })
+    .select("name email")
+    .limit(10);
+    
+    res.json({ success: true, data: users });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};

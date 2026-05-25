@@ -39,6 +39,29 @@ export default function EmailMarketingAdmin() {
   // Action feedback
   const [message, setMessage] = useState({ text: "", type: "" });
 
+  // Autocomplete suggestions state
+  const [userSuggestions, setUserSuggestions] = useState([]);
+  const [searchingUsers, setSearchingUsers] = useState(false);
+
+  const handleUserSearch = async (val) => {
+    setCampaignForm(prev => ({ ...prev, targetValue: val }));
+    if (val.trim().length < 2) {
+      setUserSuggestions([]);
+      return;
+    }
+    setSearchingUsers(true);
+    try {
+      const res = await axios.get(`${api.Url}/email-marketing/search-users?q=${val}`, getHeaders());
+      if (res.data.success) {
+        setUserSuggestions(res.data.data);
+      }
+    } catch (err) {
+      console.error("Error searching users:", err);
+    } finally {
+      setSearchingUsers(false);
+    }
+  };
+
   // Find & Replace editor state
   const textareaRef = useRef(null);
   const [findText, setFindText] = useState("");
@@ -450,16 +473,40 @@ export default function EmailMarketingAdmin() {
                 </div>
 
                 {campaignForm.targetAudience === "specific_user" && (
-                   <div className="mkt-form-group">
+                   <div className="mkt-form-group" style={{ position: "relative" }}>
                      <label className="mkt-label">Target User Email or Name</label>
                      <input 
                        type="text" 
                        className="mkt-input" 
-                       placeholder="e.g. user@gmail.com or Rahul Sharma" 
+                       placeholder="Type at least 2 chars to search..." 
                        value={campaignForm.targetValue || ""} 
-                       onChange={e => setCampaignForm({...campaignForm, targetValue: e.target.value})} 
+                       onChange={e => handleUserSearch(e.target.value)} 
                        required 
                      />
+                     
+                     {searchingUsers && (
+                       <div style={{ position: "absolute", right: "12px", top: "35px" }}>
+                         <FaSpinner className="fa-spin" style={{ color: "#e91e8c", fontSize: "14px" }} />
+                       </div>
+                     )}
+
+                     {userSuggestions.length > 0 && (
+                       <div className="mkt-autocomplete-list">
+                         {userSuggestions.map(user => (
+                           <div 
+                             key={user._id} 
+                             className="mkt-autocomplete-item"
+                             onClick={() => {
+                               setCampaignForm(prev => ({ ...prev, targetValue: user.email }));
+                               setUserSuggestions([]);
+                             }}
+                           >
+                             <span className="mkt-autocomplete-name">{user.name}</span>
+                             <span className="mkt-autocomplete-email">{user.email}</span>
+                           </div>
+                         ))}
+                       </div>
+                     )}
                    </div>
                  )}
 

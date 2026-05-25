@@ -489,3 +489,46 @@
   font-size: 11px;
   font-family: monospace;
 }
+
+/* Autocomplete suggestions dropdown */
+.mkt-autocomplete-list {
+  position: absolute;
+  z-index: 100;
+  width: 100%;
+  background: #160a2c;
+  border: 1px solid rgba(233, 30, 140, 0.3);
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  margin-top: 4px;
+}
+
+.mkt-autocomplete-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.mkt-autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.mkt-autocomplete-item:hover {
+  background: rgba(233, 30, 140, 0.2);
+}
+
+.mkt-autocomplete-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.mkt-autocomplete-email {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
