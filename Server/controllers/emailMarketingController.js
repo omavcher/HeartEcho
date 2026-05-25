@@ -305,17 +305,23 @@ exports.createCampaign = async (req, res) => {
       };
     } else if (targetAudience === "specific_user") {
       if (!targetValue) {
-        return res.status(400).json({ success: false, message: "Target user email or name is required for Single User target" });
+        return res.status(400).json({ success: false, error: "Target user email or name is required for Single User target" });
       }
+      const searchStr = targetValue.trim();
+      const escapedStr = searchStr.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
       query = {
         $or: [
-          { email: targetValue.trim() },
-          { name: { $regex: new RegExp("^" + targetValue.trim() + "$", "i") } }
+          { email: { $regex: new RegExp("^" + escapedStr + "$", "i") } },
+          { name: { $regex: new RegExp("^" + escapedStr + "$", "i") } }
         ]
       };
     }
 
     const targetUsers = await User.find(query).select("name email");
+
+    if (targetAudience === "specific_user" && targetUsers.length === 0) {
+      return res.status(404).json({ success: false, error: `No user found matching email or name: "${targetValue}"` });
+    }
     
     // 2. Create Campaign
     const campaign = new EmailCampaign({

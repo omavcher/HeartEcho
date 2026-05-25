@@ -169,7 +169,6 @@
 }
 
 .mkt-input,
-.mkt-select,
 .mkt-textarea {
   width: 100%;
   background: rgba(255, 255, 255, 0.05);
@@ -182,6 +181,25 @@
   font-family: inherit;
 }
 
+.mkt-select {
+  width: 100%;
+  background-color: #120824; /* Solid background prevents OS light popup glitch */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+}
+
 .mkt-input:focus,
 .mkt-select:focus,
 .mkt-textarea:focus {
@@ -191,9 +209,13 @@
   box-shadow: 0 0 10px rgba(233, 30, 140, 0.2);
 }
 
+.mkt-select:focus {
+  background-color: #160a2c;
+}
+
 .mkt-select option {
-  background-color: #160b24;
-  color: #fff;
+  background-color: #120824 !important;
+  color: #ffffff !important;
 }
 
 .mkt-textarea {
