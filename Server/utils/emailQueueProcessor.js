@@ -36,10 +36,13 @@ function rewriteLinks(html, trackingId, backendUrl) {
 // Main processing iteration
 async function processNextEmail() {
   const backendUrl = process.env.BACKEND_URL || "https://heartecho-lm9j.onrender.com";
+  let queueItem = null;
+  let selectedSmtp = null;
+  let fallbackTransporter = false;
   
   try {
     // Find next pending email
-    const queueItem = await EmailQueue.findOne({ status: "pending" })
+    queueItem = await EmailQueue.findOne({ status: "pending" })
       .populate("campaign")
       .populate("user");
 
@@ -53,8 +56,6 @@ async function processNextEmail() {
     await queueItem.save();
 
     // 1. Select SMTP Credential
-    let selectedSmtp = null;
-    let fallbackTransporter = false;
 
     // Find active credentials that haven't hit their daily limit
     const credentials = await SmtpCredential.find({ active: true });
@@ -184,12 +185,12 @@ async function processNextEmail() {
 
       // Deactivate credentials if authorization fails
       if (error.message.includes("Invalid login") || error.message.includes("Username and Password not accepted")) {
-        const errorCred = await SmtpCredential.findOne({ email: mailOptions.from.match(/<(.+)>/)[1] });
-        if (errorCred) {
-          errorCred.active = false;
-          errorCred.errorMessage = `Authentication failed: ${error.message}`;
-          await errorCred.save();
-          console.log(`⚠️ SMTP credential ${errorCred.email} deactivated due to login error.`);
+        if (selectedSmtp && !fallbackTransporter) {
+          await SmtpCredential.findByIdAndUpdate(selectedSmtp._id, {
+            active: false,
+            errorMessage: `Authentication failed: ${error.message}`
+          });
+          console.log(`⚠️ SMTP credential ${selectedSmtp.email} deactivated due to login error.`);
         }
       }
     }
