@@ -91,19 +91,18 @@ async function processNextEmail() {
     }
 
     // 2. Setup Transporter
-    const transportConfig = selectedSmtp.host && selectedSmtp.host !== "smtp.gmail.com" ? {
-      host: selectedSmtp.host,
-      port: selectedSmtp.port,
-      secure: selectedSmtp.secure,
+    const transportConfig = {
+      host: selectedSmtp.host || "smtp.gmail.com",
+      port: selectedSmtp.port || 465,
+      secure: selectedSmtp.secure !== undefined ? selectedSmtp.secure : true,
       auth: {
         user: selectedSmtp.email,
         pass: selectedSmtp.pass
-      }
-    } : {
-      service: "gmail",
-      auth: {
-        user: selectedSmtp.email,
-        pass: selectedSmtp.pass
+      },
+      connectionTimeout: 15000, // 15s connection timeout to prevent hanging
+      socketTimeout: 15000,     // 15s socket timeout
+      tls: {
+        rejectUnauthorized: false // Bypass SSL self-signed rejection
       }
     };
 

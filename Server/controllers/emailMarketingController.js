@@ -162,14 +162,14 @@ exports.testSmtpCredential = async (req, res) => {
     const cred = await SmtpCredential.findById(id);
     if (!cred) return res.status(404).json({ success: false, message: "Credential not found" });
 
-    const transportConfig = cred.host && cred.host !== "smtp.gmail.com" ? {
-      host: cred.host,
-      port: cred.port,
-      secure: cred.secure,
-      auth: { user: cred.email, pass: cred.pass }
-    } : {
-      service: "gmail",
-      auth: { user: cred.email, pass: cred.pass }
+    const transportConfig = {
+      host: cred.host || "smtp.gmail.com",
+      port: cred.port || 465,
+      secure: cred.secure !== undefined ? cred.secure : true,
+      auth: { user: cred.email, pass: cred.pass },
+      connectionTimeout: 15000,
+      socketTimeout: 15000,
+      tls: { rejectUnauthorized: false }
     };
 
     const transporter = nodemailer.createTransport(transportConfig);
