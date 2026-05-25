@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import api from "../../config/api";
 import { 
@@ -38,6 +38,94 @@ export default function EmailMarketingAdmin() {
 
   // Action feedback
   const [message, setMessage] = useState({ text: "", type: "" });
+
+  // Find & Replace editor state
+  const textareaRef = useRef(null);
+  const [findText, setFindText] = useState("");
+  const [replaceText, setReplaceText] = useState("");
+  const [currentMatchIndex, setCurrentMatchIndex] = useState(-1);
+
+  const handleFind = () => {
+    if (!findText) {
+      showFeedback("Please enter text to find", "error");
+      return;
+    }
+    const html = templateForm.html;
+    const index = html.toLowerCase().indexOf(findText.toLowerCase(), currentMatchIndex + 1);
+    if (index !== -1) {
+      setCurrentMatchIndex(index);
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(index, index + findText.length);
+        
+        // Scroll textarea
+        const row = html.substring(0, index).split("\n").length;
+        textareaRef.current.scrollTop = (row - 5) * 18;
+      }
+    } else {
+      // Wrap around
+      const wrapIndex = html.toLowerCase().indexOf(findText.toLowerCase(), 0);
+      if (wrapIndex !== -1) {
+        setCurrentMatchIndex(wrapIndex);
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          textareaRef.current.setSelectionRange(wrapIndex, wrapIndex + findText.length);
+          const row = html.substring(0, wrapIndex).split("\n").length;
+          textareaRef.current.scrollTop = (row - 5) * 18;
+        }
+      } else {
+        setCurrentMatchIndex(-1);
+        showFeedback("No matches found", "error");
+      }
+    }
+  };
+
+  const handleReplace = () => {
+    if (!findText) {
+      showFeedback("Please enter text to find and replace", "error");
+      return;
+    }
+    const html = templateForm.html;
+    
+    if (currentMatchIndex === -1) {
+      handleFind();
+      return;
+    }
+
+    const prefix = html.substring(0, currentMatchIndex);
+    const suffix = html.substring(currentMatchIndex + findText.length);
+    const newHtml = prefix + replaceText + suffix;
+    
+    setTemplateForm({ ...templateForm, html: newHtml });
+    setCurrentMatchIndex(currentMatchIndex + replaceText.length - 1);
+    showFeedback("Replaced occurrence");
+    
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(currentMatchIndex, currentMatchIndex + replaceText.length);
+      }
+    }, 50);
+  };
+
+  const handleReplaceAll = () => {
+    if (!findText) {
+      showFeedback("Please enter text to find", "error");
+      return;
+    }
+    const html = templateForm.html;
+    const escaped = findText.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(escaped, 'gi');
+    const matches = html.match(regex);
+    if (!matches || matches.length === 0) {
+      showFeedback("No matches found to replace", "error");
+      return;
+    }
+    const newHtml = html.replace(regex, replaceText);
+    setTemplateForm({ ...templateForm, html: newHtml });
+    setCurrentMatchIndex(-1);
+    showFeedback(`Replaced all ${matches.length} occurrences`);
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -477,11 +565,62 @@ export default function EmailMarketingAdmin() {
                       <span className="variable-badge">{"{{email}}"}</span>
                       <span className="variable-badge">{"{{offer_end_date}}"}</span>
                     </div>
+                    {/* Find & Replace Toolbar */}
+                    <div className="mkt-find-replace-toolbar" style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "10px", flexWrap: "wrap", background: "rgba(255,255,255,0.03)", padding: "8px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.08)" }}>
+                      <input 
+                        type="text" 
+                        placeholder="Find text..." 
+                        className="mkt-input" 
+                        style={{ width: "130px", padding: "4px 8px", fontSize: "12px", height: "30px" }}
+                        value={findText}
+                        onChange={e => {
+                          setFindText(e.target.value);
+                          setCurrentMatchIndex(-1);
+                        }}
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="Replace with..." 
+                        className="mkt-input" 
+                        style={{ width: "130px", padding: "4px 8px", fontSize: "12px", height: "30px" }}
+                        value={replaceText}
+                        onChange={e => setReplaceText(e.target.value)}
+                      />
+                      <button 
+                        type="button" 
+                        className="mkt-btn-secondary" 
+                        style={{ padding: "2px 8px", fontSize: "11px", height: "30px", background: "rgba(233, 30, 140, 0.1)", color: "#ff6b9d", borderColor: "rgba(233, 30, 140, 0.3)" }}
+                        onClick={handleFind}
+                      >
+                        Find Next
+                      </button>
+                      <button 
+                        type="button" 
+                        className="mkt-btn-secondary" 
+                        style={{ padding: "2px 8px", fontSize: "11px", height: "30px" }}
+                        onClick={handleReplace}
+                      >
+                        Replace
+                      </button>
+                      <button 
+                        type="button" 
+                        className="mkt-btn-secondary" 
+                        style={{ padding: "2px 8px", fontSize: "11px", height: "30px" }}
+                        onClick={handleReplaceAll}
+                      >
+                        Replace All
+                      </button>
+                    </div>
+
                     <textarea 
+                      ref={textareaRef}
                       className="mkt-textarea" 
                       style={{ height: "450px", fontFamily: "monospace", fontSize: "12px", lineHeight: "1.5" }}
                       value={templateForm.html} 
-                      onChange={e => setTemplateForm({...templateForm, html: e.target.value})} 
+                      onChange={e => {
+                        setTemplateForm({...templateForm, html: e.target.value});
+                        setCurrentMatchIndex(-1);
+                      }} 
                       required 
                     />
                   </div>
