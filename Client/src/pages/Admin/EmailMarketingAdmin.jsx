@@ -33,7 +33,7 @@ export default function EmailMarketingAdmin() {
 
   // Campaign Form State
   const [campaignForm, setCampaignForm] = useState({
-    name: "", templateId: "", targetAudience: "all", subjectOverride: ""
+    name: "", templateId: "", targetAudience: "all", subjectOverride: "", targetValue: ""
   });
 
   // Action feedback
@@ -289,7 +289,7 @@ export default function EmailMarketingAdmin() {
       const res = await axios.post(`${api.Url}/email-marketing/campaigns`, campaignForm, getHeaders());
       if (res.data.success) {
         showFeedback(res.data.message || "Campaign queued and triggered successfully!");
-        setCampaignForm({ name: "", templateId: "", targetAudience: "all", subjectOverride: "" });
+        setCampaignForm({ name: "", templateId: "", targetAudience: "all", subjectOverride: "", targetValue: "" });
         fetchDashboardData();
       }
     } catch (err) {
@@ -430,15 +430,38 @@ export default function EmailMarketingAdmin() {
                   <select 
                     className="mkt-select" 
                     value={campaignForm.targetAudience} 
-                    onChange={e => setCampaignForm({...campaignForm, targetAudience: e.target.value})}
+                    onChange={e => setCampaignForm({...campaignForm, targetAudience: e.target.value, targetValue: ""})}
                   >
                     <option value="all">All Registered Users</option>
                     <option value="free">Free Tier Users Only</option>
                     <option value="subscribers">Subscribers Only</option>
+                    <option value="new_users_today">New Users (Registered Today)</option>
+                    <option value="new_users_7d">New Users (Registered Last 7 Days)</option>
+                    <option value="free_today">New Free Users (Today)</option>
+                    <option value="free_7d">New Free Users (Last 7 Days)</option>
+                    <option value="subscribers_today">New Subscribers (Today)</option>
+                    <option value="subscribers_7d">New Subscribers (Last 7 Days)</option>
+                    <option value="free_no_chat">Free Users (Never chatted)</option>
+                    <option value="free_chatted_no_sub">Free Users (Chatted, not subscribed)</option>
                     <option value="inactive_7d">Inactive (No logins last 7 days)</option>
                     <option value="inactive_30d">Inactive (No logins last 30 days)</option>
+                    <option value="specific_user">Single User (Search Email/Name)</option>
                   </select>
                 </div>
+
+                {campaignForm.targetAudience === "specific_user" && (
+                   <div className="mkt-form-group">
+                     <label className="mkt-label">Target User Email or Name</label>
+                     <input 
+                       type="text" 
+                       className="mkt-input" 
+                       placeholder="e.g. user@gmail.com or Rahul Sharma" 
+                       value={campaignForm.targetValue || ""} 
+                       onChange={e => setCampaignForm({...campaignForm, targetValue: e.target.value})} 
+                       required 
+                     />
+                   </div>
+                 )}
 
                 <div className="mkt-form-group">
                   <label className="mkt-label">Subject Line Override (Optional)</label>

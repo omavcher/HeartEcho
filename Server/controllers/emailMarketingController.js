@@ -250,7 +250,7 @@ exports.getCampaigns = async (req, res) => {
 };
 
 exports.createCampaign = async (req, res) => {
-  const { name, templateId, targetAudience, subjectOverride } = req.body;
+  const { name, templateId, targetAudience, targetValue, subjectOverride } = req.body;
 
   try {
     const template = await EmailTemplate.findById(templateId);
@@ -258,10 +258,40 @@ exports.createCampaign = async (req, res) => {
 
     // 1. Build Audience Query
     let query = {};
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const Chat = require("../models/Chat");
+
     if (targetAudience === "free") {
       query.user_type = "free";
     } else if (targetAudience === "subscribers") {
       query.user_type = "subscriber";
+    } else if (targetAudience === "new_users_today") {
+      query.createdAt = { $gte: startOfToday };
+    } else if (targetAudience === "new_users_7d") {
+      query.createdAt = { $gte: sevenDaysAgo };
+    } else if (targetAudience === "free_today") {
+      query.user_type = "free";
+      query.createdAt = { $gte: startOfToday };
+    } else if (targetAudience === "free_7d") {
+      query.user_type = "free";
+      query.createdAt = { $gte: sevenDaysAgo };
+    } else if (targetAudience === "subscribers_today") {
+      query.user_type = "subscriber";
+      query.createdAt = { $gte: startOfToday };
+    } else if (targetAudience === "subscribers_7d") {
+      query.user_type = "subscriber";
+      query.createdAt = { $gte: sevenDaysAgo };
+    } else if (targetAudience === "free_no_chat") {
+      const chattingUserIds = await Chat.distinct("participants");
+      query = { user_type: "free", _id: { $nin: chattingUserIds } };
+    } else if (targetAudience === "free_chatted_no_sub") {
+      const chattingUserIds = await Chat.distinct("participants");
+      query = { user_type: "free", _id: { $in: chattingUserIds } };
     } else if (targetAudience === "inactive_7d" || targetAudience === "inactive_30d") {
       const days = targetAudience === "inactive_7d" ? 7 : 30;
       const cutoff = new Date();
@@ -272,6 +302,16 @@ exports.createCampaign = async (req, res) => {
       query = {
         _id: { $nin: activeUserIds },
         createdAt: { $lt: cutoff }
+      };
+    } else if (targetAudience === "specific_user") {
+      if (!targetValue) {
+        return res.status(400).json({ success: false, message: "Target user email or name is required for Single User target" });
+      }
+      query = {
+        $or: [
+          { email: targetValue.trim() },
+          { name: { $regex: new RegExp("^" + targetValue.trim() + "$", "i") } }
+        ]
       };
     }
 

@@ -191,6 +191,11 @@
   box-shadow: 0 0 10px rgba(233, 30, 140, 0.2);
 }
 
+.mkt-select option {
+  background-color: #160b24;
+  color: #fff;
+}
+
 .mkt-textarea {
   min-height: 120px;
   resize: vertical;
