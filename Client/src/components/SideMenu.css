@@ -263,6 +263,51 @@
       transition: left 0.7s;
     }
 
+    /* App Download Navigation Link Specific styles */
+    .download-app-link {
+      margin-top: 10px;
+      border: 1px dashed rgba(207, 65, 133, 0.4) !important;
+      background: rgba(207, 65, 133, 0.03);
+    }
+    
+    .download-app-link:hover {
+      background: rgba(207, 65, 133, 0.1) !important;
+      border: 1px solid rgba(207, 65, 133, 0.8) !important;
+      box-shadow: 0 0 10px rgba(207, 65, 133, 0.2);
+    }
+    
+    .download-app-link:hover svg.app-download-icon {
+      stroke: #ff6ba6 !important;
+      filter: drop-shadow(0 0 5px rgba(207, 65, 133, 0.5));
+      transform: scale(1.1);
+    }
+    
+    .app-download-icon {
+      stroke: #cf4185;
+    }
+    
+    .download-app-link .icon-wrapper {
+      position: relative;
+    }
+
+    .download-app-link .app-badge-dot {
+      position: absolute;
+      top: 6px;
+      right: 12px;
+      width: 6px;
+      height: 6px;
+      background-color: #34c759;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #34c759;
+      animation: app-dot-pulse 2s infinite;
+    }
+    
+    @keyframes app-dot-pulse {
+      0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.7); }
+      50% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(52, 199, 89, 0); }
+      100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
+    }
+
     /* Mobile Responsiveness */
     @media (max-width: 768px) {
       .side-menu-container {

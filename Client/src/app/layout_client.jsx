@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import SideMenu from "../components/SideMenu";
 import MobileMenu from "../components/MobileMenu";
+import MobileAppBanner from "../components/MobileAppBanner";
 import './globals.css';
 
 export default function ClientLayout({ children }) {
@@ -51,24 +52,29 @@ export default function ClientLayout({ children }) {
     };
   }, []);
   return (
-    <div className="main-layout-wrapper">
+    <>
+      {/* Mobile App Promo Banner */}
+      <MobileAppBanner />
       
-      {/* Desktop Sidebar - Hidden on mobile via CSS */}
-      <div className="desktop-sidebar-wrapper">
-        <SideMenu />
+      <div className="main-layout-wrapper">
+        
+        {/* Desktop Sidebar - Hidden on mobile via CSS */}
+        <div className="desktop-sidebar-wrapper">
+          <SideMenu />
+        </div>
+  
+        {/* Main Content */}
+        <main className="main-content-wrapper">
+          {children}
+        </main>
+  
+        {/* Mobile Menu - Only shows on small screens via internal CSS of MobileMenu */}
+        <div className="mobile-nav-wrapper lg:hidden">
+          <MobileMenu />
+        </div>
+  
       </div>
-
-      {/* Main Content */}
-      <main className="main-content-wrapper">
-        {children}
-      </main>
-
-      {/* Mobile Menu - Only shows on small screens via internal CSS of MobileMenu */}
-      <div className="mobile-nav-wrapper lg:hidden">
-        <MobileMenu />
-      </div>
-
-    </div>
+    </>
   );
 }
 

@@ -144,6 +144,23 @@ function SideMenu() {
               </Link>
               );
             })}
+
+            {/* Google Play App Link */}
+            <a 
+              href="https://play.google.com/store/apps/details?id=com.heartecho.ai" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="nav-link download-app-link"
+            >
+              <div className="icon-wrapper">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="app-download-icon">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                  <line x1="12" y1="18" x2="12.01" y2="18" strokeWidth="3" />
+                </svg>
+                <span className="app-badge-dot"></span>
+              </div>
+              <span className="link-label">Get Android App</span>
+            </a>
           </div>
         </nav>
 

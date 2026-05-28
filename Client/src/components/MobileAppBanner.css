@@ -1,0 +1,128 @@
+.mab-banner-c32id {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: 480px;
+  background: rgba(15, 15, 20, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 999999;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  animation: mab-slide-down 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.mab-left-c32id {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mab-close-btn-c32id {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.mab-close-btn-c32id:hover {
+  color: #fff;
+}
+
+.mab-logo-container-c32id {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mab-app-logo-c32id {
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.mab-info-c32id {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.mab-title-c32id {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.mab-subtitle-c32id {
+  font-size: 0.72rem;
+  color: #a0a0a0;
+  margin: 0;
+  font-weight: 500;
+}
+
+.mab-right-c32id {
+  display: flex;
+  align-items: center;
+}
+
+.mab-download-btn-c32id {
+  background: linear-gradient(90deg, #cf4185, #ff6ba6);
+  color: #fff;
+  border-radius: 20px;
+  padding: 7px 16px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(207, 65, 133, 0.25);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.mab-download-btn-c32id:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 14px rgba(207, 65, 133, 0.4);
+}
+
+.mab-download-btn-c32id:active {
+  transform: scale(0.98);
+}
+
+@keyframes mab-slide-down {
+  from {
+    transform: translate(-50%, -140%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+/* Hide banner on desktop/larger screens */
+@media (min-width: 1024px) {
+  .mab-banner-c32id {
+    display: none !important;
+  }
+}

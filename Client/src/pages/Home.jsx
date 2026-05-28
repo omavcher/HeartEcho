@@ -16,6 +16,7 @@ const HomeCosAi          = dynamic(() => import("../components/HomeCosAi"),     
 const Footer             = dynamic(() => import("../components/Footer"),             { ssr: false });
 const HomeSubscriptions  = dynamic(() => import("../components/HomeSubscriptions"),  { ssr: false });
 const HomeReferralSection= dynamic(() => import("../components/HomeReferralSection"),{ ssr: false });
+const HomeAppDownload    = dynamic(() => import("../components/HomeAppDownload"),    { ssr: false });
 const HomeRandomStories  = dynamic(() => import("../components/HomeRandomStories"),  { ssr: false });
 const HomeLiveStories    = dynamic(() => import("../components/HomeLiveStories"),    { ssr: false });
 import api from "../config/api";
@@ -91,6 +92,13 @@ export default function Home() {
         <section className="section-spacer">
           <Suspense fallback={null}>
             <HomeReferralSection />
+          </Suspense>
+        </section>
+
+        {/* ─── 8.5. APP DOWNLOAD ──────────────────────────────── */}
+        <section className="section-spacer">
+          <Suspense fallback={null}>
+            <HomeAppDownload />
           </Suspense>
         </section>
 

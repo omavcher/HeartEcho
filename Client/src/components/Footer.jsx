@@ -334,6 +334,58 @@ export default function Footer() {
 
         .seh-social-link svg { width: 20px; height: 20px; }
 
+        /* Google Play Store Badge */
+        .seh-playstore-nudge {
+          background: #0d0d0d;
+          border: 1px solid var(--seh-border);
+          padding: 10px 18px;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          text-decoration: none;
+          color: #fff;
+          transition: all 0.3s ease;
+          margin-top: 12px;
+          max-width: 300px;
+          width: fit-content;
+        }
+
+        .seh-playstore-nudge:hover {
+          background: rgba(206, 64, 133, 0.08);
+          border-color: var(--seh-pink);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(206, 64, 133, 0.2);
+        }
+
+        .seh-playstore-icon {
+          width: 22px;
+          height: 22px;
+          flex-shrink: 0;
+        }
+
+        .seh-playstore-text {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          line-height: 1.1;
+        }
+
+        .seh-playstore-sub {
+          font-size: 0.65rem;
+          color: var(--seh-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          font-weight: 500;
+        }
+
+        .seh-playstore-main {
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: #fff;
+          margin-top: 1px;
+        }
+
         /* --- RESPONSIVE DESIGN --- */
         
         /* Tablet & Mobile Layout (Combined for consistency) */
@@ -443,6 +495,25 @@ export default function Footer() {
               <small>Updated daily • Exclusive access</small>
             </div>
           </Link>
+
+          {/* Google Play Store Badge */}
+          <a 
+            href="https://play.google.com/store/apps/details?id=com.heartecho.ai" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="seh-playstore-nudge"
+          >
+            <svg className="seh-playstore-icon" viewBox="0 0 512 512" width="22" height="22">
+              <path fill="#4285F4" d="M12 28.5c-2.4 2.4-3.7 6-3.7 10.1v434.7c0 4.1 1.3 7.7 3.7 10.1l2.4 2.4L266 274.5v-6.2L14.4 26.1l-2.4 2.4z"/>
+              <path fill="#EA4335" d="M349.5 358.2l-83.5-83.7v-6.2l83.5-83.7 2.7 1.5 98.7 57c28.1 16.2 28.1 42.7 0 59l-98.7 57.1-2.7-1z"/>
+              <path fill="#FBBC05" d="M266 268.3L12 12c4-2 9.5-2.2 15.6 1.3l321.9 185.3 2.7 1.5-83.5 83.7-2.7-1.5z"/>
+              <path fill="#34A853" d="M266 280.7l83.5 83.7-2.7 1.5-321.9 185.3c-6.1 3.5-11.6 3.3-15.6 1.3L266 280.7z"/>
+            </svg>
+            <div className="seh-playstore-text">
+              <span className="seh-playstore-sub">GET IT ON</span>
+              <span className="seh-playstore-main">Google Play</span>
+            </div>
+          </a>
         </div>
 
         {/* Links Grid - FORCED 3 COLS ON MOBILE */}
