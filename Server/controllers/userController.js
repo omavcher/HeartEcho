@@ -855,6 +855,48 @@ exports.paymentSave = async (req, res) => {
       { new: true }
     );
 
+    // 📊 EMAIL CAMPAIGN CONVERSION TRACKING
+    try {
+      const EmailTrackingLog = require("../models/EmailTrackingLog");
+      const EmailCampaign = require("../models/EmailCampaign");
+
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const recentClick = await EmailTrackingLog.findOne({
+        user: userId,
+        action: "click",
+        timestamp: { $gte: sevenDaysAgo }
+      }).sort({ timestamp: -1 });
+
+      if (recentClick) {
+        const conversionExists = await EmailTrackingLog.findOne({
+          trackingId: recentClick.trackingId,
+          action: "conversion"
+        });
+
+        if (!conversionExists) {
+          await EmailTrackingLog.create({
+            trackingId: recentClick.trackingId,
+            campaign: recentClick.campaign,
+            user: userId,
+            email: existingUser.email,
+            action: "conversion",
+            clickedUrl: recentClick.clickedUrl
+          });
+
+          if (recentClick.campaign) {
+            await EmailCampaign.findByIdAndUpdate(recentClick.campaign, {
+              $inc: { conversionCount: 1 }
+            });
+            console.log(`📊 Campaign conversion recorded for campaign ${recentClick.campaign}`);
+          }
+        }
+      }
+    } catch (campaignErr) {
+      console.error("❌ Email campaign conversion tracking error:", campaignErr);
+    }
+
     // 💰 REFERRAL COMMISSION TRACKING
     if (existingUser.referredBy && rupeesNum >= 99) {
       try {
