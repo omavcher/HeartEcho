@@ -80,6 +80,10 @@ router.post("/send-notification", authMiddleware, controller.sendCustomNotificat
 router.get("/notification-history", authMiddleware, controller.getNotificationHistory);
 router.get("/device-stats", authMiddleware, controller.getDeviceStats);
 
+// App Version Management
+router.get("/app-version", authMiddleware, controller.getAppVersionAdmin);
+router.post("/app-version", authMiddleware, controller.updateAppVersionAdmin);
+
 module.exports = router;
 
 

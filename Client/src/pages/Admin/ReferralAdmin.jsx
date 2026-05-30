@@ -670,6 +670,54 @@ const ReferralAdmin = () => {
         ))}
       </div>
 
+      {/* RECENT REFERRAL LOG */}
+      <div className="ref-chart-card-x30sn" style={{ marginTop: '32px', overflowX: 'auto' }}>
+        <div className="chart-header-x30sn" style={{ marginBottom: '20px' }}>
+          <FaUserPlus /> Recent Referral Activity
+        </div>
+        <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', fontSize: '14px' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)', textAlign: 'left' }}>
+              <th style={{ padding: '12px 16px', color: '#ff69b4', fontWeight: '700' }}>User Name</th>
+              <th style={{ padding: '12px 16px', color: '#ff69b4', fontWeight: '700' }}>Email Address</th>
+              <th style={{ padding: '12px 16px', color: '#ff69b4', fontWeight: '700' }}>Influencer Partner</th>
+              <th style={{ padding: '12px 16px', color: '#ff69b4', fontWeight: '700' }}>Joined Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {referralStats.recentReferrals && referralStats.recentReferrals.length > 0 ? (
+              referralStats.recentReferrals.map((ref, idx) => (
+                <tr key={idx} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', background: idx % 2 === 0 ? 'rgba(255, 255, 255, 0.02)' : 'transparent' }}>
+                  <td style={{ padding: '12px 16px', fontWeight: '600' }}>{ref.name || 'Anonymous User'}</td>
+                  <td style={{ padding: '12px 16px', color: '#aaa', fontFamily: 'monospace' }}>{ref.email}</td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <div style={{ fontWeight: '600' }}>{ref.referredBy?.name || 'N/A'}</div>
+                    <div style={{ fontSize: '11px', color: '#ff69b4' }}>
+                      @{ref.referredBy?.username || 'N/A'} ({ref.referredBy?.platform || 'N/A'})
+                    </div>
+                  </td>
+                  <td style={{ padding: '12px 16px', color: '#888' }}>
+                    {new Date(ref.createdAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" style={{ padding: '24px', textAlign: 'center', color: '#888' }}>
+                  No recent referral sign-ups tracked.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
       {/* CREATE MODAL */}
       {showCreateModal && (
         <div className="ref-modal-overlay-x30sn">

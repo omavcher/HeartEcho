@@ -2210,6 +2210,112 @@ exports.autoNotificationsGen = async (req, res) => {
   }
 };
 
+exports.saveInstallReferrer = async (req, res) => {
+  try {
+    const { userId, referrer } = req.body;
+
+    if (!userId || !referrer) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID and Referrer are required"
+      });
+    }
+
+    // Find the user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // If user already has a referrer, don't overwrite
+    if (user.referredBy || user.hasUsedReferral) {
+      return res.status(200).json({
+        success: true,
+        message: "Referrer already tracked for this user"
+      });
+    }
+
+    // Find the ReferralCreator by referralId (case-insensitive for reliability)
+    const creator = await ReferralCreator.findOne({ 
+      referralId: { $regex: new RegExp(`^${referrer}$`, 'i') } 
+    });
+
+    if (!creator) {
+      return res.status(404).json({
+        success: false,
+        message: "Referral creator not found"
+      });
+    }
+
+    if (!creator.isActive) {
+      return res.status(400).json({
+        success: false,
+        message: "Referral creator is not active"
+      });
+    }
+
+    // Increment referral count
+    const updatedCreator = await ReferralCreator.findByIdAndUpdate(
+      creator._id,
+      { $inc: { referralCount: 1 } },
+      { new: true }
+    );
+
+    // Update user record
+    user.referredBy = creator._id;
+    user.referralSignupDate = new Date();
+    user.hasUsedReferral = true;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Install referrer tracked successfully",
+      creator: {
+        id: creator._id,
+        referralId: creator.referralId,
+        referralCount: updatedCreator.referralCount
+      }
+    });
+  } catch (error) {
+    console.error("Error saving install referrer:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message
+    });
+  }
+};
+
+exports.getAppVersion = async (req, res) => {
+  try {
+    const AppVersion = require("../models/AppVersion");
+    let versionInfo = await AppVersion.findOne();
+    if (!versionInfo) {
+      versionInfo = await AppVersion.create({
+        latestVersion: "1.0.3",
+        latestBuildNumber: 6,
+        playStoreUrl: "https://play.google.com/store/apps/details?id=com.heartecho.ai"
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      latestVersion: versionInfo.latestVersion,
+      latestBuildNumber: versionInfo.latestBuildNumber,
+      playStoreUrl: versionInfo.playStoreUrl
+    });
+  } catch (error) {
+    console.error("Error getting app version:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message
+    });
+  }
+};
+
 // Helper functions
 function countMessageTypes(messageHistory) {
   const counts = {

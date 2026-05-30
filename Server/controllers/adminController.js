@@ -905,7 +905,7 @@ exports.trackNotificationClick = async (req, res) => {
     }
 
     // Check if user already clicked (unique opens)
-    const alreadyClicked = log.uniqueOpens.includes(userId);
+    const alreadyClicked = log.uniqueOpens.some(id => id.toString() === userId.toString());
     
     await NotificationLog.findByIdAndUpdate(notificationId, {
       $inc: { opensCount: 1 },
@@ -2373,5 +2373,69 @@ exports.getDeviceStats = async (req, res) => {
     res.json({ success: true, data: { mobileUsers, webUsers, totalUsers } });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// Get app version info for admin panel
+exports.getAppVersionAdmin = async (req, res) => {
+  try {
+    const AppVersion = require("../models/AppVersion");
+    let versionInfo = await AppVersion.findOne();
+    if (!versionInfo) {
+      versionInfo = await AppVersion.create({
+        latestVersion: "1.0.3",
+        latestBuildNumber: 6,
+        playStoreUrl: "https://play.google.com/store/apps/details?id=com.heartecho.ai"
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      versionInfo
+    });
+  } catch (error) {
+    console.error("Error fetching app version for admin:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message
+    });
+  }
+};
+
+// Update app version info
+exports.updateAppVersionAdmin = async (req, res) => {
+  try {
+    const { latestVersion, latestBuildNumber, playStoreUrl } = req.body;
+
+    if (!latestVersion || !latestBuildNumber || !playStoreUrl) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields (latestVersion, latestBuildNumber, playStoreUrl) are required"
+      });
+    }
+
+    const AppVersion = require("../models/AppVersion");
+    let versionInfo = await AppVersion.findOne();
+    if (!versionInfo) {
+      versionInfo = new AppVersion();
+    }
+
+    versionInfo.latestVersion = latestVersion;
+    versionInfo.latestBuildNumber = Number(latestBuildNumber);
+    versionInfo.playStoreUrl = playStoreUrl;
+    await versionInfo.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "App version configuration updated successfully",
+      versionInfo
+    });
+  } catch (error) {
+    console.error("Error updating app version:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message
+    });
   }
 };

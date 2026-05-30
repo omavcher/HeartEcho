@@ -48,4 +48,10 @@ router.post("/update-fcm-token", authMiddleware, authController.updateFcmToken);
 // Track Notification Clicks (called by Flutter app when notification is opened)
 router.post("/track-notification-click", authMiddleware, adminController.trackNotificationClick);
 
+// Track Play Store Install Referrer (called by Flutter app on start/login/signup)
+router.post("/install-referrer", controller.saveInstallReferrer);
+
+// Get latest app version info (public)
+router.get("/app-version", controller.getAppVersion);
+
 module.exports = router;
