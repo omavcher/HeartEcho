@@ -544,6 +544,47 @@ const NotificationsAdmin = () => {
     return [];
   }, [users, target, selectedUsers]);
 
+  const targetStats = useMemo(() => {
+    const mobileUsersList = users.filter(u => u.isMobileUser || u.fcmToken);
+
+    let totalInSegment = 0;
+    let pushReadyInSegment = 0;
+
+    if (target === 'all') {
+      totalInSegment = users.length;
+      pushReadyInSegment = mobileUsersList.length;
+    } else if (target === 'subscriber') {
+      totalInSegment = users.filter(u => u.user_type === 'subscriber').length;
+      pushReadyInSegment = mobileUsersList.filter(u => u.user_type === 'subscriber').length;
+    } else if (target === 'non_subscriber') {
+      totalInSegment = users.filter(u => u.user_type !== 'subscriber').length;
+      pushReadyInSegment = mobileUsersList.filter(u => u.user_type !== 'subscriber').length;
+    } else if (target === 'new_non_subscriber') {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const list = users.filter(u => {
+        const joinDate = new Date(u.createdAt || u.joinedAt);
+        return u.user_type !== 'subscriber' && joinDate >= sevenDaysAgo;
+      });
+      totalInSegment = list.length;
+      pushReadyInSegment = list.filter(u => u.isMobileUser || u.fcmToken).length;
+    } else if (target === 'new_subscriber') {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const list = users.filter(u => {
+        const joinDate = new Date(u.createdAt || u.joinedAt);
+        return u.user_type === 'subscriber' && joinDate >= sevenDaysAgo;
+      });
+      totalInSegment = list.length;
+      pushReadyInSegment = list.filter(u => u.isMobileUser || u.fcmToken).length;
+    } else if (target === 'specific') {
+      totalInSegment = selectedUsers.length;
+      pushReadyInSegment = selectedUsers.filter(u => u.isMobileUser || u.fcmToken).length;
+    }
+
+    return { totalInSegment, pushReadyInSegment };
+  }, [users, target, selectedUsers]);
+
   const handleSelectUser = (user) => {
     if (!user.fcmToken) {
         alert("This user does not have a mobile token registered.");
@@ -659,6 +700,7 @@ const NotificationsAdmin = () => {
                 className="form-select-x30sn" 
                 value={target} 
                 onChange={(e) => setTarget(e.target.value)}
+                style={{ marginBottom: '8px' }}
               >
                 <option value="all">All Mobile Users ({stats.mobileUsers})</option>
                 <option value="subscriber">Active Subscribers (Premium)</option>
@@ -667,6 +709,23 @@ const NotificationsAdmin = () => {
                 <option value="new_subscriber">New Users - Subscribed (Last 7 Days)</option>
                 <option value="specific">Specific Users (Search & Select)</option>
               </select>
+              <div style={{
+                marginTop: '8px',
+                fontSize: '12px',
+                color: '#ff69b4',
+                background: 'rgba(255, 105, 180, 0.05)',
+                border: '1px dashed rgba(255, 105, 180, 0.2)',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <FaInfoCircle />
+                <span>
+                  Matches <strong>{targetStats.totalInSegment}</strong> users total ({targetStats.pushReadyInSegment} devices will receive the push notification).
+                </span>
+              </div>
             </div>
 
             {target === 'specific' && (
