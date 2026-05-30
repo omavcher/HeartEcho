@@ -3,7 +3,8 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   FaUser, FaTrash, FaEdit, FaSearch, FaSync, 
-  FaUserPlus, FaRobot, FaDownload, FaPhone, FaIdBadge, FaChartPie
+  FaUserPlus, FaRobot, FaDownload, FaPhone, FaIdBadge, FaChartPie,
+  FaGlobe, FaMobileAlt
 } from "react-icons/fa";
 import { 
   AreaChart, Area, Tooltip, ResponsiveContainer, XAxis, YAxis, CartesianGrid,
@@ -170,6 +171,7 @@ const UsersAdmin = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
+  const [platformFilter, setPlatformFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [subModal, setSubModal] = useState({ open: false, userId: null, tier: "yearly_pro", password: "" });
@@ -198,6 +200,7 @@ const UsersAdmin = () => {
       joinedToday: dashboardStats.newUsersToday,
       premiumUsers: users.filter(u => u.user_type === 'subscriber').length,
       todaySignIns: dashboardStats.todaySignIns,
+      mobileUsers: users.filter(u => u.isMobileUser).length,
       avgAge: users.length > 0 ? (users.reduce((acc, u) => acc + (u.age || 0), 0) / users.length).toFixed(1) : 0
     };
   }, [users, dashboardStats]);
@@ -240,6 +243,13 @@ const UsersAdmin = () => {
                           u._id?.includes(searchTerm);
       const matchType = filterType === "all" || u.user_type === filterType;
       
+      let matchPlatform = true;
+      if (platformFilter === "mobile") {
+        matchPlatform = u.isMobileUser === true;
+      } else if (platformFilter === "web") {
+        matchPlatform = !u.isMobileUser;
+      }
+
       let matchDate = true;
       const dateField = u.createdAt || u.joinedAt;
       if (dateFilter !== "all" && dateField) {
@@ -252,9 +262,9 @@ const UsersAdmin = () => {
           else if (dateFilter === "6months") matchDate = diffMs <= 180 * oneDay;
           else if (dateFilter === "year") matchDate = diffMs <= 365 * oneDay;
       }
-      return matchSearch && matchType && matchDate;
+      return matchSearch && matchType && matchPlatform && matchDate;
     });
-  }, [users, searchTerm, filterType, dateFilter]);
+  }, [users, searchTerm, filterType, platformFilter, dateFilter]);
 
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage);
 
@@ -321,6 +331,10 @@ const UsersAdmin = () => {
           <div className="kpi-box-x30sn">
             <div className="kpi-ico-x30sn"><FaRobot /></div>
             <div className="kpi-txt-x30sn"><span>Today Sign-Ins</span><strong>{stats.todaySignIns}</strong></div>
+          </div>
+          <div className="kpi-box-x30sn">
+            <div className="kpi-ico-x30sn"><FaMobileAlt /></div>
+            <div className="kpi-txt-x30sn"><span>Mobile Users</span><strong>{stats.mobileUsers}</strong></div>
           </div>
         </div>
 
@@ -393,6 +407,11 @@ const UsersAdmin = () => {
             <option value="subscriber">Premium</option>
             <option value="free">Free</option>
           </select>
+          <select className="filter-sel-x30sn" value={platformFilter} onChange={e => setPlatformFilter(e.target.value)}>
+            <option value="all">All Devices</option>
+            <option value="mobile">Mobile Users</option>
+            <option value="web">Web Users</option>
+          </select>
           <select className="filter-sel-x30sn" value={dateFilter} onChange={e => setDateFilter(e.target.value)}>
             <option value="all">All Time</option>
             <option value="week">Last Week</option>
@@ -420,9 +439,23 @@ const UsersAdmin = () => {
                         onError={(e) => { e.target.onerror = null; e.target.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png"; }}
                     />
                 </div>
-                <span className={`uc-badge-x30sn ${user.user_type === 'subscriber' ? 'sub' : ''}`}>
-                    {user.user_type === 'subscriber' ? 'Premium' : 'Free'}
-                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' }}>
+                  <span className={`uc-badge-x30sn ${user.user_type === 'subscriber' ? 'sub' : ''}`}>
+                      {user.user_type === 'subscriber' ? 'Premium' : 'Free'}
+                  </span>
+                  <span className={`uc-badge-x30sn`} style={{
+                    background: user.isMobileUser ? 'rgba(0, 255, 136, 0.08)' : 'rgba(0, 122, 255, 0.08)',
+                    color: user.isMobileUser ? '#00ff88' : '#007aff',
+                    borderColor: user.isMobileUser ? 'rgba(0, 255, 136, 0.2)' : 'rgba(0, 122, 255, 0.2)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '10px'
+                  }}>
+                    {user.isMobileUser ? <FaMobileAlt /> : <FaGlobe />}
+                    {user.isMobileUser ? 'Mobile' : 'Web'}
+                  </span>
+                </div>
               </div>
               
               <div className="uc-info-x30sn">
@@ -432,6 +465,37 @@ const UsersAdmin = () => {
                 <div className="uc-meta-x30sn">
                     <div className="uc-row-x30sn"><FaIdBadge/> {user._id ? user._id.slice(-6).toUpperCase() : '---'}</div>
                     <div className="uc-row-x30sn"><FaPhone/> {user.phone_number || 'N/A'}</div>
+                    {user.isMobileUser && (
+                      <div className="uc-row-x30sn" style={{ color: user.fcmToken ? '#00ff88' : '#888' }}>
+                        <FaRobot/> Push: {user.fcmToken ? 'Active' : 'Disabled'}
+                      </div>
+                    )}
+                </div>
+
+                {/* USER ACTIVITY SUMMARY */}
+                <div style={{
+                  background: '#020202',
+                  border: '1px solid #151515',
+                  padding: '10px',
+                  borderRadius: '10px',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '8px',
+                  marginBottom: '15px',
+                  fontSize: '11px'
+                }}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ color: '#555', textTransform: 'uppercase', fontSize: '9px', fontWeight: 600 }}>Total Chats</span>
+                      <strong style={{ color: '#fff', fontSize: '13px', marginTop: '2px' }}>{user.chats?.length || 0}</strong>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ color: '#555', textTransform: 'uppercase', fontSize: '9px', fontWeight: 600 }}>AI Friends</span>
+                      <strong style={{ color: '#fff', fontSize: '13px', marginTop: '2px' }}>{user.ai_friends?.length || 0}</strong>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
+                      <span style={{ color: '#555', textTransform: 'uppercase', fontSize: '9px', fontWeight: 600 }}>Last Active</span>
+                      <span style={{ color: '#ff69b4', fontWeight: 500, marginTop: '2px' }}>{new Date(user.updatedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
                 </div>
 
                 <div className="quota-lbl-x30sn">
