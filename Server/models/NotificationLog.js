@@ -4,7 +4,7 @@ const notificationLogSchema = new mongoose.Schema({
   title: { type: String, required: true },
   body: { type: String, required: true },
   imageUrl: { type: String },
-  target: { type: String, enum: ["all", "specific"], required: true },
+  target: { type: String, required: true },
   recipientsCount: { type: Number, default: 0 },
   sentAt: { type: Date, default: Date.now },
   

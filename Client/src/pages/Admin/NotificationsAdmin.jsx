@@ -436,6 +436,18 @@ const notificationStyles = `
 }
 `;
 
+const formatTarget = (t) => {
+  const mapping = {
+    all: "All Mobile Users",
+    specific: "Specific Users",
+    subscriber: "Active Subscribers",
+    non_subscriber: "Non-Subscribers",
+    new_non_subscriber: "New Users (Not Subscribed)",
+    new_subscriber: "New Users (Subscribed)"
+  };
+  return mapping[t] || (t ? t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Unknown');
+};
+
 const NotificationsAdmin = () => {
   const [target, setTarget] = useState("all"); // "all" or "specific"
   const [title, setTitle] = useState("");
@@ -498,6 +510,40 @@ const NotificationsAdmin = () => {
     ).slice(0, 5);
   }, [users, searchQuery, selectedUsers]);
 
+  const targetedUsers = useMemo(() => {
+    const mobileUsersList = users.filter(u => u.isMobileUser || u.fcmToken);
+
+    if (target === 'all') {
+      return mobileUsersList;
+    }
+    if (target === 'subscriber') {
+      return mobileUsersList.filter(u => u.user_type === 'subscriber');
+    }
+    if (target === 'non_subscriber') {
+      return mobileUsersList.filter(u => u.user_type !== 'subscriber');
+    }
+    if (target === 'new_non_subscriber') {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      return mobileUsersList.filter(u => {
+        const joinDate = new Date(u.createdAt || u.joinedAt);
+        return u.user_type !== 'subscriber' && joinDate >= sevenDaysAgo;
+      });
+    }
+    if (target === 'new_subscriber') {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      return mobileUsersList.filter(u => {
+        const joinDate = new Date(u.createdAt || u.joinedAt);
+        return u.user_type === 'subscriber' && joinDate >= sevenDaysAgo;
+      });
+    }
+    if (target === 'specific') {
+      return selectedUsers;
+    }
+    return [];
+  }, [users, target, selectedUsers]);
+
   const handleSelectUser = (user) => {
     if (!user.fcmToken) {
         alert("This user does not have a mobile token registered.");
@@ -522,6 +568,11 @@ const NotificationsAdmin = () => {
       return;
     }
 
+    if (target !== 'all' && targetedUsers.length === 0) {
+      setStatus({ type: 'error', message: 'No users found in the selected target segment.' });
+      return;
+    }
+
     setLoading(true);
     setStatus(null);
 
@@ -532,7 +583,7 @@ const NotificationsAdmin = () => {
         title,
         body,
         imageUrl,
-        userIds: target === 'specific' ? selectedUsers.map(u => u._id) : []
+        userIds: target === 'all' ? [] : targetedUsers.map(u => u._id)
       };
 
       const res = await axios.post(`${api.Url}/admin/send-notification`, payload, {
@@ -604,20 +655,18 @@ const NotificationsAdmin = () => {
             
             <div className="form-group-x30sn">
               <label className="form-label-x30sn">Notification Target</label>
-              <div className="target-toggle-x30sn">
-                <button 
-                  className={`toggle-btn-x30sn ${target === 'all' ? 'active' : ''}`}
-                  onClick={() => setTarget('all')}
-                >
-                  <FaUsers /> All Mobile Users
-                </button>
-                <button 
-                  className={`toggle-btn-x30sn ${target === 'specific' ? 'active' : ''}`}
-                  onClick={() => setTarget('specific')}
-                >
-                  <FaUser /> Specific Users
-                </button>
-              </div>
+              <select 
+                className="form-select-x30sn" 
+                value={target} 
+                onChange={(e) => setTarget(e.target.value)}
+              >
+                <option value="all">All Mobile Users ({stats.mobileUsers})</option>
+                <option value="subscriber">Active Subscribers (Premium)</option>
+                <option value="non_subscriber">Non-Subscribers (Free)</option>
+                <option value="new_non_subscriber">New Users - Not Subscribed (Last 7 Days)</option>
+                <option value="new_subscriber">New Users - Subscribed (Last 7 Days)</option>
+                <option value="specific">Specific Users (Search & Select)</option>
+              </select>
             </div>
 
             {target === 'specific' && (
@@ -706,7 +755,7 @@ const NotificationsAdmin = () => {
 
             <button 
               className="send-btn-x30sn"
-              disabled={loading || !title || !body || (target === 'specific' && selectedUsers.length === 0)}
+              disabled={loading || !title || !body || (target !== 'all' && targetedUsers.length === 0)}
               onClick={handleSend}
             >
               {loading ? (
@@ -714,7 +763,7 @@ const NotificationsAdmin = () => {
               ) : (
                 <>
                   <FaPaperPlane /> 
-                  Send to {target === 'all' ? stats.mobileUsers : selectedUsers.length} Devices
+                  Send to {targetedUsers.length} Devices
                 </>
               )}
             </button>
@@ -809,7 +858,7 @@ const NotificationsAdmin = () => {
                                     <div style={{fontWeight: 700}}>{h.title}</div>
                                     <div style={{fontSize: 11, color: '#888', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 300}}>{h.body}</div>
                                 </td>
-                                <td style={{textTransform: 'capitalize'}}>{h.target}</td>
+                                <td>{formatTarget(h.target)}</td>
                                 <td style={{fontWeight: 700}}>{h.recipientsCount}</td>
                                 <td>
                                     <span className="open-badge-x30sn">{h.opensCount || 0}</span>
