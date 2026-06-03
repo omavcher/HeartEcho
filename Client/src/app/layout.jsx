@@ -7,7 +7,7 @@ import GlobalTracker from '../components/GlobalTracker';
 export const metadata = {
   metadataBase: new URL('https://heartecho.in'),
   title: {
-    default: "HeartEcho – India's #1 AI Girlfriend | Hindi AI Chat & Desi Companion",
+    default: "HeartEcho – AI Girlfriend India | Hindi Chat & Desi",
     template: "%s | HeartEcho",
   },
 
@@ -180,7 +180,11 @@ export default function RootLayout({ children }) {
                   "operatingSystem": "Web, Browser",
                   "description": "India's #1 AI girlfriend app — unlimited private Hindi AI chat, desi roleplay, adult stories, voice notes and deep memory. Free to try.",
                   "url": "https://heartecho.in/",
-                  "offers": { "@type": "Offer", "price": "399", "priceCurrency": "INR" },
+                  "offers": [
+                    { "@type": "Offer", "name": "Monthly", "price": "99", "priceCurrency": "INR", "description": "Unlimited messages, AI memory, live interactions" },
+                    { "@type": "Offer", "name": "Premium Yearly", "price": "599", "priceCurrency": "INR", "description": "Unlimited messages, deep AI memory, voice calls, hot stories" },
+                    { "@type": "Offer", "name": "Ultimate Yearly", "price": "1499", "priceCurrency": "INR", "description": "Unlimited everything — voice, images, videos, priority AI" }
+                  ],
                   "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.9", "ratingCount": "12000", "bestRating": "5" }
                 },
                 {

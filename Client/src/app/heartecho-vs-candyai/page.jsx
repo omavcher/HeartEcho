@@ -3,7 +3,7 @@ import Footer from '../../components/Footer';
 import '../../styles/Compare.css';
 
 export const metadata = {
-  title: "HeartEcho vs Candy.ai – Which is Best for India? | Hindi AI Chat 2026",
+  title: "HeartEcho vs Candy.ai – Best for India? | 2026",
   description: "HeartEcho vs Candy.ai: Honest comparison for Indian users. HeartEcho is India's only Hindi-native AI girlfriend app — desi culture, Hinglish chat, free to try. Candy.ai is English-only and expensive.",
   keywords: ["heartecho vs candy ai", "best ai girlfriend india", "hindi ai chat app", "indian ai girlfriend", "desi ai companion chat", "candy ai india alternative", "ai girlfriend hindi"],
   alternates: {

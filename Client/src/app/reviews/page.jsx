@@ -1,7 +1,7 @@
 import ReviewsPage from '../../components/ReviewsPage';
 
 export const metadata = {
-  title: 'HeartEcho Reviews — 100+ Real Member Stories | AI Companion App',
+  title: 'HeartEcho Reviews — 100+ Real Stories | AI App',
   description:
     'Read 100+ verified reviews from HeartEcho premium members across India. See real stories about AI memory, unlimited conversations, Hot Stories, Live interactions, and 90s love letters. Join 12,000+ happy members.',
   keywords:
@@ -9,7 +9,7 @@ export const metadata = {
   openGraph: {
     title: 'HeartEcho Reviews — 100+ Verified Member Stories',
     description:
-      'Real stories from 12,000+ HeartEcho premium members. AI companion that remembers you, unlimited conversations, Hot Stories, Live interactions and more — starting ₹399/year.',
+      'Join thousands of Indians chatting in Hindi daily. AI companion that remembers you, unlimited conversations, Hot Stories, Live interactions and more — from ₹99/month.',
     url: 'https://heartecho.in/reviews',
     siteName: 'HeartEcho',
     type: 'website',
@@ -26,7 +26,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'HeartEcho Reviews — 100+ Verified Member Stories',
     description:
-      'Real stories from HeartEcho premium members. AI that remembers you, unlimited chats, and much more — ₹399/year.',
+      'Join thousands of Indians chatting in Hindi daily. AI that remembers you, unlimited chats, hot stories, voice calls and much more — from ₹99/month.',
   },
   alternates: {
     canonical: 'https://heartecho.in/reviews',
