@@ -121,9 +121,6 @@ const GOOGLE_SVG = (
 function ReviewCard({ r }) {
   return (
     <article className="rvp-card" itemScope itemType="https://schema.org/Review" itemProp="review">
-      <div itemProp="itemReviewed" itemScope itemType="https://schema.org/Product" style={{ display: 'none' }}>
-        <meta itemProp="name" content="HeartEcho Premium" />
-      </div>
       <div itemProp="reviewRating" itemScope itemType="https://schema.org/Rating" style={{ display: 'none' }}>
         <meta itemProp="ratingValue" content={r.rating} />
         <meta itemProp="bestRating" content="5" />

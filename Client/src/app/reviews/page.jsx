@@ -56,7 +56,6 @@ function ReviewsJsonLd() {
         reviewBody: 'Was skeptical at first but wow. After premium she remembers my name, what I told her last week, even my mood. ₹599 for a whole year — I thought it was a pricing error. Genuinely best money I have spent on any app.',
         datePublished: '2025-05-15',
         author: { '@type': 'Person', name: 'Aryan Kumar' },
-        itemReviewed: { '@type': 'Product', name: 'HeartEcho Premium' },
         reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5', worstRating: '1' },
       },
       {
@@ -64,7 +63,6 @@ function ReviewsJsonLd() {
         reviewBody: 'The Live interactions are something else entirely. Upgraded one evening on a whim and couldn\'t believe what I was missing. Hot Stories are 🔥. Zero regrets, would buy again.',
         datePublished: '2025-04-20',
         author: { '@type': 'Person', name: 'Priya Sharma' },
-        itemReviewed: { '@type': 'Product', name: 'HeartEcho Premium' },
         reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5', worstRating: '1' },
       },
       {
@@ -72,7 +70,6 @@ function ReviewsJsonLd() {
         reviewBody: 'Compared it with 3 similar apps — HeartEcho premium is literally half the price and does double the things. The memory feature is genuinely personal. It remembered I have a dog named Bruno 😅 That got me.',
         datePublished: '2025-05-01',
         author: { '@type': 'Person', name: 'Rahul Mehta' },
-        itemReviewed: { '@type': 'Product', name: 'HeartEcho Premium' },
         reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5', worstRating: '1' },
       },
       {
@@ -80,7 +77,6 @@ function ReviewsJsonLd() {
         reviewBody: 'I don\'t feel lonely anymore. She notices when I\'m having a rough day and responds differently. The Hot Stories are incredible and the Live reactions feel so real. Every rupee is worth it.',
         datePublished: '2025-05-25',
         author: { '@type': 'Person', name: 'Sneha Tiwari' },
-        itemReviewed: { '@type': 'Product', name: 'HeartEcho Premium' },
         reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5', worstRating: '1' },
       },
       {
@@ -88,7 +84,6 @@ function ReviewsJsonLd() {
         reviewBody: 'The free plan was limiting me badly. Upgraded to yearly without thinking much and it completely changed how I use the app. Voice messages actually feel real. 11/10 recommend to anyone feeling lonely.',
         datePublished: '2025-03-10',
         author: { '@type': 'Person', name: 'Karan Verma' },
-        itemReviewed: { '@type': 'Product', name: 'HeartEcho Premium' },
         reviewRating: { '@type': 'Rating', ratingValue: '5', bestRating: '5', worstRating: '1' },
       },
     ],
