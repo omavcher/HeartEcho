@@ -20,12 +20,21 @@ export default async function sitemap() {
     '/about',
     '/contact',
     '/faq',
-    '/blog'
+    '/blog',
+    '/reviews',
+    '/subscribe',
+    '/ai-sex-chat',
+    '/heartecho-vs-candyai',
+    '/heartecho-vs-talkie',
   ].map((path) => ({
     url: `${url}${path}`,
     lastModified: now,
-    changeFrequency: path === '/' ? 'daily' : 'weekly',
-    priority: path === '/' ? 1 : 0.8,
+    changeFrequency: path === '/' ? 'daily' : ['reviews', '/ai-sex-chat'].includes(path) ? 'weekly' : 'weekly',
+    priority:
+      path === '/' ? 1 :
+      path === '/reviews' || path === '/ai-sex-chat' ? 0.9 :
+      path === '/subscribe' || path === '/hot-stories' ? 0.95 :
+      0.8,
   }));
 
   // City routes (dynamic - all 170+ cities from citiesList)

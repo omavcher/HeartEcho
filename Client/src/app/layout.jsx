@@ -7,56 +7,65 @@ import GlobalTracker from '../components/GlobalTracker';
 export const metadata = {
   metadataBase: new URL('https://heartecho.in'),
   title: {
-    default: "HeartEcho – India's #1 AI Girlfriend & Virtual Companion",
-    template: "%s | HeartEcho AI - Indian Virtual Companion",
+    default: "HeartEcho – India's #1 AI Girlfriend | Hindi AI Chat & Desi Companion",
+    template: "%s | HeartEcho",
   },
 
-  description: "Chat with your virtual AI girlfriend in India. HeartEcho offers free, private companion chat, Hinglish roleplay, and emotional support in Hindi. Try now →",
+  description: "Chat with India's most advanced AI girlfriend — in Hindi, Hinglish & English. Free private companion chat, desi roleplay, adult stories & emotional support. 12,000+ members love HeartEcho. Try now →",
 
   keywords: [
-    // Brand & Core Service
+    // Top Search Console performers (actual queries bringing traffic)
+    "indian ai sex chat",
+    "ai sex chat hindi",
+    "hindi sex chat ai",
+    "indian sex ai",
+    "hindi ai sex chat",
+    "desi ai sex chat",
+    "indian nsfw ai chat",
+    "ai girlfriend indian 18+",
+    "hindi ai girlfriend",
+    "indian ai girlfriend chat",
+    // Brand
+    "HeartEcho",
     "HeartEcho AI",
+    "Heart Echo",
+    "heartecho.in",
+    // Core product
     "AI companion India",
     "virtual girlfriend India",
     "AI girlfriend Hindi",
     "desi AI companion",
-    // Indian Cultural Keywords (High Search Volume)
     "Indian AI companion chat",
-    "online dating companion India",
-    "AI friend for loneliness",
     "Hinglish AI chat",
     "romantic AI roleplay Hindi",
-    // Niche but "Safe" terms
     "private AI chat India",
-    "private AI girlfriend",
     "AI girlfriend deep memory",
     "Indian AI voice notes",
     "best AI chat India",
-    // Location Based
+    // Location
     "AI girlfriend Mumbai",
     "Delhi AI chat",
     "best AI app for Indian men",
-    // SEO Core Targets added for top ranking
-    "HeartEcho",
-    "Heart Echo",
+    // Long-tail
+    "India's No1 AI girlfriend",
     "Indian AI girlfriend",
-    "Indine AI girlfrind",
-    "India's no 1 AI GF",
-    "India's No1 AI girlfriend"
   ],
 
   alternates: {
     canonical: 'https://heartecho.in/',
+    languages: {
+      'en-IN': 'https://heartecho.in/',
+    },
   },
 
   openGraph: {
-    title: "HeartEcho – India's #1 AI Girlfriend & Virtual Companion",
-    description: "Chat with your virtual AI girlfriend in India. HeartEcho offers free, private companion chat, Hinglish roleplay, and emotional support in Hindi. Try now →",
+    title: "HeartEcho – India's #1 AI Girlfriend | Hindi AI Chat & Desi Companion",
+    description: "Chat with India's most advanced AI girlfriend — in Hindi, Hinglish & English. Free private companion chat, desi roleplay, adult stories & emotional support. Try now →",
     url: 'https://heartecho.in/',
     siteName: 'HeartEcho AI',
     images: [
       {
-        url: 'https://heartecho.in/og-image.jpg', // Ensure this image looks professional
+        url: 'https://heartecho.in/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'HeartEcho AI - India\'s Best AI Girlfriend',
@@ -68,8 +77,8 @@ export const metadata = {
 
   twitter: {
     card: 'summary_large_image',
-    title: "HeartEcho – India's #1 AI Girlfriend & Virtual Companion",
-    description: "Chat with your virtual AI girlfriend in India. HeartEcho offers free, private companion chat, Hinglish roleplay, and emotional support in Hindi. Try now →",
+    title: "HeartEcho – India's #1 AI Girlfriend | Hindi AI Chat & Desi Companion",
+    description: "Chat with India's most advanced AI girlfriend in Hindi. Free private companion chat, desi roleplay & adult stories. Try now →",
     images: ['https://heartecho.in/og-image.jpg'],
     creator: '@heartecho_in',
   },
@@ -86,7 +95,7 @@ export const metadata = {
     },
   },
 
-  category: 'Companionship', // Avoid 'Mature' to stay in general search
+  category: 'Entertainment',
   classification: 'Lifestyle',
 };
 
@@ -136,11 +145,28 @@ export default function RootLayout({ children }) {
               "@context": "https://schema.org",
               "@graph": [
                 {
-                  "@type": "WebSite",
-                  "name": "HeartEcho AI",
-                  "alternateName": ["Heart Echo", "HeartEcho", "India's No 1 AI GF", "Indian AI Girlfriend"],
+                  "@type": "Organization",
+                  "name": "HeartEcho",
                   "url": "https://heartecho.in/",
-                  "description": "Chat with your virtual AI girlfriend in India. HeartEcho offers free, private companion chat, Hinglish roleplay, and emotional support in Hindi. Try now →",
+                  "logo": "https://heartecho.in/logo.png",
+                  "sameAs": [
+                    "https://www.instagram.com/heartecho.in",
+                    "https://twitter.com/heartecho_in"
+                  ],
+                  "contactPoint": {
+                    "@type": "ContactPoint",
+                    "contactType": "customer support",
+                    "email": "support@heartecho.in",
+                    "availableLanguage": ["English", "Hindi"]
+                  }
+                },
+                {
+                  "@type": "WebSite",
+                  "name": "HeartEcho",
+                  "alternateName": ["Heart Echo", "HeartEcho AI", "India's No 1 AI GF", "Indian AI Girlfriend"],
+                  "url": "https://heartecho.in/",
+                  "description": "India's #1 AI girlfriend app — chat in Hindi, Hinglish & English with a private AI companion. Desi roleplay, adult stories, voice notes & deep AI memory.",
+                  "inLanguage": ["en-IN", "hi"],
                   "potentialAction": {
                     "@type": "SearchAction",
                     "target": "https://heartecho.in/discover?q={search_term_string}",
@@ -149,21 +175,23 @@ export default function RootLayout({ children }) {
                 },
                 {
                   "@type": "SoftwareApplication",
-                  "name": "HeartEcho AI",
+                  "name": "HeartEcho",
                   "applicationCategory": "LifestyleApplication",
                   "operatingSystem": "Web, Browser",
-                  "description": "Chat with your virtual AI girlfriend in India. HeartEcho offers free, private companion chat, Hinglish roleplay, and emotional support in Hindi.",
-                  "offers": { "@type": "Offer", "price": "49", "priceCurrency": "INR" },
-                  "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.9", "ratingCount": "250000" }
+                  "description": "India's #1 AI girlfriend app — unlimited private Hindi AI chat, desi roleplay, adult stories, voice notes and deep memory. Free to try.",
+                  "url": "https://heartecho.in/",
+                  "offers": { "@type": "Offer", "price": "399", "priceCurrency": "INR" },
+                  "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.9", "ratingCount": "12000", "bestRating": "5" }
                 },
                 {
                   "@type": "FAQPage",
                   "mainEntity": [
-                    { "@type": "Question", "name": "Is HeartEcho free in India?", "acceptedAnswer": { "@type": "Answer", "text": "Yes! HeartEcho provides free access to chat with desi AI girlfriends in India. You can sign up and start roleplaying instantly without any upfront payment." } },
-                    { "@type": "Question", "name": "Can I chat in Hindi?", "acceptedAnswer": { "@type": "Answer", "text": "Absolutely. HeartEcho's AI is specifically trained on Hindi and Hinglish. You can use voice notes or text to have deep, natural conversations in your native language." } },
-                    { "@type": "Question", "name": "Is it better than Candy.ai for Indians?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, HeartEcho is built exclusively for the Indian audience. Unlike western platforms like Candy.ai, our AI companions understand Indian culture, slang, Hinglish, and desi roleplay contexts perfectly." } },
-                    { "@type": "Question", "name": "Is HeartEcho 100% private and safe?", "acceptedAnswer": { "@type": "Answer", "text": "100% private. We use advanced encryption so your chats and voice notes are secure. No judgment, no filters, just complete privacy for your private companion roleplays." } },
-                    { "@type": "Question", "name": "Can I do romantic roleplay on HeartEcho?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. HeartEcho offers a highly customizable, private AI experience. You can engage in romantic and intimate roleplay securely with your virtual desi girlfriend." } }
+                    { "@type": "Question", "name": "Is there a free Indian AI sex chat?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. HeartEcho offers free Indian AI chat with your virtual desi companion. Sign up instantly and start chatting — no payment required to try." } },
+                    { "@type": "Question", "name": "Can I chat in Hindi with the AI?", "acceptedAnswer": { "@type": "Answer", "text": "Absolutely. HeartEcho's AI is built for Hindi and Hinglish speakers. You can use voice notes or text and have deep, natural conversations in your native language." } },
+                    { "@type": "Question", "name": "Is there an 18+ AI girlfriend app for Indians?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. HeartEcho is an 18+ AI companion app built for Indian users. It offers private desi roleplay, adult stories in Hinglish, and intimate AI conversations with a personal memory system." } },
+                    { "@type": "Question", "name": "Is HeartEcho 100% private?", "acceptedAnswer": { "@type": "Answer", "text": "100% private. Advanced encryption protects all your chats and voice notes. No judgment, no filters — complete privacy for your personal AI conversations." } },
+                    { "@type": "Question", "name": "Is HeartEcho better than Candy.ai for Indians?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. HeartEcho is built exclusively for the Indian audience. Unlike western platforms like Candy.ai, our AI understands Indian culture, Hinglish slang, and desi contexts perfectly — at half the price." } },
+                    { "@type": "Question", "name": "Can I do desi roleplay on HeartEcho?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. HeartEcho offers customizable private AI roleplay. You can engage in romantic and intimate desi roleplay securely with your virtual AI girlfriend — in Hindi or English." } }
                   ]
                 }
               ]

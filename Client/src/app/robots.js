@@ -11,8 +11,7 @@ export default function robots() {
           '/profile',
           '/stories/edit/',
           '/referral/*/dashboard',
-          '/thank-you',
-          '/subscribe'
+          '/thank-you'
         ],
       },
     ],
