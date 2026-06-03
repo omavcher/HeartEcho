@@ -1,8 +1,8 @@
 import { getCitySEO } from '../../../data/cities';
 
 export async function generateMetadata({ params }) {
-  const cityNameParam = await params.cityName;
-  const citySEO = getCitySEO(cityNameParam);
+  const { cityName } = await params;
+  const citySEO = getCitySEO(cityName);
 
   const title = citySEO.title;
   const description = citySEO.description;
@@ -14,7 +14,7 @@ export async function generateMetadata({ params }) {
     openGraph: {
       title,
       description,
-      url: `https://heartecho.in/city/${cityNameParam}`,
+      url: `https://heartecho.in/city/${cityName}`,
       siteName: 'HeartEcho AI',
       locale: 'en_IN',
       type: 'website',
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }) {
       description,
     },
     alternates: {
-      canonical: `https://heartecho.in/city/${cityNameParam}`,
+      canonical: `https://heartecho.in/city/${cityName}`,
     }
   };
 }

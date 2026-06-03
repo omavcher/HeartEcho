@@ -2,9 +2,12 @@ import LiveStoryPage from "../../../pages/LiveStoryPage";
 import api from "../../../config/api";
 
 export async function generateMetadata({ params }) {
+  const { slug } = await params;
+  const alternates = {
+    canonical: `https://heartecho.in/live-a-story/${slug}`,
+  };
+
   try {
-    const { slug } = await params;
-    
     // Attempt to get the story info
     const res = await fetch(`${api.Url}/live-story/stories`, { next: { revalidate: 300 } });
     if (res.ok) {
@@ -22,9 +25,7 @@ export async function generateMetadata({ params }) {
               url: `https://heartecho.in/live-a-story/${slug}`,
               images: [{ url: story.poster || '/api/placeholder/1200/630' }]
             },
-            alternates: {
-              canonical: `https://heartecho.in/live-a-story/${slug}`,
-            }
+            alternates
           };
         }
       }
@@ -36,6 +37,7 @@ export async function generateMetadata({ params }) {
   return {
     title: "Live Interactive Story | HeartEcho AI",
     description: "Experience dynamic, live interactive stories with Indian characters.",
+    alternates
   };
 }
 

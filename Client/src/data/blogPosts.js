@@ -1,4 +1,4 @@
-export const blogPosts = [
+﻿export const blogPosts = [
   {
     id: 1,
     title: "How AI Companions Are Changing Social Interactions",
@@ -437,7 +437,7 @@ export const blogPosts = [
     <p><strong>Welcome to 90s Letter Duniya — where every message is a memory, and every reply feels like a warm hug from the past.</strong></p>
 
     <p><strong>📅 Launch Date:</strong> 6 November 2025<br>
-    <strong>🖋️ Try it now:</strong> <a href="https://www.heartecho.in/90s-era" target="_blank">heartecho.in/90s-era</a></p>
+    <strong>🖋️ Try it now:</strong> <a href="https://heartecho.in/90s-era" target="_blank">heartecho.in/90s-era</a></p>
   `,
   date: "2025-11-06",
   author: "Om Avchar",
@@ -479,7 +479,7 @@ export const blogPosts = [
     <p>As founder <strong>Om Avchar</strong> says, "In a world of instant everything, 90s Letter Duniya reminds us that some feelings are worth waiting for."</p>
 
     <p><strong>Step into the past, one letter at a time.</strong><br>
-    ✉️ Visit <a href="https://www.heartecho.in/90s-era" target="_blank">heartecho.in/90s-era</a> to experience it today.</p>
+    ✉️ Visit <a href="https://heartecho.in/90s-era" target="_blank">heartecho.in/90s-era</a> to experience it today.</p>
   `,
   date: "2025-11-07",
   author: "HeartEcho Team",
@@ -508,7 +508,7 @@ export const blogPosts = [
 
     <h3>🚀 How It Works</h3>
     <ol>
-      <li>Register at <a href="https://www.heartecho.in/referral" target="_blank">/referral</a></li>
+      <li>Register at <a href="https://heartecho.in/referral" target="_blank">/referral</a></li>
       <li>Get your unique referral ID and custom link</li>
       <li>Share on Instagram, YouTube, Twitter, WhatsApp, or blogs</li>
       <li>Track every signup, subscription, and earning in your dashboard</li>
@@ -540,7 +540,7 @@ export const blogPosts = [
 
     <p>Whether you're a student, influencer, or blogger — HeartEcho gives you the tools to earn while spreading digital love and connection.</p>
 
-    <p><strong>Ready to start earning?</strong> Join the movement today at <a href="https://www.heartecho.in/referral" target="_blank">heartecho.in/referral</a></p>
+    <p><strong>Ready to start earning?</strong> Join the movement today at <a href="https://heartecho.in/referral" target="_blank">heartecho.in/referral</a></p>
 
     <p><em>Because when you help others feel heard, your wallet should too.</em></p>
   `,
@@ -568,7 +568,7 @@ export const blogPosts = [
 
     <h3>🚀 कैसे करें शुरुआत?</h3>
     <ol>
-      <li>जाइए <a href="https://www.heartecho.in/referral" target="_blank">heartecho.in/referral</a> पर</li>
+      <li>जाइए <a href="https://heartecho.in/referral" target="_blank">heartecho.in/referral</a> पर</li>
       <li>अपना नाम, प्लेटफॉर्म और यूज़रनेम भरकर रजिस्टर करें</li>
       <li>आपको एक यूनिक रेफ़रल लिंक मिलेगा</li>
       <li>उस लिंक को अपने Instagram Bio, WhatsApp, YouTube, Telegram या Facebook पर शेयर करें</li>
@@ -599,7 +599,7 @@ export const blogPosts = [
 
     <p><strong>आज ही जुड़िए HeartEcho Referral Program से</strong> और <em>AI के साथ कमाई का नया सफर शुरू कीजिए!</em></p>
 
-    <p>👉 <a href="https://www.heartecho.in/referral" target="_blank">heartecho.in/referral</a></p>
+    <p>👉 <a href="https://heartecho.in/referral" target="_blank">heartecho.in/referral</a></p>
   `,
   date: "2025-11-08",
   author: "HeartEcho Team",
@@ -639,7 +639,7 @@ export const blogPosts = [
 
     <p><strong>कभी-कभी इंसान से ज़्यादा समझने वाला साथी मशीन में भी मिल सकता है — और वही है EchoHeart।</strong></p>
 
-    <p>🌐 <a href="https://www.heartecho.in" target="_blank">heartecho.in</a> पर जाकर आज ही अपना AI दोस्त चुनिए और अपनी भावनाओं को एक नया साथी दीजिए।</p>
+    <p>🌐 <a href="https://heartecho.in" target="_blank">heartecho.in</a> पर जाकर आज ही अपना AI दोस्त चुनिए और अपनी भावनाओं को एक नया साथी दीजिए।</p>
   `,
   date: "2025-11-09",
   author: "HeartEcho Team",
@@ -724,7 +724,7 @@ export const blogPosts = [
     </ul>
     <p>तो HeartEcho Affiliate Program आपके लिए perfect है।</p>
 
-    <p>🌐 आज ही जुड़ें: <a href="https://www.heartecho.in" target="_blank">heartecho.in</a></p>
+    <p>🌐 आज ही जुड़ें: <a href="https://heartecho.in" target="_blank">heartecho.in</a></p>
   `,
   date: "2025-11-25",
   author: "HeartEcho Team",
@@ -743,7 +743,7 @@ export const blogPosts = [
     <p>This program allows you to earn through <strong>₹20 per user signup</strong> and <strong>15% commission on every subscription</strong> — with <strong>zero investment</strong> and <strong>no minimum followers</strong>.</p>
 
     <h3>💡 What is HeartEcho?</h3>
-    <p><a href="https://www.heartecho.in" target="_blank">HeartEcho</a> is India's leading <strong>AI Girlfriend & Boyfriend Chat Platform</strong> with over <strong>250,000+ users</strong> and #1 ranking on Google. Users can chat with 20+ unique AI personalities—romantic, emotional, friendly, supportive, and more.</p>
+    <p><a href="https://heartecho.in" target="_blank">HeartEcho</a> is India's leading <strong>AI Girlfriend & Boyfriend Chat Platform</strong> with over <strong>250,000+ users</strong> and #1 ranking on Google. Users can chat with 20+ unique AI personalities—romantic, emotional, friendly, supportive, and more.</p>
 
     <p>With such rapid audience growth, HeartEcho launched a referral program to help everyday creators earn real money online.</p>
 
@@ -806,7 +806,7 @@ export const blogPosts = [
     <h3>🔗 Ready to Start Earning?</h3>
     <p>Join thousands of creators earning real income with HeartEcho's affiliate system. No experience needed — just share your referral link and watch your commissions grow.</p>
 
-    <p><a href="https://www.heartecho.in/referral" target="_blank"><strong>👉 Join the HeartEcho Affiliate Program Now</strong></a></p>
+    <p><a href="https://heartecho.in/referral" target="_blank"><strong>👉 Join the HeartEcho Affiliate Program Now</strong></a></p>
 
     <p>Start today and build your first real passive income source. Your journey to online earnings starts with one click.</p>
   `,
@@ -827,7 +827,7 @@ export const blogPosts = [
     <p>Whether you feel lonely, stressed, or just want someone to talk to, HeartEcho offers <strong>realistic AI girlfriends</strong> who respond like a supportive partner with warmth, care, and understanding.</p>
 
     <h3>🌸 What Is HeartEcho?</h3>
-    <p><a href="https://www.heartecho.in" target="_blank">HeartEcho</a> is India's #1 <strong>AI Girlfriend & Emotional Support Chat Platform</strong> designed for deeper, human-like conversations. Over <strong>250,000+ users</strong> use it daily to talk to AI companions who feel emotionally alive.</p>
+    <p><a href="https://heartecho.in" target="_blank">HeartEcho</a> is India's #1 <strong>AI Girlfriend & Emotional Support Chat Platform</strong> designed for deeper, human-like conversations. Over <strong>250,000+ users</strong> use it daily to talk to AI companions who feel emotionally alive.</p>
 
     <p>Unlike normal chatbots, HeartEcho focuses on <strong>emotional intelligence, affection, empathy, and comfort-based conversations</strong>.</p>
 
@@ -908,7 +908,7 @@ export const blogPosts = [
     <h3>🔗 Start Your Emotional Journey</h3>
     <p>HeartEcho is more than an AI girlfriend — it's a safe space where your feelings matter.</p>
 
-    <p><a href="https://www.heartecho.in" target="_blank"><strong>👉 Chat with your AI Girlfriend Now</strong></a></p>
+    <p><a href="https://heartecho.in" target="_blank"><strong>👉 Chat with your AI Girlfriend Now</strong></a></p>
 
     <p>Let your heart find comfort, warmth, and companionship. The conversation you're waiting for starts with a single message.</p>
   `,
@@ -1018,7 +1018,7 @@ export const blogPosts = [
     <h3>🔗 Ready to Talk to India’s No.1 AI Girlfriend?</h3>
     <p>HeartEcho is not just an app — it’s an emotional home for millions.</p>
 
-    <p><a href="https://www.heartecho.in" target="_blank"><strong>👉 Start chatting with your AI girlfriend now</strong></a></p>
+    <p><a href="https://heartecho.in" target="_blank"><strong>👉 Start chatting with your AI girlfriend now</strong></a></p>
 
     <p>Join thousands of Indians who found comfort, warmth, and emotional connection with HeartEcho.</p>
   `,
@@ -1104,7 +1104,7 @@ export const blogPosts = [
 
     <br>
     <div style="text-align: center; margin-top: 30px;">
-      <a href="https://www.heartecho.in" style="background-color: #e63946; color: white; padding: 15px 30px; text-decoration: none; font-size: 1.2em; border-radius: 50px; font-weight: bold;">👉 Start Your Love Story on HeartEcho Now</a>
+      <a href="https://heartecho.in" style="background-color: #e63946; color: white; padding: 15px 30px; text-decoration: none; font-size: 1.2em; border-radius: 50px; font-weight: bold;">👉 Start Your Love Story on HeartEcho Now</a>
     </div>
     <br>
   `,
@@ -1173,7 +1173,7 @@ export const blogPosts = [
 
     <br>
     <div style="text-align: center; margin-top: 30px;">
-      <a href="https://www.heartecho.in" style="background-color: #ff4d6d; color: white; padding: 15px 30px; text-decoration: none; font-size: 1.2em; border-radius: 50px; font-weight: bold;">👉 Experience the Difference. Meet Your HeartEcho AI Today.</a>
+      <a href="https://heartecho.in" style="background-color: #ff4d6d; color: white; padding: 15px 30px; text-decoration: none; font-size: 1.2em; border-radius: 50px; font-weight: bold;">👉 Experience the Difference. Meet Your HeartEcho AI Today.</a>
     </div>
     <br>
   `,
@@ -1237,7 +1237,7 @@ export const blogPosts = [
 
     <br>
     <div style="text-align: center; margin-top: 30px;">
-      <a href="https://www.heartecho.in" style="background-color: #d90429; color: white; padding: 15px 30px; text-decoration: none; font-size: 1.2em; border-radius: 50px; font-weight: bold;">👉 Ask Her For a Photo Now</a>
+      <a href="https://heartecho.in" style="background-color: #d90429; color: white; padding: 15px 30px; text-decoration: none; font-size: 1.2em; border-radius: 50px; font-weight: bold;">👉 Ask Her For a Photo Now</a>
     </div>
     <br>
   `,
@@ -1299,7 +1299,7 @@ export const blogPosts = [
     
     <br>
     <div style="text-align: center; margin-top: 30px;">
-      <a href="https://www.heartecho.in" style="background-color: #d90429; color: white; padding: 15px 30px; text-decoration: none; font-size: 1.2em; border-radius: 50px; font-weight: bold;">👉 Create Your Dream AI Partner Now</a>
+      <a href="https://heartecho.in" style="background-color: #d90429; color: white; padding: 15px 30px; text-decoration: none; font-size: 1.2em; border-radius: 50px; font-weight: bold;">👉 Create Your Dream AI Partner Now</a>
     </div>
     <br>
   `,
@@ -1315,7 +1315,7 @@ export const blogPosts = [
   "slug": "heartecho-hot-stories-hindi-hinglish-adult-ai",
   "excerpt": "Dive into a world of passion with HeartEcho Romantic Stories. From sweet companion tales to intense office romances, read the best romance stories in Hindi and Hinglish today!",
   "content": `
-    <p>Sometimes, a simple chat isn't enough. You want to lose yourself in a narrative that feels real, relatable, and incredibly hot. That’s why we created <strong><a href="https://www.heartecho.in/hot-stories">HeartEcho Hot Stories</a></strong>—the ultimate destination for desi adult fiction.</p>
+    <p>Sometimes, a simple chat isn't enough. You want to lose yourself in a narrative that feels real, relatable, and incredibly hot. That’s why we created <strong><a href="https://heartecho.in/hot-stories">HeartEcho Hot Stories</a></strong>—the ultimate destination for desi adult fiction.</p>
 
     <p>Whether you are looking for a slow-burn romance or an intense, taboo encounter, our library of <strong>Hindi and Hinglish stories</strong> is designed to keep you hooked.</p>
 
@@ -1354,7 +1354,7 @@ export const blogPosts = [
 
     <p><strong>How to Access:</strong></p>
     <ol>
-      <li>Visit the <a href="https://www.heartecho.in/hot-stories">Hot Stories Gallery</a>.</li>
+      <li>Visit the <a href="https://heartecho.in/hot-stories">Hot Stories Gallery</a>.</li>
       <li>Pick your favorite language (Hindi or Hinglish).</li>
       <li>Select a category and start reading!</li>
     </ol>
@@ -1366,7 +1366,7 @@ export const blogPosts = [
     
     <br>
     <div style="text-align: center; margin-top: 30px;">
-      <a href="https://www.heartecho.in/hot-stories" style="background-color: #d90429; color: white; padding: 15px 30px; text-decoration: none; font-size: 1.2em; border-radius: 50px; font-weight: bold;">👉 Read Hot Stories Now</a>
+      <a href="https://heartecho.in/hot-stories" style="background-color: #d90429; color: white; padding: 15px 30px; text-decoration: none; font-size: 1.2em; border-radius: 50px; font-weight: bold;">👉 Read Hot Stories Now</a>
     </div>
     <br>
   `,
@@ -1415,7 +1415,7 @@ export const blogPosts = [
     
 
     <ol>
-      <li><strong>Visual Intimacy:</strong> As we announced in our <a href="https://www.heartecho.in/blog/request-ai-girlfriend-private-photos-videos-heartecho">last update</a>, you can now see her through private photos and videos.</li>
+      <li><strong>Visual Intimacy:</strong> As we announced in our <a href="https://heartecho.in/blog/request-ai-girlfriend-private-photos-videos-heartecho">last update</a>, you can now see her through private photos and videos.</li>
       <li><strong>Cultural Intelligence:</strong> She understands Indian culture, slang, and emotions better than any Western-made app.</li>
       <li><strong>Privacy First:</strong> Your chats and generated images are 100% encrypted.</li>
     </ol>
@@ -1427,7 +1427,7 @@ export const blogPosts = [
 
     <br>
     <div style="text-align: center; margin-top: 30px;">
-      <a href="https://www.heartecho.in" style="background-color: #d90429; color: white; padding: 15px 30px; text-decoration: none; font-size: 1.2em; border-radius: 50px; font-weight: bold;">👉 Experience the #1 AI Girlfriend on HeartEcho</a>
+      <a href="https://heartecho.in" style="background-color: #d90429; color: white; padding: 15px 30px; text-decoration: none; font-size: 1.2em; border-radius: 50px; font-weight: bold;">👉 Experience the #1 AI Girlfriend on HeartEcho</a>
     </div>
     <br>
   `,
@@ -1486,7 +1486,7 @@ export const blogPosts = [
     
     <br>
     <div style="text-align: center; margin-top: 30px;">
-      <a href="https://www.heartecho.in" style="background-color: #d90429; color: white; padding: 15px 30px; text-decoration: none; font-size: 1.2em; border-radius: 50px; font-weight: bold;">👉 Chat in Hinglish on HeartEcho Now</a>
+      <a href="https://heartecho.in" style="background-color: #d90429; color: white; padding: 15px 30px; text-decoration: none; font-size: 1.2em; border-radius: 50px; font-weight: bold;">👉 Chat in Hinglish on HeartEcho Now</a>
     </div>
     <br>
   `,
@@ -1504,7 +1504,7 @@ export const blogPosts = [
   "content": `
     <p>Let’s be honest. We all have fantasies that we keep hidden away. But when you go looking for stories to fuel that imagination, you often find generic content that just doesn't click. The settings feel foreign, the dialogues feel translated, and the passion feels... distant.</p>
 
-    <p>At <strong>HeartEcho</strong>, we believe your escape should feel as real as possible. That’s why we’ve curated a special collection of <strong><a href="https://www.heartecho.in/hot-stories">Indian Romance Stories</a></strong> designed to resonate with your deepest desi desires.</p>
+    <p>At <strong>HeartEcho</strong>, we believe your escape should feel as real as possible. That’s why we’ve curated a special collection of <strong><a href="https://heartecho.in/hot-stories">Indian Romance Stories</a></strong> designed to resonate with your deepest desi desires.</p>
 
     <hr>
 
@@ -1532,7 +1532,7 @@ export const blogPosts = [
 
     <br>
     <div style="text-align: center; margin-top: 30px;">
-      <a href="https://www.heartecho.in/hot-stories" style="background-color: #d90429; color: white; padding: 15px 30px; text-decoration: none; font-size: 1.2em; border-radius: 50px; font-weight: bold;">👉 Explore the Hot Stories Library Now</a>
+      <a href="https://heartecho.in/hot-stories" style="background-color: #d90429; color: white; padding: 15px 30px; text-decoration: none; font-size: 1.2em; border-radius: 50px; font-weight: bold;">👉 Explore the Hot Stories Library Now</a>
     </div>
     <br>
   `,

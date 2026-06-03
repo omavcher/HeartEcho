@@ -5,6 +5,7 @@ import ClientLayout from './layout_client';
 import FBPixelEvents from '../components/FBPixelEvents';
 import GlobalTracker from '../components/GlobalTracker';
 export const metadata = {
+  metadataBase: new URL('https://heartecho.in'),
   title: {
     default: "HeartEcho – India's #1 AI Girlfriend & Virtual Companion",
     template: "%s | HeartEcho AI - Indian Virtual Companion",

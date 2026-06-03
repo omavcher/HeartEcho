@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Head from "next/head";
 import "./ReferralProgram.css";
 import { 
   FaUserPlus, 
@@ -274,36 +273,15 @@ const ReferralProgram = () => {
 
   return (
     <>
-      <Head>
-        <title>Influencer Referral Program - Earn ₹20 per Signup + 15% Commission | AI Friend Platform</title>
-        <meta 
-          name="description" 
-          content="Join our affiliate program for content creators. Earn ₹20 for every user signup and 15% commission on subscriptions. No follower requirements. Secure dashboard access." 
-        />
-        <meta 
-          name="keywords" 
-          content="referral program, influencer marketing, affiliate program, earn money online, content creator, social media earnings, commission based income, referral code, influencer partnership" 
-        />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta property="og:title" content="Influencer Referral Program - Earn Commissions | AI Friend Platform" />
-        <meta property="og:description" content="Join our creator affiliate program and earn ₹20 per signup + 15% commission on subscriptions. Perfect for influencers and content creators." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://yourapp.com/referral" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Influencer Referral Program - Earn Money Online" />
-        <meta name="twitter:description" content="Join our affiliate program and earn commissions for referrals. Perfect for social media influencers and content creators." />
-        <link rel="canonical" href="https://yourapp.com/referral" />
-        
-        {/* Structured Data */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
-        />
-      </Head>
+      {/* Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
+      />
 
       <div className="ref-program-container">
         {/* Hero Section with SEO-rich content */}

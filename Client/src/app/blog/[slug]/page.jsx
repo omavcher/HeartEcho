@@ -11,7 +11,10 @@ export async function generateMetadata({ params }) {
   
   if (!post) return { 
     title: "Post Not Found | HeartEcho", 
-    description: "The blog post you're looking for doesn't exist." 
+    description: "The blog post you're looking for doesn't exist.",
+    alternates: {
+      canonical: 'https://heartecho.in/blog',
+    }
   };
 
   return {
@@ -24,6 +27,9 @@ export async function generateMetadata({ params }) {
       url: `https://heartecho.in/blog/${post.slug}`,
       type: "article",
       images: [{ url: post.image, width: 1200, height: 630, alt: post.alt }],
+    },
+    alternates: {
+      canonical: `https://heartecho.in/blog/${post.slug}`,
     },
   };
 }

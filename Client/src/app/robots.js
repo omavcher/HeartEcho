@@ -4,7 +4,16 @@ export default function robots() {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin/', '/api/'],
+        disallow: [
+          '/admin/',
+          '/api/',
+          '/chatbox',
+          '/profile',
+          '/stories/edit/',
+          '/referral/*/dashboard',
+          '/thank-you',
+          '/subscribe'
+        ],
       },
     ],
     sitemap: 'https://heartecho.in/sitemap.xml',

@@ -5,22 +5,21 @@ import Footer from '../../../components/Footer';
 import api from '../../../config/api';
 
 export async function generateMetadata({ params }) {
+  const { slug } = await params;
   try {
-    const { slug } = await params;
-    
     // Fetch story data for metadata
     const response = await fetch(`${api.Url}/story/getbyid/${slug}`, {
       next: { revalidate: 300 }
     });
     
     if (!response.ok) {
-      return getDefaultMetadata();
+      return getDefaultMetadata(slug);
     }
     
     const json = await response.json();
     
     if (!json.success || !json.data) {
-      return getDefaultMetadata();
+      return getDefaultMetadata(slug);
     }
     
     const story = json.data;
@@ -50,7 +49,7 @@ export async function generateMetadata({ params }) {
           'emotional love story',
           'heart touching story',
           'true love kahani',
-        
+         
           // AI Roleplay Keywords
           'ai companion story hindi',
           'romantic roleplay',
@@ -109,14 +108,17 @@ export async function generateMetadata({ params }) {
     
   } catch (error) {
     console.error('Error generating metadata:', error);
-    return getDefaultMetadata();
+    return getDefaultMetadata(slug);
   }
 }
 
-function getDefaultMetadata() {
+function getDefaultMetadata(slug) {
   return {
     title: 'HeartEcho Stories - Interactive Stories from Indian Cities',
     description: 'Explore interactive stories from major cities across India. Discover stories from Mumbai, Delhi, Bangalore, Hyderabad, Chennai, Kolkata and more.',
+    alternates: {
+      canonical: slug ? `https://heartecho.in/hot-stories/${slug}` : 'https://heartecho.in/hot-stories',
+    }
   };
 }
 
