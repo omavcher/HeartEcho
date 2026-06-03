@@ -120,9 +120,18 @@ const GOOGLE_SVG = (
 
 function ReviewCard({ r }) {
   return (
-    <article className="rvp-card" itemScope itemType="https://schema.org/Review">
-      <meta itemProp="reviewRating" content={r.rating} />
-      <meta itemProp="author" content={r.name} />
+    <article className="rvp-card" itemScope itemType="https://schema.org/Review" itemProp="review">
+      <div itemProp="itemReviewed" itemScope itemType="https://schema.org/Product" style={{ display: 'none' }}>
+        <meta itemProp="name" content="HeartEcho Premium" />
+      </div>
+      <div itemProp="reviewRating" itemScope itemType="https://schema.org/Rating" style={{ display: 'none' }}>
+        <meta itemProp="ratingValue" content={r.rating} />
+        <meta itemProp="bestRating" content="5" />
+        <meta itemProp="worstRating" content="1" />
+      </div>
+      <div itemProp="author" itemScope itemType="https://schema.org/Person" style={{ display: 'none' }}>
+        <meta itemProp="name" content={r.name} />
+      </div>
       <meta itemProp="datePublished" content="2025" />
 
       {/* Google bar */}
@@ -136,7 +145,7 @@ function ReviewCard({ r }) {
       <div className="rvp-user">
         <div className="rvp-avatar" style={{ background: r.color }}>{r.initials}</div>
         <div className="rvp-meta">
-          <div className="rvp-name" itemProp="author">{r.name} <span className="rvp-city">· {r.city}</span></div>
+          <div className="rvp-name">{r.name} <span className="rvp-city">· {r.city}</span></div>
           <div className="rvp-stars-row">
             <span className="rvp-stars">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
             <span className="rvp-time">{r.time}</span>
@@ -187,7 +196,7 @@ export default function ReviewsPage() {
           </p>
 
           {/* Aggregate rating bar */}
-          <div className="rvp-agg" itemScope itemType="https://schema.org/AggregateRating">
+          <div className="rvp-agg" itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
             <meta itemProp="ratingValue" content={avgRating} />
             <meta itemProp="reviewCount" content="100" />
             <meta itemProp="bestRating" content="5" />
