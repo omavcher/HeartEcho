@@ -36,25 +36,8 @@ function HomeFAQ() {
     setActiveIndex(activeIndex === index ? null : index);
   };
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqs.map((faq) => ({
-      "@type": "Question",
-      name: faq.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: faq.answer,
-      },
-    })),
-  };
-
   return (
     <section className="faq-section">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
       <div className="faq-container">
         <h2 className="faq-title">Frequently Asked Questions</h2>
         <p className="faq-subtitle">
