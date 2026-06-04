@@ -1,4 +1,5 @@
 const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = require('express-rate-limit');
 const User = require('../models/User'); 
 
 // Custom rate limiter based on subscription tier
@@ -35,12 +36,12 @@ const tierBasedRateLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  // Use IP if user is not logged in, otherwise use user ID
+  // Use user ID for authenticated users, IPv6-safe IP for guests
   keyGenerator: (req) => {
     if (req.user && req.user.id) {
-        return req.user.id;
+      return req.user.id;
     }
-    return req.ip;
+    return ipKeyGenerator(req); // IPv6-safe helper
   }
 });
 

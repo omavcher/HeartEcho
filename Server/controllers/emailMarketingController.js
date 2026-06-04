@@ -5,6 +5,7 @@ const EmailTemplate = require("../models/EmailTemplate");
 const EmailCampaign = require("../models/EmailCampaign");
 const EmailQueue = require("../models/EmailQueue");
 const EmailTrackingLog = require("../models/EmailTrackingLog");
+const FollowUpSequence = require("../models/FollowUpSequence");
 const User = require("../models/User");
 const LoginDetail = require("../models/LoginDetail");
 
@@ -315,6 +316,19 @@ exports.createCampaign = async (req, res) => {
           { name: { $regex: new RegExp("^" + escapedStr + "$", "i") } }
         ]
       };
+    } else if (targetAudience === "multiple_users") {
+      // targetValue contains comma-separated emails OR req.body.targetUsers array
+      const { targetUsers } = req.body;
+      let emailList = [];
+      if (Array.isArray(targetUsers) && targetUsers.length > 0) {
+        emailList = targetUsers.map(e => e.trim().toLowerCase()).filter(Boolean);
+      } else if (targetValue) {
+        emailList = targetValue.split(",").map(e => e.trim().toLowerCase()).filter(Boolean);
+      }
+      if (emailList.length === 0) {
+        return res.status(400).json({ success: false, error: "Please select at least one target user" });
+      }
+      query = { email: { $in: emailList } };
     }
 
     const targetUsers = await User.find(query).select("name email");
@@ -616,4 +630,167 @@ exports.testRenderSmtp = async (req, res) => {
   }
 
   res.json({ success: true, logs });
+};
+
+
+// ==========================================
+// FOLLOW-UP SEQUENCES
+// ==========================================
+
+exports.getFollowUps = async (req, res) => {
+  try {
+    const list = await FollowUpSequence.find()
+      .populate("parentCampaign", "name targetAudience sentCount")
+      .populate("template", "name label")
+      .sort({ createdAt: -1 });
+    res.json({ success: true, data: list });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+exports.createFollowUp = async (req, res) => {
+  const { name, parentCampaignId, templateId, triggerCondition, delayHours, subjectOverride } = req.body;
+
+  try {
+    const [parentCampaign, template] = await Promise.all([
+      EmailCampaign.findById(parentCampaignId),
+      EmailTemplate.findById(templateId)
+    ]);
+
+    if (!parentCampaign) return res.status(404).json({ success: false, error: "Parent campaign not found" });
+    if (!template) return res.status(404).json({ success: false, error: "Template not found" });
+
+    // --- Resolve eligible users based on trigger condition ---
+    const campaignId = parentCampaign._id;
+
+    // Get all sent queue items for this campaign
+    const sentQueueItems = await EmailQueue.find({ campaign: campaignId, status: "sent" })
+      .select("toEmail user");
+    const sentEmails = sentQueueItems.map(q => q.toEmail.toLowerCase());
+    const sentEmailToUser = {};
+    sentQueueItems.forEach(q => { sentEmailToUser[q.toEmail.toLowerCase()] = q.user; });
+
+    // Get tracking log emails
+    const openLogs = await EmailTrackingLog.find({ campaign: campaignId, action: "open" }).select("email");
+    const clickLogs = await EmailTrackingLog.find({ campaign: campaignId, action: "click" }).select("email");
+    const conversionLogs = await EmailTrackingLog.find({ campaign: campaignId, action: "conversion" }).select("email");
+
+    const openedEmails = new Set(openLogs.map(l => l.email.toLowerCase()));
+    const clickedEmails = new Set(clickLogs.map(l => l.email.toLowerCase()));
+    const convertedEmails = new Set(conversionLogs.map(l => l.email.toLowerCase()));
+
+    let eligibleEmails = [];
+
+    if (triggerCondition === "opened") {
+      eligibleEmails = sentEmails.filter(e => openedEmails.has(e));
+    } else if (triggerCondition === "clicked") {
+      eligibleEmails = sentEmails.filter(e => clickedEmails.has(e));
+    } else if (triggerCondition === "not_opened") {
+      eligibleEmails = sentEmails.filter(e => !openedEmails.has(e));
+    } else if (triggerCondition === "not_clicked") {
+      eligibleEmails = sentEmails.filter(e => !clickedEmails.has(e));
+    } else if (triggerCondition === "not_converted") {
+      // Clicked but didn't convert — highest-intent targeting
+      eligibleEmails = sentEmails.filter(e => clickedEmails.has(e) && !convertedEmails.has(e));
+    }
+
+    // Deduplicate
+    eligibleEmails = [...new Set(eligibleEmails)];
+
+    // Create the FollowUpSequence record
+    const followUp = new FollowUpSequence({
+      name,
+      parentCampaign: campaignId,
+      template: templateId,
+      triggerCondition,
+      delayHours: Number(delayHours) || 48,
+      subjectOverride: subjectOverride || "",
+      status: "active",
+      totalTargeted: eligibleEmails.length
+    });
+    await followUp.save();
+
+    // Queue emails for eligible users
+    if (eligibleEmails.length > 0) {
+      // Fetch user records for names
+      const users = await User.find({ email: { $in: eligibleEmails } }).select("_id name email");
+      const userMap = {};
+      users.forEach(u => { userMap[u.email.toLowerCase()] = u; });
+
+      const subject = subjectOverride || template.subject;
+      const queueItems = eligibleEmails.map(email => {
+        const user = userMap[email];
+        const trackingId = crypto.randomBytes(16).toString("hex");
+        return {
+          campaign: campaignId,
+          followUp: followUp._id,
+          user: user ? user._id : undefined,
+          toEmail: email,
+          subject,
+          html: template.html,
+          trackingId,
+          status: "pending"
+        };
+      });
+
+      await EmailQueue.insertMany(queueItems);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: `Follow-up sequence created and queued for ${eligibleEmails.length} users!`,
+      data: followUp
+    });
+
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
+exports.deleteFollowUp = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const followUp = await FollowUpSequence.findByIdAndDelete(id);
+    if (!followUp) return res.status(404).json({ success: false, error: "Follow-up not found" });
+
+    // Remove pending queue items belonging to this follow-up only
+    await EmailQueue.deleteMany({ followUp: id, status: { $in: ["pending", "sending"] } });
+
+    res.json({ success: true, message: "Follow-up deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+exports.toggleFollowUp = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const followUp = await FollowUpSequence.findById(id);
+    if (!followUp) return res.status(404).json({ success: false, error: "Follow-up not found" });
+
+    if (followUp.status === "completed") {
+      return res.status(400).json({ success: false, error: "Cannot toggle a completed follow-up" });
+    }
+
+    followUp.status = followUp.status === "active" ? "paused" : "active";
+    await followUp.save();
+
+    // Pause/resume pending queue items
+    if (followUp.status === "paused") {
+      await EmailQueue.updateMany(
+        { followUp: id, status: "pending" },
+        { $set: { status: "paused_followup" } }
+      );
+    } else {
+      await EmailQueue.updateMany(
+        { followUp: id, status: "paused_followup" },
+        { $set: { status: "pending" } }
+      );
+    }
+
+    res.json({ success: true, data: followUp, message: `Follow-up ${followUp.status === "active" ? "resumed" : "paused"} successfully` });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
 };

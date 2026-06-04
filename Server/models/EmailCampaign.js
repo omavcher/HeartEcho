@@ -13,7 +13,7 @@ const emailCampaignSchema = new mongoose.Schema({
       "subscribers_today", "subscribers_7d", 
       "free_no_chat", "free_chatted_no_sub", 
       "inactive_7d", "inactive_30d", 
-      "specific_user"
+      "specific_user", "multiple_users"
     ], 
     default: "all" 
   },

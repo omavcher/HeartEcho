@@ -141,7 +141,7 @@ async function processNextEmail() {
     const mailOptions = {
       from: `"HeartEcho ❤️" <${selectedSmtp.email}>`,
       to: queueItem.toEmail,
-      subject: queueItem.subject,
+      subject: renderTemplate(queueItem.subject, variables), // Apply {{variables}} to subject too
       html: emailHtml
     };
 

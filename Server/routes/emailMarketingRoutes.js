@@ -38,4 +38,10 @@ router.post("/campaigns", authMiddleware, controller.createCampaign);
 router.get("/campaigns/:id", authMiddleware, controller.getCampaignDetails);
 router.delete("/campaigns/:id", authMiddleware, controller.deleteCampaign);
 
+// Follow-Up Sequences Routing
+router.get("/follow-ups", authMiddleware, controller.getFollowUps);
+router.post("/follow-ups", authMiddleware, controller.createFollowUp);
+router.delete("/follow-ups/:id", authMiddleware, controller.deleteFollowUp);
+router.patch("/follow-ups/:id/toggle", authMiddleware, controller.toggleFollowUp);
+
 module.exports = router;
