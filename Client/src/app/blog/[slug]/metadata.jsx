@@ -6,12 +6,14 @@ export async function generateMetadata({ params }) {
   const post = getPostBySlug(params.slug);
   if (!post) return { title: "Post Not Found | HeartEcho", description: "Not found" };
 
+  const resolvedTitle = post.metaTitle ? `${post.metaTitle} | HeartEcho` : `${post.title} | HeartEcho`;
+
   return {
-    title: `${post.title} | HeartEcho`,
+    title: resolvedTitle,
     description: post.excerpt,
     keywords: `${post.category}, AI, HeartEcho, ${post.title}`,
     openGraph: {
-      title: post.title,
+      title: post.metaTitle || post.title,
       description: post.excerpt,
       url: `https://heartecho.in/blog/${post.slug}`,
       type: "article",

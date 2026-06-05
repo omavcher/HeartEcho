@@ -1,6 +1,7 @@
 import { blogPosts } from '../../../data/blogPosts';
 import BlogPostContent from './BlogPostContent';
 import { notFound } from 'next/navigation';
+import { getBlogPageSchema } from '../../../utils/schema';
 
 const getPostBySlug = (slug) => blogPosts.find(post => post.slug === slug);
 
@@ -17,12 +18,14 @@ export async function generateMetadata({ params }) {
     }
   };
 
+  const resolvedTitle = post.metaTitle ? `${post.metaTitle} | HeartEcho` : `${post.title} | HeartEcho`;
+
   return {
-    title: `${post.title} | HeartEcho`,
+    title: resolvedTitle,
     description: post.excerpt,
     keywords: `${post.category}, AI, HeartEcho, ${post.title}`,
     openGraph: {
-      title: post.title,
+      title: post.metaTitle || post.title,
       description: post.excerpt,
       url: `https://heartecho.in/blog/${post.slug}`,
       type: "article",
@@ -54,5 +57,22 @@ export default async function BlogPost({ params }) {
     notFound();
   }
 
-  return <BlogPostContent post={post} />;
+  const blogSchema = getBlogPageSchema({
+    url: `https://heartecho.in/blog/${post.slug}`,
+    headline: post.title,
+    description: post.excerpt,
+    image: post.image,
+    datePublished: post.date,
+    authorName: post.author || "Om Awchar"
+  });
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }}
+      />
+      <BlogPostContent post={post} />
+    </>
+  );
 }

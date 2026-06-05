@@ -1,16 +1,17 @@
 import Link from 'next/link';
 import Footer from '../../components/Footer';
 import '../../styles/Compare.css';
+import { getLandingPageSchema, getBlogPageSchema } from '../../utils/schema';
 
 export const metadata = {
-  title: "HeartEcho vs Talkie AI – Best for India? | Hindi AI Chat 2026",
+  title: { absolute: "HeartEcho vs Talkie AI – Best for India? | HeartEcho" },
   description: "HeartEcho vs Talkie AI comparison for India. HeartEcho wins with Hindi/Hinglish chat, desi AI characters, Indian cultural understanding, and a free tier. See why Indians prefer HeartEcho.",
   keywords: ["heartecho vs talkie ai", "talkie ai india", "best ai girlfriend india 2026", "hindi ai girlfriend app", "indian ai chat", "desi ai girlfriend", "talkie ai alternative india", "ai girlfriend hindi free"],
   alternates: {
     canonical: 'https://heartecho.in/heartecho-vs-talkie',
   },
   openGraph: {
-    title: "HeartEcho vs Talkie AI – Which is Best for India in 2026?",
+    title: "HeartEcho vs Talkie AI – Best for India? | HeartEcho",
     description: "HeartEcho vs Talkie AI: The honest comparison for Indian users. Hindi chat, desi personas, free tier — see who wins.",
     url: 'https://heartecho.in/heartecho-vs-talkie',
   },
@@ -75,27 +76,38 @@ const faqSchema = {
   ]
 };
 
-const articleSchema = {
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": "HeartEcho vs Talkie AI – Which AI Girlfriend App is Best for India in 2026?",
-  "description": "A detailed comparison of HeartEcho and Talkie AI for Indian users, covering Hindi support, desi personas, pricing, private roleplay, and cultural relevance.",
-  "author": { "@type": "Organization", "name": "HeartEcho" },
-  "publisher": { "@type": "Organization", "name": "HeartEcho", "url": "https://heartecho.in" },
-  "datePublished": "2026-01-01",
-  "dateModified": "2026-05-01"
-};
-
 export default function CompareTalkieAI() {
+  const url = 'https://heartecho.in/heartecho-vs-talkie';
+  
+  // Generating landing page schemas (WebPage, FAQPage, Breadcrumbs)
+  const landingSchema = getLandingPageSchema({
+    url,
+    title: metadata.title.absolute,
+    description: metadata.description,
+    faqs: faqSchema.mainEntity,
+    breadcrumbs: [
+      { name: 'Home', item: 'https://heartecho.in' },
+      { name: 'HeartEcho vs Talkie AI', item: url }
+    ]
+  });
+
+  // Generating Article schema
+  const articleSchema = getBlogPageSchema({
+    url,
+    headline: "HeartEcho vs Talkie AI – Which AI Girlfriend App is Best for India in 2026?",
+    description: "A detailed comparison of HeartEcho and Talkie AI for Indian users, covering Hindi support, desi personas, pricing, private roleplay, and cultural relevance.",
+    datePublished: "2026-01-01",
+    dateModified: "2026-05-01",
+    authorName: "HeartEcho"
+  });
+
+  const combinedSchemas = [...landingSchema, ...articleSchema];
+
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchemas) }}
       />
       
       <div className="compare-page-wrapper">

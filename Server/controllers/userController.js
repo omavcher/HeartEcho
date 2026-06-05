@@ -701,10 +701,9 @@ const shuffleArray = (array) => {
 
 exports.getAllPreAIFriends = async (req, res) => {
   try {
-    const allFriends = await PrebuiltAIFriend.find();
+    const allFriends = await PrebuiltAIFriend.find().select('-video_gallery -img_gallery');
     const shuffledFriends = shuffleArray(allFriends);
 
-    // Cache for 5 minutes in browser/CDN, stale-while-revalidate for seamless updates
     res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
 
     res.status(200).json({
@@ -2349,3 +2348,22 @@ function shouldIncludeImage(messageCounts) {
     return Math.random() < 0.3;
   }
 }
+
+exports.joinVoiceWaitlist = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required." });
+    }
+    const VoiceWaitlist = require("../models/VoiceWaitlist");
+    const existing = await VoiceWaitlist.findOne({ email });
+    if (existing) {
+      return res.status(200).json({ success: true, message: "You are already on the waitlist!" });
+    }
+    await VoiceWaitlist.create({ email });
+    return res.status(201).json({ success: true, message: "Successfully joined the voice waitlist!" });
+  } catch (error) {
+    console.error("Error in voice waitlist:", error);
+    return res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};

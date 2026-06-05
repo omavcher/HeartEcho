@@ -108,6 +108,8 @@ const ALL_REVIEWS = [
 ];
 
 const FEATURES = ['All', 'Memory', 'Live', 'Unlimited', 'Voice', 'Hot Stories'];
+const FEATURE_OPTIONS = ['Memory', 'Live Interactions', 'Hot Stories', 'Voice', 'Unlimited Chat', 'Overall Experience'];
+const STAR_LABELS = { 1: 'Poor', 2: 'Fair', 3: 'Good', 4: 'Great', 5: 'Excellent!' };
 
 const GOOGLE_SVG = (
   <svg className="rvp-google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -118,45 +120,262 @@ const GOOGLE_SVG = (
   </svg>
 );
 
+// ── Star SVG helper ───────────────────────────────────────────────────────────
+function StarIcon({ filled, size = 14 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24"
+      fill={filled ? '#FFD700' : 'none'}
+      stroke={filled ? '#FFD700' : 'rgba(255,255,255,0.22)'}
+      strokeWidth="1.5"
+      style={{ display:'block', flexShrink: 0 }}
+    >
+      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+    </svg>
+  );
+}
+
+// ── Interactive Star Rating ───────────────────────────────────────────────────
+function StarRating({ value, onChange }) {
+  const [hovered, setHovered] = useState(0);
+  const active = hovered || value;
+
+  return (
+    <div className="rvp-star-input-wrap">
+      <div className="rvp-star-input" role="group" aria-label="Select a star rating">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            className={`rvp-star-btn${n <= active ? ' rvp-star-btn--lit' : ''}`}
+            onMouseEnter={() => setHovered(n)}
+            onMouseLeave={() => setHovered(0)}
+            onClick={() => onChange(n)}
+            aria-label={`${n} star${n > 1 ? 's' : ''} — ${STAR_LABELS[n]}`}
+          >
+            <svg viewBox="0 0 24 24"
+              fill={n <= active ? '#FFD700' : 'none'}
+              stroke={n <= active ? '#FFD700' : 'rgba(255,255,255,0.25)'}
+              strokeWidth="1.5"
+            >
+              <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+            </svg>
+          </button>
+        ))}
+      </div>
+      {active > 0 && (
+        <span className="rvp-star-label">{STAR_LABELS[active]}</span>
+      )}
+    </div>
+  );
+}
+
+// ── Review Card ───────────────────────────────────────────────────────────────
 function ReviewCard({ r }) {
   return (
     <article className="rvp-card" itemScope itemType="https://schema.org/Review" itemProp="review">
-      <div itemProp="reviewRating" itemScope itemType="https://schema.org/Rating" style={{ display: 'none' }}>
+      <div itemProp="reviewRating" itemScope itemType="https://schema.org/Rating" style={{ display:'none' }}>
         <meta itemProp="ratingValue" content={r.rating} />
         <meta itemProp="bestRating" content="5" />
         <meta itemProp="worstRating" content="1" />
       </div>
-      <div itemProp="author" itemScope itemType="https://schema.org/Person" style={{ display: 'none' }}>
+      <div itemProp="author" itemScope itemType="https://schema.org/Person" style={{ display:'none' }}>
         <meta itemProp="name" content={r.name} />
       </div>
       <meta itemProp="datePublished" content="2025" />
 
-      {/* Google bar */}
       <div className="rvp-google-bar">
         {GOOGLE_SVG}
         <span className="rvp-google-label">Google Review</span>
         <span className="rvp-verified">✓ Verified</span>
       </div>
 
-      {/* User */}
       <div className="rvp-user">
         <div className="rvp-avatar" style={{ background: r.color }}>{r.initials}</div>
         <div className="rvp-meta">
           <div className="rvp-name">{r.name} <span className="rvp-city">· {r.city}</span></div>
           <div className="rvp-stars-row">
-            <span className="rvp-stars">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
+            <span className="rvp-stars">
+              {[1,2,3,4,5].map(n => <StarIcon key={n} filled={n <= r.rating} size={13} />)}
+            </span>
             <span className="rvp-time">{r.time}</span>
           </div>
           <span className="rvp-feature-tag">{r.feature}</span>
         </div>
       </div>
-
-      {/* Text */}
       <p className="rvp-text" itemProp="reviewBody">{r.text}</p>
     </article>
   );
 }
 
+// ── Feedback Form ─────────────────────────────────────────────────────────────
+function FeedbackForm() {
+  const [rating, setRating] = useState(0);
+  const [name, setName] = useState('');
+  const [city, setCity] = useState('');
+  const [feature, setFeature] = useState('');
+  const [reviewText, setReviewText] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    const e = {};
+    if (!rating) e.rating = 'Please select a star rating (1–5)';
+    if (!name.trim()) e.name = 'Your name is required';
+    if (!reviewText.trim() || reviewText.trim().length < 20) e.reviewText = 'Please write at least 20 characters';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleSubmit = (ev) => {
+    ev.preventDefault();
+    if (!validate()) return;
+    setSubmitted(true);
+  };
+
+  const handleReset = () => {
+    setRating(0); setName(''); setCity(''); setFeature('');
+    setReviewText(''); setErrors({}); setSubmitted(false);
+  };
+
+  if (submitted) {
+    return (
+      <div className="rvp-form-success">
+        <div className="rvp-success-icon">
+          <svg viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="24" fill="rgba(52,211,153,0.15)" />
+            <path d="M13 25l8 8 14-16" stroke="#34d399" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+        <h3 className="rvp-success-title">Thank you, {name}! 💖</h3>
+        <p className="rvp-success-sub">Your {rating}-star review has been received. We genuinely appreciate your feedback.</p>
+        <div className="rvp-success-stars">
+          {[1,2,3,4,5].map(n => (
+            <svg key={n} viewBox="0 0 24 24" className="rvp-success-star"
+              fill={n <= rating ? '#FFD700' : 'rgba(255,255,255,0.15)'}
+              stroke="none"
+            >
+              <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+            </svg>
+          ))}
+        </div>
+        <button className="rvp-reset-btn" onClick={handleReset}>Write another review</button>
+      </div>
+    );
+  }
+
+  return (
+    <form className="rvp-feedback-form" onSubmit={handleSubmit} noValidate>
+
+      {/* ── Star Rating ── */}
+      <div className={`rvp-field${errors.rating ? ' rvp-field--error' : ''}`}>
+        <label className="rvp-label">
+          Your Rating <span className="rvp-required">*</span>
+        </label>
+        <StarRating
+          value={rating}
+          onChange={(v) => { setRating(v); setErrors(p => ({ ...p, rating: '' })); }}
+        />
+        {errors.rating && <span className="rvp-error-msg">{errors.rating}</span>}
+      </div>
+
+      {/* ── Name + City ── */}
+      <div className="rvp-form-row">
+        <div className={`rvp-field${errors.name ? ' rvp-field--error' : ''}`}>
+          <label className="rvp-label" htmlFor="fb-name">
+            Your Name <span className="rvp-required">*</span>
+          </label>
+          <div className="rvp-input-wrap">
+            <svg className="rvp-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" style={{flexShrink:0}}>
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M20 21a8 8 0 10-16 0"/>
+            </svg>
+            <input
+              id="fb-name"
+              className="rvp-input"
+              type="text"
+              placeholder="e.g. Rahul Sharma"
+              value={name}
+              maxLength={60}
+              onChange={e => { setName(e.target.value); setErrors(p => ({ ...p, name: '' })); }}
+            />
+          </div>
+          {errors.name && <span className="rvp-error-msg">{errors.name}</span>}
+        </div>
+
+        <div className="rvp-field">
+          <label className="rvp-label" htmlFor="fb-city">
+            City <span className="rvp-optional">(optional)</span>
+          </label>
+          <div className="rvp-input-wrap">
+            <svg className="rvp-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" style={{flexShrink:0}}>
+              <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <input
+              id="fb-city"
+              className="rvp-input"
+              type="text"
+              placeholder="e.g. Mumbai"
+              value={city}
+              maxLength={40}
+              onChange={e => setCity(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Feature chips ── */}
+      <div className="rvp-field">
+        <label className="rvp-label">
+          Favourite Feature <span className="rvp-optional">(optional)</span>
+        </label>
+        <div className="rvp-feature-chips">
+          {FEATURE_OPTIONS.map(f => (
+            <button
+              key={f}
+              type="button"
+              className={`rvp-feature-chip${feature === f ? ' rvp-feature-chip--active' : ''}`}
+              onClick={() => setFeature(prev => prev === f ? '' : f)}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Review textarea ── */}
+      <div className={`rvp-field${errors.reviewText ? ' rvp-field--error' : ''}`}>
+        <label className="rvp-label" htmlFor="fb-review">
+          Write Your Review <span className="rvp-required">*</span>
+          <span className="rvp-char-count">{reviewText.length}/600</span>
+        </label>
+        <textarea
+          id="fb-review"
+          className="rvp-textarea"
+          placeholder="Share your experience with HeartEcho… What changed for you? How does the app make you feel?"
+          value={reviewText}
+          maxLength={600}
+          rows={5}
+          onChange={e => { setReviewText(e.target.value); setErrors(p => ({ ...p, reviewText: '' })); }}
+        />
+        {errors.reviewText && <span className="rvp-error-msg">{errors.reviewText}</span>}
+      </div>
+
+      {/* ── Submit ── */}
+      <button type="submit" className="rvp-submit-btn" id="submit-review-btn">
+        <span className="rvp-cta-shine" aria-hidden="true" />
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="rvp-submit-icon">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+        Submit My Review
+      </button>
+
+      <p className="rvp-form-note">Your review helps thousands of users make informed decisions 💜</p>
+    </form>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
 export default function ReviewsPage() {
   const [activeFeature, setActiveFeature] = useState('All');
   const [sortBy, setSortBy] = useState('recent');
@@ -166,13 +385,11 @@ export default function ReviewsPage() {
     let list = activeFeature === 'All'
       ? ALL_REVIEWS
       : ALL_REVIEWS.filter(r => r.feature === activeFeature);
-
     if (sortBy === 'top') list = [...list].sort((a, b) => b.rating - a.rating);
     return list;
   }, [activeFeature, sortBy]);
 
   const visible = showAll ? filtered : filtered.slice(0, 24);
-
   const avgRating = (ALL_REVIEWS.reduce((s, r) => s + r.rating, 0) / ALL_REVIEWS.length).toFixed(1);
   const fiveStarPct = Math.round((ALL_REVIEWS.filter(r => r.rating === 5).length / ALL_REVIEWS.length) * 100);
 
@@ -182,6 +399,7 @@ export default function ReviewsPage() {
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section className="rvp-hero">
+        <div className="rvp-hero-bg-glow" aria-hidden="true" />
         <div className="rvp-hero-inner">
           <div className="rvp-eyebrow">❤️ REAL MEMBER STORIES</div>
           <h1 className="rvp-title">
@@ -192,14 +410,15 @@ export default function ReviewsPage() {
             Every review below is from a verified HeartEcho Premium member. Collected via Google Reviews.
           </p>
 
-          {/* Aggregate rating bar */}
           <div className="rvp-agg" itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
             <meta itemProp="ratingValue" content={avgRating} />
             <meta itemProp="reviewCount" content="100" />
             <meta itemProp="bestRating" content="5" />
             <div className="rvp-agg-score">{avgRating}</div>
             <div className="rvp-agg-right">
-              <div className="rvp-agg-stars">★★★★★</div>
+              <div className="rvp-agg-stars">
+                {[1,2,3,4,5].map(n => <StarIcon key={n} filled size={20} />)}
+              </div>
               <div className="rvp-agg-sub">
                 Based on <strong>100 reviews</strong> · {fiveStarPct}% gave 5 stars
               </div>
@@ -230,7 +449,7 @@ export default function ReviewsPage() {
             {FEATURES.map(f => (
               <button
                 key={f}
-                className={`rvp-chip ${activeFeature === f ? 'active' : ''}`}
+                className={`rvp-chip${activeFeature === f ? ' active' : ''}`}
                 onClick={() => { setActiveFeature(f); setShowAll(false); }}
               >
                 {f}
@@ -267,9 +486,26 @@ export default function ReviewsPage() {
         )}
       </section>
 
+      {/* ── Write a Review ─────────────────────────────────────────────────── */}
+      <section className="rvp-feedback-section" id="write-review">
+        <div className="rvp-feedback-bg-glow" aria-hidden="true" />
+        <div className="rvp-feedback-inner">
+          <div className="rvp-feedback-header">
+            <div className="rvp-feedback-eyebrow">✍️ SHARE YOUR EXPERIENCE</div>
+            <h2 className="rvp-feedback-title">Write a Review</h2>
+            <p className="rvp-feedback-sub">
+              Tried HeartEcho? Your honest review helps thousands of people decide if it&apos;s right for them.
+            </p>
+          </div>
+          <div className="rvp-feedback-card">
+            <FeedbackForm />
+          </div>
+        </div>
+      </section>
+
       {/* ── CTA ─────────────────────────────────────────────────────────────── */}
       <section className="rvp-cta-section">
-        <div className="rvp-cta-glow" />
+        <div className="rvp-cta-glow" aria-hidden="true" />
         <div className="rvp-cta-inner">
           <h2 className="rvp-cta-title">Ready to join them?</h2>
           <p className="rvp-cta-sub">Unlock everything for just ₹599/year · less than a chai per month</p>
@@ -279,7 +515,7 @@ export default function ReviewsPage() {
             <span className="rvp-cta-save">Save ₹700</span>
           </div>
           <Link href="/subscribe" className="rvp-cta-btn">
-            <span className="rvp-cta-shine" />
+            <span className="rvp-cta-shine" aria-hidden="true" />
             💎 Get HeartEcho Premium
           </Link>
           <div className="rvp-cta-trust">
@@ -287,7 +523,6 @@ export default function ReviewsPage() {
           </div>
         </div>
       </section>
-
     </main>
   );
 }

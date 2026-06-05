@@ -3,13 +3,45 @@ import { blogPosts } from "../data/blogPosts";
 import api from '../config/api';
 import axios from "axios";
 import { citiesList } from "../data/cities";
+import fs from "fs";
+import path from "path";
 
 export default async function sitemap() {
   const now = new Date();
 
-  // Static routes
-  const staticRoutes = [
-    '/',
+  // 1. Priority 1.0 (homepage)
+  const homepageRoute = {
+    url: `${url}/`,
+    lastModified: now,
+    changeFrequency: 'weekly',
+    priority: 1.0,
+  };
+
+  // 2. Priority 0.9 (main SEO landing pages)
+  const landingPaths = [
+    '/ai-girlfriend-hindi',
+    '/virtual-girlfriend-india',
+    '/indian-ai-girlfriend',
+    '/hot-ai-girlfriend',
+    '/free-ai-girlfriend',
+    '/ai-boyfriend',
+    '/replika-alternative-india',
+    '/ai-se-baat-karo',
+    '/ai-girlfriend-no-filter',
+    '/ai-girlfriend-roleplay',
+    '/ai-girlfriend-for-lonely',
+    '/ai-girlfriend-voice-chat',
+  ];
+
+  const landingRoutes = landingPaths.map((path) => ({
+    url: `${url}${path}`,
+    lastModified: now,
+    changeFrequency: 'weekly',
+    priority: 0.9,
+  }));
+
+  // Other static pages
+  const otherStaticPaths = [
     '/discover',
     '/hot-stories',
     '/90s-era',
@@ -26,18 +58,72 @@ export default async function sitemap() {
     '/ai-sex-chat',
     '/heartecho-vs-candyai',
     '/heartecho-vs-talkie',
-  ].map((path) => ({
+  ];
+
+  const otherStaticRoutes = otherStaticPaths.map((path) => ({
     url: `${url}${path}`,
     lastModified: now,
-    changeFrequency: path === '/' ? 'daily' : ['reviews', '/ai-sex-chat'].includes(path) ? 'weekly' : 'weekly',
-    priority:
-      path === '/' ? 1 :
-      path === '/reviews' || path === '/ai-sex-chat' ? 0.9 :
-      path === '/subscribe' || path === '/hot-stories' ? 0.95 :
-      0.8,
+    changeFrequency: 'weekly',
+    priority: path === '/subscribe' || path === '/hot-stories' ? 0.95 : 0.8,
   }));
 
-  // City routes (dynamic - all 170+ cities from citiesList)
+  // 3. Priority 0.8 (blog posts)
+  const blogRoutes = blogPosts.map((post) => ({
+    url: `${url}/blog/${post.slug}`,
+    lastModified: now,
+    changeFrequency: 'monthly',
+    priority: 0.8,
+  }));
+
+  // 4. Priority 0.7 (persona pages)
+  const personaNames = [
+    'priya',
+    'ananya',
+    'riya',
+    'aaradhya',
+    'kiara',
+    'anita',
+    'neha',
+    'sonali',
+    'eshani',
+    'yashita',
+    'avika',
+    'mohini',
+    'suhani',
+    'aryan',
+    'kabir',
+    'rohan',
+    'aman',
+    'dev',
+    'vikram',
+    'arjun',
+    'rahul',
+    'zayn',
+    'viraj',
+    'aditya',
+    'rajveer',
+    'gautam',
+    'rishi',
+    'ishaan',
+    'anubhav',
+    'karan',
+    'aashish',
+    'keshav',
+    'devesh',
+    'amit',
+    'sameer',
+    'raj',
+    'ramesh'
+  ];
+
+  const personaRoutes = personaNames.map((name) => ({
+    url: `${url}/chat/${name}`,
+    lastModified: now,
+    changeFrequency: 'weekly',
+    priority: 0.7,
+  }));
+
+  // 5. City routes (dynamic)
   const cityRoutes = citiesList.map((city) => ({
     url: `${url}/city/${city.key}`,
     lastModified: now,
@@ -79,20 +165,36 @@ export default async function sitemap() {
     ...fetchedLiveStoryRoutes
   ];
 
-  // Blog routes (from local data)
-  const blogRoutes = blogPosts.map((post) => ({
-    url: `${url}/blog/${post.slug}`,
-    lastModified: new Date(post.date),
-    changeFrequency: 'monthly',
-    priority: 0.6,
-  }));
-
   // Combine all routes
-  return [
-    ...staticRoutes,
+  const allRoutes = [
+    homepageRoute,
+    ...landingRoutes,
+    ...otherStaticRoutes,
+    ...blogRoutes,
+    ...personaRoutes,
     ...cityRoutes,
     ...liveStoryRoutes,
-    ...storyRoutes,
-    ...blogRoutes
+    ...storyRoutes
   ];
+
+  // Generate the XML content
+  const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allRoutes.map(route => `  <url>
+    <loc>${route.url}</loc>
+    <lastmod>${route.lastModified.toISOString().split('T')[0]}</lastmod>
+    <changefreq>${route.changeFrequency}</changefreq>
+    <priority>${route.priority.toFixed(1)}</priority>
+  </url>`).join('\n')}
+</urlset>`;
+
+  // Write statically to public/sitemap.xml
+  try {
+    const publicPath = path.join(process.cwd(), 'public', 'sitemap.xml');
+    fs.writeFileSync(publicPath, xmlContent, 'utf8');
+  } catch (err) {
+    console.error("Failed to write static sitemap.xml to public folder:", err);
+  }
+
+  return allRoutes;
 }

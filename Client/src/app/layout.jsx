@@ -77,7 +77,7 @@ export const metadata = {
 
   twitter: {
     card: 'summary_large_image',
-    title: "HeartEcho – India's #1 AI Girlfriend | Hindi AI Chat & Desi Companion",
+    title: "Indian AI Girlfriend — Chat & Roleplay | HeartEcho",
     description: "Chat with India's most advanced AI girlfriend in Hindi. Free private companion chat, desi roleplay & adult stories. Try now →",
     images: ['https://heartecho.in/og-image.jpg'],
     creator: '@heartecho_in',

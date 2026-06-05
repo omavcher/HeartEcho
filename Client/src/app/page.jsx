@@ -1,9 +1,10 @@
 import Home from "../pages/Home";
+import { getHomepageSchema } from "../utils/schema";
 
 export const metadata = {
   title: {
     absolute:
-      "HeartEcho – Indian AI Girlfriend | Hindi AI Chat, Desi Roleplay & 18+ Companion",
+      "Indian AI Girlfriend — Hindi Chat & Roleplay | HeartEcho",
   },
   description:
     "India's #1 AI girlfriend app — chat in Hindi, Hinglish & English. Unlimited private conversations, AI memory, desi roleplay, and adult stories. 12,000+ happy members. Free to try. | HeartEcho",
@@ -54,31 +55,13 @@ export const metadata = {
 };
 
 export default function AppContainer() {
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: "HeartEcho",
-    applicationCategory: "Social Networking Application",
-    operatingSystem: "Web",
-    description:
-      "HeartEcho is an AI-powered virtual companion platform designed for Indian users. Experience realistic conversations, emotional support, and a customizable AI girlfriend or boyfriend that understands Hindi.",
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "INR",
-    },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      ratingCount: "1250",
-    },
-  };
+  const schemas = getHomepageSchema();
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }}
       />
       <Home />
     </>

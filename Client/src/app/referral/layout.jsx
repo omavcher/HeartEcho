@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Influencer Referral Program - Earn ₹20 per Signup + 15% Commission | HeartEcho AI",
+  title: { absolute: "Influencer Referral Program — Earn Money | HeartEcho" },
   description: "Join our affiliate program for content creators. Earn ₹20 for every user signup and 15% commission on subscriptions. No follower requirements. Secure dashboard access.",
   keywords: [
     "referral program", "influencer marketing", "affiliate program", "earn money online", 
@@ -10,7 +10,7 @@ export const metadata = {
     canonical: 'https://heartecho.in/referral',
   },
   openGraph: {
-    title: "Influencer Referral Program - Earn Commissions | HeartEcho AI",
+    title: "Influencer Referral Program — Earn Money | HeartEcho",
     description: "Join our creator affiliate program and earn ₹20 per signup + 15% commission on subscriptions. Perfect for influencers and content creators.",
     type: 'website',
     url: 'https://heartecho.in/referral',

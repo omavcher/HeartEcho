@@ -6,13 +6,14 @@ export async function generateMetadata({ params }) {
 
   const title = citySEO.title;
   const description = citySEO.description;
+  const fullTitle = `${title} | HeartEcho`;
 
   return {
     title,
     description,
     keywords: citySEO.keywords,
     openGraph: {
-      title,
+      title: fullTitle,
       description,
       url: `https://heartecho.in/city/${cityName}`,
       siteName: 'HeartEcho AI',
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }) {
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: fullTitle,
       description,
     },
     alternates: {

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Footer from '../../components/Footer';
 import '../../styles/Compare.css';
+import { getLandingPageSchema, getBlogPageSchema } from '../../utils/schema';
 
 export const metadata = {
   title: "HeartEcho vs Candy.ai – Best for India? | 2026",
@@ -75,27 +76,38 @@ const faqSchema = {
   ]
 };
 
-const articleSchema = {
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": "HeartEcho vs Candy.ai – Which AI Girlfriend App is Best for India?",
-  "description": "A detailed comparison of HeartEcho and Candy.ai for Indian users, covering Hindi support, pricing, features, and cultural fit.",
-  "author": { "@type": "Organization", "name": "HeartEcho" },
-  "publisher": { "@type": "Organization", "name": "HeartEcho", "url": "https://heartecho.in" },
-  "datePublished": "2026-01-01",
-  "dateModified": "2026-05-01"
-};
-
 export default function CompareCandyAI() {
+  const url = 'https://heartecho.in/heartecho-vs-candyai';
+  
+  // Generating landing page schemas (WebPage, FAQPage, Breadcrumbs)
+  const landingSchema = getLandingPageSchema({
+    url,
+    title: metadata.title,
+    description: metadata.description,
+    faqs: faqSchema.mainEntity,
+    breadcrumbs: [
+      { name: 'Home', item: 'https://heartecho.in' },
+      { name: 'HeartEcho vs Candy.ai', item: url }
+    ]
+  });
+
+  // Generating Article schema
+  const articleSchema = getBlogPageSchema({
+    url,
+    headline: "HeartEcho vs Candy.ai – Which AI Girlfriend App is Best for India?",
+    description: "A detailed comparison of HeartEcho and Candy.ai for Indian users, covering Hindi support, pricing, features, and cultural fit.",
+    datePublished: "2026-01-01",
+    dateModified: "2026-05-01",
+    authorName: "HeartEcho"
+  });
+
+  const combinedSchemas = [...landingSchema, ...articleSchema];
+
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchemas) }}
       />
       
       <div className="compare-page-wrapper">

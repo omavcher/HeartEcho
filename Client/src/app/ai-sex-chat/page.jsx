@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getLandingPageSchema } from '../../utils/schema';
 
 export const metadata = {
   title: {
@@ -84,34 +85,23 @@ const FAQ_ITEMS = [
 ];
 
 export default function AiSexChatPage() {
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@graph': [
-      {
-        '@type': 'WebPage',
-        name: 'Indian AI Sex Chat | HeartEcho',
-        description:
-          'Free Indian AI sex chat in Hindi & Hinglish. Private desi AI companion with unlimited adult conversations, roleplay & hot stories.',
-        url: 'https://heartecho.in/ai-sex-chat',
-        inLanguage: ['en-IN', 'hi'],
-        isPartOf: { '@type': 'WebSite', name: 'HeartEcho', url: 'https://heartecho.in/' },
-      },
-      {
-        '@type': 'FAQPage',
-        mainEntity: FAQ_ITEMS.map((item) => ({
-          '@type': 'Question',
-          name: item.q,
-          acceptedAnswer: { '@type': 'Answer', text: item.a },
-        })),
-      },
-    ],
-  };
+  const url = 'https://heartecho.in/ai-sex-chat';
+  const pageSchema = getLandingPageSchema({
+    url,
+    title: metadata.title.absolute,
+    description: metadata.description,
+    faqs: FAQ_ITEMS.map((item) => ({ question: item.q, answer: item.a })),
+    breadcrumbs: [
+      { name: 'Home', item: 'https://heartecho.in' },
+      { name: 'AI Sex Chat', item: url }
+    ]
+  });
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(pageSchema) }}
       />
 
       <main style={{ maxWidth: '860px', margin: '0 auto', padding: '48px 24px 80px', color: '#fff', fontFamily: 'inherit' }}>
