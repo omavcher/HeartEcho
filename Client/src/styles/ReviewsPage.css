@@ -965,3 +965,169 @@
     transition: none;
   }
 }
+
+/* ================================================================
+   LOCATION DETECTION & AUTCOMPLETE OVERRIDES
+   ================================================================ */
+.rvp-city-input-wrap {
+  position: relative !important;
+  width: 100% !important;
+}
+
+.rvp-city-input {
+  padding-right: 48px !important;
+}
+
+.rvp-location-detect-btn {
+  position: absolute !important;
+  right: 8px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: var(--rvp-pink-lt) !important;
+  cursor: pointer !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.22s var(--ease-spring) !important;
+  outline: none !important;
+  z-index: 5 !important;
+}
+
+.rvp-location-detect-btn:hover:not(:disabled) {
+  color: #fff !important;
+  background: var(--rvp-pink) !important;
+  border-color: var(--rvp-pink-lt) !important;
+  transform: translateY(-50%) scale(1.08) !important;
+  box-shadow: 0 0 12px rgba(206, 64, 133, 0.4) !important;
+}
+
+.rvp-location-detect-btn:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.95) !important;
+}
+
+.rvp-location-detect-btn:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.5 !important;
+}
+
+/* Spinner for location detection */
+.rvp-location-spinner {
+  display: inline-block !important;
+  width: 16px !important;
+  height: 16px !important;
+  border: 2px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 50% !important;
+  border-top-color: var(--rvp-pink-lt) !important;
+  animation: rvpSpin 0.8s linear infinite !important;
+}
+
+@keyframes rvpSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Custom Autocomplete suggestions dropdown */
+.rvp-suggestions-dropdown {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  width: 100% !important;
+  background-color: #0d0d14 !important;
+  border: 1px solid rgba(206, 64, 133, 0.3) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 15px rgba(206, 64, 133, 0.08) !important;
+  margin-top: 8px !important;
+  max-height: 250px !important;
+  overflow-y: auto !important;
+  z-index: 999999 !important;
+  backdrop-filter: blur(16px) !important;
+  box-sizing: border-box !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  overflow-x: hidden !important;
+}
+
+/* Custom Scrollbar for suggestions */
+.rvp-suggestions-dropdown::-webkit-scrollbar {
+  width: 6px !important;
+}
+.rvp-suggestions-dropdown::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-radius: 14px !important;
+}
+.rvp-suggestions-dropdown::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-radius: 14px !important;
+}
+.rvp-suggestions-dropdown::-webkit-scrollbar-thumb:hover {
+  background: var(--rvp-pink-lt) !important;
+}
+
+.rvp-suggestion-loading {
+  padding: 14px !important;
+  color: var(--rvp-muted) !important;
+  font-size: 0.88rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.rvp-suggestion-item {
+  padding: 12px 16px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  transition: background-color 0.22s var(--ease), padding-left 0.22s var(--ease) !important;
+  text-align: left !important;
+}
+
+.rvp-suggestion-item:last-child {
+  border-bottom: none !important;
+}
+
+.rvp-suggestion-item:hover {
+  background-color: rgba(206, 64, 133, 0.12) !important;
+  padding-left: 20px !important;
+}
+
+.rvp-suggestion-pin {
+  color: var(--rvp-pink-lt) !important;
+  flex-shrink: 0 !important;
+  transition: transform 0.22s var(--ease) !important;
+}
+
+.rvp-suggestion-item:hover .rvp-suggestion-pin {
+  transform: scale(1.15) !important;
+}
+
+.rvp-suggestion-text {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  text-align: left !important;
+}
+
+.rvp-suggestion-label {
+  color: #fff !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  text-align: left !important;
+}
+
+.rvp-suggestion-sublabel {
+  color: var(--rvp-muted) !important;
+  font-size: 0.72rem !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  margin-top: 2px !important;
+  text-align: left !important;
+}

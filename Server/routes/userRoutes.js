@@ -55,4 +55,8 @@ router.post("/install-referrer", controller.saveInstallReferrer);
 // Get latest app version info (public)
 router.get("/app-version", controller.getAppVersion);
 
+// Feedback / Reviews routes
+router.post("/submit-feedback", authMiddleware, controller.submitFeedback);
+router.get("/feedbacks", controller.getFeedbacks);
+
 module.exports = router;

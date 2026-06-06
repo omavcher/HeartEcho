@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import "../styles/ProfileLists.css";
 import PopNoti from '../components/PopNoti';
 import api from '../config/api';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import { FaStar, FaMapMarkerAlt } from 'react-icons/fa';
 
 function ProfileLists({ handleSettindSelection, onBackSBTNSelect, selectedId }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -16,6 +17,22 @@ function ProfileLists({ handleSettindSelection, onBackSBTNSelect, selectedId }) 
   const [token, setToken] = useState(null);
   const [twoFactor, setTwoFactor] = useState(false);
   const router = useRouter();
+
+  // Feedback states for Delete Account form
+  const [feedbackName, setFeedbackName] = useState("");
+  const [feedbackCity, setFeedbackCity] = useState("");
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackError, setFeedbackError] = useState("");
+
+  // Mapbox Autocomplete States
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearchingCities, setIsSearchingCities] = useState(false);
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+
+  const dropdownRef = useRef(null);
+  const justSelectedCity = useRef(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -57,22 +74,192 @@ function ProfileLists({ handleSettindSelection, onBackSBTNSelect, selectedId }) 
     fetchUserData();
   }, [token]);
 
+  // Fetch city suggestions from Mapbox Geocoding API (debounced)
+  useEffect(() => {
+    if (!feedbackCity.trim() || feedbackCity.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    if (justSelectedCity.current) {
+      justSelectedCity.current = false;
+      return;
+    }
+
+    const delayDebounce = setTimeout(async () => {
+      setIsSearchingCities(true);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      try {
+        const token = "pk.eyJ1Ijoib21hd2NoYXIwNyIsImEiOiJjbHlmbGtwdmowMHhkMmtxeXAyNXdkeHB3In0.37j_dk9NgxtiPXqwCgsdQg";
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(feedbackCity)}.json?access_token=${token}&types=place&country=in&limit=5`;
+        const res = await fetch(url, { signal: controller.signal });
+        const data = await res.json();
+        clearTimeout(timeoutId);
+        
+        if (data && data.features) {
+          const formatted = data.features.map(item => {
+            const nameOnly = item.text || '';
+            const displayName = item.place_name || '';
+            return {
+              name: nameOnly,
+              label: nameOnly,
+              display: displayName
+            };
+          });
+
+          // Filter unique labels
+          const unique = [];
+          const seen = new Set();
+          for (const item of formatted) {
+            if (item.name && !seen.has(item.name.toLowerCase())) {
+              seen.add(item.name.toLowerCase());
+              unique.push(item);
+            }
+          }
+
+          setSuggestions(unique);
+          setShowSuggestions(true);
+        } else {
+          setSuggestions([]);
+        }
+      } catch (err) {
+        console.error("Mapbox search error in profile delete:", err);
+        setSuggestions([]);
+      } finally {
+        setIsSearchingCities(false);
+      }
+    }, 400);
+
+    return () => {
+      clearTimeout(delayDebounce);
+    };
+  }, [feedbackCity]);
+
+  // Handle outside click to close suggestions dropdown
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+
+    setIsDetectingLocation(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        await fallbackDetectLocation(latitude, longitude);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        alert("Unable to retrieve your location. Please type manually.");
+        setIsDetectingLocation(false);
+      },
+      { timeout: 8000, enableHighAccuracy: false }
+    );
+  };
+
+  const fallbackDetectLocation = async (lat, lon) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    try {
+      const token = "pk.eyJ1Ijoib21hd2NoYXIwNyIsImEiOiJjbHlmbGtwdmowMHhkMmtxeXAyNXdkeHB3In0.37j_dk9NgxtiPXqwCgsdQg";
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?access_token=${token}&types=place`;
+      const response = await fetch(url, { signal: controller.signal });
+      const data = await response.json();
+      clearTimeout(timeoutId);
+
+      if (data && data.features && data.features.length > 0) {
+        const detectedCity = data.features[0].text;
+        if (detectedCity) {
+          justSelectedCity.current = true;
+          setFeedbackCity(detectedCity);
+          setIsDetectingLocation(false);
+          return;
+        }
+      }
+
+      // Secondary fallback
+      const bdController = new AbortController();
+      const bdTimeoutId = setTimeout(() => bdController.abort(), 5000);
+      const bdRes = await fetch(
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`,
+        { signal: bdController.signal }
+      );
+      const bdData = await bdRes.json();
+      clearTimeout(bdTimeoutId);
+      const detectedCity = bdData.city || bdData.locality || bdData.principalSubdivision || '';
+      if (detectedCity) {
+        justSelectedCity.current = true;
+        setFeedbackCity(detectedCity);
+      }
+    } catch (err) {
+      console.error("Reverse geocoding error:", err);
+    } finally {
+      setIsDetectingLocation(false);
+    }
+  };
+
   const handleDeleteClick = () => {
+    setFeedbackName(userData?.name || "User");
+    setFeedbackCity("");
+    setFeedbackRating(0);
+    setFeedbackText("");
+    setFeedbackError("");
+    setSuggestions([]);
+    setShowSuggestions(false);
     setShowDeleteConfirm(true);
   };
 
   const handleConfirmDelete = async () => {
+    if (!feedbackName.trim() || !feedbackRating || !feedbackText.trim() || !feedbackCity.trim()) {
+      setFeedbackError("Please fill in all feedback fields.");
+      return;
+    }
+
+    if (feedbackText.trim().length < 10) {
+      setFeedbackError("Feedback description must be at least 10 characters.");
+      return;
+    }
+
     setIsDeleting(true);
+    setFeedbackError("");
     try {
+      // 1. Submit feedback to DB first
+      await axios.post(`${api.Url}/user/submit-feedback`, {
+        name: feedbackName,
+        city: feedbackCity,
+        rating: feedbackRating,
+        text: feedbackText,
+        feature: "Delete Account",
+        live: false
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // 2. Proceed with delete account
       await axios.delete(`${api.Url}/user/delete-account`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       // Clear all local data
       if (typeof window !== 'undefined') localStorage.clear();
       Cookies.remove('token');
       router.push("/login");
     } catch (error) {
-      setNotification({ show: true, message: "Failed to delete account. Please try again.", type: "error" });
+      console.error("Error during delete/feedback submission:", error);
+      const errMsg = error.response?.data?.message || error.response?.data?.msg || "Failed to process your request. Please check all fields and try again.";
+      setFeedbackError(errMsg);
       setIsDeleting(false);
     }
   };
@@ -106,6 +293,43 @@ function ProfileLists({ handleSettindSelection, onBackSBTNSelect, selectedId }) 
 
   return (
     <>
+      <style>{`
+        .profile-city-suggestion-item-x30sn {
+          padding: 10px 12px;
+          cursor: pointer;
+          background: #18181b;
+          border: none;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          font-size: 0.9rem;
+          color: #e4e4e7;
+          width: 100%;
+          text-align: left;
+          transition: background 0.2s;
+        }
+        .profile-city-suggestion-item-x30sn:hover {
+          background: rgba(255, 105, 180, 0.1) !important;
+          color: #ff69b4 !important;
+        }
+        .profile-detect-location-btn-x30sn {
+          position: absolute;
+          right: 8px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: rgba(255, 105, 180, 0.1);
+          color: #ff69b4;
+          border: 1px solid rgba(255, 105, 180, 0.2);
+          border-radius: 6px;
+          padding: 4px 8px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: 0.2s;
+        }
+        .profile-detect-location-btn-x30sn:hover {
+          background: rgba(255, 105, 180, 0.2);
+        }
+      `}</style>
+
       <PopNoti
         {...notification}
         isVisible={notification.show}
@@ -228,18 +452,169 @@ function ProfileLists({ handleSettindSelection, onBackSBTNSelect, selectedId }) 
 
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal with Feedback Form */}
       {showDeleteConfirm && (
         <div className="overlay-backdrop">
-          <div className="modal-content">
-            <h3>Delete Account?</h3>
-            <p>This action is irreversible. Your account, chats, payments, and all related data will be permanently deleted.</p>
-            <div className='modal-actions'>
-              <button className="modal-btn btn-danger" onClick={handleConfirmDelete} disabled={isDeleting}>
-                {isDeleting ? <span className="loader-spinner"></span> : "Confirm Delete"}
+          <div className="modal-content" style={{ maxWidth: '420px', textAlign: 'left', background: 'rgba(20, 20, 22, 0.98)', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
+            <h3 style={{ textAlign: 'center', marginBottom: '8px', fontSize: '1.25rem', fontWeight: '700' }}>We're sorry to see you go 💔</h3>
+            <p style={{ textAlign: 'center', fontSize: '0.85rem', marginBottom: '20px', color: 'var(--ios-text-secondary)', lineHeight: '1.4' }}>
+              Please share your experience with us before deleting your account. All data will be permanently removed.
+            </p>
+            
+            {feedbackError && (
+              <div style={{ color: '#f87171', fontSize: '0.85rem', marginBottom: '16px', background: 'rgba(239,68,68,0.1)', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(239,68,68,0.2)' }}>
+                {feedbackError}
+              </div>
+            )}
+
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: 'var(--ios-text-secondary)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Your Name *</label>
+              <input 
+                type="text" 
+                value={feedbackName} 
+                onChange={(e) => setFeedbackName(e.target.value)}
+                placeholder="Enter your name"
+                style={{ textAlign: 'left', background: '#111', border: '1px solid rgba(255,255,255,0.1)', margin: 0, padding: '10px 12px', borderRadius: '10px', fontSize: '0.95rem', boxSizing: 'border-box', width: '100%' }}
+                disabled={isDeleting}
+              />
+            </div>
+
+            <div style={{ marginBottom: '14px', position: 'relative' }} ref={dropdownRef}>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: 'var(--ios-text-secondary)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Your City *</label>
+              <div style={{ position: 'relative' }}>
+                <input 
+                  type="text" 
+                  value={feedbackCity} 
+                  onChange={(e) => {
+                    setFeedbackCity(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  placeholder="Enter city (e.g. Pune, Delhi)"
+                  style={{ textAlign: 'left', background: '#111', border: '1px solid rgba(255,255,255,0.1)', margin: 0, padding: '10px 85px 10px 12px', borderRadius: '10px', fontSize: '0.95rem', boxSizing: 'border-box', width: '100%' }}
+                  disabled={isDeleting || isDetectingLocation}
+                />
+                <button
+                  type="button"
+                  className="profile-detect-location-btn-x30sn"
+                  onClick={detectLocation}
+                  disabled={isDeleting || isDetectingLocation}
+                  title="Detect my current city location"
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  {isDetectingLocation ? (
+                    <span className="loader-spinner" style={{ width: 10, height: 10 }}></span>
+                  ) : (
+                    <FaMapMarkerAlt />
+                  )}
+                  {isDetectingLocation ? "Detecting..." : "Detect"}
+                </button>
+              </div>
+
+              {/* Suggestions Dropdown */}
+              {showSuggestions && suggestions.length > 0 && (
+                <div style={{ 
+                  position: 'absolute', 
+                  top: '100%', 
+                  left: 0, 
+                  right: 0, 
+                  background: '#18181b', 
+                  border: '1px solid rgba(255, 255, 255, 0.1)', 
+                  borderRadius: '10px', 
+                  overflow: 'hidden', 
+                  zIndex: 9999, 
+                  marginTop: '4px', 
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+                  maxHeight: '180px',
+                  overflowY: 'auto'
+                }}>
+                  {suggestions.map((item, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      className="profile-city-suggestion-item-x30sn"
+                      onClick={() => {
+                        justSelectedCity.current = true;
+                        setFeedbackCity(item.name);
+                        setSuggestions([]);
+                        setShowSuggestions(false);
+                      }}
+                    >
+                      <strong style={{ color: '#fff' }}>{item.name}</strong>
+                      <span style={{ fontSize: '0.75rem', color: '#888', marginLeft: '6px' }}>({item.display})</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {isSearchingCities && (
+                <div style={{ position: 'absolute', right: '90px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.75rem', color: '#ff69b4', zIndex: 10 }}>
+                  Searching...
+                </div>
+              )}
+            </div>
+
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: 'var(--ios-text-secondary)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>How would you rate us? *</label>
+              <div style={{ display: 'flex', gap: '8px', padding: '4px 0' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <FaStar 
+                    key={star}
+                    onClick={() => !isDeleting && setFeedbackRating(star)}
+                    style={{ 
+                      fontSize: '28px', 
+                      cursor: isDeleting ? 'not-allowed' : 'pointer', 
+                      color: star <= feedbackRating ? '#ffd700' : 'rgba(255,255,255,0.15)',
+                      transition: 'color 0.2s, transform 0.1s'
+                    }}
+                    onMouseEnter={(e) => { if (!isDeleting) e.target.style.transform = 'scale(1.15)'; }}
+                    onMouseLeave={(e) => { if (!isDeleting) e.target.style.transform = 'scale(1)'; }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: 'var(--ios-text-secondary)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Reason for deleting *</label>
+              <textarea 
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                placeholder="Please tell us why you want to delete your account (min 10 characters)..."
+                rows="3"
+                style={{ 
+                  width: '100%', 
+                  background: '#111', 
+                  border: '1px solid rgba(255,255,255,0.1)', 
+                  borderRadius: '10px', 
+                  color: 'white', 
+                  padding: '10px 12px',
+                  fontSize: '0.95rem',
+                  fontFamily: 'inherit',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  resize: 'none',
+                  lineHeight: '1.4'
+                }}
+                disabled={isDeleting}
+              />
+              <span style={{ display: 'block', textAlign: 'right', fontSize: '0.75rem', color: feedbackText.trim().length >= 10 ? '#34c759' : '#8e8e93', marginTop: '4px' }}>
+                {feedbackText.trim().length} / 10+ characters
+              </span>
+            </div>
+
+            <div className='modal-actions' style={{ marginTop: '10px' }}>
+              <button 
+                className="modal-btn btn-danger" 
+                onClick={handleConfirmDelete} 
+                disabled={isDeleting || !feedbackRating || !feedbackCity.trim() || feedbackText.trim().length < 10 || !feedbackName.trim()}
+                style={{ 
+                  borderRadius: '12px 12px 0 0', 
+                  opacity: (isDeleting || !feedbackRating || !feedbackCity.trim() || feedbackText.trim().length < 10 || !feedbackName.trim()) ? 0.45 : 1,
+                  cursor: (isDeleting || !feedbackRating || !feedbackCity.trim() || feedbackText.trim().length < 10 || !feedbackName.trim()) ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isDeleting ? <span className="loader-spinner"></span> : "Submit & Delete Account"}
               </button>
               <div className="modal-divider"></div>
-              <button className="modal-btn btn-primary" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting}>Cancel</button>
+              <button className="modal-btn btn-primary" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting} style={{ borderRadius: '0 0 12px 12px' }}>Cancel</button>
             </div>
           </div>
         </div>

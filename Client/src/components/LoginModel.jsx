@@ -99,6 +99,8 @@ const LoginModal = ({ onClose, mode = "login" }) => {
     return (
         <>
             <div className="modal-overlay font-inter">
+                <div className="ambient-glow-shape shape-1"></div>
+                <div className="ambient-glow-shape shape-2"></div>
                 <div className="modal-card">
                     <button onClick={handleClose} className="modal-close-btn" aria-label="Close modal">
                         <CloseIcon />
@@ -193,9 +195,9 @@ const LoginModal = ({ onClose, mode = "login" }) => {
             <style jsx global>{`
                 :root {
                     --color-primary: #ec4899;
-                    --color-bg-dark: #121212;
+                    --color-bg-dark: #0f0f13;
                     --color-text-dim: #A1A1AA;
-                    --shadow-glow: 0 0 20px rgba(236, 72, 153, 0.4);
+                    --shadow-glow: 0 0 25px rgba(236, 72, 153, 0.45);
                 }
 
                 .font-inter { font-family: 'Inter', sans-serif; }
@@ -210,47 +212,103 @@ const LoginModal = ({ onClose, mode = "login" }) => {
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    background-color: rgba(0, 0, 0, 0.85);
-                    backdrop-filter: blur(8px);
+                    background-color: rgba(6, 6, 9, 0.88);
+                    backdrop-filter: blur(12px);
                     padding: 1rem;
-                    animation: fadeIn 0.3s ease-out;
+                    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                    overflow: hidden;
                 }
 
-                /* Modal Card */
+                /* Ambient Background Glows */
+                .ambient-glow-shape {
+                    position: absolute;
+                    border-radius: 50%;
+                    opacity: 0.25;
+                    filter: blur(80px);
+                    pointer-events: none;
+                    z-index: 0;
+                }
+                .ambient-glow-shape.shape-1 {
+                    width: 320px;
+                    height: 320px;
+                    background: radial-gradient(circle, var(--color-primary), transparent 70%);
+                    top: 15%;
+                    left: 20%;
+                    animation: floatGlow1 12s ease-in-out infinite;
+                }
+                .ambient-glow-shape.shape-2 {
+                    width: 280px;
+                    height: 280px;
+                    background: radial-gradient(circle, #8b5cf6, transparent 70%);
+                    bottom: 15%;
+                    right: 20%;
+                    animation: floatGlow2 15s ease-in-out infinite;
+                }
+                @keyframes floatGlow1 {
+                    0%, 100% { transform: translate(0, 0) scale(1); }
+                    50% { transform: translate(40px, -30px) scale(1.15); }
+                }
+                @keyframes floatGlow2 {
+                    0%, 100% { transform: translate(0, 0) scale(1); }
+                    50% { transform: translate(-30px, 35px) scale(0.85); }
+                }
+
+                /* Modal Card with Gradient Mask Border */
                 .modal-card {
                     position: relative;
                     width: 100%;
                     max-width: 360px;
                     background-color: var(--color-bg-dark);
-                    border: 1px solid #333;
+                    border: none;
                     border-radius: 24px;
                     display: flex;
                     flex-direction: column;
-                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-                    overflow: visible; 
+                    box-shadow: 0 0 50px rgba(236, 72, 153, 0.15), 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+                    overflow: hidden;
                     margin-top: 50px;
+                    z-index: 10;
+                    animation: cardSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+
+                /* Gradient Mask Border */
+                .modal-card::before {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                    border-radius: 24px;
+                    padding: 1px;
+                    background: linear-gradient(135deg, #ec4899, #8b5cf6, rgba(236, 72, 153, 0.15));
+                    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+                    -webkit-mask-composite: xor;
+                    mask-composite: exclude;
+                    pointer-events: none;
+                    z-index: 2;
                 }
 
                 .modal-close-btn {
                     position: absolute;
-                    top: 12px;
-                    right: 12px;
+                    top: 16px;
+                    right: 16px;
                     width: 32px;
                     height: 32px;
-                    background: rgba(255,255,255,0.1);
+                    background: rgba(255,255,255,0.06);
                     border-radius: 50%;
                     color: white;
-                    border: none;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
                     cursor: pointer;
                     z-index: 50;
-                    padding: 6px;
-                    transition: background 0.2s;
+                    padding: 7px;
+                    transition: background 0.25s, transform 0.25s, border-color 0.25s;
                 }
-                .modal-close-btn:hover { background: rgba(255,255,255,0.2); }
+                .modal-close-btn:hover {
+                    background: rgba(236, 72, 153, 0.2);
+                    border-color: rgba(236, 72, 153, 0.4);
+                    transform: rotate(90deg);
+                }
 
                 /* Image Section */
                 .modal-image-section {
-                    display: none; /* Hide on mobile for a cleaner, faster look */
+                    display: none;
                 }
 
                 .profile-image {
@@ -258,7 +316,6 @@ const LoginModal = ({ onClose, mode = "login" }) => {
                     height: 100%;
                     object-fit: cover;
                     border-radius: 16px;
-                    border: 2px solid var(--color-primary);
                 }
 
                 .mobile-decor-bg {
@@ -287,7 +344,7 @@ const LoginModal = ({ onClose, mode = "login" }) => {
 
                 /* Content Section */
                 .modal-content-section {
-                    padding: 2rem 1.5rem;
+                    padding: 2.25rem 1.75rem;
                     text-align: center;
                     color: white;
                     display: flex;
@@ -298,51 +355,59 @@ const LoginModal = ({ onClose, mode = "login" }) => {
                 
                 .eyebrow {
                     font-size: 0.75rem;
-                    letter-spacing: 0.1em;
+                    letter-spacing: 0.12em;
                     text-transform: uppercase;
                     color: var(--color-primary);
                     font-weight: 700;
                 }
                 
                 .main-title {
-                    font-size: 1.5rem;
+                    font-size: 1.6rem;
                     font-weight: 800;
-                    line-height: 1.1;
+                    line-height: 1.15;
                     background: linear-gradient(to right, #fff, #fbcfe8);
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
                 }
 
-                .description-text { font-size: 0.85rem; line-height: 1.4; color: var(--color-text-dim); }
+                .description-text { font-size: 0.85rem; line-height: 1.45; color: var(--color-text-dim); }
 
                 .error-message {
-                    background: rgba(239, 68, 68, 0.1);
+                    background: rgba(239, 68, 68, 0.08);
                     color: #f87171;
-                    padding: 8px;
-                    border-radius: 8px;
+                    padding: 10px;
+                    border-radius: 10px;
                     font-size: 0.85rem;
                     margin-top: 1rem;
-                    border: 1px solid rgba(239, 68, 68, 0.3);
+                    border: 1px solid rgba(239, 68, 68, 0.25);
                 }
 
                 .form-container { margin-top: 1.25rem; }
                 
-                .google-btn-wrapper { width: 100%; display: flex; justify-content: center; }
+                .google-btn-wrapper {
+                    width: 100%;
+                    display: flex;
+                    justify-content: center;
+                    transition: transform 0.2s;
+                }
+                .google-btn-wrapper:hover {
+                    transform: translateY(-1px);
+                }
 
                 .divider {
                     display: flex;
                     align-items: center;
                     text-align: center;
-                    margin: 1rem 0;
-                    color: #555;
-                    font-size: 0.75rem;
+                    margin: 1.25rem 0;
+                    color: #71717a;
+                    font-size: 0.72rem;
                     text-transform: uppercase;
                     letter-spacing: 1px;
                 }
                 .divider::before, .divider::after {
                     content: '';
                     flex: 1;
-                    border-bottom: 1px solid #333;
+                    border-bottom: 1px solid #27272a;
                 }
                 .divider span { padding: 0 10px; }
 
@@ -351,15 +416,19 @@ const LoginModal = ({ onClose, mode = "login" }) => {
                 .form-input {
                     width: 100%;
                     padding: 12px 14px;
-                    background: #1a1a1a;
-                    border: 1px solid #333;
+                    background: #18181b;
+                    border: 1px solid #27272a;
                     border-radius: 12px;
                     color: white;
                     font-size: 0.9rem;
                     outline: none;
-                    transition: border-color 0.2s;
+                    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
                 }
-                .form-input:focus { border-color: var(--color-primary); }
+                .form-input:focus {
+                    border-color: var(--color-primary);
+                    background-color: #09090b;
+                    box-shadow: 0 0 10px rgba(236, 72, 153, 0.2);
+                }
 
                 /* CTA Button */
                 .cta-button {
@@ -376,23 +445,25 @@ const LoginModal = ({ onClose, mode = "login" }) => {
                     font-size: 1rem;
                     border: none;
                     cursor: pointer;
-                    transition: transform 0.2s, box-shadow 0.2s;
+                    transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
                     overflow: hidden;
                     margin-top: 0.5rem;
                 }
                 .cta-button:hover:not(:disabled) {
                     transform: translateY(-1px);
-                    box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+                    box-shadow: 0 4px 15px rgba(236, 72, 153, 0.45);
+                    filter: brightness(1.05);
                 }
                 .cta-button:disabled { opacity: 0.7; cursor: not-allowed; }
 
-                .footer-link { font-size: 0.8rem; color: #888; }
+                .footer-link { font-size: 0.8rem; color: #71717a; }
                 .link-highlight {
                     color: var(--color-primary);
                     text-decoration: none;
                     font-weight: 600;
+                    transition: filter 0.2s;
                 }
-                .link-highlight:hover { text-decoration: underline; }
+                .link-highlight:hover { filter: brightness(1.1); text-decoration: underline; }
 
                 /* Animations */
                 .glow-effect {
@@ -409,8 +480,12 @@ const LoginModal = ({ onClose, mode = "login" }) => {
                     100% { left: 200%; }
                 }
                 @keyframes fadeIn {
-                    from { opacity: 0; transform: scale(0.95); }
-                    to { opacity: 1; transform: scale(1); }
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes cardSlideIn {
+                    from { opacity: 0; transform: scale(0.96) translateY(10px); }
+                    to { opacity: 1; transform: scale(1) translateY(0); }
                 }
 
                 .spinner {
@@ -429,7 +504,6 @@ const LoginModal = ({ onClose, mode = "login" }) => {
                         flex-direction: row;
                         margin-top: 0;
                         padding: 0;
-                        border: 1px solid #2a2a2a;
                     }
 
                     .modal-image-section { 
@@ -455,9 +529,9 @@ const LoginModal = ({ onClose, mode = "login" }) => {
 
                     .modal-content-section {
                         width: 55%;
-                        padding: 2.5rem;
+                        padding: 3rem;
                         text-align: left;
-                        background: linear-gradient(to left, #121212 0%, #1a1a1a 100%);
+                        background: linear-gradient(to left, #0f0f13 0%, #17171e 100%);
                     }
 
                     .title-group { gap: 0.5rem; }
