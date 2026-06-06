@@ -14,7 +14,10 @@ const ReferralCreator = require("../models/ReferralCreator");
 const { generateCreatorToken, verifyReferralCreator } = require('../utils/jwt');
 const { sendPushNotification, sendMulticastNotification, sendEachPersonalizedNotification } = require("../utils/notificationService");
 const NotificationLog = require("../models/NotificationLog");
+const Feedback = require("../models/Feedback");
+
 // Get all deleted accounts
+
 exports.getDeletedAccounts = async (req, res) => {
   try {
     const deletedAccounts = await DeletedAccount.find().sort({ deletedAt: -1 });
