@@ -283,6 +283,10 @@ exports.getAnalytics = async (req, res) => {
             utmSource:    { $first: '$eventData.utm_source' },
             utmCampaign:  { $first: '$eventData.utm_campaign' },
             utmMedium:    { $first: '$eventData.utm_medium' },
+            geo:          { $first: '$eventData.geo' },
+            region:       { $first: '$eventData.region' },
+            cost:         { $first: '$eventData.cost' },
+            keywords:     { $first: '$eventData.keywords' },
             hasFbclid:    { $max: { $cond: [{ $ne: [{ $ifNull: ['$eventData.fbclid', null] }, null] }, 1, 0] } },
             converted:    { $max: { $cond: [{ $eq: ['$eventType', 'subscription_purchase'] }, 1, 0] } },
             signedUp:     { $max: { $cond: [{ $eq: ['$eventType', 'signup_complete'] }, 1, 0] } },
@@ -303,6 +307,7 @@ exports.getAnalytics = async (req, res) => {
             _id: 1, userId: 1, sessionId: 1, totalEvents: 1, eventTypes: 1,
             landingPage: 1, lastPage: 1, firstSeen: 1, lastSeen: 1,
             deviceType: 1, ip: 1, referrer: 1, utmSource: 1, utmCampaign: 1, utmMedium: 1,
+            geo: 1, region: 1, cost: 1, keywords: 1,
             hasFbclid: 1, converted: 1, signedUp: 1, loggedIn: 1,
             user: { $arrayElemAt: ['$userData', 0] }
           }

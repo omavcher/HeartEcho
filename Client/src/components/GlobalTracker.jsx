@@ -100,7 +100,8 @@ export default function GlobalTracker() {
       searchParams.forEach((value, key) => {
         // Strip 'amp;' prefix that AMP/HTML-encoded URLs inject
         const cleanKey = key.replace(/^amp;/, '');
-        if (cleanKey.startsWith('utm_') || cleanKey === 'fbclid') {
+        const allowedParams = ['fbclid', 'gclid', 'device_type', 'geo', 'region', 'cost', 'keywords'];
+        if (cleanKey.startsWith('utm_') || allowedParams.includes(cleanKey)) {
           currentUtms[cleanKey] = value;
         }
         
@@ -123,7 +124,8 @@ export default function GlobalTracker() {
         if (!rawKey) return;
         const cleanKey = decodeURIComponent(rawKey.replace(/^amp;/, ''));
         const value = decodeURIComponent((rest.join('=') || '').replace(/\+/g, ' '));
-        if (cleanKey.startsWith('utm_') || cleanKey === 'fbclid') {
+        const allowedParams = ['fbclid', 'gclid', 'device_type', 'geo', 'region', 'cost', 'keywords'];
+        if (cleanKey.startsWith('utm_') || allowedParams.includes(cleanKey)) {
           currentUtms[cleanKey] = value;
         }
         

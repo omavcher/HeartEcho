@@ -325,6 +325,7 @@ export default function TrackingAdmin() {
     { id:'campaigns',  label:'Campaigns & UTM',   icon:<FaAd/> },
     { id:'funnel',     label:'Conversion Funnel', icon:<FaFunnelDollar/> },
     { id:'ads',        label:'Ad Sources',        icon:<FaFacebook/> },
+    { id:'ad_users',   label:'Ads User Data',     icon:<FaUsers/> },
     { id:'landing',    label:'Landing Pages',     icon:<MdLandscape/> },
   ];
 
@@ -857,6 +858,179 @@ export default function TrackingAdmin() {
                 </div>
               </>
             )}
+
+            {/* ══════════ ADS USER DATA TAB ══════════ */}
+            {tab === 'ad_users' && (() => {
+              const journeys = data.userJourney || [];
+              
+              // Filter to show users that have any paid/ad tracking parameters
+              const adJourneys = journeys.filter(u => 
+                u.utmSource || u.utmCampaign || u.utmMedium || u.hasFbclid || u.geo || u.region || u.keywords || u.cost
+              );
+
+              const getBadge = (val, successLabel, failLabel) => {
+                return val ? (
+                  <span className="badge" style={{background: 'rgba(76,175,80,.12)', color: '#8bc34a', border: '1px solid rgba(76,175,80,.2)'}}>
+                    {successLabel}
+                  </span>
+                ) : (
+                  <span className="badge" style={{background: 'rgba(255,255,255,.05)', color: '#666', border: '1px solid rgba(255,255,255,.1)'}}>
+                    {failLabel}
+                  </span>
+                );
+              };
+
+              return (
+                <div className="trk-card full">
+                  <div className="trk-section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                      <FaUsers style={{ color: '#ff69b4' }} /> Ads User Attribution & Performance Analyzer
+                    </span>
+                    <span style={{ fontSize: 11, color: '#666', fontWeight: 'normal' }}>
+                      Showing {adJourneys.length} ad-acquired visitors in this page
+                    </span>
+                  </div>
+                  
+                  {adJourneys.length === 0 ? (
+                    <div style={{color:'#666', fontSize:13, textAlign:'center', padding:'40px 0', lineHeight:2}}>
+                      No ad-attributable user journeys found in the current date range.<br />
+                      <span style={{fontSize:11, color:'#444'}}>Check your campaign links to ensure they use correct UTM parameters or click identifiers.</span>
+                    </div>
+                  ) : (
+                    <div className="trk-scroll">
+                      <table className="camp-tbl" style={{ width: '100%' }}>
+                        <thead>
+                          <tr>
+                            <th>User / Session</th>
+                            <th>Attribution Source</th>
+                            <th>Campaign</th>
+                            <th>Params (Keyword / Cost)</th>
+                            <th>Location / Device</th>
+                            <th style={{ textAlign: 'center' }}>Registration</th>
+                            <th style={{ textAlign: 'center' }}>Conversion</th>
+                            <th style={{ textAlign: 'right' }}>Activity Timeline</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {adJourneys.map((j, idx) => {
+                            const isSubscriber = j.user?.user_type === 'subscriber' || j.converted;
+                            const isSignedUp = j.user || j.signedUp;
+                            const utmCampaignClean = j.utmCampaign ? j.utmCampaign.replace(/__/g, ' · ').replace(/_/g, ' ') : '';
+                            
+                            return (
+                              <tr key={j._id || idx}>
+                                <td>
+                                  {j.user ? (
+                                    <div className="user-cell">
+                                      <div className="u-avatar" style={{ background: '#ff69b4', color: '#000', display: 'flex', alignItems: 'center', justify: 'center', fontWeight: 'bold', fontSize: 10 }}>
+                                        {(j.user.name || 'U').slice(0, 2).toUpperCase()}
+                                      </div>
+                                      <div>
+                                        <div style={{ fontWeight: '700', color: '#fff' }}>{j.user.name}</div>
+                                        <div style={{ fontSize: 10, color: '#666' }}>{j.user.email}</div>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div>
+                                      <div style={{ fontWeight: '700', color: '#aaa' }}>Anonymous Visitor</div>
+                                      <div style={{ fontSize: 9, color: '#444', fontStyle: 'italic', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {j.sessionId}
+                                      </div>
+                                    </div>
+                                  )}
+                                </td>
+                                <td>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    <span style={{ fontWeight: '700', color: '#ff69b4' }}>
+                                      {j.utmSource || (j.hasFbclid ? 'facebook' : 'paid_ad')}
+                                    </span>
+                                    <span style={{ fontSize: 10, color: '#555' }}>
+                                      medium: {j.utmMedium || 'paid'}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td style={{ maxWidth: 200 }}>
+                                  <div style={{ fontSize: 11, color: '#ccc', wordBreak: 'break-all', lineHeight: 1.3 }}>
+                                    {utmCampaignClean || <span style={{ color: '#444', fontStyle: 'italic' }}>direct / custom click</span>}
+                                  </div>
+                                </td>
+                                <td>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    {j.keywords && (
+                                      <span style={{ background: 'rgba(0,188,212,.08)', border: '1px solid rgba(0,188,212,.15)', color: '#00bcd4', padding: '1px 5px', borderRadius: 4, fontSize: 9, display: 'inline-block', width: 'fit-content' }}>
+                                        🔑 {j.keywords}
+                                      </span>
+                                    )}
+                                    {j.cost && (
+                                      <span style={{ color: '#8bc34a', fontSize: 10, fontWeight: '600' }}>
+                                        Cost: ${parseFloat(j.cost).toFixed(4)}
+                                      </span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    <span style={{ color: '#fff', fontSize: 11, display: 'flex', alignItems: 'center', gap: 3 }}>
+                                      🌍 {j.geo || 'Unknown'}{j.region ? ` (${j.region})` : ''}
+                                    </span>
+                                    <span style={{ fontSize: 10, color: '#555' }}>
+                                      device: {j.deviceType || 'Desktop'}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td style={{ textAlign: 'center' }}>
+                                  {getBadge(isSignedUp, "Signed Up", "Visitor")}
+                                </td>
+                                <td style={{ textAlign: 'center' }}>
+                                  {isSubscriber ? (
+                                    <span className="badge" style={{background: 'rgba(255,105,180,.15)', color: '#ff69b4', border: '1px solid rgba(255,105,180,.3)', fontWeight: 'bold'}}>
+                                      Subscriber 👑
+                                    </span>
+                                  ) : (
+                                    <span className="badge" style={{background: 'rgba(255,255,255,.05)', color: '#555', border: '1px solid rgba(255,255,255,.1)'}}>
+                                      Free Tier
+                                    </span>
+                                  )}
+                                </td>
+                                <td style={{ textAlign: 'right' }}>
+                                  <div style={{ fontSize: 11, color: '#fff', fontWeight: '600' }}>
+                                    {new Date(j.lastSeen).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                                  </div>
+                                  <div style={{ fontSize: 9, color: '#555' }}>
+                                    Total Actions: {j.totalEvents}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Pagination Controls */}
+                  <div className="trk-pg" style={{ marginTop: 24 }}>
+                    <button 
+                      className="trk-pg-btn" 
+                      onClick={() => setFilter(p => ({ ...p, page: Math.max(1, p.page - 1) }))} 
+                      disabled={filter.page <= 1}
+                    >
+                      Previous
+                    </button>
+                    <span style={{ fontSize: 12, color: '#666' }}>
+                      Page {filter.page} of {data.totalPages || 1}
+                    </span>
+                    <button 
+                      className="trk-pg-btn" 
+                      onClick={() => setFilter(p => ({ ...p, page: Math.min(data.totalPages || 1, p.page + 1) }))} 
+                      disabled={filter.page >= (data.totalPages || 1)}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
 
 
             {/* ══════════ LANDING PAGES TAB ══════════ */}
