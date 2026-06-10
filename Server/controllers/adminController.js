@@ -814,6 +814,520 @@ exports.aiAllModelData = async (req, res) => {
     }
   };
 
+// ============================================================
+// AI SUGGEST REPLY FOR COMPLAINT TICKET (OpenRouter free models)
+// ============================================================
+exports.getAiSuggestReply = async (req, res) => {
+  try {
+    const { issue, userName, tier, ticketId } = req.body;
+
+    if (!issue) {
+      return res.status(400).json({ success: false, message: "Issue text is required" });
+    }
+
+    const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+    if (!OPENROUTER_API_KEY) {
+      return res.status(500).json({ success: false, message: "OpenRouter API key not configured" });
+    }
+
+const systemPrompt = `You are an expert customer support agent for HeartEcho — a premium AI companion app. Your communication style must be tailored for Indian users: polite, highly direct, reassuring, and brief. Do not use overly flowery, long, or dramatic apologies. Get straight to the solution.
+
+=== ABOUT HEARTECHO ===
+HeartEcho lets users form emotional bonds with AI characters.
+- Available on Android, and web (heartecho.in)
+- Features: Chat, Live Story (Yearly/Yearly Pro only), Letter AI, Voice Calls (Yearly/Yearly Pro only)
+
+=== SUBSCRIPTION PLANS ===
+FREE: 5 messages/day (resets midnight IST).
+MONTHLY (~₹99/mo): Unlimited msgs, full Live Story. No voice calls.
+YEARLY (~₹599/yr): Unlimited msgs, 30 min/day voice calls, full Live Story.
+YEARLY PRO (~₹1499/yr): Unlimited msgs, unlimited voice calls, everything unlocked.
+
+=== RESOLUTION GUIDE ===
+1. PAYMENT DONE BUT PLAN NOT ACTIVE:
+Tell them: Their money is 100% safe. Ask them to force-close and reopen the app. If it's not active in 30 mins, our team will manually activate it.
+
+2. AI SAYING "TAKE PREMIUM" EVEN AFTER PAYMENT:
+Tell them: Log out completely and log back in to refresh the account. If it still fails, our team will manually activate it shortly.
+
+3. AI NOT REPLYING / INCOMPLETE MESSAGES:
+Tell them: Clear the app cache (Settings > Apps > HeartEcho > Clear Cache) and reopen. This is a known bug being fixed, and a reset usually solves it.
+
+4. LIVE STORY NOT ACCESSIBLE:
+Monthly users don't get Live Story. If they have Yearly/Pro: ask them to logout and login again to fix it.
+
+5. AI SENDING RANDOM MESSAGES:
+Tell them: Tap the 3-dot menu in the chat and select "Clear Chat" or "Reset Conversation" to refresh the AI's memory.
+
+6. VOICE CALLS NOT WORKING:
+Monthly users don't get voice. For Yearly: ensure microphone permissions are ON and internet is stable.
+
+7. PAYMENT FAILING (VISA/INTERNATIONAL):
+Tell them: Use the PayPal option on the subscription screen. If missing, email heartecho.help@gmail.com for a direct link. 
+
+8. APP CRASHING:
+Tell them: Update the app and clear the cache. Reinstalling is safe as chat history is saved on our servers.
+
+9. LOGIN ISSUES:
+Tell them: Use "Forgot Password". If OTP is missing, check the spam folder.
+
+=== STRICT REPLY RULES ===
+- Address the user by their name (e.g., "Hi Rajesh,").
+- Keep replies VERY SHORT, punchy, and direct (Target: 30 to 70 words).
+- Give the exact solution immediately. Do not write long paragraphs.
+- If it is a payment issue, ALWAYS state clearly: "Please don't worry, your money is 100% safe."
+- Write in plain, simple English. No bullet points, markdown, or headers in the reply text.
+- NEVER use placeholders like [Name] or <insert here>.
+- End EVERY single reply exactly with: — HeartEcho Support Team 💜`;
+
+    const userPrompt = `Ticket ID: #${ticketId || "N/A"}
+User Name: ${userName || "User"}
+Current Plan: ${tier || "free"}
+User Complaint: "${issue}"
+
+Write a warm, specific, helpful support reply addressing this exact complaint using the knowledge above. Remember to end with — HeartEcho Support Team 💜`;
+
+    // Try free models in order (verified working on OpenRouter)
+    const freeModels = [
+      "qwen/qwen3-coder:free",
+      "google/gemma-4-31b-it:free",
+      "openrouter/free",
+      "meta-llama/llama-3.3-70b-instruct:free",
+      "meta-llama/llama-3.2-3b-instruct:free"
+    ];
+
+    let aiReply = null;
+    let lastError = null;
+
+    for (const model of freeModels) {
+      try {
+        console.log(`🤖 Trying OpenRouter model: ${model}`);
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://www.heartecho.in",
+            "X-Title": "HeartEcho Admin Support"
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt }
+            ],
+            max_tokens: 200,
+            temperature: 0.7,
+          })
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          console.warn(`⚠️ Model ${model} failed: ${response.status} - ${errText}`);
+          lastError = errText;
+          continue;
+        }
+
+        const data = await response.json();
+        if (data.choices && data.choices[0]?.message?.content) {
+          aiReply = data.choices[0].message.content.trim();
+          console.log(`✅ AI reply generated with model: ${model}`);
+          break;
+        }
+      } catch (modelErr) {
+        console.warn(`⚠️ Model ${model} error:`, modelErr.message);
+        lastError = modelErr.message;
+        continue;
+      }
+    }
+
+    if (!aiReply) {
+      // Fallback default reply
+      aiReply = `Hi ${userName || "there"}, thank you for reaching out! We've reviewed your issue and our team is looking into it right away. Please try restarting the app and if the issue persists, we'll resolve it within 24 hours. — HeartEcho Support Team`;
+    }
+
+    return res.status(200).json({ success: true, reply: aiReply });
+  } catch (error) {
+    console.error("Error generating AI reply:", error);
+    return res.status(500).json({ success: false, message: "Failed to generate AI reply", error: error.message });
+  }
+};
+
+// ============================================================
+// SEND EMAIL REPLY TO COMPLAINT USER
+// ============================================================
+exports.sendTicketEmailReply = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { adminReply } = req.body;
+
+    if (!adminReply || adminReply.trim() === "") {
+      return res.status(400).json({ success: false, message: "Admin reply text is required" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: "Invalid Ticket ID" });
+    }
+
+    const ticket = await Complaint.findById(id)
+      .populate("user", "name email subscriptionTier _id")
+      .lean();
+
+    if (!ticket) {
+      return res.status(404).json({ success: false, message: "Ticket not found" });
+    }
+
+    const user = ticket.user;
+    if (!user || !user.email) {
+      return res.status(400).json({ success: false, message: "User email not found for this ticket" });
+    }
+
+    const ticketIdShort = id.toString().substring(0, 8);
+    const dateStr = new Date(ticket.date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+    const tierDisplay = user.subscriptionTier === "none" ? "Free" : 
+                        user.subscriptionTier === "monthly" ? "Monthly" :
+                        user.subscriptionTier === "yearly" ? "Yearly" :
+                        user.subscriptionTier === "yearly_pro" ? "Yearly Pro" : "Free";
+
+    // Build the branded email HTML
+    const emailHtml = `<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support Ticket Update - HeartEcho</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+    html, body { margin: 0; padding: 0; height: 100%; width: 100%; -webkit-text-size-adjust: 100%; background-color: #120524; }
+    * { box-sizing: border-box; }
+    body { font-family: 'DM Sans', -apple-system, sans-serif; color: #e2d8f0; padding: 20px 10px; font-size: 14px; line-height: 1.6; }
+    .container { max-width: 540px; margin: 0 auto; background-color: #0f0620; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; }
+    .header { background-color: #160a2b; padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+    .brand { font-weight: 600; font-size: 16px; color: #fff; }
+    .brand span { color: #ff4099; }
+    .ticket-id { font-size: 13px; color: #a395b5; }
+    .content { padding: 24px; }
+    .greeting { font-size: 16px; font-weight: 500; color: #fff; margin-bottom: 16px; }
+    .ticket-info { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 16px; margin-bottom: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; }
+    .info-item { color: #a395b5; }
+    .info-item strong { color: #fff; font-weight: 500; }
+    .status-badge { background: rgba(233,30,140,0.15); color: #ff6b9d; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+    .thread { margin-bottom: 24px; }
+    .message-block { margin-bottom: 16px; padding: 16px; border-radius: 8px; }
+    .message-header { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .msg-user { background: rgba(255,255,255,0.03); border-left: 3px solid #5a4b70; }
+    .msg-user .message-header { color: #a395b5; }
+    .msg-user p { margin: 0; color: #cfc2df; font-style: italic; }
+    .msg-admin { background: linear-gradient(180deg, rgba(233,30,140,0.05) 0%, rgba(233,30,140,0.01) 100%); border-left: 3px solid #e91e8c; }
+    .msg-admin .message-header { color: #ff6b9d; }
+    .msg-admin p { margin: 0; color: #fff; }
+    .footer { background-color: #160a2b; padding: 20px 24px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 13px; color: #a395b5; text-align: center; }
+    .help-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 6px; margin-bottom: 12px; }
+    .footer a { color: #ff6b9d; text-decoration: none; font-weight: 500; }
+    @media (max-width: 480px) { .ticket-info { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">Heart<span>Echo</span> Support</div>
+      <div class="ticket-id">ID: #${ticketIdShort}</div>
+    </div>
+    <div class="content">
+      <div class="greeting">Hi ${user.name || "there"},</div>
+      <p style="margin-top: 0;">Your support ticket has been updated by our team. Please review the response below.</p>
+      <div class="ticket-info">
+        <div class="info-item">Date: <strong>${dateStr}</strong></div>
+        <div class="info-item">Status: <span class="status-badge">Replied</span></div>
+        <div class="info-item">Account: <strong>${user.email}</strong></div>
+        <div class="info-item">Tier: <strong>${tierDisplay}</strong></div>
+      </div>
+      <div class="thread">
+        <div class="message-block msg-user">
+          <div class="message-header">Your Report</div>
+          <p>"${ticket.issue}"</p>
+        </div>
+        <div class="message-block msg-admin">
+          <div class="message-header">Our Reply</div>
+          <p>${adminReply.replace(/\n/g, '<br>')}</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="help-box">
+        Still having issues? Email us directly at <br>
+        <a href="mailto:heartecho.help@gmail.com?subject=Ticket #${ticketIdShort}">heartecho.help@gmail.com</a>
+        <br><span style="font-size: 12px; opacity: 0.8; display: inline-block; margin-top: 4px;">*Please include your Ticket ID <strong>#${ticketIdShort}</strong> in the email.</span>
+      </div>
+      <p style="margin: 0;">HeartEcho Support Team</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    // Send via Nodemailer
+    const nodemailer = require("nodemailer");
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    await transporter.sendMail({
+      from: `"HeartEcho Support" <${process.env.EMAIL_USER}>`,
+      to: user.email,
+      subject: `Re: Your Support Ticket #${ticketIdShort} — HeartEcho`,
+      html: emailHtml
+    });
+
+    // Mark ticket as Resolved
+    await Complaint.findByIdAndUpdate(id, { status: "Resolved" });
+
+    return res.status(200).json({
+      success: true,
+      message: `Email sent to ${user.email} and ticket marked as Resolved`
+    });
+  } catch (error) {
+    console.error("Error sending ticket email reply:", error);
+    return res.status(500).json({ success: false, message: "Failed to send email reply", error: error.message });
+  }
+};
+
+// ============================================================
+// FETCH FEEDBACK FOR DELETED USER (cross-reference by originalUserId)
+// ============================================================
+exports.getDeletedUserFeedback = async (req, res) => {
+  try {
+    const { originalUserId } = req.params;
+    // Try to find feedback — originalUserId stored as string, match against user ObjectId
+    const Feedback = require("../models/Feedback");
+    let feedbackDoc = null;
+    if (mongoose.Types.ObjectId.isValid(originalUserId)) {
+      feedbackDoc = await Feedback.findOne({ user: new mongoose.Types.ObjectId(originalUserId) })
+        .sort({ date: -1 })
+        .lean();
+    }
+    if (feedbackDoc) {
+      return res.status(200).json({
+        success: true,
+        feedback: feedbackDoc.text || "",
+        rating: feedbackDoc.rating || 0,
+        city: feedbackDoc.city || "",
+        feature: feedbackDoc.feature || ""
+      });
+    }
+    return res.status(200).json({ success: false, feedback: "", rating: 0, city: "", feature: "" });
+  } catch (error) {
+    return res.status(200).json({ success: false, feedback: "", rating: 0, city: "", feature: "" });
+  }
+};
+
+// ============================================================
+// AI SUGGEST FAREWELL REPLY FOR DELETED ACCOUNT
+// ============================================================
+exports.getAiDeletedAccountReply = async (req, res) => {
+  try {
+    const { feedback, rating, userName } = req.body;
+
+    const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+    if (!OPENROUTER_API_KEY) {
+      return res.status(500).json({ success: false, message: "OpenRouter API key not configured" });
+    }
+
+    const systemPrompt = `You are a warm, respectful, and empathetic retention specialist for HeartEcho. Your job is to write a final farewell message to Indian users who have just deleted their accounts and left feedback/ratings.
+
+Your tone must be polite, non-defensive, understanding, and very brief. You want to leave a positive final impression so they might return in the future.
+
+=== CONTEXT ===
+- The user has already deleted their account. Their data is gone. We cannot fix their account.
+- You are replying to the specific reason they gave for leaving.
+
+=== HOW TO RESPOND BASED ON FEEDBACK ===
+
+1. EXPENSIVE / PRICING ISSUES (e.g., "too much expensive", "high cost", "costly"):
+Validate their feedback. Tell them we are actively working on introducing more affordable "bite-sized" or sachet plans for our Indian users soon.
+
+2. AI QUALITY / BORING / REPETITIVE (e.g., "ai is dumb", "boring replies", "not natural"):
+Apologize that the connection didn't feel natural. Mention that our engineering team is constantly upgrading the AI models to be smarter and more human-like.
+
+3. APP BUGS / CRASHES / GLITCHES (e.g., "app crashes", "not working", "buggy"):
+Apologize for the technical frustration. Let them know our developers are actively fixing these bugs to make the app smoother.
+
+4. PRIVACY / FAKE CONCERNS (e.g., "privacy", "fake", "not safe"):
+Reassure them that HeartEcho values privacy deeply, and confirm that all their chats and data have been permanently erased from our servers as requested.
+
+5. NO REASON / JUST A STAR RATING / VAGUE:
+Simply thank them for giving HeartEcho a try and wish them the best.
+
+=== STRICT REPLY RULES ===
+- Start directly (DO NOT say "Hi [Name]" — the email template already has the greeting).
+- Keep it VERY SHORT (Target: 30 to 60 words max).
+- Acknowledge their specific issue respectfully. Do not argue with them.
+- Always leave the door open (e.g., "We hope to welcome you back in the future.").
+- Do NOT offer refunds, do NOT ask them to email support (their account is already deleted).
+- NEVER use placeholders like [X], <name>, [insert here].
+- End EVERY reply exactly with: — HeartEcho Team 💜`;
+
+    const userPrompt = `User: ${userName || "User"}
+Rating: ${rating ? `${rating}/5 stars` : "No rating given"}
+Feedback: "${feedback || "No feedback provided"}"
+
+Write the farewell reply now:`;
+
+    const freeModels = [
+      "qwen/qwen3-coder:free",
+      "google/gemma-4-31b-it:free",
+      "openrouter/free",
+      "meta-llama/llama-3.3-70b-instruct:free",
+      "meta-llama/llama-3.2-3b-instruct:free"
+    ];
+
+    let aiReply = null;
+    for (const model of freeModels) {
+      try {
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://www.heartecho.in",
+            "X-Title": "HeartEcho Admin"
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt }
+            ],
+            max_tokens: 150,
+            temperature: 0.65,
+          })
+        });
+        if (!response.ok) continue;
+        const data = await response.json();
+        if (data.choices?.[0]?.message?.content) {
+          aiReply = data.choices[0].message.content.trim();
+          break;
+        }
+      } catch (e) { continue; }
+    }
+
+    if (!aiReply) {
+      aiReply = `We're sorry to see you go. Thank you for giving HeartEcho a chance and for sharing your honest feedback. We will use it to improve. We hope to welcome you back someday. — HeartEcho Team 💜`;
+    }
+
+    return res.status(200).json({ success: true, reply: aiReply });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Failed to generate AI reply", error: error.message });
+  }
+};
+
+// ============================================================
+// SEND FAREWELL EMAIL TO DELETED ACCOUNT USER
+// ============================================================
+exports.sendDeletedAccountEmail = async (req, res) => {
+  try {
+    const { email, name, feedback, rating, city, deletedAt, aiReply } = req.body;
+
+    if (!email) return res.status(400).json({ success: false, message: "Email is required" });
+    if (!aiReply?.trim()) return res.status(400).json({ success: false, message: "Reply text is required" });
+
+    const dateStr = new Date(deletedAt || Date.now()).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+    const stars = rating ? "⭐".repeat(Math.min(rating, 5)) : "—";
+
+    const emailHtml = `<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Deleted - HeartEcho</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+    html, body { margin: 0; padding: 0; height: 100%; width: 100%; -webkit-text-size-adjust: 100%; background-color: #120524; }
+    * { box-sizing: border-box; }
+    body { font-family: 'DM Sans', -apple-system, sans-serif; color: #e2d8f0; padding: 20px 10px; font-size: 14px; line-height: 1.6; }
+    .container { max-width: 540px; margin: 0 auto; background-color: #0f0620; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; }
+    .header { background-color: #160a2b; padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+    .brand { font-weight: 600; font-size: 16px; color: #fff; }
+    .brand span { color: #ff4099; }
+    .header-badge { font-size: 11px; background: rgba(255,255,255,0.1); color: #a395b5; padding: 4px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; }
+    .content { padding: 24px; }
+    .greeting { font-size: 16px; font-weight: 500; color: #fff; margin-bottom: 12px; }
+    .ticket-info { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 16px; margin-bottom: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; }
+    .info-item { color: #a395b5; }
+    .info-item strong { color: #fff; font-weight: 500; }
+    .rating { color: #ffb74d; font-size: 14px; letter-spacing: 2px; }
+    .thread { margin-bottom: 24px; }
+    .message-block { margin-bottom: 16px; padding: 16px; border-radius: 8px; }
+    .message-header { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .msg-user { background: rgba(255,255,255,0.03); border-left: 3px solid #5a4b70; }
+    .msg-user .message-header { color: #a395b5; }
+    .msg-user p { margin: 0; color: #cfc2df; font-style: italic; }
+    .msg-admin { background: linear-gradient(180deg, rgba(233,30,140,0.05) 0%, rgba(233,30,140,0.01) 100%); border-left: 3px solid #e91e8c; }
+    .msg-admin .message-header { color: #ff6b9d; }
+    .msg-admin p { margin: 0; color: #fff; white-space: pre-wrap; }
+    .footer { background-color: #160a2b; padding: 24px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 13px; color: #a395b5; text-align: center; }
+    .footer strong { color: #fff; }
+    @media (max-width: 480px) { .ticket-info { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">Heart<span>Echo</span></div>
+      <div class="header-badge">Account Deleted</div>
+    </div>
+    <div class="content">
+      <div class="greeting">Hi ${name || "there"},</div>
+      <p style="margin-top: 0;">We're confirming that your HeartEcho account has been successfully deleted, and your data has been securely removed from our servers. Thank you for trying our app.</p>
+      <div class="ticket-info">
+        <div class="info-item">Date: <strong>${dateStr}</strong></div>
+        <div class="info-item">Your Rating: <span class="rating">${stars || "—"}</span></div>
+        <div class="info-item">Status: <strong>Data Erased ✓</strong></div>
+      </div>
+      <div class="thread">
+        <div class="message-block msg-user">
+          <div class="message-header">Your Feedback</div>
+          <p>"${(feedback || "No feedback provided").replace(/</g,"&lt;").replace(/>/g,"&gt;")}"</p>
+        </div>
+        <div class="message-block msg-admin">
+          <div class="message-header">A Note From Our Team</div>
+          <p>${aiReply.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <p style="margin: 0 0 8px 0;">If you ever decide to return, your companion will be ready to start a fresh journey with you.</p>
+      <p style="margin: 0;"><strong>HeartEcho Team</strong> 💜</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const nodemailer = require("nodemailer");
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com", port: 465, secure: true,
+      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
+    });
+
+    await transporter.sendMail({
+      from: `"HeartEcho Team" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: `Your HeartEcho Account Has Been Deleted — A Note From Us 💜`,
+      html: emailHtml
+    });
+
+    return res.status(200).json({ success: true, message: `Farewell email sent to ${email}` });
+  } catch (error) {
+    console.error("Error sending deleted account email:", error);
+    return res.status(500).json({ success: false, message: "Failed to send email", error: error.message });
+  }
+};
+
 exports.sendCustomNotification = async (req, res) => {
   try {
     const { target, userIds, title, body, data = {}, imageUrl } = req.body;

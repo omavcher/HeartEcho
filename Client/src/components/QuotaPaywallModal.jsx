@@ -126,6 +126,9 @@ export default function QuotaPaywallModal({ onClose, aiName = 'your AI', userDat
       if (typeof window !== 'undefined' && window.fbq && userData?.email !== 'omawchar07@gmail.com') {
         window.fbq('track', 'InitiateCheckout', { value: amount, currency: 'INR', content_name: `${plan} Subscription` });
       }
+      if (typeof window !== "undefined" && window.gtag) {
+        window.gtag('event', 'payment_initiated', { value: 0, payment_method: 'upi' });
+      }
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || 'rzp_live_SMglmw6VtV4h2O',
         amount: amount * 100,
@@ -138,6 +141,9 @@ export default function QuotaPaywallModal({ onClose, aiName = 'your AI', userDat
           }
           if (window.fbq && userData?.email !== 'omawchar07@gmail.com') {
             window.fbq('track', 'Purchase', { value: amount, currency: 'INR', content_name: `${plan} Subscription`, transaction_id: res.razorpay_payment_id });
+          }
+          if (typeof window !== "undefined" && window.gtag) {
+            window.gtag('event', 'payment_completed', { value: amount, subscription_type: plan.toLowerCase() });
           }
           await axios.post(`${api.Url}/user/payment/save`, {
             user: userData?._id, rupees: amount, transaction_id: res.razorpay_payment_id,

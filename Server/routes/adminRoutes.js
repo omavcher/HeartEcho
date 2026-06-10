@@ -31,7 +31,13 @@ router.post("/aiuser-data/multiple", controller.PutAIFrindData);
 router.get("/tickets", controller.getAllTickets);
 router.delete("/tickets/:id", controller.deleteTicket);
 router.put("/tickets/:id", controller.updateTicket);
+router.post("/tickets/ai-suggest", controller.getAiSuggestReply);
+router.post("/tickets/:id/email-reply", controller.sendTicketEmailReply);
 
+// Deleted Account Email Routes
+router.post("/deleted-accounts/ai-suggest", controller.getAiDeletedAccountReply);
+router.post("/deleted-accounts/send-email", controller.sendDeletedAccountEmail);
+router.get("/deleted-accounts/:originalUserId/feedback", controller.getDeletedUserFeedback);
 
 
 // ========== REFERRAL ROUTES ==========

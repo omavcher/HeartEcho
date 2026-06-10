@@ -397,6 +397,22 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
     }
 
     if (!isSubscribed) {
+      let trkKey = 'he_trial_started';
+      if (typeof window !== 'undefined') {
+        try {
+          const userStr = localStorage.getItem('user');
+          if (userStr && userStr !== "undefined") {
+            const userObj = JSON.parse(userStr);
+            if (userObj?._id) trkKey += '_' + userObj._id;
+          }
+        } catch (e) {}
+        if (!localStorage.getItem(trkKey)) {
+          if (window.gtag) {
+            window.gtag('event', 'trial_started', { value: 0 });
+          }
+          localStorage.setItem(trkKey, 'true');
+        }
+      }
       setRemainingQuota(prev => Math.max(0, prev - 1));
     }
 

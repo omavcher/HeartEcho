@@ -468,6 +468,12 @@ function Signup() {
         if (res.data?.user?.email !== 'omawchar07@gmail.com') {
           if (window.fbq) window.fbq('track', 'CompleteRegistration');
           if (window.trackAppEvent) window.trackAppEvent('signup_complete');
+          if (window.gtag) {
+            window.gtag('event', 'app_signup', {
+              value: 0,
+              signup_source: 'paid_ads'
+            });
+          }
         }
       }
       
@@ -614,6 +620,12 @@ function Signup() {
         if (res.data?.user?.email !== 'omawchar07@gmail.com') {
           if (window.fbq) window.fbq('track', 'CompleteRegistration');
           if (window.trackAppEvent) window.trackAppEvent('signup_complete');
+          if (window.gtag) {
+            window.gtag('event', 'app_signup', {
+              value: 0,
+              signup_source: 'paid_ads'
+            });
+          }
         }
       }
       
