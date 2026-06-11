@@ -2903,6 +2903,39 @@ exports.getLoginAnalytics = async (req, res) => {
 
 exports.getPaymentAnalytics = async (req, res) => {
   try {
+    // Sync missing payments from archived DeletedAccount documents
+    const archivedDeletedAccounts = await DeletedAccount.find({
+      "lastPayment.transaction_id": { $exists: true, $ne: null }
+    }).lean();
+
+    if (archivedDeletedAccounts.length > 0) {
+      const txIds = archivedDeletedAccounts.map(d => d.lastPayment.transaction_id);
+      const existingTxIds = new Set(
+        (await Payment.find({ transaction_id: { $in: txIds } }).select("transaction_id").lean())
+          .map(p => p.transaction_id)
+      );
+
+      const missingPayments = [];
+      for (const doc of archivedDeletedAccounts) {
+        const txId = doc.lastPayment.transaction_id;
+        if (!existingTxIds.has(txId) && mongoose.Types.ObjectId.isValid(doc.originalUserId)) {
+          missingPayments.push({
+            user: new mongoose.Types.ObjectId(doc.originalUserId),
+            rupees: doc.lastPayment.amount || 0,
+            currency: "INR",
+            transaction_id: txId,
+            date: doc.lastPayment.date || doc.deletedAt,
+            expiry_date: doc.subscriptionExpiry || doc.lastPayment.date || doc.deletedAt
+          });
+        }
+      }
+
+      if (missingPayments.length > 0) {
+        await Payment.insertMany(missingPayments);
+        console.log(`[Sync] Migrated ${missingPayments.length} archived payments from deleted accounts into the Payment collection.`);
+      }
+    }
+
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
