@@ -10,7 +10,6 @@ import {
 } from "react-icons/fa";
 import { IoMdRefresh } from "react-icons/io";
 import api from "../../config/api";
-import PopNoti from "../../components/PopNoti";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 const MAPBOX_TOKEN = "pk.eyJ1Ijoib21hd2NoYXIwNyIsImEiOiJjbHlmbGtwdmowMHhkMmtxeXAyNXdkeHB3In0.37j_dk9NgxtiPXqwCgsdQg";
@@ -221,6 +220,9 @@ const AdminDashboard = () => {
 
       setGraphData({ revenueTrend: revenueTrendMapped });
       setNotification({ show: true, message: "Dashboard Updated", type: "success" });
+      setTimeout(() => {
+        setNotification(p => ({ ...p, show: false }));
+      }, 4000);
     } catch (err) {
       // Error handling
     } finally {
@@ -317,7 +319,8 @@ const AdminDashboard = () => {
               type: 'Feature',
               properties: {
                 cityName: city.cityName || 'Unknown',
-                count: city.count || 1
+                count: city.count || 1,
+                paidCount: city.paidCount || 0
               },
               geometry: {
                 type: 'Point',
@@ -342,10 +345,20 @@ const AdminDashboard = () => {
                 2, ['interpolate', ['linear'], ['get', 'count'], 1, 14, 10, 24, 50, 38],
                 6, ['interpolate', ['linear'], ['get', 'count'], 1, 24, 10, 38, 50, 52]
               ],
-              'circle-color': '#ff69b4',
+              'circle-color': [
+                'case',
+                ['>', ['get', 'paidCount'], 0],
+                '#ffd700',
+                '#ff69b4'
+              ],
               'circle-opacity': 0.18,
               'circle-stroke-width': 1.5,
-              'circle-stroke-color': 'rgba(255, 105, 180, 0.45)',
+              'circle-stroke-color': [
+                'case',
+                ['>', ['get', 'paidCount'], 0],
+                'rgba(255, 215, 0, 0.45)',
+                'rgba(255, 105, 180, 0.45)'
+              ],
             }
           });
 
@@ -360,10 +373,20 @@ const AdminDashboard = () => {
                 2, ['interpolate', ['linear'], ['get', 'count'], 1, 5, 10, 8, 50, 11],
                 6, ['interpolate', ['linear'], ['get', 'count'], 1, 7, 10, 11, 50, 15]
               ],
-              'circle-color': '#ff69b4',
+              'circle-color': [
+                'case',
+                ['>', ['get', 'paidCount'], 0],
+                '#ffd700',
+                '#ff69b4'
+              ],
               'circle-opacity': 0.9,
               'circle-stroke-width': 1.5,
-              'circle-stroke-color': '#ffffff',
+              'circle-stroke-color': [
+                'case',
+                ['>', ['get', 'paidCount'], 0],
+                '#ffd700',
+                '#ffffff'
+              ],
             }
           });
 
@@ -381,7 +404,12 @@ const AdminDashboard = () => {
               'text-allow-overlap': false
             },
             paint: {
-              'text-color': '#ffffff',
+              'text-color': [
+                'case',
+                ['>', ['get', 'paidCount'], 0],
+                '#ffd700',
+                '#ffffff'
+              ],
               'text-halo-color': 'rgba(0,0,0,0.85)',
               'text-halo-width': 1.5
             }
@@ -399,7 +427,8 @@ const AdminDashboard = () => {
             map.getCanvas().style.cursor = 'pointer';
             
             const coordinates = e.features[0].geometry.coordinates.slice();
-            const { cityName, count } = e.features[0].properties;
+            const { cityName, count, paidCount: rawPaidCount } = e.features[0].properties;
+            const paidCount = Number(rawPaidCount || 0);
             
             while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
               coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
@@ -408,8 +437,9 @@ const AdminDashboard = () => {
             popup.setLngLat(coordinates)
               .setHTML(`
                 <div style="color:#fff; padding: 4px;">
-                  <div style="font-size:14px; font-weight:700; color:#ff69b4; margin-bottom:4px;">📍 ${cityName}</div>
+                  <div style="font-size:14px; font-weight:700; color:${paidCount > 0 ? '#ffd700' : '#ff69b4'}; margin-bottom:4px;">📍 ${cityName}</div>
                   <div style="font-size:13px; color:#ccc;">${count} active user${count > 1 ? 's' : ''} here</div>
+                  ${paidCount > 0 ? `<div style="font-size:12px; color:#ffd700; font-weight:600; margin-top:4px; display:flex; align-items:center; gap:4px;">👑 ${paidCount} Premium Subscriber${paidCount > 1 ? 's' : ''}</div>` : ''}
                 </div>
               `)
               .addTo(map);
@@ -459,8 +489,56 @@ const AdminDashboard = () => {
   return (
     <>
       <style>{dashboardStyles}</style>
+      <style>{`
+        @keyframes popNotiEnter {
+          0% { opacity: 0; transform: translateY(-100px) scale(0.9); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `}</style>
       <div className="dash-container-x30sn">
-        <PopNoti message={notification.message} type={notification.type} isVisible={notification.show} onClose={handleCloseNotification} />
+        {notification.show && (
+          <div style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            zIndex: 10000,
+            background: notification.type === 'success' ? 'rgba(52, 199, 89, 0.95)' : 'rgba(255, 59, 48, 0.95)',
+            color: 'white',
+            borderRadius: '14px',
+            padding: '16px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif',
+            animation: 'popNotiEnter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards'
+          }}>
+            <span style={{ fontSize: '18px' }}>{notification.type === 'success' ? '✅' : '❌'}</span>
+            <span style={{ fontWeight: 600, fontSize: '14px' }}>{notification.message}</span>
+            <button 
+              onClick={handleCloseNotification} 
+              style={{
+                marginLeft: '8px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: 'none',
+                borderRadius: '6px',
+                width: '24px',
+                height: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '11px',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
+              onMouseLeave={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
+            >✕</button>
+          </div>
+        )}
         
         {loading ? (
           <div className="loading-x30sn"><div className="spinner-x30sn"></div><p style={{marginTop:10, color:'#888'}}>Analyzing Data...</p></div>
@@ -615,10 +693,12 @@ const AdminDashboard = () => {
                   {topCities.length > 0 ? topCities.map((city, idx) => {
                     const pct = totalMapUsers > 0 ? ((city.count / totalMapUsers) * 100).toFixed(0) : 0;
                     const colors = ['#ff69b4', '#ff8cc8', '#ff3d9a', '#e040fb', '#ce93d8', '#ff69b4', '#c2185b', '#ad1457'];
+                    const hasPaid = city.paidCount > 0;
                     return (
                       <div key={idx} style={{
                         background: '#111',
-                        border: '1px solid #1e1e1e',
+                        border: hasPaid ? '1px solid rgba(255, 215, 0, 0.35)' : '1px solid #1e1e1e',
+                        boxShadow: hasPaid ? '0 0 10px rgba(255, 215, 0, 0.05)' : 'none',
                         borderRadius: '10px',
                         padding: '10px 12px'
                       }}>
@@ -627,14 +707,14 @@ const AdminDashboard = () => {
                             <div style={{
                               width: '8px', height: '8px',
                               borderRadius: '50%',
-                              background: colors[idx % colors.length],
-                              boxShadow: `0 0 5px ${colors[idx % colors.length]}`
+                              background: hasPaid ? '#ffd700' : colors[idx % colors.length],
+                              boxShadow: hasPaid ? '0 0 5px #ffd700' : `0 0 5px ${colors[idx % colors.length]}`
                             }} />
-                            <span style={{ color: '#e0e0e0', fontSize: '13px', fontWeight: 600 }}>
-                              {city.cityName}
+                            <span style={{ color: hasPaid ? '#ffd700' : '#e0e0e0', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              {city.cityName} {hasPaid && <span title="Premium subscriber in city">👑</span>}
                             </span>
                           </div>
-                          <span style={{ color: '#ff69b4', fontSize: '12px', fontWeight: 700 }}>
+                          <span style={{ color: hasPaid ? '#ffd700' : '#ff69b4', fontSize: '12px', fontWeight: 700 }}>
                             {city.count}
                           </span>
                         </div>
@@ -643,12 +723,19 @@ const AdminDashboard = () => {
                           <div style={{
                             height: '100%',
                             width: `${pct}%`,
-                            background: `linear-gradient(90deg, ${colors[idx % colors.length]}, ${colors[(idx + 1) % colors.length]})`,
+                            background: hasPaid ? 'linear-gradient(90deg, #ffd700, #ffa500)' : `linear-gradient(90deg, ${colors[idx % colors.length]}, ${colors[(idx + 1) % colors.length]})`,
                             borderRadius: '2px',
                             transition: 'width 1s ease'
                           }} />
                         </div>
-                        <div style={{ fontSize: '11px', color: '#555', marginTop: '3px' }}>{pct}% of active users</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                          <span style={{ fontSize: '11px', color: '#555' }}>{pct}% of active users</span>
+                          {hasPaid && (
+                            <span style={{ fontSize: '10px', color: '#ffd700', fontWeight: 'bold' }}>
+                              {city.paidCount} Paid
+                            </span>
+                          )}
+                        </div>
                       </div>
                     );
                   }) : (

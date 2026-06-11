@@ -233,6 +233,14 @@ exports.dashboardData = async (req, res) => {
           { $match: { 
               cityName: { $nin: [null, "", "Unknown"] }
           }},
+          // Lookup user details to get user_type (subscriber vs free)
+          { $lookup: {
+              from: "users",
+              localField: "_id",
+              foreignField: "_id",
+              as: "userDoc"
+          } },
+          { $unwind: { path: "$userDoc", preserveNullAndEmptyArrays: true } },
           // Group by city (case-insensitive)
           { $group: {
               _id: { $toLower: "$cityName" },
@@ -240,7 +248,16 @@ exports.dashboardData = async (req, res) => {
               country: { $first: "$country" },
               lat: { $avg: "$lat" },
               lon: { $avg: "$lon" },
-              count: { $sum: 1 }
+              count: { $sum: 1 },
+              paidCount: {
+                  $sum: {
+                      $cond: [
+                          { $eq: ["$userDoc.user_type", "subscriber"] },
+                          1,
+                          0
+                      ]
+                  }
+              }
           } },
           { $sort: { count: -1 } },
           { $limit: 50 }
@@ -253,6 +270,7 @@ exports.dashboardData = async (req, res) => {
           let country = item.country;
           const lat = item.lat;
           const lon = item.lon;
+          const paidCount = item.paidCount || 0;
 
           if (isStateName(name) || name === "Unknown" || !name) {
               const geo = await getCityFromCoordinates(lat, lon);
@@ -269,6 +287,7 @@ exports.dashboardData = async (req, res) => {
           if (cityGroups[key]) {
               const prevCount = cityGroups[key].count;
               cityGroups[key].count += item.count;
+              cityGroups[key].paidCount = (cityGroups[key].paidCount || 0) + paidCount;
               // Average coordinates of the grouped entries weighted by count
               cityGroups[key].lat = (cityGroups[key].lat * prevCount + lat * item.count) / cityGroups[key].count;
               cityGroups[key].lon = (cityGroups[key].lon * prevCount + lon * item.count) / cityGroups[key].count;
@@ -279,7 +298,8 @@ exports.dashboardData = async (req, res) => {
                   country: country || "Unknown",
                   lat: lat,
                   lon: lon,
-                  count: item.count
+                  count: item.count,
+                  paidCount: paidCount
               };
           }
       }
@@ -2942,13 +2962,23 @@ exports.getPaymentAnalytics = async (req, res) => {
 
     // 4. Detailed Payment Logs (Latest 100)
     const paymentLogs = await Payment.find()
-      .populate("user", "name email user_type")
       .sort({ date: -1 })
       .limit(100)
       .lean();
 
+    const userIds = paymentLogs.map(p => p.user).filter(Boolean);
+
+    const activeUsers = await User.find({ _id: { $in: userIds } })
+      .select("name email user_type")
+      .lean();
+    const activeUserMap = new Map(activeUsers.map(u => [u._id.toString(), u]));
+
+    const deletedAccounts = await DeletedAccount.find({
+      originalUserId: { $in: userIds.map(id => id.toString()) }
+    }).lean();
+    const deletedUserMap = new Map(deletedAccounts.map(d => [d.originalUserId, d]));
+
     // 5. Check which users came from Facebook Ads
-    const userIds = paymentLogs.map(p => p.user?._id).filter(Boolean);
     const trackingDocs = await TrackingEvent.find({
       user: { $in: userIds },
       $or: [
@@ -2960,9 +2990,34 @@ exports.getPaymentAnalytics = async (req, res) => {
     const fbUserSet = new Set(trackingDocs.map(t => String(t.user)));
 
     const enrichedLogs = paymentLogs.map(p => {
-      const isFb = p.user && fbUserSet.has(String(p.user._id));
+      const userIdStr = p.user ? p.user.toString() : "";
+      let userInfo = activeUserMap.get(userIdStr);
+
+      if (!userInfo && userIdStr) {
+        const deletedInfo = deletedUserMap.get(userIdStr);
+        if (deletedInfo) {
+          userInfo = {
+            _id: deletedInfo.originalUserId,
+            name: `${deletedInfo.name} (Deleted Account)`,
+            email: deletedInfo.email,
+            user_type: deletedInfo.user_type,
+            isDeleted: true
+          };
+        } else {
+          userInfo = {
+            _id: userIdStr,
+            name: "Deleted Account",
+            email: "N/A",
+            user_type: "free",
+            isDeleted: true
+          };
+        }
+      }
+
+      const isFb = userIdStr && fbUserSet.has(userIdStr);
       return {
         ...p,
+        user: userInfo || null,
         isFacebookSource: isFb
       };
     });

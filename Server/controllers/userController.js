@@ -426,8 +426,6 @@ exports.deleteAccount = async (req, res) => {
       LoginDetail.deleteMany({ user: userId }),
       // Delete support tickets
       Ticket.deleteMany({ user: userId }),
-      // Delete payments
-      Payment.deleteMany({ user: userId }),
       // Delete custom AI friends created by user
       AIFriend.deleteMany({ user: userId }),
     ]);
