@@ -94,8 +94,15 @@ function Signup() {
           const lat = locData.latitude;
           const lon = locData.longitude;
           setCoordinates({ lat, lon });
+          
+          const cCode = locData.country_code || "IN";
+          setFormData(prev => ({ ...prev, country: cCode }));
+          localStorage.setItem('user_country', cCode);
+          
           const city = await reverseGeocode(lat, lon);
-          setLocationCity(city || locData.city || locData.region || "Unknown Location");
+          const resolvedCity = city || locData.city || locData.region || "Unknown Location";
+          setLocationCity(resolvedCity);
+          setFormData(prev => ({ ...prev, city: resolvedCity }));
         } else {
           // Backup free HTTPS geolocator
           const backupRes = await fetch("https://ipinfo.io/json");
@@ -105,8 +112,15 @@ function Signup() {
             const lat = parseFloat(latStr);
             const lon = parseFloat(lonStr);
             setCoordinates({ lat, lon });
+            
+            const cCode = backupData.country || "IN";
+            setFormData(prev => ({ ...prev, country: cCode }));
+            localStorage.setItem('user_country', cCode);
+            
             const city = await reverseGeocode(lat, lon);
-            setLocationCity(city || backupData.city || backupData.region || "Unknown Location");
+            const resolvedCity = city || backupData.city || backupData.region || "Unknown Location";
+            setLocationCity(resolvedCity);
+            setFormData(prev => ({ ...prev, city: resolvedCity }));
           } else {
             setLocationCity("Unknown Location");
           }
@@ -128,13 +142,24 @@ function Signup() {
           setCoordinates({ lat, lon });
           
           const city = await reverseGeocode(lat, lon);
-          setLocationCity(city || "Unknown Location");
+          const resolvedCity = city || "Unknown Location";
+          setLocationCity(resolvedCity);
+          setFormData(prev => ({ ...prev, city: resolvedCity }));
 
           // Also get IP
           try {
             const ipRes = await fetch("https://api.ipify.org?format=json");
             const ipData = await ipRes.json();
             setIp(ipData.ip);
+            
+            // Get country code
+            const locRes = await fetch(`https://ipapi.co/${ipData.ip}/json/`);
+            const locData = await locRes.json();
+            if (locData && !locData.error) {
+              const cCode = locData.country_code || "IN";
+              setFormData(prev => ({ ...prev, country: cCode }));
+              localStorage.setItem('user_country', cCode);
+            }
           } catch (e) {
             setIp("127.0.0.1");
           }
@@ -248,6 +273,7 @@ function Signup() {
     setIsClient(true);
     
     if (typeof window !== 'undefined') {
+      setPlatform(navigator.platform);
       fetchUserLocation();
     }
 
@@ -491,60 +517,7 @@ function Signup() {
     }
   };
 
-  const [ip, setIp] = useState(null);
-  const [coordinates, setCoordinates] = useState(null);
-  const [platform, setPlatform] = useState(null);
 
-  const mapboxToken = "pk.eyJ1Ijoib21hd2NoYXIwNyIsImEiOiJjbHlmbGtwdmowMHhkMmtxeXAyNXdkeHB3In0.37j_dk9NgxtiPXqwCgsdQg";
-
-  const reverseGeocode = async (lat, lon) => {
-    try {
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?access_token=${mapboxToken}&types=place,locality`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data && data.features && data.features.length > 0) {
-        return data.features[0].text;
-      }
-    } catch (err) {
-      console.error("Mapbox reverse geocode error:", err);
-    }
-    return null;
-  };
-
-  const fetchIpLocation = () => {
-    fetch("https://api.ipify.org?format=json")
-      .then((response) => response.json())
-      .then((data) => {
-        setIp(data.ip);
-        return fetch(`https://ip-api.com/json/${data.ip}`);
-      })
-      .then((response) => response.json())
-      .then(async (data) => {
-        const lat = data.lat;
-        const lon = data.lon;
-        setCoordinates({ lat, lon });
-        const cCode = data.countryCode || "IN";
-        setFormData(prev => ({ ...prev, country: cCode }));
-        localStorage.setItem('user_country', cCode);
-        
-        const city = await reverseGeocode(lat, lon);
-        setLocationCity(city || data.city || data.regionName || "Unknown Location");
-        setFormData(prev => ({ ...prev, city: city || data.city || "" }));
-        setIsDetecting(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching IP/Location:", error);
-        setIsDetecting(false);
-      });
-  };
-
-  useEffect(() => {
-    if (isClient) {
-      setPlatform(navigator.platform);
-      setIsDetecting(true);
-      fetchIpLocation();
-    }
-  }, [isClient]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
