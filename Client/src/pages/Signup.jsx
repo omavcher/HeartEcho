@@ -45,6 +45,9 @@ function Signup() {
     city: ""
   });
 
+  const [ip, setIp] = useState(null);
+  const [coordinates, setCoordinates] = useState(null);
+  const [platform, setPlatform] = useState(typeof window !== 'undefined' ? navigator.platform : '');
   const [locationCity, setLocationCity] = useState("Unknown Location");
   const [isDetecting, setIsDetecting] = useState(true);
 
@@ -56,6 +59,97 @@ function Signup() {
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(0);
+
+  const mapboxToken = "pk.eyJ1Ijoib21hd2NoYXIwNyIsImEiOiJjbHlmbGtwdmowMHhkMmtxeXAyNXdkeHB3In0.37j_dk9NgxtiPXqwCgsdQg";
+
+  const reverseGeocode = async (lat, lon) => {
+    try {
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?access_token=${mapboxToken}&types=place,locality`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data && data.features && data.features.length > 0) {
+        const placeFeature = data.features.find(f => f.place_type?.includes('place')) || data.features[0];
+        return placeFeature.text;
+      }
+    } catch (err) {
+      console.error("Mapbox reverse geocode error:", err);
+    }
+    return null;
+  };
+
+  const fetchUserLocation = async () => {
+    setIsDetecting(true);
+
+    const fetchLocationFromIP = async () => {
+      try {
+        const ipRes = await fetch("https://api.ipify.org?format=json");
+        const ipData = await ipRes.json();
+        const userIp = ipData.ip;
+        setIp(userIp);
+
+        const locRes = await fetch(`https://ipapi.co/${userIp}/json/`);
+        const locData = await locRes.json();
+        
+        if (locData && !locData.error) {
+          const lat = locData.latitude;
+          const lon = locData.longitude;
+          setCoordinates({ lat, lon });
+          const city = await reverseGeocode(lat, lon);
+          setLocationCity(city || locData.city || locData.region || "Unknown Location");
+        } else {
+          // Backup free HTTPS geolocator
+          const backupRes = await fetch("https://ipinfo.io/json");
+          const backupData = await backupRes.json();
+          if (backupData && backupData.loc) {
+            const [latStr, lonStr] = backupData.loc.split(",");
+            const lat = parseFloat(latStr);
+            const lon = parseFloat(lonStr);
+            setCoordinates({ lat, lon });
+            const city = await reverseGeocode(lat, lon);
+            setLocationCity(city || backupData.city || backupData.region || "Unknown Location");
+          } else {
+            setLocationCity("Unknown Location");
+          }
+        }
+      } catch (err) {
+        console.error("IP Geolocation fallback error:", err);
+        setLocationCity("Unknown Location");
+      } finally {
+        setIsDetecting(false);
+      }
+    };
+
+    // Try HTML5 Browser Geolocation first
+    if (typeof window !== "undefined" && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          setCoordinates({ lat, lon });
+          
+          const city = await reverseGeocode(lat, lon);
+          setLocationCity(city || "Unknown Location");
+
+          // Also get IP
+          try {
+            const ipRes = await fetch("https://api.ipify.org?format=json");
+            const ipData = await ipRes.json();
+            setIp(ipData.ip);
+          } catch (e) {
+            setIp("127.0.0.1");
+          }
+          setIsDetecting(false);
+        },
+        async (error) => {
+          console.warn("Browser Geolocation failed/denied, falling back to IP Geolocation:", error.message);
+          await fetchLocationFromIP();
+        },
+        { enableHighAccuracy: true, timeout: 6000, maximumAge: 15000 }
+      );
+    } else {
+      await fetchLocationFromIP();
+    }
+  };
   
   const options = {
     interests: [
@@ -152,10 +246,24 @@ function Signup() {
   // Set isClient to true when component mounts and get search params
   useEffect(() => {
     setIsClient(true);
+    
+    if (typeof window !== 'undefined') {
+      fetchUserLocation();
+    }
+
     // Get referral code from URL params
     const ref = searchParams.get('ref');
     if (ref) {
       setReferralCodeFromUrl(ref);
+    }
+    
+    // Get referral code from storage or cookie
+    const initialRef = getInitialReferralCode();
+    if (initialRef) {
+      setFormData(prev => ({
+        ...prev,
+        referralCode: initialRef
+      }));
     }
     
     // Check for redirect parameter from login page
@@ -493,11 +601,15 @@ function Signup() {
         }
       }
 
-      if (ip && coordinates) {
-        await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform, locationUser: locationCity }, {
-          headers: { Authorization: `Bearer ${res.data.token}` },
-        });
-      }
+      // Send login details log (server has IP fallback if client geolocator is pending/blocked)
+      await axios.post(`${api.Url}/user/login-details`, { 
+        ip: ip || null, 
+        coordinates: coordinates || null, 
+        platform, 
+        locationUser: locationCity || "Unknown Location" 
+      }, {
+        headers: { Authorization: `Bearer ${res.data.token}` },
+      }).catch(err => console.error("Error sending signup login details:", err));
 
       setNotification({ show: true, message: "Signup successful!", type: "success" });
       
@@ -646,11 +758,15 @@ function Signup() {
         }
       }
 
-      if (ip && coordinates) {
-        await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform, locationUser: locationCity }, {
-          headers: { Authorization: `Bearer ${res.data.token}` },
-        });
-      }
+      // Send login details log (server has IP fallback if client geolocator is pending/blocked)
+      await axios.post(`${api.Url}/user/login-details`, { 
+        ip: ip || null, 
+        coordinates: coordinates || null, 
+        platform, 
+        locationUser: locationCity || "Unknown Location" 
+      }, {
+        headers: { Authorization: `Bearer ${res.data.token}` },
+      }).catch(err => console.error("Error sending Google signup login details:", err));
 
       setNotification({ show: true, message: "Signup successful!", type: "success" });
       

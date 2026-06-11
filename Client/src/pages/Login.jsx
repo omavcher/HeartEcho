@@ -89,7 +89,8 @@ function Login() {
       const res = await fetch(url);
       const data = await res.json();
       if (data && data.features && data.features.length > 0) {
-        return data.features[0].text;
+        const placeFeature = data.features.find(f => f.place_type?.includes('place')) || data.features[0];
+        return placeFeature.text;
       }
     } catch (err) {
       console.error("Mapbox reverse geocode error:", err);
@@ -97,35 +98,85 @@ function Login() {
     return null;
   };
 
-  const fetchIpLocation = () => {
-    fetch("https://api.ipify.org?format=json")
-      .then((response) => response.json())
-      .then((data) => {
-        setIp(data.ip);
-        return fetch(`https://ip-api.com/json/${data.ip}`);
-      })
-      .then((response) => response.json())
-      .then(async (data) => {
-        const lat = data.lat;
-        const lon = data.lon;
-        setCoordinates({ lat, lon });
+  const fetchUserLocation = async () => {
+    setIsDetecting(true);
+
+    const fetchLocationFromIP = async () => {
+      try {
+        const ipRes = await fetch("https://api.ipify.org?format=json");
+        const ipData = await ipRes.json();
+        const userIp = ipData.ip;
+        setIp(userIp);
+
+        const locRes = await fetch(`https://ipapi.co/${userIp}/json/`);
+        const locData = await locRes.json();
         
-        const city = await reverseGeocode(lat, lon);
-        setLocationUser(city || data.city || data.regionName || "Unknown Location");
+        if (locData && !locData.error) {
+          const lat = locData.latitude;
+          const lon = locData.longitude;
+          setCoordinates({ lat, lon });
+          const city = await reverseGeocode(lat, lon);
+          setLocationUser(city || locData.city || locData.region || "Unknown Location");
+        } else {
+          // Backup free HTTPS geolocator
+          const backupRes = await fetch("https://ipinfo.io/json");
+          const backupData = await backupRes.json();
+          if (backupData && backupData.loc) {
+            const [latStr, lonStr] = backupData.loc.split(",");
+            const lat = parseFloat(latStr);
+            const lon = parseFloat(lonStr);
+            setCoordinates({ lat, lon });
+            const city = await reverseGeocode(lat, lon);
+            setLocationUser(city || backupData.city || backupData.region || "Unknown Location");
+          } else {
+            setLocationUser("Unknown Location");
+          }
+        }
+      } catch (err) {
+        console.error("IP Geolocation fallback error:", err);
+        setLocationUser("Unknown Location");
+      } finally {
         setIsDetecting(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching IP/Location:", error);
-        setIsDetecting(false);
-      });
+      }
+    };
+
+    // Try HTML5 Browser Geolocation first
+    if (typeof window !== "undefined" && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          setCoordinates({ lat, lon });
+          
+          const city = await reverseGeocode(lat, lon);
+          setLocationUser(city || "Unknown Location");
+
+          // Also get IP
+          try {
+            const ipRes = await fetch("https://api.ipify.org?format=json");
+            const ipData = await ipRes.json();
+            setIp(ipData.ip);
+          } catch (e) {
+            setIp("127.0.0.1");
+          }
+          setIsDetecting(false);
+        },
+        async (error) => {
+          console.warn("Browser Geolocation failed/denied, falling back to IP Geolocation:", error.message);
+          await fetchLocationFromIP();
+        },
+        { enableHighAccuracy: true, timeout: 6000, maximumAge: 15000 }
+      );
+    } else {
+      await fetchLocationFromIP();
+    }
   };
 
   useEffect(() => {
     setIsClient(true);
 
     if (typeof window !== 'undefined') {
-      setIsDetecting(true);
-      fetchIpLocation();
+      fetchUserLocation();
     }
   }, []);
 
@@ -154,12 +205,16 @@ function Login() {
       Cookies.set("token", token, { expires: 7 });
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("token", token);
-
-      if (ip && coordinates) {
-        await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform, locationUser }, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      }
+ 
+      // Send login details record (server has IP fallback if client resolution is slow/blocked)
+      await axios.post(`${api.Url}/user/login-details`, { 
+        ip: ip || null, 
+        coordinates: coordinates || null, 
+        platform, 
+        locationUser: locationUser || "Unknown Location" 
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(err => console.error("Error sending login details:", err));
   
       setNotification({ show: true, message: "Login successful!", type: "success" });
       

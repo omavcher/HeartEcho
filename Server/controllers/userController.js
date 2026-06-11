@@ -106,26 +106,49 @@ exports.updateProfile = async (req, res) => {
 exports.loginDetail = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { ip, coordinates, platform, locationUser } = req.body;
+    let { ip: clientIp, coordinates, platform, locationUser } = req.body;
 
-    // Convert coordinates to an object format
-    const parsedCoordinates = {
+    // Resolve IP address (use client-sent IP or request connection IP)
+    const ip = clientIp || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+
+    let parsedCoordinates = {
       lat: coordinates?.lat || null,
       lon: coordinates?.lon || null
     };
 
+    let resolvedCity = locationUser || "Unknown";
+    let resolvedCountry = "Unknown";
+
+    // If client coordinates are missing, geolocate by IP on the server
+    if (!parsedCoordinates.lat || !parsedCoordinates.lon) {
+      try {
+        const ipLocRes = await axios.get(`https://ipapi.co/${ip}/json/`);
+        if (ipLocRes.data && !ipLocRes.data.error) {
+          parsedCoordinates.lat = ipLocRes.data.latitude;
+          parsedCoordinates.lon = ipLocRes.data.longitude;
+          resolvedCity = ipLocRes.data.city || ipLocRes.data.region || "Unknown";
+          resolvedCountry = ipLocRes.data.country_name || "Unknown";
+        }
+      } catch (err) {
+        console.error("Server IP Geolocation error:", err.message);
+      }
+    }
+
     // Current time
     const currentTime = new Date();
 
-    // Reverse geocode via Mapbox helper
-    let resolvedCity = locationUser || "Unknown";
-    let resolvedCountry = "Unknown";
+    // Reverse geocode via Mapbox helper for precise city name if we have coordinates
     if (parsedCoordinates.lat && parsedCoordinates.lon) {
       const geoResult = await getCityFromCoordinates(parsedCoordinates.lat, parsedCoordinates.lon);
       if (geoResult.cityName && geoResult.cityName !== "Unknown") {
         resolvedCity = geoResult.cityName;
-        resolvedCountry = geoResult.country || "Unknown";
+        resolvedCountry = geoResult.country || resolvedCountry;
       }
+    }
+
+    // Fallbacks to avoid "Unknown Location" or "Unknown" string if we have a better name
+    if ((resolvedCity === "Unknown" || resolvedCity === "Unknown Location") && locationUser && locationUser !== "Unknown Location" && locationUser !== "Unknown") {
+      resolvedCity = locationUser;
     }
 
     // Check if a login entry with the same IP and coordinates already exists for this user
