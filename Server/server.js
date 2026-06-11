@@ -475,6 +475,11 @@ cron.schedule(
 // API ROUTES
 // ============================================
 
+// Root Route
+app.get("/", (req, res) => {
+  res.status(200).send("HeartEcho API is online 💖");
+});
+
 // Default API Route
 app.get("/api", (req, res) => {
   res.json({

@@ -122,15 +122,16 @@ exports.loginDetail = async (req, res) => {
     // If client coordinates are missing, geolocate by IP on the server
     if (!parsedCoordinates.lat || !parsedCoordinates.lon) {
       try {
-        const ipLocRes = await axios.get(`https://ipapi.co/${ip}/json/`);
-        if (ipLocRes.data && !ipLocRes.data.error) {
-          parsedCoordinates.lat = ipLocRes.data.latitude;
-          parsedCoordinates.lon = ipLocRes.data.longitude;
-          resolvedCity = ipLocRes.data.city || ipLocRes.data.region || "Unknown";
-          resolvedCountry = ipLocRes.data.country_name || "Unknown";
+        // Use ip-api.com (HTTP) which has high rate limits (45 req/min) and is perfect for server-side resolution
+        const ipLocRes = await axios.get(`http://ip-api.com/json/${ip}`);
+        if (ipLocRes.data && ipLocRes.data.status === "success") {
+          parsedCoordinates.lat = ipLocRes.data.lat;
+          parsedCoordinates.lon = ipLocRes.data.lon;
+          resolvedCity = ipLocRes.data.city || ipLocRes.data.regionName || "Unknown";
+          resolvedCountry = ipLocRes.data.country || "Unknown";
         }
       } catch (err) {
-        console.error("Server IP Geolocation error:", err.message);
+        console.warn(`[IP Geolocation] Could not resolve location for IP ${ip}: ${err.message}`);
       }
     }
 
