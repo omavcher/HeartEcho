@@ -1,32 +1,56 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import '../styles/PopNoti.css';
 
 function PopNoti({ message, type = 'info', isVisible, onClose, duration = 5000 }) {
-  const [progress, setProgress] = useState(100);
   const [isHovered, setIsHovered] = useState(false);
 
+  const timerRef = useRef(null);
+  const remainingTimeRef = useRef(duration);
+  const lastActiveTimeRef = useRef(null);
+  const hasClosedRef = useRef(false);
+
+  // Reset timer configuration when isVisible triggers true
   useEffect(() => {
     if (isVisible) {
-      setProgress(100);
-      
-      const interval = setInterval(() => {
-        if (!isHovered) {
-          setProgress(prev => {
-            const newProgress = prev - (100 / (duration / 50));
-            if (newProgress <= 0) {
-              onClose();
-              return 0;
-            }
-            return newProgress;
-          });
-        }
-      }, 50);
-
-      return () => clearInterval(interval);
+      remainingTimeRef.current = duration;
+      lastActiveTimeRef.current = Date.now();
+      hasClosedRef.current = false;
     }
-  }, [isVisible, duration, isHovered, onClose]);
+  }, [isVisible, duration]);
+
+  // Handle countdown with pause/resume on hover
+  useEffect(() => {
+    if (!isVisible) return;
+
+    if (isHovered) {
+      // Pause: clear timeout and subtract elapsed time
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      if (lastActiveTimeRef.current) {
+        const elapsed = Date.now() - lastActiveTimeRef.current;
+        remainingTimeRef.current = Math.max(0, remainingTimeRef.current - elapsed);
+      }
+    } else {
+      // Resume: start timeout for remaining time
+      lastActiveTimeRef.current = Date.now();
+      timerRef.current = setTimeout(() => {
+        if (!hasClosedRef.current) {
+          hasClosedRef.current = true;
+          onClose();
+        }
+      }, remainingTimeRef.current);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [isVisible, isHovered, onClose]);
 
   const getIcon = () => {
     switch (type) {
@@ -90,11 +114,16 @@ function PopNoti({ message, type = 'info', isVisible, onClose, duration = 5000 }
         >
           {/* Progress Bar */}
           <div className="progress-bar">
-            <motion.div 
+            <div 
               className="progress-fill"
-              initial={{ scaleX: 1 }}
-              animate={{ scaleX: progress / 100 }}
-              transition={{ duration: 0.1 }}
+              style={{
+                transformOrigin: 'left',
+                animationName: isVisible ? 'popNotiProgress' : 'none',
+                animationDuration: `${duration}ms`,
+                animationTimingFunction: 'linear',
+                animationFillMode: 'forwards',
+                animationPlayState: isHovered ? 'paused' : 'running'
+              }}
             />
           </div>
 

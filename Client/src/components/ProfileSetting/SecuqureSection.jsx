@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"; 
-import MiniMap from '../MiniMap.jsx';
+import dynamic from 'next/dynamic';
+const MiniMap = dynamic(() => import('../MiniMap.jsx'), { ssr: false });
 import axios from 'axios';
 import PopNoti from "../PopNoti.jsx";
 import api from "../../config/api.js";

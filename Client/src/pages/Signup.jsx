@@ -41,8 +41,12 @@ function Signup() {
     age: "",
     gender: "",
     selectedInterests: [],
-    country: "IN"
+    country: "IN",
+    city: ""
   });
+
+  const [locationCity, setLocationCity] = useState("Unknown Location");
+  const [isDetecting, setIsDetecting] = useState(true);
 
   const [isSignup, setIsSignup] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
@@ -383,24 +387,54 @@ function Signup() {
   const [coordinates, setCoordinates] = useState(null);
   const [platform, setPlatform] = useState(null);
 
+  const mapboxToken = "pk.eyJ1Ijoib21hd2NoYXIwNyIsImEiOiJjbHlmbGtwdmowMHhkMmtxeXAyNXdkeHB3In0.37j_dk9NgxtiPXqwCgsdQg";
+
+  const reverseGeocode = async (lat, lon) => {
+    try {
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?access_token=${mapboxToken}&types=place,locality`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data && data.features && data.features.length > 0) {
+        return data.features[0].text;
+      }
+    } catch (err) {
+      console.error("Mapbox reverse geocode error:", err);
+    }
+    return null;
+  };
+
+  const fetchIpLocation = () => {
+    fetch("https://api.ipify.org?format=json")
+      .then((response) => response.json())
+      .then((data) => {
+        setIp(data.ip);
+        return fetch(`https://ip-api.com/json/${data.ip}`);
+      })
+      .then((response) => response.json())
+      .then(async (data) => {
+        const lat = data.lat;
+        const lon = data.lon;
+        setCoordinates({ lat, lon });
+        const cCode = data.countryCode || "IN";
+        setFormData(prev => ({ ...prev, country: cCode }));
+        localStorage.setItem('user_country', cCode);
+        
+        const city = await reverseGeocode(lat, lon);
+        setLocationCity(city || data.city || data.regionName || "Unknown Location");
+        setFormData(prev => ({ ...prev, city: city || data.city || "" }));
+        setIsDetecting(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching IP/Location:", error);
+        setIsDetecting(false);
+      });
+  };
+
   useEffect(() => {
     if (isClient) {
       setPlatform(navigator.platform);
-      
-      fetch("https://api.ipify.org?format=json")
-        .then((response) => response.json())
-        .then((data) => {
-          setIp(data.ip);
-          return fetch(`https://ip-api.com/json/${data.ip}`);
-        })
-        .then((response) => response.json())
-        .then((data) => {
-          setCoordinates({ lat: data.lat, lon: data.lon });
-          const cCode = data.countryCode || "IN";
-          setFormData(prev => ({ ...prev, country: cCode }));
-          localStorage.setItem('user_country', cCode);
-        })
-        .catch((error) => console.error("Error fetching IP/Location:", error));
+      setIsDetecting(true);
+      fetchIpLocation();
     }
   }, [isClient]);
 
@@ -420,13 +454,17 @@ function Signup() {
       if (isGoogleSignup) {
         res = await axios.post(`${api.Url}/auth/register`, {
           ...formData,
+          city: locationCity,
           email: googleUserData.email,
           fullName: googleUserData.name,
           profilePicture: googleUserData.picture,
           password: Math.random().toString(36).slice(-8)
         });
       } else {
-        res = await axios.post(`${api.Url}/auth/register`, formData);
+        res = await axios.post(`${api.Url}/auth/register`, {
+          ...formData,
+          city: locationCity
+        });
       }
       
       if (isClient) {
@@ -456,7 +494,7 @@ function Signup() {
       }
 
       if (ip && coordinates) {
-        await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform }, {
+        await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform, locationUser: locationCity }, {
           headers: { Authorization: `Bearer ${res.data.token}` },
         });
       }
@@ -576,6 +614,7 @@ function Signup() {
     try {
       const res = await axios.post(`${api.Url}/auth/register`, {
         ...formData,
+        city: locationCity,
         email: googleUserData.email,
         fullName: googleUserData.name,
         profilePicture: googleUserData.picture,
@@ -608,7 +647,7 @@ function Signup() {
       }
 
       if (ip && coordinates) {
-        await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform }, {
+        await axios.post(`${api.Url}/user/login-details`, { ip, coordinates, platform, locationUser: locationCity }, {
           headers: { Authorization: `Bearer ${res.data.token}` },
         });
       }
@@ -1102,6 +1141,7 @@ function Signup() {
               )}
             </>
           )}
+
         </div>
         <div className='last-sinin-con' style={{ marginTop: "20px" }}>
           <h2 className='have-h2dx'>Do you have an account? <Link href='/login' style={{textDecoration:'none'}}> <span>Login Now</span></Link> </h2>

@@ -360,3 +360,12 @@
     border-color: #000000;
   }
 }
+
+@keyframes popNotiProgress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}

@@ -11,8 +11,10 @@ const Payment = require("../models/Payment");
 const axios = require("axios");
 const DeletedAccount = require("../models/DeletedAccount");
 const ReferralCreator = require("../models/ReferralCreator");
+const { getCityFromCoordinates } = require("../utils/geocoding");
 
 require("dotenv").config();
+
 const sendEmail = async (to, subject, html) => {
   try {
     const transporter = nodemailer.createTransport({
@@ -115,6 +117,17 @@ exports.loginDetail = async (req, res) => {
     // Current time
     const currentTime = new Date();
 
+    // Reverse geocode via Mapbox helper
+    let resolvedCity = locationUser || "Unknown";
+    let resolvedCountry = "Unknown";
+    if (parsedCoordinates.lat && parsedCoordinates.lon) {
+      const geoResult = await getCityFromCoordinates(parsedCoordinates.lat, parsedCoordinates.lon);
+      if (geoResult.cityName && geoResult.cityName !== "Unknown") {
+        resolvedCity = geoResult.cityName;
+        resolvedCountry = geoResult.country || "Unknown";
+      }
+    }
+
     // Check if a login entry with the same IP and coordinates already exists for this user
     const existingLogin = await LoginDetail.findOne({
       user: userId,
@@ -126,7 +139,17 @@ exports.loginDetail = async (req, res) => {
     if (existingLogin) {
       // If found, update only the time field
       existingLogin.time = currentTime;
+      if ((!existingLogin.location || existingLogin.location === "Unknown" || existingLogin.location === "") && resolvedCity !== "Unknown") {
+        existingLogin.location = resolvedCity;
+        existingLogin.cityName = resolvedCity;
+        existingLogin.country = resolvedCountry;
+      }
       await existingLogin.save();
+
+      // Also ensure User city is updated
+      if (resolvedCity !== "Unknown") {
+        await User.findByIdAndUpdate(userId, { $set: { city: resolvedCity } });
+      }
     } else {
       // If not found, create a new login detail entry
       const newLoginDetail = new LoginDetail({
@@ -135,15 +158,20 @@ exports.loginDetail = async (req, res) => {
         coordinates: parsedCoordinates,
         ip,
         time: currentTime,
-        location: locationUser
+        location: resolvedCity,
+        cityName: resolvedCity,
+        country: resolvedCountry
       });
 
       const response = await newLoginDetail.save();
 
-      // Push new login ID to the user's login_details array
+      // Push new login ID to the user's login_details array, and update User city!
       await User.findByIdAndUpdate(
         userId,
-        { $push: { login_details: response._id } },
+        { 
+          $push: { login_details: response._id },
+          $set: { city: resolvedCity }
+        },
         { new: true, runValidators: true }
       );
     }
@@ -1540,119 +1568,22 @@ exports.autoNotificationsGen = async (req, res) => {
     
     if (userId) {
       // Fetch user data for personalized messages (logged-in users only)
-      user = await User.findById(userId).select('name age selectedInterests login_details');
+      user = await User.findById(userId).select('name age selectedInterests login_details city');
       if (user) {
         userName = user.name || "there";
         userInterests = user.selectedInterests || [];
         userLoginDetails = user.login_details || [];
+        if (user.city) {
+          userCity = user.city;
+        }
       }
     }
     
-    // Get city from coordinates using Mapbox API
-    if (latitude && longitude) {
-      try {
-        console.log(`Fetching location for coordinates: ${latitude}, ${longitude}`);
-        
-        const mapboxResponse = await axios.get(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json`,
-          {
-            params: {
-              access_token: process.env.MAPBOX_ACCESS_TOKEN,
-              types: 'place,locality,neighborhood', // Added neighborhood
-              limit: 5 // Get more results to find the best match
-            }
-          }
-        );
-        
-        if (mapboxResponse.data && mapboxResponse.data.features && mapboxResponse.data.features.length > 0) {
-          const features = mapboxResponse.data.features;
-          
-          // Try different strategies to get the best city name
-          let foundCity = null;
-          
-          // Strategy 1: Look for place (city)
-          for (const feature of features) {
-            if (feature.place_type && feature.place_type.includes('place')) {
-              if (feature.text) {
-                userCity = feature.text;
-                console.log(`Found city (place): ${userCity}`);
-                foundCity = userCity;
-                break;
-              }
-            }
-          }
-          
-          // Strategy 2: Look for locality
-          if (!foundCity) {
-            for (const feature of features) {
-              if (feature.place_type && feature.place_type.includes('locality')) {
-                if (feature.text) {
-                  userCity = feature.text;
-                  console.log(`Found city (locality): ${userCity}`);
-                  foundCity = userCity;
-                  break;
-                }
-              }
-            }
-          }
-          
-          // Strategy 3: Look for neighborhood (might be what "Chandrakiran Nagar" is)
-          if (!foundCity) {
-            for (const feature of features) {
-              if (feature.place_type && feature.place_type.includes('neighborhood')) {
-                if (feature.text) {
-                  userCity = feature.text;
-                  console.log(`Found area (neighborhood): ${userCity}`);
-                  foundCity = userCity;
-                  break;
-                }
-              }
-            }
-          }
-          
-          // Strategy 4: Try to get city from context
-          if (!foundCity && features[0] && features[0].context) {
-            // Context items are in reverse order (smallest to largest)
-            const context = features[0].context;
-            
-            // Look for city in context (usually place.xxxxx or locality.xxxxx)
-            for (let i = context.length - 1; i >= 0; i--) {
-              const item = context[i];
-              if (item.id && (item.id.startsWith('place.') || item.id.startsWith('locality.'))) {
-                if (item.text) {
-                  userCity = item.text;
-                  console.log(`Found city from context: ${userCity}`);
-                  foundCity = userCity;
-                  break;
-                }
-              }
-            }
-          }
-          
-          // Strategy 5: Use the first feature if nothing else works
-          if (!foundCity && features[0].text) {
-            userCity = features[0].text;
-            console.log(`Using first feature as city: ${userCity}`);
-          }
-          
-          // Clean up the city name if it's too specific
-          if (userCity.includes('Nagar') || userCity.includes('Colony') || userCity.includes('Area')) {
-            // Try to find a more general city name from context
-            if (features[0] && features[0].context) {
-              for (const item of features[0].context) {
-                if (item.id && item.id.startsWith('place.')) {
-                  userCity = item.text;
-                  console.log(`Using general city from context instead: ${userCity}`);
-                  break;
-                }
-              }
-            }
-          }
-        }
-        
-      } catch (mapboxError) {
-        console.error("Error fetching location from Mapbox:", mapboxError.message);
-      }
+    // Get city from coordinates using Mapbox API if not already resolved from database
+    if (userCity === "Unknown" && latitude && longitude) {
+      const geoResult = await getCityFromCoordinates(latitude, longitude);
+      userCity = geoResult.cityName || "Unknown";
+      console.log(`Resolved user city from coordinates: ${userCity}`);
     }
     
     // Fetch ONLY female prebuilt AI friends

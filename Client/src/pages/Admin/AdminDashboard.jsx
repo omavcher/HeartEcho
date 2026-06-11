@@ -1,16 +1,19 @@
 'use client';
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import {
   Tooltip, ResponsiveContainer, XAxis, YAxis, CartesianGrid, AreaChart, Area,
   BarChart, Bar, Legend, PieChart, Pie, Cell
 } from "recharts";
 import {
-  FaUsers, FaMoneyBillWave, FaEnvelope, FaUserCheck, FaChartLine, FaMobileAlt, FaDesktop
+  FaUsers, FaMoneyBillWave, FaEnvelope, FaUserCheck, FaChartLine, FaMobileAlt, FaDesktop, FaMapMarkerAlt
 } from "react-icons/fa";
 import { IoMdRefresh } from "react-icons/io";
 import api from "../../config/api";
 import PopNoti from "../../components/PopNoti";
+import "mapbox-gl/dist/mapbox-gl.css";
+
+const MAPBOX_TOKEN = "pk.eyJ1Ijoib21hd2NoYXIwNyIsImEiOiJjbHlmbGtwdmowMHhkMmtxeXAyNXdkeHB3In0.37j_dk9NgxtiPXqwCgsdQg";
 
 // ------------------- CSS STYLES FOR DASHBOARD -------------------
 const dashboardStyles = `
@@ -138,24 +141,23 @@ const dashboardStyles = `
   gap: 20px;
   margin-top: 20px;
 }
-.country-list-x30sn {
-  margin-top: 20px;
-  max-height: 200px;
-  overflow-y: auto;
-}
-.country-item-x30sn {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid #222;
-}
-.country-name-x30sn { color: #fff; font-weight: 500; }
-.country-stats-x30sn { color: #888; font-size: 13px; }
-.country-count-x30sn { color: #ff69b4; font-weight: 600; margin-right: 8px; }
 @media (max-width: 600px) {
   .chart-grid-layout-x30sn {
     grid-template-columns: 1fr;
   }
+}
+
+.mapboxgl-popup-content {
+  background: #000 !important;
+  color: #fff !important;
+  border: 1px solid #333 !important;
+  border-radius: 8px !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+.mapboxgl-popup-tip {
+  border-top-color: #000 !important;
+  border-bottom-color: #000 !important;
 }
 `;
 
@@ -168,14 +170,23 @@ const AdminDashboard = () => {
     totalRevenue: 0, 
     messagesSent: 0, 
     revenueByCurrency: { INR: 0, USD: 0 },
-    countryBreakdown: [] 
+    countryBreakdown: [],
+    userMapData: [] 
   });
+
+  const mapContainerRef = useRef(null);
+  const mapInstanceRef = useRef(null);
   const [graphData, setGraphData] = useState({ revenueTrend: [] });
   const [loading, setLoading] = useState(true);
   const [conversionData, setConversionData] = useState([]);
-  const [conversionType, setConversionType] = useState("daily"); // daily or monthly
+  const [conversionType, setConversionType] = useState("daily");
   const [notification, setNotification] = useState({ show: false, message: "", type: "error" });
   const [deviceStats, setDeviceStats] = useState({ mobileUsers: 0, webUsers: 0 });
+
+  // Stable reference for onClose — prevents PopNoti's useEffect from firing on every parent re-render
+  const handleCloseNotification = useCallback(() => {
+    setNotification(p => ({ ...p, show: false }));
+  }, []);
 
   const getToken = useCallback(() => (typeof window !== 'undefined' ? localStorage.getItem("token") || "" : ""), []);
 
@@ -199,7 +210,8 @@ const AdminDashboard = () => {
         totalRevenue: data.paymentsData || 0,
         messagesSent: data.messageQuotaData || 0,
         revenueByCurrency: data.revenueByCurrency || { INR: 0, USD: 0 },
-        countryBreakdown: data.countryBreakdown || []
+        countryBreakdown: data.countryBreakdown || [],
+        userMapData: data.userMapData || []
       });
 
       const revenueTrendMapped = data.revenueTrend?.map(item => ({
@@ -248,11 +260,207 @@ const AdminDashboard = () => {
     fetchDeviceStats();
   }, [fetchDashboardData, fetchConversionStats, fetchDeviceStats, refresh]);
 
+  // Map init effect - fires when loading transitions from true to false
+  useEffect(() => {
+    if (loading) return;
+
+    // Delay so React finishes painting the DOM before we touch the canvas
+    const timer = setTimeout(() => {
+      if (!mapContainerRef.current) return;
+
+      // Clean up any previous map instance
+      if (mapInstanceRef.current) {
+        try { mapInstanceRef.current.remove(); } catch(e) {}
+        mapInstanceRef.current = null;
+      }
+
+      import("mapbox-gl").then((mapboxglModule) => {
+        const mapboxgl = mapboxglModule.default;
+        mapboxgl.accessToken = MAPBOX_TOKEN;
+
+        const container = mapContainerRef.current;
+        if (!container) return;
+
+        // Validate coords
+        const validCoords = (statsData.userMapData || []).filter(d => 
+          d && typeof d.lat === 'number' && typeof d.lon === 'number' && 
+          !isNaN(d.lat) && !isNaN(d.lon)
+        );
+
+        // Set center: average of all user locations, fallback India
+        let center = [78.9629, 20.5937];
+        if (validCoords.length > 0) {
+          const sumLat = validCoords.reduce((sum, d) => sum + d.lat, 0);
+          const sumLon = validCoords.reduce((sum, d) => sum + d.lon, 0);
+          center = [sumLon / validCoords.length, sumLat / validCoords.length];
+        }
+
+        const map = new mapboxgl.Map({
+          container: container,
+          style: "mapbox://styles/mapbox/dark-v11",
+          center: center,
+          zoom: validCoords.length > 0 ? 4 : 3.5,
+          attributionControl: false
+        });
+
+        mapInstanceRef.current = map;
+        map.addControl(new mapboxgl.NavigationControl(), "top-right");
+        map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
+
+        map.on('load', () => {
+          if (!mapInstanceRef.current) return;
+
+          // Convert coordinates data to GeoJSON Format
+          const geojson = {
+            type: 'FeatureCollection',
+            features: validCoords.map(city => ({
+              type: 'Feature',
+              properties: {
+                cityName: city.cityName || 'Unknown',
+                count: city.count || 1
+              },
+              geometry: {
+                type: 'Point',
+                coordinates: [city.lon, city.lat]
+              }
+            }))
+          };
+
+          map.addSource('user-locations', {
+            type: 'geojson',
+            data: geojson
+          });
+
+          // 1. Density outer glow layer
+          map.addLayer({
+            id: 'user-glow',
+            type: 'circle',
+            source: 'user-locations',
+            paint: {
+              'circle-radius': [
+                'interpolate', ['linear'], ['zoom'],
+                2, ['interpolate', ['linear'], ['get', 'count'], 1, 14, 10, 24, 50, 38],
+                6, ['interpolate', ['linear'], ['get', 'count'], 1, 24, 10, 38, 50, 52]
+              ],
+              'circle-color': '#ff69b4',
+              'circle-opacity': 0.18,
+              'circle-stroke-width': 1.5,
+              'circle-stroke-color': 'rgba(255, 105, 180, 0.45)',
+            }
+          });
+
+          // 2. Inner core pin layer
+          map.addLayer({
+            id: 'user-core',
+            type: 'circle',
+            source: 'user-locations',
+            paint: {
+              'circle-radius': [
+                'interpolate', ['linear'], ['zoom'],
+                2, ['interpolate', ['linear'], ['get', 'count'], 1, 5, 10, 8, 50, 11],
+                6, ['interpolate', ['linear'], ['get', 'count'], 1, 7, 10, 11, 50, 15]
+              ],
+              'circle-color': '#ff69b4',
+              'circle-opacity': 0.9,
+              'circle-stroke-width': 1.5,
+              'circle-stroke-color': '#ffffff',
+            }
+          });
+
+          // 3. Precise typography label layer
+          map.addLayer({
+            id: 'user-labels',
+            type: 'symbol',
+            source: 'user-locations',
+            layout: {
+              'text-field': ['concat', ['get', 'cityName'], ' (', ['to-string', ['get', 'count']], ')'],
+              'text-size': 11,
+              'text-offset': [0, 1.5],
+              'text-anchor': 'top',
+              'text-optional': true,
+              'text-allow-overlap': false
+            },
+            paint: {
+              'text-color': '#ffffff',
+              'text-halo-color': 'rgba(0,0,0,0.85)',
+              'text-halo-width': 1.5
+            }
+          });
+
+          // Reusable popup instance
+          const popup = new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            offset: 15
+          });
+
+          // Hover interaction handlers
+          map.on('mouseenter', 'user-core', (e) => {
+            map.getCanvas().style.cursor = 'pointer';
+            
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            const { cityName, count } = e.features[0].properties;
+            
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+              coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            }
+
+            popup.setLngLat(coordinates)
+              .setHTML(`
+                <div style="color:#fff; padding: 4px;">
+                  <div style="font-size:14px; font-weight:700; color:#ff69b4; margin-bottom:4px;">📍 ${cityName}</div>
+                  <div style="font-size:13px; color:#ccc;">${count} active user${count > 1 ? 's' : ''} here</div>
+                </div>
+              `)
+              .addTo(map);
+          });
+
+          map.on('mouseleave', 'user-core', () => {
+            map.getCanvas().style.cursor = '';
+            popup.remove();
+          });
+        });
+
+        // Add pulse animation to document if not already there
+        if (!document.getElementById('mapPulseStyle')) {
+          const style = document.createElement('style');
+          style.id = 'mapPulseStyle';
+          style.textContent = `
+            @keyframes mapPulse {
+              0%, 100% { transform: scale(1); opacity: 1; }
+              50% { transform: scale(1.15); opacity: 0.7; }
+            }
+          `;
+          document.head.appendChild(style);
+        }
+
+      }).catch((err) => {
+        console.error("Error loading mapbox-gl dynamically:", err);
+      });
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      if (mapInstanceRef.current) {
+        try { mapInstanceRef.current.remove(); } catch(e) {}
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [loading, statsData.userMapData]);
+
+  // Top N cities for the sidebar list
+  const topCities = [...(statsData.userMapData || [])]
+    .filter(d => d.cityName)
+    .sort((a, b) => (b.count || 0) - (a.count || 0))
+    .slice(0, 8);
+
+  const totalMapUsers = topCities.reduce((s, c) => s + (c.count || 0), 0);
+
   return (
     <>
       <style>{dashboardStyles}</style>
       <div className="dash-container-x30sn">
-        <PopNoti message={notification.message} type={notification.type} isVisible={notification.show} onClose={() => setNotification(p => ({ ...p, show: false }))} />
+        <PopNoti message={notification.message} type={notification.type} isVisible={notification.show} onClose={handleCloseNotification} />
         
         {loading ? (
           <div className="loading-x30sn"><div className="spinner-x30sn"></div><p style={{marginTop:10, color:'#888'}}>Analyzing Data...</p></div>
@@ -273,8 +481,8 @@ const AdminDashboard = () => {
               </div>
             </div>
 
+            {/* Stat Cards */}
             <div className="dash-grid-x30sn">
-              {/* Card 1 */}
               <div className="stat-card-x30sn">
                 <div className="stat-header-x30sn">
                   <div className="stat-icon-x30sn"><FaUsers /></div>
@@ -283,7 +491,6 @@ const AdminDashboard = () => {
                 <h3 className="stat-value-x30sn">{statsData.totalUsers}</h3>
               </div>
               
-              {/* Card 2 */}
               <div className="stat-card-x30sn">
                 <div className="stat-header-x30sn">
                   <div className="stat-icon-x30sn"><FaUserCheck /></div>
@@ -292,7 +499,6 @@ const AdminDashboard = () => {
                 <h3 className="stat-value-x30sn">{statsData.activeUsers} <span style={{fontSize:14, color:'#ff69b4'}}>({safeCalculatePercentage(statsData.activeUsers, statsData.totalUsers).toFixed(0)}%)</span></h3>
               </div>
 
-              {/* Card 3 */}
               <div className="stat-card-x30sn">
                 <div className="stat-header-x30sn">
                   <div className="stat-icon-x30sn"><FaEnvelope /></div>
@@ -301,7 +507,6 @@ const AdminDashboard = () => {
                 <h3 className="stat-value-x30sn">{statsData.messagesSent}</h3>
               </div>
 
-              {/* Card 4 */}
               <div className="stat-card-x30sn">
                 <div className="stat-header-x30sn">
                   <div className="stat-icon-x30sn"><FaMoneyBillWave /></div>
@@ -314,9 +519,9 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {/* Device Stats Row */}
+            {/* Device Stats */}
             <div className="dash-grid-x30sn" style={{marginBottom: 30}}>
-              <div className="stat-card-x30sn" style={{'--card-color': '#00b4d8'}}>
+              <div className="stat-card-x30sn">
                 <div className="stat-header-x30sn">
                   <div className="stat-icon-x30sn" style={{background:'rgba(0,180,216,0.1)', color:'#00b4d8'}}><FaMobileAlt /></div>
                   <span className="stat-label-x30sn">Mobile App Users</span>
@@ -343,6 +548,119 @@ const AdminDashboard = () => {
               </div>
             </div>
 
+            {/* ======== FULL-WIDTH USER DENSITY MAP (MOVED UP & PROMINENT) ======== */}
+            <div style={{
+              background: '#0a0a0a',
+              border: '1px solid #222',
+              borderRadius: '20px',
+              padding: '28px',
+              marginBottom: '24px',
+              overflow: 'hidden'
+            }}>
+              {/* Map Header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '40px', height: '40px',
+                    background: 'rgba(255,105,180,0.15)',
+                    borderRadius: '12px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#ff69b4', fontSize: '18px'
+                  }}>
+                    <FaMapMarkerAlt />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#fff' }}>User Density by City</h3>
+                    <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#666' }}>
+                      {topCities.length > 0 ? `${topCities.length} cities tracked · ${totalMapUsers} active users` : 'Real-time user distribution'}
+                    </p>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff69b4', boxShadow: '0 0 8px #ff69b4' }} />
+                  <span style={{ fontSize: '12px', color: '#888' }}>Active City</span>
+                </div>
+              </div>
+
+              {/* Map + City List Layout */}
+              <div style={{ display: 'flex', gap: '20px', alignItems: 'stretch', minHeight: '460px' }}>
+                
+                {/* Map Container — takes full width minus sidebar */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    ref={mapContainerRef}
+                    style={{
+                      width: '100%',
+                      height: '460px',
+                      borderRadius: '14px',
+                      border: '1px solid #1a1a1a',
+                      overflow: 'hidden',
+                      background: '#111',
+                      position: 'relative'
+                    }}
+                  />
+                </div>
+
+                {/* City Leaderboard Sidebar */}
+                <div style={{
+                  width: '220px',
+                  flexShrink: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}>
+                  <div style={{ fontSize: '12px', color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                    Top Cities
+                  </div>
+                  {topCities.length > 0 ? topCities.map((city, idx) => {
+                    const pct = totalMapUsers > 0 ? ((city.count / totalMapUsers) * 100).toFixed(0) : 0;
+                    const colors = ['#ff69b4', '#ff8cc8', '#ff3d9a', '#e040fb', '#ce93d8', '#ff69b4', '#c2185b', '#ad1457'];
+                    return (
+                      <div key={idx} style={{
+                        background: '#111',
+                        border: '1px solid #1e1e1e',
+                        borderRadius: '10px',
+                        padding: '10px 12px'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                            <div style={{
+                              width: '8px', height: '8px',
+                              borderRadius: '50%',
+                              background: colors[idx % colors.length],
+                              boxShadow: `0 0 5px ${colors[idx % colors.length]}`
+                            }} />
+                            <span style={{ color: '#e0e0e0', fontSize: '13px', fontWeight: 600 }}>
+                              {city.cityName}
+                            </span>
+                          </div>
+                          <span style={{ color: '#ff69b4', fontSize: '12px', fontWeight: 700 }}>
+                            {city.count}
+                          </span>
+                        </div>
+                        {/* Progress bar */}
+                        <div style={{ height: '3px', background: '#1a1a1a', borderRadius: '2px', overflow: 'hidden' }}>
+                          <div style={{
+                            height: '100%',
+                            width: `${pct}%`,
+                            background: `linear-gradient(90deg, ${colors[idx % colors.length]}, ${colors[(idx + 1) % colors.length]})`,
+                            borderRadius: '2px',
+                            transition: 'width 1s ease'
+                          }} />
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#555', marginTop: '3px' }}>{pct}% of active users</div>
+                      </div>
+                    );
+                  }) : (
+                    <div style={{ color: '#444', fontSize: '13px', padding: '10px', textAlign: 'center' }}>
+                      No city data yet.<br/>Users will appear after they log in.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Charts Grid */}
             <div className="chart-grid-layout-x30sn">
               <div className="chart-section-x30sn">
                 <div className="chart-head-x30sn">
@@ -407,21 +725,22 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
+              {/* Country Breakdown — simplified table, full width */}
               <div className="chart-section-x30sn" style={{ gridColumn: '1 / -1' }}>
                 <div className="chart-head-x30sn">
                   <FaUsers style={{color:'#ff69b4'}} />
                   <h3>User Distribution by Country</h3>
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: '300px', height: '300px' }}>
+                  <div style={{ width: '260px', height: '260px' }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
                           data={statsData.countryBreakdown}
                           cx="50%"
                           cy="50%"
-                          innerRadius={80}
-                          outerRadius={110}
+                          innerRadius={70}
+                          outerRadius={100}
                           paddingAngle={5}
                           dataKey="count"
                           nameKey="country"
@@ -436,21 +755,19 @@ const AdminDashboard = () => {
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
-                  <div style={{ flex: '1', minWidth: '300px' }}>
-                    <div className="country-list-x30sn" style={{ maxHeight: '300px' }}>
-                      {statsData.countryBreakdown.map((item, idx) => (
-                        <div key={idx} className="country-item-x30sn" style={{ padding: '12px 0' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: [ '#ff69b4', '#ffffff', '#888888', '#ff1493', '#ffc0cb' ][idx % 5] }}></div>
-                            <span className="country-name-x30sn" style={{ fontSize: '16px' }}>{item.country}</span>
-                          </div>
-                          <div className="country-stats-x30sn">
-                            <span className="country-count-x30sn" style={{ fontSize: '16px' }}>{item.count} Users</span>
-                            <span style={{ fontSize: '16px', color: '#ff69b4' }}>{item.percentage}%</span>
-                          </div>
+                  <div style={{ flex: '1', minWidth: '280px' }}>
+                    {statsData.countryBreakdown.map((item, idx) => (
+                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #1a1a1a' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: [ '#ff69b4', '#ffffff', '#888888', '#ff1493', '#ffc0cb' ][idx % 5] }}></div>
+                          <span style={{ color: '#e0e0e0', fontSize: '15px' }}>{item.country}</span>
                         </div>
-                      ))}
-                    </div>
+                        <div>
+                          <span style={{ color: '#ff69b4', fontSize: '15px', fontWeight: 700, marginRight: 8 }}>{item.count} Users</span>
+                          <span style={{ fontSize: '14px', color: '#666' }}>{item.percentage}%</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

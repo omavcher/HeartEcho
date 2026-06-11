@@ -23,6 +23,7 @@ function Login() {
   const [platform, setPlatform] = useState(typeof window !== 'undefined' ? navigator.platform : '');
   const [locationUser, setLocationUser] = useState(null);
   const [isClient, setIsClient] = useState(false);
+  const [isDetecting, setIsDetecting] = useState(true);
 
   const googleClientId = "273920667679-85i343d6q2eibbc7e597ougsflo7u6c0.apps.googleusercontent.com";
 
@@ -80,26 +81,53 @@ function Login() {
     return '/'; // Default to home page
   };
 
+  const mapboxToken = "pk.eyJ1Ijoib21hd2NoYXIwNyIsImEiOiJjbHlmbGtwdmowMHhkMmtxeXAyNXdkeHB3In0.37j_dk9NgxtiPXqwCgsdQg";
+
+  const reverseGeocode = async (lat, lon) => {
+    try {
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?access_token=${mapboxToken}&types=place,locality`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data && data.features && data.features.length > 0) {
+        return data.features[0].text;
+      }
+    } catch (err) {
+      console.error("Mapbox reverse geocode error:", err);
+    }
+    return null;
+  };
+
+  const fetchIpLocation = () => {
+    fetch("https://api.ipify.org?format=json")
+      .then((response) => response.json())
+      .then((data) => {
+        setIp(data.ip);
+        return fetch(`https://ip-api.com/json/${data.ip}`);
+      })
+      .then((response) => response.json())
+      .then(async (data) => {
+        const lat = data.lat;
+        const lon = data.lon;
+        setCoordinates({ lat, lon });
+        
+        const city = await reverseGeocode(lat, lon);
+        setLocationUser(city || data.city || data.regionName || "Unknown Location");
+        setIsDetecting(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching IP/Location:", error);
+        setIsDetecting(false);
+      });
+  };
+
   useEffect(() => {
     setIsClient(true);
 
-    // Fetch IP and location data
     if (typeof window !== 'undefined') {
-      fetch("https://api.ipify.org?format=json")
-        .then((response) => response.json())
-        .then((data) => {
-          setIp(data.ip);
-          // Use the IP to get detailed location
-          return fetch(`https://ip-api.com/json/${data.ip}`);
-        })
-        .then((response) => response.json())
-        .then((data) => {
-          setCoordinates({ lat: data.lat, lon: data.lon });
-          setLocationUser(data.regionName || data.city);
-        })
-        .catch((error) => console.error("Error fetching IP/Location:", error));
+      setIsDetecting(true);
+      fetchIpLocation();
     }
-  }, []); // Removed searchParams dependency
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

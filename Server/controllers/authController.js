@@ -5,7 +5,7 @@ const nodemailer = require('nodemailer');
 const sendEmail = require("../config/emailSender");
 exports.registerUser = async (req, res) => {
   try {
-    const { fullName, email, phone, password, gender, birth_date, interests, user_type ,twoFA ,profilePicture ,referralCode , subscribeNews ,termsAccepted , age , selectedInterests, country } = req.body;
+    const { fullName, email, phone, password, gender, birth_date, interests, user_type ,twoFA ,profilePicture ,referralCode , subscribeNews ,termsAccepted , age , selectedInterests, country, city } = req.body;
 
     // 1️⃣ Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -35,6 +35,7 @@ exports.registerUser = async (req, res) => {
       termsAccepted,
       selectedInterests: formattedInterests, // ✅ Ensure it's properly formatted
       country: country || "IN",
+      city: city || "",
     });
 
     await newUser.save();

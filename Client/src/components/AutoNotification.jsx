@@ -8,26 +8,8 @@ import './AutoNotification.css';
 function AutoNotification() {
   const [notification, setNotification] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [userLocation, setUserLocation] = useState(null);
-  
   // Ref to manage the loop and prevent memory leaks
   const loopTimeoutRef = useRef(null);
-
-  // 1. Get location on mount
-  useEffect(() => {
-    if (typeof window !== 'undefined' && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          });
-        },
-        (error) => console.error("Location error:", error),
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
-    }
-  }, []);
 
   const triggerNotificationCycle = useCallback(async () => {
     try {
@@ -36,7 +18,7 @@ function AutoNotification() {
 
       const response = await axios.post(
         `${api.Url}/user/auto-notifications`,
-        userLocation || {},
+        {},
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
 
@@ -64,7 +46,7 @@ function AutoNotification() {
       // If API fails, try again after a standard 10s delay to avoid spamming errors
       loopTimeoutRef.current = setTimeout(triggerNotificationCycle, 10000);
     }
-  }, [userLocation]);
+  }, []);
 
   // Start the loop after the page has been active for 5 seconds
   useEffect(() => {

@@ -9,7 +9,9 @@ const loginDetailSchema = new mongoose.Schema({
   },
   ip: { type: String },
   time: { type: Date, default: Date.now },
- location: { type: String },
+  location: { type: String },
+  cityName: { type: String }, // Precise city name from reverse geocoding
+  country: { type: String },
 });
 
 const LoginDetail = mongoose.model("LoginDetail", loginDetailSchema);

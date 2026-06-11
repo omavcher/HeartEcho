@@ -532,3 +532,65 @@
   width: 100%;
   margin-bottom: 8px;
 }
+
+/* Detected Location Section styling */
+.detected-location-section {
+  margin-top: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.location-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.location-badge strong {
+  color: #ff69b4;
+  font-weight: 600;
+}
+
+.login-minimap-container {
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  position: relative;
+}
+
+.login-minimap-container .mini-map {
+  width: 100%;
+  height: 100%;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background-color: #ff69b4;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: .5;
+    transform: scale(1.2);
+  }
+}

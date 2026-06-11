@@ -15,6 +15,7 @@ const { generateCreatorToken, verifyReferralCreator } = require('../utils/jwt');
 const { sendPushNotification, sendMulticastNotification, sendEachPersonalizedNotification } = require("../utils/notificationService");
 const NotificationLog = require("../models/NotificationLog");
 const Feedback = require("../models/Feedback");
+const { getCityFromCoordinates, isStateName } = require("../utils/geocoding");
 
 // Get all deleted accounts
 
@@ -107,6 +108,43 @@ exports.manualSubscription = async (req, res) => {
     }
 };
 
+const migrateOldLoginDetails = async () => {
+    try {
+        const recordsToFix = await LoginDetail.find({
+            "coordinates.lat": { $exists: true, $ne: null },
+            "coordinates.lon": { $exists: true, $ne: null },
+            $or: [
+                { cityName: { $exists: false } },
+                { cityName: null },
+                { cityName: "" },
+                { cityName: "Unknown" }
+            ]
+        }).limit(100);
+
+        let updatedCount = 0;
+        for (const record of recordsToFix) {
+            const { lat, lon } = record.coordinates;
+            const currentCity = record.cityName || record.location || "";
+            if (!record.cityName || isStateName(currentCity) || currentCity === "Unknown") {
+                const geo = await getCityFromCoordinates(lat, lon);
+                if (geo && geo.cityName && geo.cityName !== "Unknown") {
+                    record.cityName = geo.cityName;
+                    if (geo.country && geo.country !== "Unknown") {
+                        record.country = geo.country;
+                    }
+                    await record.save();
+                    updatedCount++;
+                }
+            }
+        }
+        if (updatedCount > 0) {
+            console.log(`[Migration] Updated ${updatedCount} LoginDetail records with correct city names.`);
+        }
+    } catch (err) {
+        console.error("[Migration] Error migrating old login detail records:", err.message);
+    }
+};
+
 exports.dashboardData = async (req, res) => {
   try {
       const userId = req.user.id;
@@ -176,6 +214,81 @@ exports.dashboardData = async (req, res) => {
           percentage: ((item.count / usersData) * 100).toFixed(1)
       }));
 
+      // Get map data showing active users' locations and coordinate centers
+      // Use cityName field (new) with fallback to location field (legacy)
+      const userMapData = await LoginDetail.aggregate([
+          { $match: { 
+              "coordinates.lat": { $exists: true, $ne: null }, 
+              "coordinates.lon": { $exists: true, $ne: null }
+          }},
+          { $sort: { time: -1 } },
+          { $group: {
+              _id: "$user",
+              lat: { $first: "$coordinates.lat" },
+              lon: { $first: "$coordinates.lon" },
+              cityName: { $first: { $ifNull: ["$cityName", "$location"] } },
+              country: { $first: "$country" }
+          } },
+          // Filter out users with no valid city
+          { $match: { 
+              cityName: { $nin: [null, "", "Unknown"] }
+          }},
+          // Group by city (case-insensitive)
+          { $group: {
+              _id: { $toLower: "$cityName" },
+              cityName: { $first: "$cityName" },
+              country: { $first: "$country" },
+              lat: { $avg: "$lat" },
+              lon: { $avg: "$lon" },
+              count: { $sum: 1 }
+          } },
+          { $sort: { count: -1 } },
+          { $limit: 50 }
+      ]);
+
+      // Post-process map data to resolve any state-level names or "Unknown" to proper city names
+      const cityGroups = {};
+      for (const item of (userMapData || [])) {
+          let name = item.cityName;
+          let country = item.country;
+          const lat = item.lat;
+          const lon = item.lon;
+
+          if (isStateName(name) || name === "Unknown" || !name) {
+              const geo = await getCityFromCoordinates(lat, lon);
+              if (geo && geo.cityName && geo.cityName !== "Unknown") {
+                  name = geo.cityName;
+                  if (geo.country && geo.country !== "Unknown") {
+                      country = geo.country;
+                  }
+              }
+          }
+
+          // Group by city name case-insensitively to combine duplicates after geocoding
+          const key = (name || "Unknown").toLowerCase().trim();
+          if (cityGroups[key]) {
+              const prevCount = cityGroups[key].count;
+              cityGroups[key].count += item.count;
+              // Average coordinates of the grouped entries weighted by count
+              cityGroups[key].lat = (cityGroups[key].lat * prevCount + lat * item.count) / cityGroups[key].count;
+              cityGroups[key].lon = (cityGroups[key].lon * prevCount + lon * item.count) / cityGroups[key].count;
+          } else {
+              cityGroups[key] = {
+                  _id: key,
+                  cityName: name || "Unknown",
+                  country: country || "Unknown",
+                  lat: lat,
+                  lon: lon,
+                  count: item.count
+              };
+          }
+      }
+
+      let finalUserMapData = Object.values(cityGroups).sort((a, b) => b.count - a.count);
+
+      // Trigger background migration asynchronously to heal DB records
+      migrateOldLoginDetails().catch(err => console.error("Migration call error:", err));
+
       return res.status(200).json({
           usersData,
           paymentsData: totalRevenue,
@@ -184,7 +297,8 @@ exports.dashboardData = async (req, res) => {
           activeUsers: totalActiveUsers,
           revenueTrend,
           notifications,
-          countryBreakdown: formattedCountryBreakdown
+          countryBreakdown: formattedCountryBreakdown,
+          userMapData: finalUserMapData
       });
 
   } catch (error) {
