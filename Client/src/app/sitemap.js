@@ -31,6 +31,9 @@ export default async function sitemap() {
     '/ai-girlfriend-roleplay',
     '/ai-girlfriend-for-lonely',
     '/ai-girlfriend-voice-chat',
+    '/best-ai-girlfriend-india',
+    '/ai-chat-hindi',
+    '/ai-friend-india',
   ];
 
   const landingRoutes = landingPaths.map((path) => ({
@@ -58,6 +61,8 @@ export default async function sitemap() {
     '/ai-sex-chat',
     '/heartecho-vs-candyai',
     '/heartecho-vs-talkie',
+    '/heartecho-vs-character-ai',
+    '/heartecho-vs-replika',
   ];
 
   const otherStaticRoutes = otherStaticPaths.map((path) => ({
