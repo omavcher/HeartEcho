@@ -18,11 +18,38 @@ const Feedback = require("../models/Feedback");
 const { getCityFromCoordinates, isStateName } = require("../utils/geocoding");
 
 // Get all deleted accounts
-
 exports.getDeletedAccounts = async (req, res) => {
   try {
     const deletedAccounts = await DeletedAccount.find().sort({ deletedAt: -1 });
-    res.status(200).json({ success: true, data: deletedAccounts });
+
+    const deletedMapData = await DeletedAccount.aggregate([
+      { $match: { 
+          "coordinates.lat": { $exists: true, $ne: null }, 
+          "coordinates.lon": { $exists: true, $ne: null },
+          city: { $nin: [null, "", "Unknown", "Unknown Location"] }
+      }},
+      { $group: {
+          _id: { $toLower: "$city" },
+          cityName: { $first: "$city" },
+          country: { $first: { $ifNull: ["$country", "IN"] } },
+          lat: { $avg: "$coordinates.lat" },
+          lon: { $avg: "$coordinates.lon" },
+          count: { $sum: 1 },
+          paidCount: {
+              $sum: {
+                  $cond: [
+                      { $eq: ["$user_type", "subscriber"] },
+                      1,
+                      0
+                  ]
+              }
+          }
+      }},
+      { $sort: { count: -1 } },
+      { $limit: 50 }
+    ]);
+
+    res.status(200).json({ success: true, data: deletedAccounts, userMapData: deletedMapData });
   } catch (error) {
     console.error("Error fetching deleted accounts:", error);
     res.status(500).json({ success: false, message: "Internal server error" });

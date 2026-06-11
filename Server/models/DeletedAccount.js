@@ -12,6 +12,12 @@ const DeletedAccountSchema = new mongoose.Schema({
   subscriptionTier: { type: String },
   subscriptionExpiry: { type: Date },
   joinedAt: { type: Date },
+  city: { type: String },
+  country: { type: String },
+  coordinates: {
+    lat: { type: Number },
+    lon: { type: Number }
+  },
 
   // Snapshot of related data counts (for analytics)
   stats: {

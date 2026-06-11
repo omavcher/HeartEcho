@@ -374,8 +374,8 @@ exports.deleteAccount = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // 2. Gather stats before deletion (for archive)
-    const [chatCount, ticketCount, paymentCount, aiFriendCount, chatMessages] = await Promise.all([
+    // 2. Gather stats and details before deletion (for archive)
+    const [chatCount, ticketCount, paymentCount, aiFriendCount, chatMessages, lastPayment, lastLogin] = await Promise.all([
       Chat.countDocuments({ participants: userId }),
       Ticket.countDocuments({ user: userId }),
       Payment.countDocuments({ user: userId }),
@@ -385,11 +385,17 @@ exports.deleteAccount = async (req, res) => {
         { $unwind: "$messages" },
         { $match: { "messages.sender": new mongoose.Types.ObjectId(userId) } },
         { $count: "total" }
-      ])
+      ]),
+      Payment.findOne({ user: userId }).sort({ createdAt: -1 }),
+      LoginDetail.findOne({ user: userId }).sort({ time: -1 })
     ]);
 
-    // 3. Get last payment for audit
-    const lastPayment = await Payment.findOne({ user: userId }).sort({ createdAt: -1 });
+    const userCity = user.city || (lastLogin ? lastLogin.cityName || lastLogin.location : "");
+    const userCountry = user.country || (lastLogin ? lastLogin.country : "IN");
+    const userCoords = lastLogin && lastLogin.coordinates && lastLogin.coordinates.lat && lastLogin.coordinates.lon ? {
+      lat: lastLogin.coordinates.lat,
+      lon: lastLogin.coordinates.lon
+    } : null;
 
     // 4. Save archive record BEFORE deleting anything
     await DeletedAccount.create({
@@ -403,6 +409,9 @@ exports.deleteAccount = async (req, res) => {
       subscriptionTier: user.subscriptionTier,
       subscriptionExpiry: user.subscriptionExpiry,
       joinedAt: user.joinedAt,
+      city: userCity,
+      country: userCountry,
+      coordinates: userCoords,
       stats: {
         totalChats: chatCount,
         totalMessages: chatMessages.length > 0 ? chatMessages[0].total : 0,

@@ -4,10 +4,13 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   FaTrash, FaSearch, FaSync, FaUserSlash, FaIdBadge, FaPhone,
   FaHistory, FaCalendarAlt, FaEnvelope, FaTimes, FaMagic,
-  FaPaperPlane, FaSpinner, FaEye, FaStar
+  FaPaperPlane, FaSpinner, FaEye, FaStar, FaMapMarkerAlt
 } from "react-icons/fa";
 import axios from "axios";
 import api from "../../config/api";
+import "mapbox-gl/dist/mapbox-gl.css";
+
+const MAPBOX_TOKEN = "pk.eyJ1Ijoib21hd2NoYXIwNyIsImEiOiJjbHlmbGtwdmowMHhkMmtxeXAyNXdkeHB3In0.37j_dk9NgxtiPXqwCgsdQg";
 
 const deletedStyles = `
 /* ROOT THEME */
@@ -519,6 +522,21 @@ const DeletedAccountsAdmin = () => {
   const [emailAccount, setEmailAccount] = useState(null);
   const itemsPerPage = 6;
 
+  const [userMapData, setUserMapData] = useState([]);
+  const mapContainerRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+
+  const topCities = useMemo(() => {
+    return [...userMapData]
+      .filter(d => d.cityName)
+      .sort((a, b) => (b.count || 0) - (a.count || 0))
+      .slice(0, 8);
+  }, [userMapData]);
+
+  const totalMapUsers = useMemo(() => {
+    return topCities.reduce((s, c) => s + (c.count || 0), 0);
+  }, [topCities]);
+
   const getToken = useCallback(() => (typeof window !== 'undefined' ? localStorage.getItem("token") || "" : ""), []);
 
   const fetchDeletedAccounts = useCallback(async () => {
@@ -528,7 +546,10 @@ const DeletedAccountsAdmin = () => {
       const response = await axios.get(`${api.Url}/admin/deleted-accounts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (response.data.success) setAccounts(response.data.data);
+      if (response.data.success) {
+        setAccounts(response.data.data);
+        setUserMapData(response.data.userMapData || []);
+      }
     } catch (error) {
       console.error("Fetch Error:", error);
     } finally {
@@ -537,6 +558,172 @@ const DeletedAccountsAdmin = () => {
   }, [getToken]);
 
   useEffect(() => { fetchDeletedAccounts(); }, [fetchDeletedAccounts]);
+
+  // Map init effect
+  useEffect(() => {
+    if (loading || userMapData.length === 0) return;
+
+    const timer = setTimeout(() => {
+      if (!mapContainerRef.current) return;
+
+      if (mapInstanceRef.current) {
+        try { mapInstanceRef.current.remove(); } catch(e) {}
+        mapInstanceRef.current = null;
+      }
+
+      import("mapbox-gl").then((mapboxglModule) => {
+        const mapboxgl = mapboxglModule.default;
+        mapboxgl.accessToken = MAPBOX_TOKEN;
+
+        const container = mapContainerRef.current;
+        if (!container) return;
+
+        const validCoords = userMapData.filter(d => 
+          d && typeof d.lat === 'number' && typeof d.lon === 'number' && 
+          !isNaN(d.lat) && !isNaN(d.lon)
+        );
+
+        let center = [78.9629, 20.5937];
+        if (validCoords.length > 0) {
+          const sumLat = validCoords.reduce((sum, d) => sum + d.lat, 0);
+          const sumLon = validCoords.reduce((sum, d) => sum + d.lon, 0);
+          center = [sumLon / validCoords.length, sumLat / validCoords.length];
+        }
+
+        const map = new mapboxgl.Map({
+          container: container,
+          style: "mapbox://styles/mapbox/dark-v11",
+          center: center,
+          zoom: validCoords.length > 0 ? 4 : 3.5,
+          attributionControl: false
+        });
+
+        mapInstanceRef.current = map;
+        map.addControl(new mapboxgl.NavigationControl(), "top-right");
+        map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
+
+        map.on('load', () => {
+          if (!mapInstanceRef.current) return;
+
+          const geojson = {
+            type: 'FeatureCollection',
+            features: validCoords.map(city => ({
+              type: 'Feature',
+              properties: {
+                cityName: city.cityName || 'Unknown',
+                count: city.count || 1,
+                paidCount: city.paidCount || 0
+              },
+              geometry: {
+                type: 'Point',
+                coordinates: [city.lon, city.lat]
+              }
+            }))
+          };
+
+          map.addSource('user-locations', {
+            type: 'geojson',
+            data: geojson
+          });
+
+          map.addLayer({
+            id: 'user-glow',
+            type: 'circle',
+            source: 'user-locations',
+            paint: {
+              'circle-radius': [
+                'interpolate', ['linear'], ['zoom'],
+                2, ['interpolate', ['linear'], ['get', 'count'], 1, 14, 10, 24, 50, 38],
+                6, ['interpolate', ['linear'], ['get', 'count'], 1, 24, 10, 38, 50, 52]
+              ],
+              'circle-color': '#ff4444',
+              'circle-opacity': 0.18,
+              'circle-stroke-width': 1.5,
+              'circle-stroke-color': 'rgba(255, 68, 68, 0.45)',
+            }
+          });
+
+          map.addLayer({
+            id: 'user-core',
+            type: 'circle',
+            source: 'user-locations',
+            paint: {
+              'circle-radius': [
+                'interpolate', ['linear'], ['zoom'],
+                2, ['interpolate', ['linear'], ['get', 'count'], 1, 5, 10, 8, 50, 11],
+                6, ['interpolate', ['linear'], ['get', 'count'], 1, 7, 10, 11, 50, 15]
+              ],
+              'circle-color': '#ff4444',
+              'circle-opacity': 0.9,
+              'circle-stroke-width': 1.5,
+              'circle-stroke-color': '#ffffff',
+            }
+          });
+
+          map.addLayer({
+            id: 'user-labels',
+            type: 'symbol',
+            source: 'user-locations',
+            layout: {
+              'text-field': ['concat', ['get', 'cityName'], ' (', ['to-string', ['get', 'count']], ')'],
+              'text-size': 11,
+              'text-offset': [0, 1.5],
+              'text-anchor': 'top',
+              'text-optional': true,
+              'text-allow-overlap': false
+            },
+            paint: {
+              'text-color': '#ffffff',
+              'text-halo-color': 'rgba(0,0,0,0.85)',
+              'text-halo-width': 1.5
+            }
+          });
+
+          const popup = new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            offset: 15
+          });
+
+          map.on('mouseenter', 'user-core', (e) => {
+            map.getCanvas().style.cursor = 'pointer';
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            const { cityName, count, paidCount: rawPaidCount } = e.features[0].properties;
+            const paidCount = Number(rawPaidCount || 0);
+
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+              coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            }
+
+            popup.setLngLat(coordinates)
+              .setHTML(`
+                <div style="color:#fff; padding: 4px;">
+                  <div style="font-size:14px; font-weight:700; color:#ff4444; margin-bottom:4px;">📍 ${cityName}</div>
+                  <div style="font-size:13px; color:#ccc;">${count} deleted account${count > 1 ? 's' : ''} here</div>
+                  ${paidCount > 0 ? `<div style="font-size:12px; color:#ffd700; font-weight:600; margin-top:4px; display:flex; align-items:center; gap:4px;">👑 ${paidCount} Premium Account${paidCount > 1 ? 's' : ''}</div>` : ''}
+                </div>
+              `)
+              .addTo(map);
+          });
+
+          map.on('mouseleave', 'user-core', () => {
+            map.getCanvas().style.cursor = '';
+            popup.remove();
+          });
+        });
+      }).catch((err) => {
+        console.error("Error loading mapbox-gl dynamically:", err);
+      });
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      if (mapInstanceRef.current) {
+        try { mapInstanceRef.current.remove(); } catch(e) {}
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [loading, userMapData]);
 
   const filteredAccounts = useMemo(() => {
     return accounts.filter(u => {
@@ -584,6 +771,125 @@ const DeletedAccountsAdmin = () => {
             />
           </div>
         </div>
+
+        {/* ======== USER DENSITY MAP FOR DELETED USERS ======== */}
+        {userMapData.length > 0 && (
+          <div style={{
+            background: '#050505',
+            border: '1px solid #222',
+            borderRadius: '20px',
+            padding: '28px',
+            marginBottom: '24px',
+            overflow: 'hidden'
+          }}>
+            {/* Map Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '40px', height: '40px',
+                  background: 'rgba(255,68,68,0.15)',
+                  borderRadius: '12px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#ff4444', fontSize: '18px'
+                }}>
+                  <FaMapMarkerAlt />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#fff' }}>Deleted Accounts Density by City</h3>
+                  <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#666' }}>
+                    {topCities.length > 0 ? `${topCities.length} cities tracked · ${totalMapUsers} deleted accounts` : 'Deleted user distribution'}
+                  </p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff4444', boxShadow: '0 0 8px #ff4444' }} />
+                <span style={{ fontSize: '12px', color: '#888' }}>Deleted City</span>
+              </div>
+            </div>
+
+            {/* Map + City List Layout */}
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'stretch', minHeight: '460px' }}>
+              
+              {/* Map Container */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  ref={mapContainerRef}
+                  style={{
+                    width: '100%',
+                    height: '460px',
+                    borderRadius: '14px',
+                    border: '1px solid #1a1a1a',
+                    overflow: 'hidden',
+                    background: '#111',
+                    position: 'relative'
+                  }}
+                />
+              </div>
+
+              {/* City Leaderboard Sidebar */}
+              <div style={{
+                width: '220px',
+                flexShrink: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px'
+              }}>
+                <div style={{ fontSize: '12px', color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                  Top Cities
+                </div>
+                {topCities.map((city, idx) => {
+                  const pct = totalMapUsers > 0 ? ((city.count / totalMapUsers) * 100).toFixed(0) : 0;
+                  const colors = ['#ff4444', '#ff6666', '#ff1a1a', '#ff8080', '#e60000', '#ff4444', '#cc0000', '#990000'];
+                  const hasPaid = city.paidCount > 0;
+                  return (
+                    <div key={idx} style={{
+                      background: '#111',
+                      border: hasPaid ? '1px solid rgba(255, 215, 0, 0.35)' : '1px solid #1e1e1e',
+                      boxShadow: hasPaid ? '0 0 10px rgba(255, 215, 0, 0.05)' : 'none',
+                      borderRadius: '10px',
+                      padding: '10px 12px'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <div style={{
+                            width: '8px', height: '8px',
+                            borderRadius: '50%',
+                            background: hasPaid ? '#ffd700' : colors[idx % colors.length],
+                            boxShadow: hasPaid ? '0 0 5px #ffd700' : `0 0 5px ${colors[idx % colors.length]}`
+                          }} />
+                          <span style={{ color: hasPaid ? '#ffd700' : '#e0e0e0', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            {city.cityName} {hasPaid && <span title="Premium subscriber in city">👑</span>}
+                          </span>
+                        </div>
+                        <span style={{ color: hasPaid ? '#ffd700' : '#ff4444', fontSize: '12px', fontWeight: 700 }}>
+                          {city.count}
+                        </span>
+                      </div>
+                      {/* Progress bar */}
+                      <div style={{ height: '3px', background: '#1a1a1a', borderRadius: '2px', overflow: 'hidden' }}>
+                        <div style={{
+                          height: '100%',
+                          width: `${pct}%`,
+                          background: hasPaid ? 'linear-gradient(90deg, #ffd700, #ffa500)' : `linear-gradient(90deg, ${colors[idx % colors.length]}, ${colors[(idx + 1) % colors.length]})`,
+                          borderRadius: '2px',
+                          transition: 'width 1s ease'
+                        }} />
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                        <span style={{ fontSize: '11px', color: '#555' }}>{pct}% of deleted</span>
+                        {hasPaid && (
+                          <span style={{ fontSize: '10px', color: '#ffd700', fontWeight: 'bold' }}>
+                            {city.paidCount} Paid
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* GRID */}
         <div className="u-grid-x30sn">
