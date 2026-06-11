@@ -9,7 +9,7 @@ export const metadata = {
   keywords: [
     "ai chatbot for loneliness",
     "ai friend india",
-    "virtual friend app india",
+    "virtual friend app india ",
     "ai companion india",
     "ai for loneliness india",
     "best ai companion app india",
