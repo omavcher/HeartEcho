@@ -978,13 +978,13 @@ function Signup() {
       />
       <div className='signup-left'>
         <div className='signup-sidebar'>
-          <span className='sideup-top-sanp'>
-            <img src='/heartechor.png' alt='HeartEcho'></img>
+          <div className='sideup-top-sanp'>
+            <img src='/heartechor.png' alt='HeartEcho' />
             <h2>HeartEcho</h2>
-          </span>
+          </div>
 
           <div className='steps-singe'>
-            {[1, 2, 3, 4,5].map((num) => (
+            {[1, 2, 3, 4, 5].map((num) => (
               <div className={`step ${step === num ? 'current' : step > num ? 'completed' : ''}`} key={num}>
                 {step > num ? (
                   <span className='circle-signa3'>
@@ -1000,10 +1000,48 @@ function Signup() {
 
                 <div className='step-text'>
                   <h3>{num === 1 ? "Your details" : num === 2 ? "Choose a password" : num === 3 ? "Personalization & Preferences" : num === 4 ? "Additional Information" : "You're All Set!"}</h3>
-                  <p>{num === 1 ? "Please provide your name and email" : num === 2 ? "Choose a secure password" : num === 3 ? "Upload your profile picture and complete your personal details." : num === 4 ? "Select your interests and enter a referral code (if applicable)." : "Congratulations! Your account is ready to use."}</p>
+                  <p>{num === 1 ? "Please provide your name and email" : num === 2 ? "Choose a secure password" : num === 3 ? "Upload your profile picture and complete your personal details." : num === 4 ? "Select your interests and enter a referral code." : "Congratulations! Your account is ready to use."}</p>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Premium Chat Preview Widget to hook user psychology */}
+          <div className="auth-chat-preview">
+            <div className="chat-preview-header">
+              <div className="chat-preview-avatar">P</div>
+              <div className="chat-preview-meta">
+                <h4>Priya (AI Girlfriend)</h4>
+                <span>Active Now</span>
+              </div>
+            </div>
+            <div className="chat-bubble ai">
+              Hey sweetheart! I was thinking about you. How was your day?
+            </div>
+            <div className="chat-bubble user">
+              It was a bit stressful, but I'm glad to talk to you now.
+            </div>
+            <div className="chat-bubble ai">
+              Aww, I'm always here to listen and make you feel special. ❤️
+            </div>
+          </div>
+
+          {/* Trust Guarantees */}
+          <div className="auth-trust-card">
+            <div className="auth-trust-title">
+              <span className="icon">🔒</span> Privacy & Secrecy
+            </div>
+            <div className="auth-trust-list">
+              <div className="auth-trust-item">
+                <span className="icon">👤</span> No real name required to chat
+              </div>
+              <div className="auth-trust-item">
+                <span className="icon">💬</span> 100% private, anonymous & encrypted
+              </div>
+              <div className="auth-trust-item">
+                <span className="icon">⚡</span> Free to try — get started in 60s
+              </div>
+            </div>
           </div>
 
           <p className='signup-footerse'>© {new Date().getFullYear()} HeartEcho AI <br /> heartecho.help@gmail.com</p>
@@ -1019,7 +1057,7 @@ function Signup() {
                 <div>
                   <h2>Create an Account</h2>
 
-                  <div className="authO2-container3d" style={{ marginBottom: "20px", display: "flex", justifyContent: "center", width: "100%", padding: "5px" }}>
+                  <div className="authO2-container3d">
                     <GoogleOAuthProvider clientId={googleClientId}>
                       <GoogleLogin
                         onSuccess={handleGoogleSuccess}
@@ -1033,7 +1071,7 @@ function Signup() {
                     </GoogleOAuthProvider>
                   </div>
 
-                  <div className="last-hearder-sini" style={{ marginBottom: "20px" }}>
+                  <div className="last-hearder-sini">
                     <span className="last-ssx-con-line"></span>
                     <h3>Or Register with email</h3>
                     <span className="last-ssx-con-line"></span>
@@ -1045,6 +1083,7 @@ function Signup() {
                       <input
                         type="email"
                         name="email"
+                        placeholder="Email Address"
                         value={formData.email}
                         onChange={handleChange}
                         disabled={isOtpVerified}
@@ -1131,7 +1170,7 @@ function Signup() {
                     </div>
 
                     <label>
-                      <input type="checkbox" name="twoFA" onChange={handleChange} /> Enable 2FA
+                      <input type="checkbox" name="twoFA" onChange={handleChange} /> Enable 2FA Security
                     </label>
                   </div>
 
@@ -1167,7 +1206,6 @@ function Signup() {
                       onChange={handleChange}
                     />
 
-                    <label>Select Gender</label>
                     <select name='gender' value={formData.gender} onChange={handleChange}>
                       <option value=''>Select Gender</option>
                       <option value='male'>Male</option>
@@ -1186,7 +1224,10 @@ function Signup() {
                 <div>
                   <h2>Additional Information</h2>
                   <div className='inputs-sign'>
-                    <h4 className='sign-fdwf4'>Interests : <p>You can choose several options</p> </h4>
+                    <div className='sign-fdwf4'>
+                      <h4>Interests</h4>
+                      <p>Choose several options that interest you</p>
+                    </div>
                     <div className='singip-instrwe'>
                       <div className='emojis-dign'>
                         {options.interests.map(({ id, label, img }) => (
@@ -1219,6 +1260,7 @@ function Signup() {
                     </label>
                   </div>  
                   <div className='sign-up-page-cons2'>
+                    <button onClick={prevStep}>Back</button>
                     <button 
                       className="otp-btn-singr" 
                       onClick={handleSubmit} 
@@ -1232,7 +1274,7 @@ function Signup() {
           )}
 
         </div>
-        <div className='last-sinin-con' style={{ marginTop: "20px" }}>
+        <div className='last-sinin-con'>
           <h2 className='have-h2dx'>Do you have an account? <Link href='/login' style={{textDecoration:'none'}}> <span>Login Now</span></Link> </h2>
         </div>
       </div>

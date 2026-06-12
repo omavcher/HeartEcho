@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import PropTypes from 'prop-types';
 import SideMenu from "../components/SideMenu";
 import MobileMenu from "../components/MobileMenu";
@@ -8,6 +9,9 @@ import MobileAppBanner from "../components/MobileAppBanner";
 import './globals.css';
 
 export default function ClientLayout({ children }) {
+  const pathname = usePathname();
+  const isAuthPage = pathname === '/login' || pathname === '/signup';
+
   useEffect(() => {
     // Check if current user is the developer
     let isDeveloper = false;
@@ -54,7 +58,7 @@ export default function ClientLayout({ children }) {
   return (
     <>
       {/* Mobile App Promo Banner */}
-      <MobileAppBanner />
+      {!isAuthPage && <MobileAppBanner />}
       
       <div className="main-layout-wrapper">
         

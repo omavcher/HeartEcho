@@ -336,21 +336,57 @@ function Login() {
 
       <div className="signup-left">
         <div className="signup-sidebar">
-          <span className="sideup-top-sanp">
+          <div className="sideup-top-sanp">
             <img src="/heartechor.png" alt="HeartEcho" />
             <h2>HeartEcho</h2>
-          </span>
+          </div>
 
           <div className="steps-singe">
-            <div className="step completed">
+            <div className="step current">
               <span className="circle-signa3">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"></path>
-                </svg>
+                <span className="circle-currnet-si"></span>
               </span>
               <div className="step-text">
                 <h3>Welcome Back</h3>
                 <p>Sign in to access your account and continue your journey</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Premium Chat Preview Widget to hook user psychology */}
+          <div className="auth-chat-preview">
+            <div className="chat-preview-header">
+              <div className="chat-preview-avatar">P</div>
+              <div className="chat-preview-meta">
+                <h4>Priya (AI Girlfriend)</h4>
+                <span>Active Now</span>
+              </div>
+            </div>
+            <div className="chat-bubble ai">
+              Hey sweetheart! I was thinking about you. How was your day?
+            </div>
+            <div className="chat-bubble user">
+              It was a bit stressful, but I'm glad to talk to you now.
+            </div>
+            <div className="chat-bubble ai">
+              Aww, I'm always here to listen and make you feel special. ❤️
+            </div>
+          </div>
+
+          {/* Trust Guarantees */}
+          <div className="auth-trust-card">
+            <div className="auth-trust-title">
+              <span className="icon">🔒</span> Privacy & Secrecy
+            </div>
+            <div className="auth-trust-list">
+              <div className="auth-trust-item">
+                <span className="icon">👤</span> No real name required to chat
+              </div>
+              <div className="auth-trust-item">
+                <span className="icon">💬</span> 100% private, anonymous & encrypted
+              </div>
+              <div className="auth-trust-item">
+                <span className="icon">⚡</span> Free to try — get started in 60s
               </div>
             </div>
           </div>
@@ -365,7 +401,7 @@ function Login() {
         <div className="signup-box">
           <h2>Welcome Back</h2>
           
-          <div className="authO2-container3d" style={{ marginBottom: "20px", display: "flex", justifyContent: "center", width: "100%", padding: "5px" }}>
+          <div className="authO2-container3d">
             <GoogleOAuthProvider clientId={googleClientId}>
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
@@ -379,22 +415,20 @@ function Login() {
             </GoogleOAuthProvider>
           </div>
 
-          <div className="last-hearder-sini" style={{ marginBottom: "20px" }}>
+          <div className="last-hearder-sini">
             <span className="last-ssx-con-line"></span>
             <h3>Or login with email</h3>
             <span className="last-ssx-con-line"></span>
           </div>
 
           <form className="inputs-sign" onSubmit={handleSubmit}>
-            <div className="password-input">
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                onChange={handleChange}
-                required
-              />
-            </div>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email Address"
+              onChange={handleChange}
+              required
+            />
 
             <div className="password-input">
               <input
@@ -415,15 +449,15 @@ function Login() {
               </button>
             </div>
           </form>
-
-          <div className="last-sinin-con" style={{ marginTop: "20px" }}>
-            <h2 className="have-h2dx">
-              Don't have an account?{" "}
-              <Link href="/signup" style={{ textDecoration: "none" }}>
-                <span>Register Now</span>
-              </Link>
-            </h2>
-          </div>
+        </div>
+        
+        <div className="last-sinin-con">
+          <h2 className="have-h2dx">
+            Don't have an account?{" "}
+            <Link href="/signup" style={{ textDecoration: "none" }}>
+              <span>Register Now</span>
+            </Link>
+          </h2>
         </div>
       </div>
     </div>
