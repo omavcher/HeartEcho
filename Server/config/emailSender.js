@@ -3,24 +3,111 @@ const { Resend } = require("resend");
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function sendEmail(to, otp) {
-    return resend.emails.send({
-        from: "HeartEcho <onboarding@resend.dev>",
-        to: [to],
-        subject: "Your HeartEcho OTP Code",
-        html: `
-        <div style="font-family: Arial, sans-serif; background: #f8f9fa; padding: 20px; text-align: center;">
-            <div style="max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-                <h2 style="color: #d84303;">🔒 Your OTP Code</h2>
-                <p style="font-size: 16px; color: #333;">Use the following OTP to complete your verification for <strong>HeartEcho</strong>:</p>
-                <div style="font-size: 24px; font-weight: bold; color: #d84303; padding: 10px; background: #fce4ec; border-radius: 5px; display: inline-block;">
-                    ${otp}
+    try {
+        const data = await resend.emails.send({
+            // NOTE: Change this to your verified domain (e.g., security@heartecho.in) before going to production
+            from: "HeartEcho <onboarding@resend.dev>", 
+            to: [to],
+            // UX trick: Putting the OTP first allows users to see the code directly from their phone's lock screen notification
+            subject: `${otp} is your HeartEcho verification code`,
+            html: `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+                    
+                    body {
+                        font-family: 'DM Sans', -apple-system, sans-serif;
+                        background-color: #120524;
+                        color: #e2d8f0;
+                        margin: 0;
+                        padding: 40px 20px;
+                        -webkit-text-size-adjust: 100%;
+                    }
+                    .container {
+                        max-width: 480px;
+                        margin: 0 auto;
+                        background-color: #0f0620;
+                        border: 1px solid rgba(233, 30, 140, 0.2);
+                        border-radius: 12px;
+                        padding: 40px 32px;
+                        text-align: center;
+                        box-shadow: 0 8px 32px rgba(233, 30, 140, 0.1);
+                    }
+                    .logo {
+                        font-size: 26px;
+                        font-weight: 600;
+                        color: #ffffff;
+                        margin-bottom: 24px;
+                        letter-spacing: 0.05em;
+                    }
+                    .logo span {
+                        color: #ff4099;
+                    }
+                    h2 {
+                        color: #ffffff;
+                        font-size: 20px;
+                        font-weight: 500;
+                        margin-bottom: 12px;
+                        margin-top: 0;
+                    }
+                    p {
+                        font-size: 14px;
+                        line-height: 1.6;
+                        color: #a395b5;
+                        margin-bottom: 28px;
+                    }
+                    .otp-box {
+                        font-size: 36px;
+                        font-weight: 600;
+                        letter-spacing: 12px;
+                        color: #ffffff;
+                        background: linear-gradient(135deg, rgba(233,30,140,0.15), rgba(156,39,176,0.15));
+                        border: 1px solid rgba(233, 30, 140, 0.3);
+                        padding: 20px 24px;
+                        border-radius: 12px;
+                        display: inline-block;
+                        margin-bottom: 28px;
+                    }
+                    .footer {
+                        margin-top: 32px;
+                        padding-top: 24px;
+                        border-top: 1px solid rgba(255, 255, 255, 0.05);
+                        font-size: 12px;
+                        color: #7b6d8d;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="logo">Heart<span>Echo</span></div>
+                    <h2>Secure Login</h2>
+                    <p>You've requested to securely access your account. Please use the following One-Time Password (OTP) to complete your verification:</p>
+                    
+                    <div class="otp-box">${otp}</div>
+                    
+                    <p style="font-size: 13px;">This code is valid for <strong>10 minutes</strong>. If you didn't request this, you can safely ignore this email.</p>
+                    
+                    <div class="footer">
+                        &copy; 2026 HeartEcho. All rights reserved.
+                    </div>
                 </div>
-                <p style="font-size: 14px; color: #555;">This OTP is valid for 10 minutes. If you did not request this, please ignore this email.</p>
-                <hr style="border: none; border-top: 1px solid #ddd;">
-                <p style="font-size: 12px; color: #888;">© 2025 HeartEcho. All rights reserved.</p>
-            </div>
-        </div>`
-    });
+            </body>
+            </html>
+            `
+        });
+        
+        // Return structured success object
+        return { success: true, data };
+
+    } catch (error) {
+        // Catch and log any errors from Resend
+        console.error("Failed to send OTP email:", error);
+        return { success: false, error: error.message };
+    }
 }
 
 module.exports = sendEmail;
