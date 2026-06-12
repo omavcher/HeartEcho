@@ -1,22 +1,11 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    tls: {
-        rejectUnauthorized: false
-    }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function sendEmail(to, otp) {
-    const mailOptions = {
-        from: `"HeartEcho ❤️" <${process.env.EMAIL_USER}>`,
-        to,
+    return resend.emails.send({
+        from: "HeartEcho <onboarding@resend.dev>",
+        to: [to],
         subject: "Your HeartEcho OTP Code",
         html: `
         <div style="font-family: Arial, sans-serif; background: #f8f9fa; padding: 20px; text-align: center;">
@@ -31,9 +20,7 @@ async function sendEmail(to, otp) {
                 <p style="font-size: 12px; color: #888;">© 2025 HeartEcho. All rights reserved.</p>
             </div>
         </div>`
-    };
-
-    return transporter.sendMail(mailOptions);
+    });
 }
 
 module.exports = sendEmail;
