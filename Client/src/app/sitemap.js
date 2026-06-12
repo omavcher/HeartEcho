@@ -2,7 +2,6 @@ import url from "../data/url";
 import { blogPosts } from "../data/blogPosts";
 import api from '../config/api';
 import axios from "axios";
-import { citiesList } from "../data/cities";
 import fs from "fs";
 import path from "path";
 
@@ -80,61 +79,7 @@ export default async function sitemap() {
     priority: 0.8,
   }));
 
-  // 4. Priority 0.7 (persona pages)
-  const personaNames = [
-    'priya',
-    'ananya',
-    'riya',
-    'aaradhya',
-    'kiara',
-    'anita',
-    'neha',
-    'sonali',
-    'eshani',
-    'yashita',
-    'avika',
-    'mohini',
-    'suhani',
-    'aryan',
-    'kabir',
-    'rohan',
-    'aman',
-    'dev',
-    'vikram',
-    'arjun',
-    'rahul',
-    'zayn',
-    'viraj',
-    'aditya',
-    'rajveer',
-    'gautam',
-    'rishi',
-    'ishaan',
-    'anubhav',
-    'karan',
-    'aashish',
-    'keshav',
-    'devesh',
-    'amit',
-    'sameer',
-    'raj',
-    'ramesh'
-  ];
 
-  const personaRoutes = personaNames.map((name) => ({
-    url: `${url}/chat/${name}`,
-    lastModified: now,
-    changeFrequency: 'weekly',
-    priority: 0.7,
-  }));
-
-  // 5. City routes (dynamic)
-  const cityRoutes = citiesList.map((city) => ({
-    url: `${url}/city/${city.key}`,
-    lastModified: now,
-    changeFrequency: 'weekly',
-    priority: 0.7,
-  }));
 
   // Fetch dynamic story routes from API
   let storyRoutes = [];
@@ -176,8 +121,6 @@ export default async function sitemap() {
     ...landingRoutes,
     ...otherStaticRoutes,
     ...blogRoutes,
-    ...personaRoutes,
-    ...cityRoutes,
     ...liveStoryRoutes,
     ...storyRoutes
   ];
