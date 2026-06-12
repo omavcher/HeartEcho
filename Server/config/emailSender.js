@@ -4,9 +4,8 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function sendEmail(to, otp) {
     try {
-        const data = await resend.emails.send({
-            // NOTE: Change this to your verified domain (e.g., security@heartecho.in) before going to production
-            from: "HeartEcho <onboarding@resend.dev>", 
+        const { data, error } = await resend.emails.send({
+            from: "HeartEcho <security@heartecho.in>", 
             to: [to],
             // UX trick: Putting the OTP first allows users to see the code directly from their phone's lock screen notification
             subject: `${otp} is your HeartEcho verification code`,
@@ -26,6 +25,16 @@ async function sendEmail(to, otp) {
                         margin: 0;
                         padding: 40px 20px;
                         -webkit-text-size-adjust: 100%;
+                    }
+                    .container {
+                        max-width: 480px;
+                        margin: 0 auto;
+                        background-color: #0f0620;
+                        border: 1px solid rgba(233, 30, 140, 0.2);
+                        border-radius: 12px;
+                        padding: 40px 32px;
+                        text-align: center;
+                        box-shadow: 0 8px 32px rgba(233, 30, 140, 0.1);
                     }
                     .container {
                         max-width: 480px;
@@ -99,14 +108,18 @@ async function sendEmail(to, otp) {
             </html>
             `
         });
+
+        if (error) {
+            console.error("Resend API error:", error);
+            throw new Error(error.message || JSON.stringify(error));
+        }
         
-        // Return structured success object
-        return { success: true, data };
+        return data;
 
     } catch (error) {
         // Catch and log any errors from Resend
         console.error("Failed to send OTP email:", error);
-        return { success: false, error: error.message };
+        throw error;
     }
 }
 

@@ -144,11 +144,12 @@ exports.sendOtp =  async (req, res) => {
     otpStorage.set(email, otp); 
     
     try {
-        await sendEmail(email, `Your OTP Code: ${otp}`);
+        await sendEmail(email, otp);
 
         res.json({ success: true, message: "OTP sent successfully!" });
     } catch (error) {
-        res.status(500).json({ success: false, message: "Failed to send OTP" });
+        console.error("sendOtp error:", error);
+        res.status(500).json({ success: false, message: "Failed to send OTP", error: error.message });
     }
 };
 
