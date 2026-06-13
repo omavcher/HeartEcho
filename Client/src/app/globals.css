@@ -64,7 +64,7 @@ img, video {
   top: 0;
   left: 0;
   height: 100vh;
-  z-index: 50;
+  z-index: 9999; /* Higher than sticky headers (z-index: 50) to prevent overlap glitches */
 }
 
 /* Main Content Area */
@@ -89,7 +89,7 @@ img, video {
   .main-content-wrapper {
     margin-left: 0 !important;
     width: 100%;
-    /* padding-bottom: 80px; Space for Bottom Mobile Menu */
+    padding-bottom: 80px; /* Space for Bottom Mobile Menu */
   }
 }
 

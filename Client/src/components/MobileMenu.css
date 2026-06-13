@@ -121,7 +121,7 @@
     }
 
     /* Tablet/Desktop Hide */
-    @media (min-width: 768px) {
+    @media (min-width: 1024px) {
       .mobile-menu-container {
         display: none;
       }

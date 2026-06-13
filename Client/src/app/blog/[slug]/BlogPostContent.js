@@ -12,6 +12,7 @@ export default function BlogPostContent({ post }) {
 
   const [readingProgress, setReadingProgress] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [headings, setHeadings] = useState([]);
 
   // Scroll Progress Logic
   useEffect(() => {
@@ -24,6 +25,35 @@ export default function BlogPostContent({ post }) {
     window.addEventListener('scroll', updateProgress);
     return () => window.removeEventListener('scroll', updateProgress);
   }, []);
+
+  // Extract h2 headings dynamically for the Table of Contents
+  useEffect(() => {
+    const contentEl = document.querySelector('.bd-post-content-x30sn');
+    if (!contentEl) return;
+
+    const h2Elements = contentEl.querySelectorAll('h2');
+    const extractedHeadings = [];
+
+    h2Elements.forEach((h2, index) => {
+      const text = h2.textContent || '';
+      const slug = text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+      
+      const uniqueId = slug || `section-${index}`;
+      h2.id = uniqueId;
+      
+      extractedHeadings.push({
+        id: uniqueId,
+        text: text
+      });
+    });
+
+    setHeadings(extractedHeadings);
+  }, [post]);
 
   const handleShare = async () => {
     try {
@@ -90,14 +120,18 @@ export default function BlogPostContent({ post }) {
 
           {/* RIGHT COLUMN */}
           <aside className="bd-sidebar-column-x30sn">
-            <div className="bd-toc-box-x30sn">
-                <h3>Table of Contents</h3>
-                <div className="bd-toc-list-x30sn">
-                    <a href="#introduction">1. Introduction</a>
-                    <a href="#key-points">2. Key Points</a>
-                    <a href="#conclusion">3. Conclusion</a>
-                </div>
-            </div>
+            {headings.length > 0 && (
+              <div className="bd-toc-box-x30sn">
+                  <h3>Table of Contents</h3>
+                  <div className="bd-toc-list-x30sn">
+                      {headings.map((heading, idx) => (
+                          <a key={heading.id} href={`#${heading.id}`}>
+                            {idx + 1}. {heading.text}
+                          </a>
+                      ))}
+                  </div>
+              </div>
+            )}
 
             <div className="bd-sidebar-header-x30sn">More Articles</div>
             

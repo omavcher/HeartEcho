@@ -15,8 +15,6 @@
   color: var(--blg-text);
   min-height: 100vh;
   font-family: 'Inter', sans-serif;
-  /* Add padding bottom to account for your Mobile Bottom Nav */
-  padding-bottom: 80px; 
 }
 
 /* HEADER (YouTube Style) */

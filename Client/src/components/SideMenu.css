@@ -309,7 +309,7 @@
     }
 
     /* Mobile Responsiveness */
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
       .side-menu-container {
         display: none; /* Usually hidden on mobile in favor of bottom nav */
       }
