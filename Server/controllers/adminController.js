@@ -2461,6 +2461,92 @@ exports.getReferralCreators = async (req, res) => {
   }
 };
 
+// Get all users referred by a specific creator, with payment details
+exports.getReferralCreatorUsers = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Creator ID",
+      });
+    }
+
+    const creator = await ReferralCreator.findById(id);
+    if (!creator) {
+      return res.status(404).json({
+        success: false,
+        message: "Referral creator not found",
+      });
+    }
+
+    // Find all users referred by this creator
+    const referredUsers = await User.find({ referredBy: id })
+      .select("name email user_type subscriptionExpiry joinedAt payment_history")
+      .populate({
+        path: "payment_history",
+        select: "rupees transaction_id date expiry_date"
+      })
+      .sort({ joinedAt: -1 });
+
+    const formattedUsers = referredUsers.map(user => {
+      let totalAmountPaid = 0;
+      const payments = [];
+
+      if (user.payment_history && user.payment_history.length > 0) {
+        user.payment_history.forEach(payment => {
+          if (payment.rupees) {
+            const mappedAmount = mapReferralAmount(payment.rupees);
+            totalAmountPaid += payment.rupees;
+            payments.push({
+              transactionId: payment.transaction_id,
+              actualAmount: payment.rupees,
+              mappedAmount: mappedAmount,
+              commission: formatToTwoDecimals(mappedAmount * (creator.commissionRate / 100)),
+              date: payment.date,
+              planType: determinePlanType(payment.rupees),
+              expiryDate: payment.expiry_date
+            });
+          }
+        });
+      }
+
+      return {
+        _id: user._id,
+        name: user.name || "Anonymous User",
+        email: user.email,
+        joinedAt: user.joinedAt,
+        user_type: user.user_type === 'subscriber' ? 'subscriber' : 'free_user',
+        isSubscribed: user.user_type === 'subscriber' && 
+                      (user.subscriptionExpiry === null || new Date(user.subscriptionExpiry) > new Date()),
+        subscriptionExpiry: user.subscriptionExpiry,
+        totalAmountPaid,
+        payments
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      creator: {
+        name: creator.name,
+        referralId: creator.referralId,
+        platform: creator.platform,
+        username: creator.username,
+        commissionRate: creator.commissionRate
+      },
+      users: formattedUsers
+    });
+  } catch (error) {
+    console.error("Error fetching creator's referred users:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 // Update create referral creator to include password
 exports.createReferralCreator = async (req, res) => {
   try {

@@ -44,6 +44,9 @@ router.get("/deleted-accounts/:originalUserId/feedback", controller.getDeletedUs
 // Get all referral creators
 router.get("/referral-creators", authMiddleware, controller.getReferralCreators);
 
+// Get users referred by a creator
+router.get("/referral-creators/:id/users", authMiddleware, controller.getReferralCreatorUsers);
+
 // Create new referral creator (with password)
 router.post("/referral-creators", controller.createReferralCreator);
 
