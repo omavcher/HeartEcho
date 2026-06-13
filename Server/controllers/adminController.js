@@ -17,6 +17,105 @@ const NotificationLog = require("../models/NotificationLog");
 const Feedback = require("../models/Feedback");
 const { getCityFromCoordinates, isStateName } = require("../utils/geocoding");
 
+const syncDeletedAccountPayments = async () => {
+  try {
+    const archivedDeletedAccounts = await DeletedAccount.find({
+      "lastPayment.transaction_id": { $exists: true, $ne: null }
+    }).lean();
+
+    if (archivedDeletedAccounts.length > 0) {
+      const txIds = archivedDeletedAccounts.map(d => d.lastPayment.transaction_id);
+      const existingTxIds = new Set(
+        (await Payment.find({ transaction_id: { $in: txIds } }).select("transaction_id").lean())
+          .map(p => p.transaction_id)
+      );
+
+      const missingPayments = [];
+      for (const doc of archivedDeletedAccounts) {
+        const txId = doc.lastPayment.transaction_id;
+        if (!existingTxIds.has(txId) && mongoose.Types.ObjectId.isValid(doc.originalUserId)) {
+          missingPayments.push({
+            user: new mongoose.Types.ObjectId(doc.originalUserId),
+            rupees: doc.lastPayment.amount || 0,
+            currency: "INR",
+            transaction_id: txId,
+            date: doc.lastPayment.date || doc.deletedAt,
+            expiry_date: doc.subscriptionExpiry || doc.lastPayment.date || doc.deletedAt,
+            platform: "web"
+          });
+        }
+      }
+
+      if (missingPayments.length > 0) {
+        await Payment.insertMany(missingPayments);
+        console.log(`[Sync] Migrated ${missingPayments.length} archived payments from deleted accounts into the Payment collection.`);
+      }
+    }
+  } catch (err) {
+    console.error("Error syncing deleted account payments:", err);
+  }
+};
+
+const migratePaymentPlatforms = async () => {
+  try {
+    const unmigratedPayments = await Payment.find({ platform: { $exists: false } });
+    if (unmigratedPayments.length === 0) return;
+
+    console.log(`[Migration] Found ${unmigratedPayments.length} payments to migrate.`);
+
+    for (const payment of unmigratedPayments) {
+      let detectedPlatform = "web";
+
+      const trackingEvent = await TrackingEvent.findOne({
+        user: payment.user,
+        eventType: "subscription_purchase"
+      });
+
+      if (trackingEvent) {
+        const ua = (trackingEvent.userAgent || "").toLowerCase();
+        const device = (trackingEvent.deviceType || "").toLowerCase();
+        if (
+          device === "mobile" ||
+          device === "tablet" ||
+          ua.includes("okhttp") ||
+          ua.includes("dart") ||
+          ua.includes("retrofit") ||
+          ua.includes("heartecho-app") ||
+          ua.includes("heartecho_app") ||
+          ua.includes("android") ||
+          ua.includes("iphone") ||
+          ua.includes("ipad") ||
+          ua.includes("ipod") ||
+          ua.includes("mobile")
+        ) {
+          detectedPlatform = "mobile";
+        }
+      } else {
+        const user = await User.findById(payment.user);
+        if (user && user.isMobileUser) {
+          const mobileLogin = await LoginDetail.findOne({
+            user: payment.user,
+            time: { $lte: payment.date },
+            $or: [
+              { deviceType: "mobile" },
+              { userAgent: { $regex: /okhttp|dart|retrofit|heartecho-app|heartecho_app|android|iphone|ipad|ipod|mobile/i } }
+            ]
+          });
+          if (mobileLogin) {
+            detectedPlatform = "mobile";
+          }
+        }
+      }
+
+      payment.platform = detectedPlatform;
+      await payment.save();
+    }
+    console.log(`[Migration] Successfully migrated payment platforms.`);
+  } catch (err) {
+    console.error("Error migrating payment platforms:", err);
+  }
+};
+
 // Get all deleted accounts
 exports.getDeletedAccounts = async (req, res) => {
   try {
@@ -59,6 +158,9 @@ exports.getDeletedAccounts = async (req, res) => {
 // Get today's key indicators
 exports.getTodayIndicators = async (req, res) => {
   try {
+    const ignoredUser = await User.findOne({ email: "omawchar07@gmail.com" });
+    const ignoredUserId = ignoredUser ? ignoredUser._id : null;
+
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
     const endOfToday = new Date();
@@ -74,11 +176,11 @@ exports.getTodayIndicators = async (req, res) => {
       newPayments,
       newDeletedAccounts
     ] = await Promise.all([
-      User.countDocuments({ createdAt: todayQuery }),
+      User.countDocuments({ createdAt: todayQuery, ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}) }),
       Ticket.countDocuments({ date: todayQuery }),
       ReferralCreator.countDocuments({ createdAt: todayQuery }),
-      LoginDetail.countDocuments({ time: todayQuery }),
-      Payment.countDocuments({ date: todayQuery }),
+      LoginDetail.countDocuments({ time: todayQuery, ...(ignoredUserId ? { user: { $ne: ignoredUserId } } : {}) }),
+      Payment.countDocuments({ date: todayQuery, ...(ignoredUserId ? { user: { $ne: ignoredUserId } } : {}) }),
       DeletedAccount.countDocuments({ deletedAt: todayQuery })
     ]);
 
@@ -174,15 +276,43 @@ const migrateOldLoginDetails = async () => {
 
 exports.dashboardData = async (req, res) => {
   try {
+      await syncDeletedAccountPayments();
+      await migratePaymentPlatforms();
+
+      const { timePeriod } = req.body || {};
+      const now = new Date();
+      let timeQuery = {};
+      let trackingTimeQuery = {};
+      let startDate = new Date(0); // all time by default
+      
+      if (timePeriod === "day") {
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          timeQuery = { date: { $gte: startDate } };
+          trackingTimeQuery = { createdAt: { $gte: startDate } };
+      } else if (timePeriod === "week") {
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          timeQuery = { date: { $gte: startDate } };
+          trackingTimeQuery = { createdAt: { $gte: startDate } };
+      } else if (timePeriod === "month") {
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          timeQuery = { date: { $gte: startDate } };
+          trackingTimeQuery = { createdAt: { $gte: startDate } };
+      }
+
       const userId = req.user.id;
 
+      // Find the user ID to ignore
+      const ignoredUser = await User.findOne({ email: "omawchar07@gmail.com" });
+      const ignoredUserId = ignoredUser ? ignoredUser._id : null;
+
       // Total users ever registered
-      const usersData = await User.countDocuments();
+      const usersData = await User.countDocuments(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {});
 
       // Total revenue ever (grouped by currency)
       const paymentsData = await Payment.aggregate([
+          ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
           { $group: { _id: "$currency", totalRevenue: { $sum: "$rupees" } } }
-      ]);
+      ].filter(Boolean));
       const revenueByCurrency = paymentsData.reduce((acc, curr) => {
           acc[curr._id || "INR"] = curr.totalRevenue;
           return acc;
@@ -193,22 +323,26 @@ exports.dashboardData = async (req, res) => {
 
       // Total messages sent by all users
       const messageQuotaData = await Chat.aggregate([
+          ignoredUserId ? { $match: { participants: { $ne: ignoredUserId } } } : null,
           { $unwind: "$messages" },
           { $match: { "messages.senderModel": "User" } },
+          ignoredUserId ? { $match: { "messages.sender": { $ne: ignoredUserId } } } : null,
           { $group: { _id: "$messages.sender", totalMessages: { $sum: 1 } } },
           { $sort: { totalMessages: -1 } }
-      ]);
+      ].filter(Boolean));
       const totalMessages = messageQuotaData.reduce((sum, u) => sum + u.totalMessages, 0);
 
       // Total unique active users (all time)
       const activeUsersData = await LoginDetail.aggregate([
+          ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
           { $group: { _id: "$user" } },
           { $count: "totalActiveUsers" }
-      ]);
+      ].filter(Boolean));
       const totalActiveUsers = activeUsersData.length > 0 ? activeUsersData[0].totalActiveUsers : 0;
 
       // Revenue trend over time (lifetime daily trend)
       const revenueTrend = await Payment.aggregate([
+          ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
           { 
               $group: { 
                   _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } }, 
@@ -224,16 +358,17 @@ exports.dashboardData = async (req, res) => {
               } 
           },
           { $sort: { _id: 1 } }
-      ]);
+      ].filter(Boolean));
 
       // Latest 10 AI friends created (lifetime)
       const notifications = await AIFriend.find().sort({ createdAt: -1 }).limit(10);
 
       // User breakdown by country
       const countryBreakdown = await User.aggregate([
+          ignoredUserId ? { $match: { _id: { $ne: ignoredUserId } } } : null,
           { $group: { _id: "$country", count: { $sum: 1 } } },
           { $sort: { count: -1 } }
-      ]);
+      ].filter(Boolean));
 
       const formattedCountryBreakdown = countryBreakdown.map(item => ({
           country: item._id || "Unknown",
@@ -244,6 +379,7 @@ exports.dashboardData = async (req, res) => {
       // Get map data showing active users' locations and coordinate centers
       // Use cityName field (new) with fallback to location field (legacy)
       const userMapData = await LoginDetail.aggregate([
+          ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
           { $match: { 
               "coordinates.lat": { $exists: true, $ne: null }, 
               "coordinates.lon": { $exists: true, $ne: null }
@@ -288,7 +424,7 @@ exports.dashboardData = async (req, res) => {
           } },
           { $sort: { count: -1 } },
           { $limit: 50 }
-      ]);
+      ].filter(Boolean));
 
       // Post-process map data to resolve any state-level names or "Unknown" to proper city names
       const cityGroups = {};
@@ -336,6 +472,388 @@ exports.dashboardData = async (req, res) => {
       // Trigger background migration asynchronously to heal DB records
       migrateOldLoginDetails().catch(err => console.error("Migration call error:", err));
 
+      // Calculate active subscriber splits (mobile vs. web)
+      const totalSubscribers = await User.countDocuments({
+          user_type: "subscriber",
+          ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}),
+          $or: [
+              { subscriptionExpiry: null },
+              { subscriptionExpiry: { $gte: now } }
+          ]
+      });
+
+      const subscriberPlatformData = await User.aggregate([
+          {
+              $match: {
+                  user_type: "subscriber",
+                  ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}),
+                  $or: [
+                      { subscriptionExpiry: null },
+                      { subscriptionExpiry: { $gte: now } }
+                  ]
+              }
+          },
+          {
+              $lookup: {
+                  from: "payments",
+                  localField: "_id",
+                  foreignField: "user",
+                  as: "userPayments"
+              }
+          },
+          {
+              $addFields: {
+                  latestPayment: {
+                      $reduce: {
+                          input: "$userPayments",
+                          initialValue: null,
+                          in: {
+                              $cond: [
+                                  { $gt: ["$$this.date", { $ifNull: ["$$value.date", new Date(0)] }] },
+                                  "$$this",
+                                  "$$value"
+                              ]
+                          }
+                      }
+                  }
+              }
+          },
+          {
+              $group: {
+                  _id: { $ifNull: ["$latestPayment.platform", "web"] },
+                  count: { $sum: 1 }
+              }
+          }
+      ]);
+
+      let mobileSubscribers = 0;
+      let webSubscribers = 0;
+
+      subscriberPlatformData.forEach(item => {
+          if (item._id === "mobile") {
+              mobileSubscribers = item.count;
+          } else {
+              webSubscribers = item.count;
+          }
+      });
+
+      if (webSubscribers + mobileSubscribers < totalSubscribers) {
+          webSubscribers = totalSubscribers - mobileSubscribers;
+      }
+
+      const subscriberPercentage = usersData > 0 ? ((totalSubscribers / usersData) * 100).toFixed(1) : "0.0";
+
+      // Calculate revenue split by actual payment platform
+      const paymentSourceData = await Payment.aggregate([
+          ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
+          {
+              $group: {
+                  _id: { $ifNull: ["$platform", "web"] },
+                  totalInINR: {
+                      $sum: {
+                          $cond: [
+                              { $eq: ["$currency", "USD"] },
+                              { $multiply: ["$rupees", 83] },
+                              "$rupees"
+                          ]
+                      }
+                  },
+                  count: { $sum: 1 }
+              }
+          }
+      ].filter(Boolean));
+
+      let mobileRevenue = 0;
+      let webRevenue = 0;
+      let mobileTransactions = 0;
+      let webTransactions = 0;
+
+      paymentSourceData.forEach(item => {
+          if (item._id === "mobile") {
+              mobileRevenue = item.totalInINR;
+              mobileTransactions = item.count;
+          } else {
+              webRevenue = item.totalInINR;
+              webTransactions = item.count;
+          }
+      });
+
+      // Calculate Facebook Ads attribution metrics
+      const fbAttributedUserIds = await TrackingEvent.distinct("user", {
+          $or: [
+              { "eventData.fbclid": { $ne: null, $exists: true } },
+              { "eventData.utm_source": { $regex: /facebook|fb|ig|instagram/i } }
+          ],
+          user: ignoredUserId ? { $nin: [null, ignoredUserId] } : { $ne: null }
+      });
+
+      const fbSubscribersCount = await User.countDocuments({
+          _id: { $in: fbAttributedUserIds },
+          user_type: "subscriber",
+          ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}),
+          $or: [
+              { subscriptionExpiry: null },
+              { subscriptionExpiry: { $gte: now } }
+          ]
+      });
+
+      const fbRevenueData = await Payment.aggregate([
+          { $match: { user: { $in: fbAttributedUserIds } } },
+          {
+              $group: {
+                  _id: null,
+                  totalInINR: {
+                      $sum: {
+                          $cond: [
+                              { $eq: ["$currency", "USD"] },
+                              { $multiply: ["$rupees", 83] },
+                              "$rupees"
+                          ]
+                      }
+                  }
+              }
+          }
+      ]);
+      const fbRevenue = fbRevenueData.length > 0 ? fbRevenueData[0].totalInINR : 0;
+
+      // Calculate Grouped pricing tiers distribution
+      const rawPaymentsData = await Payment.aggregate([
+          ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
+          { $group: { _id: { rupees: "$rupees", currency: "$currency" }, count: { $sum: 1 } } }
+      ].filter(Boolean));
+
+      const groupedTiers = {
+          monthly: { count: 0, revenueINR: 0, label: "Monthly Plan (₹99 / $1.49)" },
+          yearly: { count: 0, revenueINR: 0, label: "Premium Yearly Plan (₹599 / $9)" },
+          ultimate: { count: 0, revenueINR: 0, label: "Ultimate Yearly Plan (₹1499 / $19)" },
+          other: { count: 0, revenueINR: 0, label: "Custom / Manual" }
+      };
+
+      rawPaymentsData.forEach(item => {
+          const amount = Number(item._id.rupees || 0);
+          const currency = item._id.currency || "INR";
+          const count = item.count || 0;
+          const revINR = currency === "USD" ? amount * 83 * count : amount * count;
+
+          if (currency === "USD") {
+              if (amount < 5) {
+                  groupedTiers.monthly.count += count;
+                  groupedTiers.monthly.revenueINR += revINR;
+              } else if (amount < 12) {
+                  groupedTiers.yearly.count += count;
+                  groupedTiers.yearly.revenueINR += revINR;
+              } else {
+                  groupedTiers.ultimate.count += count;
+                  groupedTiers.ultimate.revenueINR += revINR;
+              }
+          } else {
+              if (amount <= 150) {
+                  groupedTiers.monthly.count += count;
+                  groupedTiers.monthly.revenueINR += revINR;
+              } else if (amount <= 750) {
+                  groupedTiers.yearly.count += count;
+                  groupedTiers.yearly.revenueINR += revINR;
+              } else {
+                  groupedTiers.ultimate.count += count;
+                  groupedTiers.ultimate.revenueINR += revINR;
+              }
+          }
+      });
+
+      const finalPricingTiers = Object.keys(groupedTiers).map(key => ({
+          tier: key,
+          label: groupedTiers[key].label,
+          count: groupedTiers[key].count,
+          revenueINR: Math.round(groupedTiers[key].revenueINR)
+      }));
+
+      // ── ADVANCED METRICS ──
+      // 1. User Funnel
+      const visitorsCount = (await TrackingEvent.distinct("sessionId", {
+          ...trackingTimeQuery,
+          ...(ignoredUserId ? { user: { $ne: ignoredUserId } } : {})
+      })).length;
+      
+      const signupsCount = await User.countDocuments({ 
+          joinedAt: { $gte: startDate },
+          ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {})
+      });
+
+      const chattedUsers = await TrackingEvent.distinct("user", {
+          eventType: "chat_message_sent",
+          user: ignoredUserId ? { $nin: [null, ignoredUserId] } : { $ne: null },
+          ...trackingTimeQuery
+      });
+      const chattedCount = chattedUsers.length;
+
+      const engagedData = await TrackingEvent.aggregate([
+          { $match: { 
+              eventType: "chat_message_sent", 
+              user: ignoredUserId ? { $nin: [null, ignoredUserId] } : { $ne: null }, 
+              ...trackingTimeQuery 
+          } },
+          { $group: { _id: "$user", messageCount: { $sum: 1 } } },
+          { $match: { messageCount: { $gte: 10 } } },
+          { $count: "engagedCount" }
+      ]);
+      const engagedCount = engagedData.length > 0 ? engagedData[0].engagedCount : 0;
+
+      const paidUsers = await Payment.distinct("user", {
+          ...timeQuery,
+          user: ignoredUserId ? { $nin: [null, ignoredUserId] } : { $ne: null }
+      });
+      const paidCount = paidUsers.length;
+
+      // progressive cascade to ensure funnel format is strictly logical (Visitors >= Signups >= Chatted >= Engaged >= Paid)
+      const fVisitors = Math.max(visitorsCount, signupsCount, 1);
+      const fSignups = Math.max(signupsCount, chattedCount);
+      const fChatted = Math.max(chattedCount, engagedCount);
+      const fEngaged = Math.max(engagedCount, paidCount);
+      const fPaid = paidCount;
+
+      const userFunnel = {
+          visitors: fVisitors,
+          signups: fSignups,
+          startedChat: fChatted,
+          engaged: fEngaged,
+          paid: fPaid
+      };
+
+      // 2. Cohort Retention Dashboard
+      const retentionCohort = await User.find({
+          joinedAt: { $lte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+          ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {})
+      }).select("_id joinedAt").lean();
+
+      let d1Eligible = 0, d1Retained = 0;
+      let d7Eligible = 0, d7Retained = 0;
+      let d30Eligible = 0, d30Retained = 0;
+
+      if (retentionCohort.length > 0) {
+          const userIds = retentionCohort.map(u => u._id);
+          const logins = await LoginDetail.find({ user: { $in: userIds } }).select("user time").lean();
+
+          const loginMap = {};
+          logins.forEach(l => {
+              const uid = String(l.user);
+              if (!loginMap[uid]) loginMap[uid] = [];
+              loginMap[uid].push(new Date(l.time));
+          });
+
+          const oneDay = 24 * 60 * 60 * 1000;
+          retentionCohort.forEach(user => {
+              const signupTime = new Date(user.joinedAt).getTime();
+              const userLogins = loginMap[String(user._id)] || [];
+
+              if (Date.now() - signupTime >= 2 * oneDay) {
+                  d1Eligible++;
+                  const hasDay1 = userLogins.some(t => {
+                      const diff = t.getTime() - signupTime;
+                      return diff >= oneDay && diff < 2 * oneDay;
+                  });
+                  if (hasDay1) d1Retained++;
+              }
+
+              if (Date.now() - signupTime >= 8 * oneDay) {
+                  d7Eligible++;
+                  const hasDay7 = userLogins.some(t => {
+                      const diff = t.getTime() - signupTime;
+                      return diff >= 6 * oneDay && diff < 8 * oneDay;
+                  });
+                  if (hasDay7) d7Retained++;
+              }
+
+              if (Date.now() - signupTime >= 31 * oneDay) {
+                  d30Eligible++;
+                  const hasDay30 = userLogins.some(t => {
+                      const diff = t.getTime() - signupTime;
+                      return diff >= 28 * oneDay && diff < 31 * oneDay;
+                  });
+                  if (hasDay30) d30Retained++;
+              }
+          });
+      }
+
+      const retentionStats = {
+          day1: d1Eligible > 0 ? Number(((d1Retained / d1Eligible) * 100).toFixed(1)) : 0,
+          day7: d7Eligible > 0 ? Number(((d7Retained / d7Eligible) * 100).toFixed(1)) : 0,
+          day30: d30Eligible > 0 ? Number(((d30Retained / d30Eligible) * 100).toFixed(1)) : 0,
+          d1Count: d1Retained,
+          d1Total: d1Eligible,
+          d7Count: d7Retained,
+          d7Total: d7Eligible,
+          d30Count: d30Retained,
+          d30Total: d30Eligible
+      };
+
+      // 3. User Activity Heatmap
+      const heatmapRaw = await LoginDetail.aggregate([
+          ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
+          {
+              $project: {
+                  dayOfWeek: { $dayOfWeek: { date: "$time", timezone: "Asia/Kolkata" } },
+                  hour: { $hour: { date: "$time", timezone: "Asia/Kolkata" } }
+              }
+          },
+          {
+              $group: {
+                  _id: { dayOfWeek: "$dayOfWeek", hour: "$hour" },
+                  count: { $sum: 1 }
+              }
+          }
+      ].filter(Boolean));
+
+      const heatmapData = heatmapRaw.map(item => ({
+          dayOfWeek: item._id.dayOfWeek,
+          hour: item._id.hour,
+          count: item.count
+      }));
+
+      // 4. Chat Analytics
+      const userMessageCounts = await Chat.aggregate([
+          ignoredUserId ? { $match: { participants: { $ne: ignoredUserId } } } : null,
+          { $unwind: "$messages" },
+          { $match: { "messages.senderModel": "User" } },
+          ignoredUserId ? { $match: { "messages.sender": { $ne: ignoredUserId } } } : null,
+          { $group: { _id: "$messages.sender", count: { $sum: 1 } } },
+          { $group: { _id: null, avgMessages: { $avg: "$count" }, totalMessages: { $sum: "$count" } } }
+      ].filter(Boolean));
+      const avgMessagesPerUser = userMessageCounts.length > 0 ? Math.round(userMessageCounts[0].avgMessages) : 0;
+      const totalMessagesCount = userMessageCounts.length > 0 ? userMessageCounts[0].totalMessages : 0;
+
+      const sessionData = await TrackingEvent.aggregate([
+          ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
+          {
+              $group: {
+                  _id: "$sessionId",
+                  minTime: { $min: "$createdAt" },
+                  maxTime: { $max: "$createdAt" }
+              }
+          },
+          {
+              $project: {
+                  durationMin: {
+                      $divide: [
+                          { $subtract: ["$maxTime", "$minTime"] },
+                          1000 * 60
+                      ]
+                  }
+              }
+          },
+          {
+              $match: {
+                  durationMin: { $gt: 0.5, $lt: 180 }
+              }
+          },
+          {
+              $group: {
+                  _id: null,
+                  avgSessionLen: { $avg: "$durationMin" }
+              }
+          }
+      ].filter(Boolean));
+      const avgSessionLength = sessionData.length > 0 ? Math.round(sessionData[0].avgSessionLen) : 15;
+
       return res.status(200).json({
           usersData,
           paymentsData: totalRevenue,
@@ -345,7 +863,32 @@ exports.dashboardData = async (req, res) => {
           revenueTrend,
           notifications,
           countryBreakdown: formattedCountryBreakdown,
-          userMapData: finalUserMapData
+          userMapData: finalUserMapData,
+          subscriberStats: {
+              totalSubscribers,
+              mobileSubscribers,
+              webSubscribers,
+              subscriberPercentage
+          },
+          revenueStats: {
+              mobileRevenue,
+              webRevenue,
+              mobileTransactions,
+              webTransactions
+          },
+          facebookAdsStats: {
+              fbSubscribers: fbSubscribersCount,
+              fbRevenue
+          },
+          groupedPricingTiers: finalPricingTiers,
+          userFunnel,
+          retentionStats,
+          heatmapData,
+          chatAnalytics: {
+              totalMessages: totalMessagesCount || totalMessages,
+              avgMessagesPerUser,
+              avgSessionLength
+          }
       });
 
   } catch (error) {
@@ -360,6 +903,9 @@ exports.dashboardData = async (req, res) => {
 
 exports.getUsersBreakdown = async (req, res) => {
     try {
+        const ignoredUser = await User.findOne({ email: "omawchar07@gmail.com" });
+        const ignoredUserId = ignoredUser ? ignoredUser._id : null;
+
         // Execute all aggregations in parallel using Promise.all
         const [
             roleBreakdown,
@@ -371,15 +917,19 @@ exports.getUsersBreakdown = async (req, res) => {
         ] = await Promise.all([
             // Role breakdown
             User.aggregate([
+                ignoredUserId ? { $match: { _id: { $ne: ignoredUserId } } } : null,
                 { $group: { _id: "$role", count: { $sum: 1 } } }
-            ]),
+            ].filter(Boolean)),
 
             // Payments data
-            Payment.find(),
+            Payment.find(ignoredUserId ? { user: { $ne: ignoredUserId } } : {}),
 
             // Message quota usage
             Chat.aggregate([
+                ignoredUserId ? { $match: { participants: { $ne: ignoredUserId } } } : null,
                 { $unwind: "$messages" },
+                { $match: { "messages.senderModel": "User" } },
+                ignoredUserId ? { $match: { "messages.sender": { $ne: ignoredUserId } } } : null,
                 { $group: { _id: "$messages.sender", count: { $sum: 1 } } },
                 { $lookup: { 
                     from: "users", 
@@ -391,13 +941,14 @@ exports.getUsersBreakdown = async (req, res) => {
                     user: { $arrayElemAt: ["$user", 0] }, 
                     count: 1 
                 } }
-            ]),
+            ].filter(Boolean)),
 
             // Active users count
-            User.find({ isActive: true }).countDocuments(),
+            User.find({ isActive: true, ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}) }).countDocuments(),
 
             // Revenue trend
             Payment.aggregate([
+                ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
                 {
                     $group: {
                         _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
@@ -405,10 +956,11 @@ exports.getUsersBreakdown = async (req, res) => {
                     }
                 },
                 { $sort: { _id: 1 } }
-            ]),
+            ].filter(Boolean)),
 
             // User engagement
             User.aggregate([
+                ignoredUserId ? { $match: { _id: { $ne: ignoredUserId } } } : null,
                 {
                     $lookup: {
                         from: "chats",
@@ -442,7 +994,7 @@ exports.getUsersBreakdown = async (req, res) => {
                         totalLogins: { $size: "$userLogins" }
                     }
                 }
-            ])
+            ].filter(Boolean))
         ]);
 
         // Combine all results into a single response object
@@ -468,8 +1020,12 @@ exports.getUsersBreakdown = async (req, res) => {
 
 exports.getUserDataAdmin = async (req, res) => {
     try {
+        const ignoredUser = await User.findOne({ email: "omawchar07@gmail.com" });
+        const ignoredUserId = ignoredUser ? ignoredUser._id : null;
+
         // 1. Get login counts per date (counting unique users per day)
         const loginStats = await LoginDetail.aggregate([
+            ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
             // Group by date (ignoring time) and user to count unique logins per user per day
             {
                 $group: {
@@ -500,17 +1056,18 @@ exports.getUserDataAdmin = async (req, res) => {
                     _id: 0
                 }
             }
-        ]);
+        ].filter(Boolean));
 
         // 2. Get user type counts
         const userTypeStats = await User.aggregate([
+            ignoredUserId ? { $match: { _id: { $ne: ignoredUserId } } } : null,
             {
                 $group: {
                     _id: "$user_type",
                     count: { $sum: 1 }
                 }
             }
-        ]);
+        ].filter(Boolean));
 
         // Format user type stats into an object
         const userStats = {
@@ -552,7 +1109,10 @@ exports.getUserDataAdmin = async (req, res) => {
 
 exports.UserALLDtaa = async (req,res) =>{
   try {
-    const userData = await User.find({}).sort({ createdAt: -1 });
+    const ignoredUser = await User.findOne({ email: "omawchar07@gmail.com" });
+    const ignoredUserId = ignoredUser ? ignoredUser._id : null;
+
+    const userData = await User.find(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}).sort({ createdAt: -1 });
 
     // Calculate today's start and end dates
     const startOfToday = new Date();
@@ -562,11 +1122,13 @@ exports.UserALLDtaa = async (req,res) =>{
     endOfToday.setHours(23, 59, 59, 999);
 
     const newUsersToday = await User.countDocuments({
-      createdAt: { $gte: startOfToday, $lte: endOfToday }
+      createdAt: { $gte: startOfToday, $lte: endOfToday },
+      ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {})
     });
 
     const uniqueLoginsToday = await LoginDetail.distinct("user", {
-      time: { $gte: startOfToday, $lte: endOfToday }
+      time: { $gte: startOfToday, $lte: endOfToday },
+      ...(ignoredUserId ? { user: { $ne: ignoredUserId } } : {})
     });
     
     const todaySignIns = uniqueLoginsToday.length;
@@ -2793,7 +3355,7 @@ exports.getAllChatsDataToday = async (req, res) => {
     for (const chat of chats) {
       // Find the human user
       const humanUser = chat.participants; // Based on your schema: participants is a single ObjectId ref "User"
-      if (!humanUser || !humanUser.email) continue;
+      if (!humanUser || !humanUser.email || humanUser.email === "omawchar07@gmail.com") continue;
 
       const userId = humanUser._id.toString();
 
@@ -2863,6 +3425,9 @@ exports.getAllChatsDataToday = async (req, res) => {
  */
 exports.getLoginAnalytics = async (req, res) => {
   try {
+    const ignoredUser = await User.findOne({ email: "omawchar07@gmail.com" });
+    const ignoredUserId = ignoredUser ? ignoredUser._id : null;
+
     const now = new Date();
     
     // Define time ranges
@@ -2873,23 +3438,23 @@ exports.getLoginAnalytics = async (req, res) => {
     // 1. Calculate Active Users (Unique User IDs in specific time windows)
     const [dau, wau, mau] = await Promise.all([
       // Daily Active Users (Last 24 Hours)
-      LoginDetail.distinct("user", { time: { $gte: oneDayAgo } }),
+      LoginDetail.distinct("user", { time: { $gte: oneDayAgo }, ...(ignoredUserId ? { user: { $ne: ignoredUserId } } : {}) }),
       // Weekly Active Users (Last 7 Days)
-      LoginDetail.distinct("user", { time: { $gte: oneWeekAgo } }),
+      LoginDetail.distinct("user", { time: { $gte: oneWeekAgo }, ...(ignoredUserId ? { user: { $ne: ignoredUserId } } : {}) }),
       // Monthly Active Users (Last 30 Days)
-      LoginDetail.distinct("user", { time: { $gte: oneMonthAgo } })
+      LoginDetail.distinct("user", { time: { $gte: oneMonthAgo }, ...(ignoredUserId ? { user: { $ne: ignoredUserId } } : {}) })
     ]);
 
     // 2. User & Subscriber Statistics
     const [totalUsers, totalSubscribers, freeUsers] = await Promise.all([
-      User.countDocuments(),
-      User.countDocuments({ user_type: "subscriber" }),
-      User.countDocuments({ user_type: "free" })
+      User.countDocuments(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}),
+      User.countDocuments({ user_type: "subscriber", ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}) }),
+      User.countDocuments({ user_type: "free", ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}) })
     ]);
 
     // 3. Detailed Login Logs List (Paginated or limited to latest)
     // You can adjust .limit() based on your needs
-    const loginLogs = await LoginDetail.find()
+    const loginLogs = await LoginDetail.find(ignoredUserId ? { user: { $ne: ignoredUserId } } : {})
       .populate("user", "name email user_type profile_picture")
       .sort({ time: -1 })
       .limit(100) 
@@ -2897,10 +3462,11 @@ exports.getLoginAnalytics = async (req, res) => {
 
     // 4. Platform Analysis (Optional bonus: see where users log in from)
     const platformStats = await LoginDetail.aggregate([
+      ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
       { $match: { time: { $gte: oneMonthAgo } } },
       { $group: { _id: "$platform", count: { $sum: 1 } } },
       { $sort: { count: -1 } }
-    ]);
+    ].filter(Boolean));
 
     res.status(200).json({
       success: true,
@@ -2930,38 +3496,11 @@ exports.getLoginAnalytics = async (req, res) => {
 
 exports.getPaymentAnalytics = async (req, res) => {
   try {
-    // Sync missing payments from archived DeletedAccount documents
-    const archivedDeletedAccounts = await DeletedAccount.find({
-      "lastPayment.transaction_id": { $exists: true, $ne: null }
-    }).lean();
+    await syncDeletedAccountPayments();
+    await migratePaymentPlatforms();
 
-    if (archivedDeletedAccounts.length > 0) {
-      const txIds = archivedDeletedAccounts.map(d => d.lastPayment.transaction_id);
-      const existingTxIds = new Set(
-        (await Payment.find({ transaction_id: { $in: txIds } }).select("transaction_id").lean())
-          .map(p => p.transaction_id)
-      );
-
-      const missingPayments = [];
-      for (const doc of archivedDeletedAccounts) {
-        const txId = doc.lastPayment.transaction_id;
-        if (!existingTxIds.has(txId) && mongoose.Types.ObjectId.isValid(doc.originalUserId)) {
-          missingPayments.push({
-            user: new mongoose.Types.ObjectId(doc.originalUserId),
-            rupees: doc.lastPayment.amount || 0,
-            currency: "INR",
-            transaction_id: txId,
-            date: doc.lastPayment.date || doc.deletedAt,
-            expiry_date: doc.subscriptionExpiry || doc.lastPayment.date || doc.deletedAt
-          });
-        }
-      }
-
-      if (missingPayments.length > 0) {
-        await Payment.insertMany(missingPayments);
-        console.log(`[Sync] Migrated ${missingPayments.length} archived payments from deleted accounts into the Payment collection.`);
-      }
-    }
+    const ignoredUser = await User.findOne({ email: "omawchar07@gmail.com" });
+    const ignoredUserId = ignoredUser ? ignoredUser._id : null;
 
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -2970,6 +3509,7 @@ exports.getPaymentAnalytics = async (req, res) => {
 
     // 1. Calculate Revenue Metrics
     const stats = await Payment.aggregate([
+      ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
       {
         $facet: {
           totalRevenue: [
@@ -2989,7 +3529,7 @@ exports.getPaymentAnalytics = async (req, res) => {
           ]
         }
       }
-    ]);
+    ].filter(Boolean));
 
     const revenueSummary = (arr) => arr.reduce((acc, curr) => {
       const curType = curr._id || "INR";
@@ -3017,11 +3557,12 @@ exports.getPaymentAnalytics = async (req, res) => {
     // 3. Subscription Status (from User Model)
     const activeSubscribers = await User.countDocuments({ 
       user_type: "subscriber",
+      ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}),
       subscriptionExpiry: { $gte: now } 
     });
 
     // 4. Detailed Payment Logs (Latest 100)
-    const paymentLogs = await Payment.find()
+    const paymentLogs = await Payment.find(ignoredUserId ? { user: { $ne: ignoredUserId } } : {})
       .sort({ date: -1 })
       .limit(100)
       .lean();
@@ -3082,6 +3623,52 @@ exports.getPaymentAnalytics = async (req, res) => {
       };
     });
 
+    const rawTiers = stats[0].paymentDistribution || [];
+    const groupedTiersMap = {
+        monthly: { count: 0, revenueINR: 0, label: "Monthly Plan (₹99 / $1.49)" },
+        yearly: { count: 0, revenueINR: 0, label: "Premium Yearly Plan (₹599 / $9)" },
+        ultimate: { count: 0, revenueINR: 0, label: "Ultimate Yearly Plan (₹1499 / $19)" },
+        other: { count: 0, revenueINR: 0, label: "Custom / Manual" }
+    };
+
+    rawTiers.forEach(item => {
+        const amount = Number(item._id.amount || 0);
+        const currency = item._id.currency || "INR";
+        const count = item.count || 0;
+        const revINR = currency === "USD" ? amount * 83 * count : amount * count;
+
+        if (currency === "USD") {
+            if (amount < 5) {
+                groupedTiersMap.monthly.count += count;
+                groupedTiersMap.monthly.revenueINR += revINR;
+            } else if (amount < 12) {
+                groupedTiersMap.yearly.count += count;
+                groupedTiersMap.yearly.revenueINR += revINR;
+            } else {
+                groupedTiersMap.ultimate.count += count;
+                groupedTiersMap.ultimate.revenueINR += revINR;
+            }
+        } else {
+            if (amount <= 150) {
+                groupedTiersMap.monthly.count += count;
+                groupedTiersMap.monthly.revenueINR += revINR;
+            } else if (amount <= 750) {
+                groupedTiersMap.yearly.count += count;
+                groupedTiersMap.yearly.revenueINR += revINR;
+            } else {
+                groupedTiersMap.ultimate.count += count;
+                groupedTiersMap.ultimate.revenueINR += revINR;
+            }
+        }
+    });
+
+    const finalGroupedPricingTiers = Object.keys(groupedTiersMap).map(key => ({
+        tier: key,
+        label: groupedTiersMap[key].label,
+        count: groupedTiersMap[key].count,
+        revenueINR: Math.round(groupedTiersMap[key].revenueINR)
+    }));
+
     res.status(200).json({
       success: true,
       summary: {
@@ -3096,7 +3683,8 @@ exports.getPaymentAnalytics = async (req, res) => {
           activeSubscribers: activeSubscribers,
           // Estimated churn could be added here if you track cancels
         },
-        pricingTiers: stats[0].paymentDistribution // Shows which plan price is most popular
+        pricingTiers: stats[0].paymentDistribution, // Shows which plan price is most popular
+        groupedPricingTiers: finalGroupedPricingTiers
       },
       transactions: enrichedLogs
     });
@@ -3122,12 +3710,44 @@ exports.getNotificationHistory = async (req, res) => {
 
 exports.getDeviceStats = async (req, res) => {
   try {
-    const [mobileUsers, totalUsers] = await Promise.all([
-      User.countDocuments({ isMobileUser: true }),
-      User.countDocuments()
+    const ignoredUser = await User.findOne({ email: "omawchar07@gmail.com" });
+    const ignoredUserId = ignoredUser ? ignoredUser._id : null;
+
+    const now = new Date();
+    const [mobileUsers, totalUsers, mobileSubscribers, totalSubscribers] = await Promise.all([
+      User.countDocuments({ isMobileUser: true, ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}) }),
+      User.countDocuments(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}),
+      User.countDocuments({
+        user_type: "subscriber",
+        isMobileUser: true,
+        ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}),
+        $or: [
+          { subscriptionExpiry: null },
+          { subscriptionExpiry: { $gte: now } }
+        ]
+      }),
+      User.countDocuments({
+        user_type: "subscriber",
+        ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}),
+        $or: [
+          { subscriptionExpiry: null },
+          { subscriptionExpiry: { $gte: now } }
+        ]
+      })
     ]);
     const webUsers = totalUsers - mobileUsers;
-    res.json({ success: true, data: { mobileUsers, webUsers, totalUsers } });
+    const webSubscribers = totalSubscribers - mobileSubscribers;
+    res.json({
+      success: true,
+      data: {
+        mobileUsers,
+        webUsers,
+        totalUsers,
+        mobileSubscribers,
+        webSubscribers,
+        totalSubscribers
+      }
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

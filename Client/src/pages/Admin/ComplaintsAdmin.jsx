@@ -4,7 +4,8 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { 
   FaTicketAlt, FaTrash, FaEdit, FaSearch, FaCheckCircle, 
   FaTimesCircle, FaSync, FaDownload, FaChartBar, FaExclamationTriangle,
-  FaEnvelope, FaTimes, FaMagic, FaPaperPlane, FaSpinner, FaEye
+  FaEnvelope, FaTimes, FaMagic, FaPaperPlane, FaSpinner, FaEye,
+  FaThLarge, FaList
 } from "react-icons/fa";
 import {
   BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, 
@@ -13,247 +14,794 @@ import {
 import api from "../../config/api";
 import axios from "axios";
 
-// ------------------- CSS STYLES -------------------
+// ------------------- CSS STYLES (Premium Black, Gold, Pink & Glassmorphism) -------------------
 const styles = `
-.cmp-root-x30sn {
+/* ROOT & THEME */
+.cc-root {
   color: #fff;
-  font-family: 'Inter', system-ui, sans-serif;
-  animation: fade-in-x30sn 0.4s ease;
-  background-color: #000;
+  background-color: #030303;
   min-height: 100vh;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  border-radius: 20px;
+  border: 1px solid #1a1a1a;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: cc-fadeIn 0.4s ease;
 }
-@keyframes fade-in-x30sn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes cc-fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-.cmp-header-x30sn {
-  display: flex; justify-content: space-between; align-items: center; 
-  margin-bottom: 30px; flex-wrap: wrap; gap: 20px;
-  background: #050505; padding: 20px; border-radius: 16px; border: 1px solid #222;
+/* HEADER */
+.cc-header {
+  padding: 28px 32px;
+  background: linear-gradient(180deg, #070707 0%, #030303 100%);
+  border-bottom: 1px solid #161616;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
 }
-.cmp-title-group-x30sn h2 { font-size: 28px; font-weight: 800; margin: 0; color: #fff; letter-spacing: -0.5px; }
-.cmp-title-group-x30sn p { color: #ff69b4; margin: 5px 0 0 0; font-size: 13px; font-weight: 500; }
-
-.cmp-btn-x30sn {
-  display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 8px;
-  font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #333;
-  background: #111; color: #fff; transition: 0.2s;
+.cc-title-group h2 { 
+  font-size: 26px; 
+  font-weight: 800; 
+  margin: 0; 
+  letter-spacing: -0.5px;
+  color: #fff; 
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-.cmp-btn-x30sn:hover { border-color: #ff69b4; color: #ff69b4; }
-.cmp-btn-x30sn.primary { background: #ff69b4; color: #000; border: none; }
-.cmp-btn-x30sn.primary:hover { background: #ff4d9e; color: #000; }
-.cmp-btn-x30sn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.cmp-stats-grid-x30sn {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 30px;
-}
-.cmp-stat-card-x30sn {
-  background: #050505; border: 1px solid #222; border-radius: 14px; padding: 20px;
-  display: flex; align-items: center; gap: 15px;
-}
-.cmp-stat-icon-x30sn {
-  width: 48px; height: 48px; border-radius: 12px; background: rgba(255,105,180,0.1); color: #ff69b4;
-  display: flex; align-items: center; justify-content: center; font-size: 22px;
-}
-.cmp-stat-info-x30sn span { display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
-.cmp-stat-info-x30sn strong { font-size: 24px; color: #fff; font-weight: 700; }
-
-.cmp-charts-row-x30sn {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;
-}
-.cmp-chart-box-x30sn {
-  background: #050505; border: 1px solid #222; border-radius: 16px; padding: 20px; height: 300px;
+.cc-tagline { 
+  color: #ff69b4; 
+  margin: 6px 0 0; 
+  font-size: 13px; 
+  font-weight: 500; 
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.cmp-filters-x30sn {
-  background: #050505; padding: 15px; border-radius: 12px; border: 1px solid #222; margin-bottom: 25px;
-  display: flex; gap: 15px; flex-wrap: wrap;
+/* BUTTONS */
+.cc-btn {
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  padding: 10px 20px; 
+  border-radius: 10px;
+  font-size: 13px; 
+  font-weight: 600; 
+  cursor: pointer; 
+  border: 1px solid #222;
+  background: #0c0c0c; 
+  color: #eee; 
+  transition: all 0.25s ease;
 }
-.cmp-search-wrap-x30sn { position: relative; flex: 1; min-width: 250px; }
-.cmp-search-wrap-x30sn svg { position: absolute; left: 12px; top: 12px; color: #555; }
-.cmp-input-x30sn {
-  width: 100%; background: #000; border: 1px solid #333; color: #fff; padding: 10px 10px 10px 35px;
-  border-radius: 8px; outline: none;
+.cc-btn:hover:not(:disabled) { 
+  border-color: #ff69b4; 
+  color: #ff69b4; 
+  background: rgba(255, 105, 180, 0.03);
+  transform: translateY(-1px);
 }
-.cmp-select-x30sn { background: #000; color: #fff; border: 1px solid #333; padding: 10px 15px; border-radius: 8px; outline: none; }
+.cc-btn.primary {
+  background: linear-gradient(135deg, #ff69b4 0%, #da22ff 100%);
+  border: none;
+  color: #000;
+}
+.cc-btn.primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  color: #000;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(255, 105, 180, 0.25);
+}
+.cc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.cmp-list-x30sn { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
-.cmp-ticket-card-x30sn {
-  background: #050505; border: 1px solid #222; border-radius: 16px; padding: 20px;
-  transition: 0.2s; position: relative; display: flex; flex-direction: column; justify-content: space-between;
+/* KPI GRID */
+.cc-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 24px 32px;
 }
-.cmp-ticket-card-x30sn:hover { border-color: #ff69b4; }
-.cmp-status-badge-x30sn {
-  padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase;
-}
-.cmp-status-badge-x30sn.pending { background: rgba(255,0,0,0.1); color: #ff4444; border: 1px solid rgba(255,0,0,0.2); }
-.cmp-status-badge-x30sn.resolved { background: rgba(0,255,0,0.1); color: #00ff00; border: 1px solid rgba(0,255,0,0.2); }
-
-.cmp-issue-text-x30sn { font-size: 15px; color: #fff; margin: 15px 0; line-height: 1.5; font-weight: 600; }
-.cmp-user-data-x30sn { background: #000; padding: 12px; border-radius: 8px; font-size: 12px; color: #888; border: 1px solid #111; }
-.cmp-user-data-x30sn div { margin-bottom: 4px; }
-.cmp-user-data-x30sn strong { color: #ccc; }
-
-.cmp-card-actions-x30sn { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
-.cmp-act-btn-x30sn {
-  background: #111; color: #fff; border: 1px solid #222; width: 32px; height: 32px; border-radius: 6px;
-  display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;
-}
-.cmp-act-btn-x30sn:hover { border-color: #ff69b4; color: #ff69b4; }
-.cmp-act-btn-x30sn.email-btn:hover { border-color: #a78bfa; color: #a78bfa; }
-
-/* EDIT MODAL */
-.cmp-modal-overlay-x30sn {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000;
-  display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px);
-}
-.cmp-modal-content-x30sn {
-  background: #000; border: 1px solid #333; border-radius: 20px; width: 90%; max-width: 500px; padding: 25px;
-}
-.cmp-modal-content-x30sn h3 { margin: 0 0 20px 0; font-size: 20px; color: #fff; }
-.cmp-form-group-x30sn { margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; }
-.cmp-form-group-x30sn label { font-size: 12px; color: #666; text-transform: uppercase; font-weight: 700; }
-.cmp-textarea-x30sn { background: #111; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; resize: none; outline: none; }
-.cmp-textarea-x30sn:focus { border-color: #ff69b4; }
-
-/* EMAIL DIALOG */
-.email-dialog-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 2000;
-  display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px);
+.cc-stat-card {
+  background: rgba(10, 10, 10, 0.6); 
+  border: 1px solid #161616; 
+  border-radius: 16px; 
   padding: 20px;
+  display: flex; 
+  align-items: center; 
+  gap: 16px; 
+  transition: all 0.3s ease;
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
 }
-.email-dialog-box {
-  background: #080808; border: 1px solid #2a2a2a; border-radius: 20px;
-  width: 100%; max-width: 1100px; max-height: 90vh;
-  display: flex; flex-direction: column; overflow: hidden;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,105,180,0.08);
+.cc-stat-card:hover { 
+  border-color: #262626; 
+  transform: translateY(-3px); 
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
-.email-dialog-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 18px 24px; border-bottom: 1px solid #1a1a1a;
-  background: #0d0d0d; flex-shrink: 0;
+.cc-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(circle at top right, rgba(255,105,180,0.02), transparent 60%);
+  pointer-events: none;
 }
-.email-dialog-title {
-  display: flex; align-items: center; gap: 10px;
-  font-size: 17px; font-weight: 700; color: #fff;
+.cc-stat-icon {
+  width: 46px; 
+  height: 46px; 
+  border-radius: 12px; 
+  background: rgba(255, 105, 180, 0.08); 
+  color: #ff69b4;
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 20px;
+  border: 1px solid rgba(255, 105, 180, 0.15);
 }
-.email-dialog-title svg { color: #a78bfa; font-size: 16px; }
-.email-dialog-pill {
-  background: rgba(167,139,250,0.1); color: #a78bfa; border: 1px solid rgba(167,139,250,0.2);
-  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-left: 8px;
-}
-.email-dialog-close {
-  background: #1a1a1a; border: 1px solid #2a2a2a; color: #888; width: 32px; height: 32px;
-  border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: 0.2s; font-size: 14px;
-}
-.email-dialog-close:hover { border-color: #ff4444; color: #ff4444; }
+.cc-stat-info span { margin: 0; font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.8px; display: block; }
+.cc-stat-info strong { font-size: 24px; color: #fff; display: block; margin-top: 4px; font-weight: 800; }
 
-.email-dialog-body {
-  display: grid; grid-template-columns: 1fr 1fr; flex: 1; overflow: hidden;
+/* CHARTS ROW */
+.cc-charts-row {
+  display: grid; 
+  grid-template-columns: 1fr 1.2fr; 
+  gap: 20px; 
+  padding: 0 32px 24px;
 }
-@media (max-width: 768px) { .email-dialog-body { grid-template-columns: 1fr; } }
+.cc-chart-box {
+  background: rgba(10, 10, 10, 0.6); 
+  border: 1px solid #161616; 
+  border-radius: 20px; 
+  padding: 20px; 
+  min-height: 290px;
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+}
+.cc-chart-title { 
+  font-size: 14px; 
+  font-weight: 700; 
+  margin-bottom: 20px; 
+  color: #eee;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-/* LEFT: Preview */
-.email-preview-panel {
-  border-right: 1px solid #1a1a1a; display: flex; flex-direction: column; overflow: hidden;
+/* CONTROLS SECTION */
+.cc-controls-section {
+  padding: 0 32px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
-.email-preview-header {
-  padding: 12px 20px; border-bottom: 1px solid #1a1a1a; background: #0a0a0a; flex-shrink: 0;
-  display: flex; align-items: center; gap: 8px; font-size: 12px; color: #666; text-transform: uppercase; font-weight: 700;
+.cc-view-toggle-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #161616;
+  padding-bottom: 16px;
 }
-.email-preview-header svg { color: #ff69b4; }
-.email-preview-frame-wrap {
-  flex: 1; overflow: auto; background: #120524;
+.cc-toggle-buttons {
+  display: flex;
+  gap: 8px;
 }
-.email-preview-frame {
-  width: 100%; height: 100%; min-height: 500px; border: none; display: block;
+.cc-toggle-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #0c0c0c;
+  color: #888;
+  border: 1px solid #1a1a1a;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cc-toggle-btn:hover {
+  color: #fff;
+  border-color: #333;
+}
+.cc-toggle-btn.active {
+  background: rgba(255, 105, 180, 0.08);
+  color: #ff69b4;
+  border-color: #ff69b4;
 }
 
-/* RIGHT: Reply Editor */
-.email-reply-panel {
-  display: flex; flex-direction: column; overflow: hidden;
+.cc-filters-bar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  background: rgba(10, 10, 10, 0.4);
+  border: 1px solid #161616;
+  padding: 16px;
+  border-radius: 12px;
 }
-.email-reply-header {
-  padding: 12px 20px; border-bottom: 1px solid #1a1a1a; background: #0a0a0a; flex-shrink: 0;
-  display: flex; align-items: center; gap: 8px; font-size: 12px; color: #666; text-transform: uppercase; font-weight: 700;
+.cc-search-wrap {
+  position: relative; 
+  flex: 1;
+  min-width: 280px;
 }
-.email-reply-header svg { color: #a78bfa; }
-.email-reply-body { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+.cc-search-icon { position: absolute; left: 14px; top: 13px; color: #555; }
+.cc-input {
+  width: 100%; 
+  background: rgba(15, 15, 15, 0.7); 
+  border: 1px solid #222; 
+  color: #fff; 
+  padding: 12px 12px 12px 42px;
+  border-radius: 10px; 
+  outline: none; 
+  font-size: 13px;
+  transition: all 0.25s ease;
+}
+.cc-input:focus { 
+  border-color: #ff69b4; 
+  background: #000;
+  box-shadow: 0 0 12px rgba(255, 105, 180, 0.15);
+}
+.cc-select {
+  background: rgba(15, 15, 15, 0.7);
+  color: #ccc;
+  border: 1px solid #222;
+  padding: 12px 16px;
+  border-radius: 10px;
+  outline: none;
+  font-size: 13px;
+  cursor: pointer;
+  min-width: 150px;
+  transition: all 0.25s ease;
+}
+.cc-select:focus {
+  border-color: #ff69b4;
+  color: #fff;
+}
 
-.email-ticket-info-strip {
-  background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 10px; padding: 12px 14px;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;
+/* CARDS GRID LAYOUT */
+.cc-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+  padding: 0 32px 32px;
 }
-.einfo-item { color: #555; }
-.einfo-item strong { color: #999; font-weight: 500; }
-
-.email-complaint-box {
-  background: rgba(255,68,68,0.04); border: 1px solid rgba(255,68,68,0.15);
-  border-left: 3px solid #ff4444; border-radius: 8px; padding: 12px 14px;
+.cc-ticket-card {
+  background: rgba(10, 10, 10, 0.6); 
+  border: 1px solid #161616; 
+  border-radius: 16px; 
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
 }
-.email-complaint-label { font-size: 10px; color: #ff6666; text-transform: uppercase; font-weight: 700; letter-spacing: 0.06em; margin-bottom: 6px; }
-.email-complaint-text { font-size: 13px; color: #ddd; line-height: 1.5; font-style: italic; }
-
-.email-reply-label { font-size: 11px; color: #666; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px; }
-.email-reply-label svg { color: #a78bfa; }
-
-.ai-reply-textarea {
-  width: 100%; background: #0d0d0d; border: 1px solid #2a2a2a; color: #fff;
-  padding: 14px; border-radius: 10px; outline: none; resize: vertical;
-  font-size: 13px; line-height: 1.6; font-family: inherit; min-height: 160px;
-  transition: 0.2s;
+.cc-ticket-card:hover { 
+  border-color: #ff69b4; 
+  transform: translateY(-3px); 
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
 }
-.ai-reply-textarea:focus { border-color: #a78bfa; box-shadow: 0 0 0 2px rgba(167,139,250,0.08); }
 
-.ai-status-bar {
-  display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 8px 12px;
-  border-radius: 8px; font-weight: 500;
+.cc-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
 }
-.ai-status-bar.loading { background: rgba(167,139,250,0.08); color: #a78bfa; }
-.ai-status-bar.success { background: rgba(34,197,94,0.08); color: #22c55e; }
-.ai-status-bar.error { background: rgba(239,68,68,0.08); color: #ef4444; }
+.cc-status-badge {
+  padding: 4px 8px; 
+  border-radius: 6px; 
+  font-size: 9px; 
+  font-weight: 800; 
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: inline-block;
+}
+.cc-status-badge.pending { background: rgba(255, 68, 68, 0.05); color: #ff4444; border: 1px solid rgba(255, 68, 68, 0.15); }
+.cc-status-badge.resolved { background: rgba(0, 255, 136, 0.05); color: #00ff88; border: 1px solid rgba(0, 255, 136, 0.15); }
 
-.email-action-row {
-  display: flex; gap: 10px; flex-wrap: wrap;
+.cc-issue-text {
+  font-size: 14px; 
+  color: #fff; 
+  margin: 12px 0 16px; 
+  line-height: 1.5; 
+  font-weight: 600;
+  word-break: break-word;
 }
-.btn-regenerate {
-  display: flex; align-items: center; gap: 7px; padding: 9px 14px; border-radius: 8px;
-  font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid #2a2a2a;
-  background: #111; color: #a78bfa; transition: 0.2s; flex: 1;
-}
-.btn-regenerate:hover:not(:disabled) { border-color: #a78bfa; background: rgba(167,139,250,0.08); }
-.btn-regenerate:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.btn-send-email {
-  display: flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 8px;
-  font-size: 13px; font-weight: 700; cursor: pointer; border: none;
-  background: linear-gradient(135deg, #ff69b4, #e91e8c); color: #fff;
-  transition: 0.2s; flex: 2;
-  box-shadow: 0 4px 15px rgba(233,30,140,0.25);
+.cc-user-box {
+  background: rgba(5, 5, 5, 0.5);
+  border: 1px solid #141414;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.btn-send-email:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(233,30,140,0.35); }
-.btn-send-email:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-.spin { animation: spin-anim 1s linear infinite; }
-@keyframes spin-anim { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-.send-success-banner {
-  background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25);
-  border-radius: 10px; padding: 14px 16px; text-align: center;
-  color: #22c55e; font-weight: 600; font-size: 14px;
+.cc-ub-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #888;
 }
-.send-error-banner {
-  background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25);
-  border-radius: 10px; padding: 12px 14px; text-align: center;
-  color: #ef4444; font-weight: 500; font-size: 13px;
+.cc-ub-row.border-bottom {
+  border-bottom: 1px solid #161616;
+  padding-bottom: 6px;
+}
+.cc-ub-row strong { color: #ccc; }
+
+.cc-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid #161616;
+  margin-top: 16px;
+}
+.cc-act-btn {
+  height: 34px;
+  border-radius: 8px;
+  background: #0f0f0f;
+  border: 1px solid #222;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 12px;
+  gap: 6px;
+}
+.cc-act-btn:hover {
+  transform: translateY(-1px);
+}
+.cc-act-btn.email-btn:hover { color: #a78bfa; border-color: rgba(167, 139, 250, 0.3); background: rgba(167, 139, 250, 0.04); }
+.cc-act-btn.edit-btn:hover { color: #ff69b4; border-color: rgba(255, 105, 180, 0.3); background: rgba(255, 105, 180, 0.04); }
+.cc-act-btn.delete-btn:hover { color: #ff4444; border-color: rgba(255, 68, 68, 0.3); background: rgba(255, 68, 68, 0.04); }
+
+/* ENTERPRISE TABLE VIEW */
+.cc-table-wrapper {
+  padding: 0 32px 32px;
+}
+.cc-table-card {
+  background: rgba(10, 10, 10, 0.6); 
+  border: 1px solid #161616; 
+  border-radius: 16px; 
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+}
+.cc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.cc-table th {
+  padding: 16px 20px; 
+  text-align: left; 
+  color: #666; 
+  font-weight: 700; 
+  text-transform: uppercase; 
+  font-size: 10px; 
+  letter-spacing: 1.2px;
+  border-bottom: 1px solid #1a1a1a;
+  background: #070707;
+}
+.cc-table td {
+  padding: 16px 20px; 
+  border-bottom: 1px solid #111; 
+  color: #ccc; 
+  vertical-align: middle; 
+  transition: all 0.2s ease;
+}
+.cc-table tr {
+  position: relative;
+  transition: all 0.2s ease;
+}
+.cc-table tr:hover td { 
+  background: rgba(255, 105, 180, 0.015); 
+  color: #fff;
+}
+.cc-table tr:hover::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #ff69b4;
+  box-shadow: 0 0 8px #ff69b4;
+}
+
+.cc-user-cell {
+  display: flex;
+  flex-direction: column;
+}
+.cc-user-name {
+  font-weight: 700;
+  color: #fff;
+}
+.cc-user-email {
+  font-size: 11px;
+  color: #555;
 }
 
 /* PAGINATION */
-.cmp-pagination-x30sn { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 30px; padding-bottom: 50px; }
-.cmp-page-num-x30sn {
-  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px;
-  background: #000; border: 1px solid #333; color: #888; cursor: pointer;
+.cc-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 32px 40px;
 }
-.cmp-page-num-x30sn.active { background: #ff69b4; color: #000; border-color: #ff69b4; font-weight: 700; }
+
+/* MODAL OVERLAY */
+.cc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: cc-fadeIn 0.25s ease;
+}
+.cc-modal-content {
+  background: rgba(10, 10, 10, 0.95);
+  border: 1px solid #262626;
+  padding: 28px;
+  border-radius: 20px;
+  width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  animation: cc-modalScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes cc-modalScale {
+  from { transform: scale(0.9) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.cc-modal-title {
+  margin: 0;
+  color: #ff69b4;
+  font-size: 20px;
+  font-weight: 800;
+}
+.cc-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cc-form-group label {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+.cc-textarea {
+  background: rgba(15, 15, 15, 0.8);
+  border: 1px solid #222;
+  color: #fff;
+  padding: 12px;
+  border-radius: 10px;
+  outline: none;
+  font-size: 13px;
+  resize: vertical;
+  transition: all 0.25s ease;
+  font-family: inherit;
+}
+.cc-textarea:focus {
+  border-color: #ff69b4;
+  box-shadow: 0 0 10px rgba(255, 105, 180, 0.15);
+}
+
+/* EMAIL COMPOSER MODAL (SPLIT) */
+.cc-email-overlay {
+  position: fixed; 
+  inset: 0; 
+  background: rgba(0,0,0,0.9); 
+  z-index: 9999;
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  backdrop-filter: blur(8px);
+  padding: 20px;
+  animation: cc-fadeIn 0.25s ease;
+}
+.cc-email-box {
+  background: rgba(10, 10, 10, 0.95); 
+  border: 1px solid #262626; 
+  border-radius: 20px;
+  width: 100%; 
+  max-width: 1050px; 
+  max-height: 90vh;
+  display: flex; 
+  flex-direction: column; 
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.8);
+}
+.cc-email-header {
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between;
+  padding: 20px 24px; 
+  border-bottom: 1px solid #1a1a1a;
+  background: #070707;
+}
+.cc-email-title {
+  display: flex; 
+  align-items: center; 
+  gap: 10px;
+  font-size: 18px; 
+  font-weight: 700; 
+  color: #fff;
+}
+.cc-email-title svg { color: #a78bfa; }
+.cc-email-pill {
+  background: rgba(167,139,250,0.1); 
+  color: #a78bfa; 
+  border: 1px solid rgba(167,139,250,0.2);
+  padding: 3px 10px; 
+  border-radius: 20px; 
+  font-size: 11px; 
+  font-weight: 600; 
+  margin-left: 8px;
+}
+.cc-email-close {
+  background: #111; 
+  border: 1px solid #222; 
+  color: #888; 
+  width: 34px; 
+  height: 34px;
+  border-radius: 8px; 
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  transition: all 0.2s; 
+  font-size: 14px;
+}
+.cc-email-close:hover { border-color: #ff4444; color: #ff4444; }
+
+.cc-email-body {
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  flex: 1; 
+  overflow: hidden;
+}
+@media (max-width: 768px) { .cc-email-body { grid-template-columns: 1fr; } }
+
+.cc-email-preview-panel {
+  border-right: 1px solid #1a1a1a; 
+  display: flex; 
+  flex-direction: column; 
+  overflow: hidden;
+}
+.cc-panel-header {
+  padding: 14px 20px; 
+  border-bottom: 1px solid #161616; 
+  background: #090909; 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  font-size: 11px; 
+  color: #666; 
+  text-transform: uppercase; 
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+.cc-panel-header.ai-header svg { color: #a78bfa; }
+.cc-panel-header.preview-header svg { color: #ff69b4; }
+
+.cc-email-frame-wrap {
+  flex: 1; 
+  overflow: auto; 
+  background: #120524;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+}
+.cc-email-frame {
+  width: 100%; 
+  max-width: 480px;
+  height: 100%; 
+  min-height: 480px; 
+  border: 1px solid #222; 
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  display: block;
+  background: #120524;
+}
+
+.cc-email-editor-panel {
+  display: flex; 
+  flex-direction: column; 
+  overflow: hidden;
+}
+.cc-email-editor-content { 
+  flex: 1; 
+  padding: 24px; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 16px; 
+  overflow-y: auto; 
+}
+
+.cc-ticket-info-strip {
+  background: rgba(5,5,5,0.6); 
+  border: 1px solid #161616; 
+  border-radius: 10px; 
+  padding: 12px;
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 8px; 
+  font-size: 11px;
+}
+.cc-info-item { color: #555; text-transform: uppercase; font-weight: 700; }
+.cc-info-item strong { color: #ccc; font-weight: 500; text-transform: none; display: inline-block; margin-left: 4px; }
+
+.cc-complaint-preview {
+  background: rgba(255,68,68,0.02); 
+  border: 1px solid rgba(255,68,68,0.1);
+  border-left: 3px solid #ff4444; 
+  border-radius: 8px; 
+  padding: 12px;
+}
+.cc-complaint-label { font-size: 9px; color: #ff6666; text-transform: uppercase; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 6px; }
+.cc-complaint-text { font-size: 13px; color: #ddd; line-height: 1.5; font-style: italic; }
+
+.cc-ai-status-bar {
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  font-size: 12px; 
+  padding: 10px 14px;
+  border-radius: 8px; 
+  font-weight: 600;
+}
+.cc-ai-status-bar.loading { background: rgba(167,139,250,0.05); color: #a78bfa; border: 1px solid rgba(167,139,250,0.15); }
+.cc-ai-status-bar.success { background: rgba(0, 255, 136, 0.05); color: #00ff88; border: 1px solid rgba(0, 255, 136, 0.15); }
+.cc-ai-status-bar.error { background: rgba(255, 68, 68, 0.05); color: #ff4444; border: 1px solid rgba(255, 68, 68, 0.15); }
+
+.cc-editor-label {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cc-editor-label svg { color: #a78bfa; }
+
+.cc-editor-textarea {
+  width: 100%; 
+  background: rgba(15, 15, 15, 0.8); 
+  border: 1px solid #222; 
+  color: #fff;
+  padding: 14px; 
+  border-radius: 10px; 
+  outline: none; 
+  resize: vertical;
+  font-size: 13px; 
+  line-height: 1.6; 
+  font-family: inherit; 
+  min-height: 150px;
+  transition: all 0.25s ease;
+}
+.cc-editor-textarea:focus { border-color: #a78bfa; box-shadow: 0 0 10px rgba(167,139,250,0.15); }
+
+.cc-email-actions {
+  display: flex; 
+  gap: 12px;
+  margin-top: auto;
+}
+.cc-email-actions button {
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+.cc-btn-regen {
+  flex: 1;
+  background: #111;
+  border: 1px solid #222;
+  color: #a78bfa;
+}
+.cc-btn-regen:hover:not(:disabled) {
+  border-color: #a78bfa;
+  background: rgba(167, 139, 250, 0.04);
+}
+.cc-btn-send {
+  flex: 2;
+  background: linear-gradient(135deg, #ff69b4 0%, #da22ff 100%);
+  border: none;
+  color: #000;
+}
+.cc-btn-send:hover:not(:disabled) {
+  filter: brightness(1.1);
+  box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+}
+
+.cc-banner {
+  border-radius: 10px; 
+  padding: 14px; 
+  text-align: center;
+  font-weight: 600; 
+  font-size: 13px;
+}
+.cc-banner.success { background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.15); color: #00ff88; }
+.cc-banner.error { background: rgba(255, 68, 68, 0.05); border: 1px solid rgba(255, 68, 68, 0.15); color: #ff4444; }
+
+/* LOADER */
+.cc-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: #444;
+}
+.cc-spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid #222;
+  border-top-color: #ff69b4;
+  border-radius: 50%;
+  animation: cc-spin 0.8s linear infinite;
+  margin-bottom: 12px;
+}
+@keyframes cc-spin { to { transform: rotate(360deg); } }
+
+/* RESPONSIVE LAYOUT */
+@media (max-width: 1200px) {
+  .cc-charts-row {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 768px) {
+  .cc-header {
+    padding: 20px 24px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cc-stats-grid {
+    padding: 16px 24px;
+  }
+  .cc-controls-section {
+    padding: 0 24px 20px;
+  }
+  .cc-list-grid {
+    padding: 0 24px 24px;
+  }
+  .cc-table-wrapper {
+    padding: 0 24px 24px;
+  }
+  .cc-table th:nth-child(4), .cc-table td:nth-child(4),
+  .cc-table th:nth-child(5), .cc-table td:nth-child(5) {
+    display: none;
+  }
+}
 `;
 
 // ── Build email HTML for preview iframe ──────────────────────
@@ -265,51 +813,49 @@ const buildEmailHtml = (ticket, adminReply) => {
   const tierDisplay = tierMap[user.subscriptionTier] || "Free";
 
   return `<!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Support Ticket Update - HeartEcho</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
-    html, body { margin: 0; padding: 0; height: 100%; width: 100%; -webkit-text-size-adjust: 100%; background-color: #120524; }
-    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; width: 100%; background-color: #120524; }
     body { font-family: 'DM Sans', -apple-system, sans-serif; color: #e2d8f0; padding: 20px 10px; font-size: 14px; line-height: 1.6; }
-    .container { max-width: 540px; margin: 0 auto; background-color: #0f0620; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; }
+    .container { max-width: 500px; margin: 0 auto; background-color: #0f0620; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; }
     .header { background-color: #160a2b; padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
     .brand { font-weight: 600; font-size: 16px; color: #fff; }
     .brand span { color: #ff4099; }
-    .ticket-id { font-size: 13px; color: #a395b5; }
+    .ticket-id { font-size: 12px; color: #a395b5; }
     .content { padding: 24px; }
-    .greeting { font-size: 16px; font-weight: 500; color: #fff; margin-bottom: 16px; }
-    .ticket-info { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 16px; margin-bottom: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; }
+    .greeting { font-size: 15px; font-weight: 500; color: #fff; margin-bottom: 16px; }
+    .ticket-info { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 14px; margin-bottom: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px; }
     .info-item { color: #a395b5; }
     .info-item strong { color: #fff; font-weight: 500; }
-    .status-badge { background: rgba(233,30,140,0.15); color: #ff6b9d; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+    .status-badge { background: rgba(0,255,136,0.15); color: #00ff88; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
     .thread { margin-bottom: 24px; }
-    .message-block { margin-bottom: 16px; padding: 16px; border-radius: 8px; }
-    .message-header { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .message-block { margin-bottom: 16px; padding: 14px; border-radius: 8px; }
+    .message-header { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
     .msg-user { background: rgba(255,255,255,0.03); border-left: 3px solid #5a4b70; }
     .msg-user .message-header { color: #a395b5; }
     .msg-user p { margin: 0; color: #cfc2df; font-style: italic; }
-    .msg-admin { background: linear-gradient(180deg, rgba(233,30,140,0.05) 0%, rgba(233,30,140,0.01) 100%); border-left: 3px solid #e91e8c; }
+    .msg-admin { background: rgba(233,30,140,0.03); border-left: 3px solid #e91e8c; }
     .msg-admin .message-header { color: #ff6b9d; }
     .msg-admin p { margin: 0; color: #fff; white-space: pre-wrap; }
-    .footer { background-color: #160a2b; padding: 20px 24px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 13px; color: #a395b5; text-align: center; }
-    .help-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 6px; margin-bottom: 12px; }
+    .footer { background-color: #160a2b; padding: 20px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 12px; color: #a395b5; text-align: center; }
+    .help-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); padding: 10px; border-radius: 6px; margin-bottom: 12px; }
     .footer a { color: #ff6b9d; text-decoration: none; font-weight: 500; }
-    @media (max-width: 480px) { .ticket-info { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
       <div class="brand">Heart<span>Echo</span> Support</div>
-      <div class="ticket-id">ID: #${ticketIdShort}</div>
+      <div class="ticket-id">#${ticketIdShort}</div>
     </div>
     <div class="content">
       <div class="greeting">Hi ${user.name || "there"},</div>
-      <p style="margin-top: 0;">Your support ticket has been updated by our team. Please review the response below.</p>
+      <p style="margin-top: 0;">We have updated your support ticket status. Please review the response detail below.</p>
       <div class="ticket-info">
         <div class="info-item">Date: <strong>${dateStr}</strong></div>
         <div class="info-item">Status: <span class="status-badge">Replied</span></div>
@@ -318,11 +864,11 @@ const buildEmailHtml = (ticket, adminReply) => {
       </div>
       <div class="thread">
         <div class="message-block msg-user">
-          <div class="message-header">Your Report</div>
+          <div class="message-header">Your Ticket Report</div>
           <p>"${(ticket.issue || "").replace(/</g, "&lt;").replace(/>/g, "&gt;")}"</p>
         </div>
         <div class="message-block msg-admin">
-          <div class="message-header">Our Reply</div>
+          <div class="message-header">HeartEcho Support Response</div>
           <p>${(adminReply || "Your reply will appear here...").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
         </div>
       </div>
@@ -331,13 +877,43 @@ const buildEmailHtml = (ticket, adminReply) => {
       <div class="help-box">
         Still having issues? Email us directly at <br>
         <a href="mailto:heartecho.help@gmail.com?subject=Ticket #${ticketIdShort}">heartecho.help@gmail.com</a>
-        <br><span style="font-size: 12px; opacity: 0.8; display: inline-block; margin-top: 4px;">*Please include your Ticket ID <strong>#${ticketIdShort}</strong> in the email.</span>
+        <br><span style="font-size: 11px; opacity: 0.8; display: inline-block; margin-top: 4px;">Include Ticket ID <strong>#${ticketIdShort}</strong> in subject.</span>
       </div>
       <p style="margin: 0;">HeartEcho Support Team</p>
     </div>
   </div>
 </body>
 </html>`;
+};
+
+// Recharts Custom Tooltip Component
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0];
+    let title = label || data.name || "";
+    let val = data.value;
+    
+    if (data.name === 'tickets') title = "Complaints Reported";
+
+    return (
+      <div style={{
+        background: 'rgba(5, 5, 5, 0.9)',
+        border: '1px solid #ff69b4',
+        borderRadius: '10px',
+        padding: '12px 16px',
+        backdropFilter: 'blur(10px)',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.6)'
+      }}>
+        <p style={{ margin: 0, fontSize: '11px', color: '#888', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+          {title}
+        </p>
+        <p style={{ margin: '6px 0 0 0', fontSize: '16px', color: '#ff69b4', fontWeight: 800 }}>
+          {val.toLocaleString()} {val === 1 ? 'ticket' : 'tickets'}
+        </p>
+      </div>
+    );
+  }
+  return null;
 };
 
 // ── Email Reply Dialog Component ──────────────────────────────
@@ -387,7 +963,7 @@ const EmailReplyDialog = ({ ticket, onClose, onSent, token }) => {
     } catch (err) {
       console.error("AI suggest error:", err);
       setAiStatus("error");
-      setAdminReply(`Hi ${ticket.user?.name || "there"}, thank you for reaching out to HeartEcho Support! We've reviewed your complaint and our team is working on a fix. Please try restarting the app and clearing the cache. If the issue persists, we'll resolve it within 24 hours.\n\n— HeartEcho Support Team`);
+      setAdminReply(`Hi ${ticket.user?.name || "there"},\n\nThank you for reaching out to HeartEcho Support! We've reviewed your complaint regarding "${ticket.issue}" and our engineering team is actively working on a fix.\n\nPlease try logging out, clearing your app cache, and logging back in. If the problem persists, please let us know. We are dedicated to ensuring a smooth companion experience for you.\n\n— HeartEcho Support Team`);
     }
   };
 
@@ -403,15 +979,15 @@ const EmailReplyDialog = ({ ticket, onClose, onSent, token }) => {
       );
       if (res.data.success) {
         setSendStatus("success");
-        setSendMsg(`✅ Email sent to ${ticket.user?.email} — Ticket marked Resolved!`);
+        setSendMsg(`✅ Sent to ${ticket.user?.email} — Marked Resolved!`);
         setTimeout(() => { onSent(ticket._id); onClose(); }, 2200);
       } else {
         setSendStatus("error");
-        setSendMsg("Failed to send email. Try again.");
+        setSendMsg("Failed to send email. Please try again.");
       }
     } catch (err) {
       setSendStatus("error");
-      setSendMsg(err.response?.data?.message || "Error sending email.");
+      setSendMsg(err.response?.data?.message || "Error sending email response.");
     }
   };
 
@@ -419,29 +995,29 @@ const EmailReplyDialog = ({ ticket, onClose, onSent, token }) => {
   const tierMap = { none: "Free", monthly: "Monthly", yearly: "Yearly", yearly_pro: "Yearly Pro" };
 
   return (
-    <div className="email-dialog-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="email-dialog-box">
+    <div className="cc-email-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="cc-email-box">
         {/* Header */}
-        <div className="email-dialog-header">
-          <div className="email-dialog-title">
+        <div className="cc-email-header">
+          <div className="cc-email-title">
             <FaEnvelope />
-            Email Reply to Complaint
-            <span className="email-dialog-pill">#{ticketIdShort}</span>
+            Email Reply Composer
+            <span className="cc-email-pill">#{ticketIdShort}</span>
           </div>
-          <button className="email-dialog-close" onClick={onClose}><FaTimes /></button>
+          <button className="cc-email-close" onClick={onClose}><FaTimes /></button>
         </div>
 
         {/* Body */}
-        <div className="email-dialog-body">
+        <div className="cc-email-body">
           {/* LEFT — Email Preview */}
-          <div className="email-preview-panel">
-            <div className="email-preview-header">
-              <FaEye /> Live Email Preview
+          <div className="cc-email-preview-panel">
+            <div className="cc-panel-header preview-header">
+              <FaEye /> HTML Live Email Preview
             </div>
-            <div className="email-preview-frame-wrap">
+            <div className="cc-email-frame-wrap">
               <iframe
                 ref={iframeRef}
-                className="email-preview-frame"
+                className="cc-email-frame"
                 title="Email Preview"
                 sandbox="allow-same-origin"
               />
@@ -449,79 +1025,78 @@ const EmailReplyDialog = ({ ticket, onClose, onSent, token }) => {
           </div>
 
           {/* RIGHT — Reply Editor */}
-          <div className="email-reply-panel">
-            <div className="email-reply-header">
-              <FaMagic /> AI Reply Editor
+          <div className="cc-email-editor-panel">
+            <div className="cc-panel-header ai-header">
+              <FaMagic /> AI Copilot Composer
             </div>
-            <div className="email-reply-body">
+            <div className="cc-email-editor-content">
               {/* Ticket Info Strip */}
-              <div className="email-ticket-info-strip">
-                <div className="einfo-item">To: <strong>{ticket.user?.email || "N/A"}</strong></div>
-                <div className="einfo-item">User: <strong>{ticket.user?.name || "Anonymous"}</strong></div>
-                <div className="einfo-item">Tier: <strong>{tierMap[ticket.user?.subscriptionTier] || "Free"}</strong></div>
-                <div className="einfo-item">Date: <strong>{new Date(ticket.date).toLocaleDateString()}</strong></div>
+              <div className="cc-ticket-info-strip">
+                <div className="cc-info-item">To: <strong>{ticket.user?.email || "N/A"}</strong></div>
+                <div className="cc-info-item">User: <strong>{ticket.user?.name || "Anonymous"}</strong></div>
+                <div className="cc-info-item">Tier: <strong>{tierMap[ticket.user?.subscriptionTier] || "Free"}</strong></div>
+                <div className="cc-info-item">Date: <strong>{new Date(ticket.date).toLocaleDateString()}</strong></div>
               </div>
 
               {/* Complaint */}
-              <div className="email-complaint-box">
-                <div className="email-complaint-label">User's Complaint</div>
-                <div className="email-complaint-text">"{ticket.issue}"</div>
+              <div className="cc-complaint-preview">
+                <div className="cc-complaint-label">User's Support Ticket</div>
+                <div className="cc-complaint-text">"{ticket.issue}"</div>
               </div>
 
               {/* AI Status */}
               {aiStatus === "loading" && (
-                <div className="ai-status-bar loading">
-                  <FaSpinner className="spin" /> Generating AI reply using free OpenRouter model...
+                <div className="cc-ai-status-bar loading">
+                  <FaSpinner className="spin" /> Generating intelligent AI draft response...
                 </div>
               )}
               {aiStatus === "done" && (
-                <div className="ai-status-bar success">
-                  ✨ AI reply ready — review and edit before sending
+                <div className="cc-ai-status-bar success">
+                  ✨ AI suggestion ready. Make adjustments below.
                 </div>
               )}
               {aiStatus === "error" && (
-                <div className="ai-status-bar error">
-                  ⚠️ AI fallback reply loaded — you can edit it
+                <div className="cc-ai-status-bar error">
+                  ⚠️ AI fallback loaded. Customize response before sending.
                 </div>
               )}
 
               {/* Reply Textarea */}
-              <div>
-                <div className="email-reply-label">
-                  <FaMagic /> Your Reply (editable)
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className="cc-editor-label">
+                  <FaMagic /> Compose Email Message
                 </div>
                 <textarea
-                  className="ai-reply-textarea"
+                  className="cc-editor-textarea"
                   value={adminReply}
                   onChange={(e) => setAdminReply(e.target.value)}
-                  placeholder="Reply will appear here after AI generates it..."
-                  rows={7}
+                  placeholder="Generating message draft..."
+                  rows={6}
                 />
               </div>
 
               {/* Action Buttons */}
-              <div className="email-action-row">
+              <div className="cc-email-actions">
                 <button
-                  className="btn-regenerate"
+                  className="cc-btn-regen"
                   onClick={fetchAiReply}
                   disabled={aiStatus === "loading" || sendStatus === "sending" || sendStatus === "success"}
                 >
-                  {aiStatus === "loading" ? <FaSpinner className="spin" /> : <FaMagic />}
-                  Regenerate
+                  <FaMagic /> Regenerate Draft
                 </button>
                 <button
-                  className="btn-send-email"
+                  className="cc-btn-send"
                   onClick={handleSend}
                   disabled={!adminReply.trim() || sendStatus === "sending" || sendStatus === "success"}
                 >
                   {sendStatus === "sending" ? <FaSpinner className="spin" /> : <FaPaperPlane />}
-                  {sendStatus === "sending" ? "Sending..." : "Send Email"}
+                  {sendStatus === "sending" ? "Sending..." : "Send Reply Email"}
                 </button>
               </div>
 
               {/* Send Status */}
-              {sendStatus === "success" && <div className="send-success-banner">{sendMsg}</div>}
-              {sendStatus === "error" && <div className="send-error-banner">{sendMsg}</div>}
+              {sendStatus === "success" && <div className="cc-banner success">{sendMsg}</div>}
+              {sendStatus === "error" && <div className="cc-banner error">{sendMsg}</div>}
             </div>
           </div>
         </div>
@@ -539,7 +1114,7 @@ const ComplaintsAdmin = () => {
   const [editTicket, setEditTicket] = useState(null);
   const [emailTicket, setEmailTicket] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [viewMode, setViewMode] = useState("card"); // "card" or "table"
   const ticketsPerPage = 6;
 
   const getToken = useCallback(() => (typeof window !== 'undefined' ? localStorage.getItem("token") || "" : ""), []);
@@ -555,23 +1130,52 @@ const ComplaintsAdmin = () => {
     } catch (error) {
       console.error(error);
       setTickets([]);
+    } finally {
+      setLoading(false);
     }
   }, [getToken]);
 
-  const fetchAllData = useCallback(async () => {
-    setRefreshing(true);
-    try { await fetchTickets(); } 
-    catch (error) { console.error(error); } 
-    finally { setRefreshing(false); setLoading(false); }
+  useEffect(() => { 
+    fetchTickets(); 
   }, [fetchTickets]);
 
-  useEffect(() => { fetchAllData(); }, [fetchAllData]);
-
+  // --- CLIENT SIDE ADVANCED METRICS ---
   const stats = useMemo(() => {
     const totalCount = tickets.length;
-    const pendingCount = tickets.filter(t => t.status === "Pending").length;
+    const pendingTickets = tickets.filter(t => t.status === "Pending");
+    const pendingCount = pendingTickets.length;
     const resolvedCount = tickets.filter(t => t.status === "Resolved").length;
-    return { totalCount, pendingCount, resolvedCount, resolutionRate: totalCount > 0 ? (resolvedCount / totalCount) * 100 : 0 };
+    const resolutionRate = totalCount > 0 ? (resolvedCount / totalCount) * 100 : 0;
+    
+    // VIP subscriber ticket ratio
+    const subTickets = tickets.filter(t => {
+      const tier = t.user?.subscriptionTier || t.user?.user_type || "";
+      return tier === "subscriber" || tier === "monthly" || tier === "yearly" || tier === "yearly_pro";
+    }).length;
+    const vipRatio = totalCount > 0 ? ((subTickets / totalCount) * 100).toFixed(0) + "%" : "0%";
+
+    // Avg age of open tickets
+    let openAgeStr = "0.0h";
+    if (pendingCount > 0) {
+      const totalAgeMs = pendingTickets.reduce((acc, t) => acc + (new Date() - new Date(t.date)), 0);
+      const avgMs = totalAgeMs / pendingCount;
+      const avgHours = avgMs / (1000 * 60 * 60);
+      if (avgHours < 24) {
+        openAgeStr = `${avgHours.toFixed(1)}h`;
+      } else {
+        const avgDays = avgHours / 24;
+        openAgeStr = `${avgDays.toFixed(1)}d`;
+      }
+    }
+
+    return { 
+      totalCount, 
+      pendingCount, 
+      resolvedCount, 
+      resolutionRate,
+      vipRatio,
+      openAgeStr
+    };
   }, [tickets]);
 
   const dailyTicketsData = useMemo(() => {
@@ -590,7 +1194,7 @@ const ComplaintsAdmin = () => {
     return tickets.filter((t) => {
       const name = t.user?.name || "Unknown";
       const email = t.user?.email || "";
-      const matchesSearch = t.issue?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      const matchesSearch = (t.issue || "").toLowerCase().includes(searchTerm.toLowerCase()) || 
                             name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             email.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = filterStatus === "all" || t.status === filterStatus;
@@ -598,16 +1202,21 @@ const ComplaintsAdmin = () => {
     });
   }, [tickets, searchTerm, filterStatus]);
 
-  const paginatedTickets = filteredTickets.slice((currentPage - 1) * ticketsPerPage, currentPage * ticketsPerPage);
+  const paginatedTickets = useMemo(() => {
+    return filteredTickets.slice((currentPage - 1) * ticketsPerPage, currentPage * ticketsPerPage);
+  }, [filteredTickets, currentPage]);
+
   const totalPages = Math.ceil(filteredTickets.length / ticketsPerPage);
 
   const handleDelete = async (id) => {
-    if (!confirm("Delete this complaint?")) return;
+    if (!confirm("Are you sure you want to delete this complaint ticket?")) return;
     try {
       const token = getToken();
       await axios.delete(`${api.Url}/admin/tickets/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setTickets(tickets.filter(t => t._id !== id));
-    } catch (e) { alert("Delete failed"); }
+    } catch (e) { 
+      alert("Delete failed"); 
+    }
   };
 
   const handleEditSubmit = async (e) => {
@@ -617,179 +1226,341 @@ const ComplaintsAdmin = () => {
       const response = await axios.put(`${api.Url}/admin/tickets/${editTicket._id}`, editTicket, { headers: { Authorization: `Bearer ${token}` } });
       setTickets(tickets.map(t => t._id === editTicket._id ? response.data.data : t));
       setEditTicket(null);
-    } catch (e) { alert("Update failed"); }
+    } catch (e) { 
+      alert("Update failed"); 
+    }
   };
 
-  // Called after email is sent — mark ticket resolved in local state
   const handleEmailSent = (ticketId) => {
     setTickets(prev => prev.map(t => t._id === ticketId ? { ...t, status: "Resolved" } : t));
   };
 
-  if (loading) return <div className="cmp-root-x30sn" style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'100vh'}}><FaSync style={{color:'#ff69b4', fontSize: 30}} className="spin"/></div>;
+  const PIE_COLORS = ['#ff4444', '#00ff88'];
+
+  const getPieData = useMemo(() => [
+    { name: 'Pending', value: stats.pendingCount },
+    { name: 'Resolved', value: stats.resolvedCount }
+  ], [stats]);
+
+  if (loading) {
+    return (
+      <div className="cc-loader" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <style>{styles}</style>
+        <div className="cc-spinner"></div>
+        <p style={{ fontWeight: 600, color: '#666' }}>Fetching Complaints...</p>
+      </div>
+    );
+  }
 
   return (
     <>
       <style>{styles}</style>
-      <div className="cmp-root-x30sn">
+      <div className="cc-root">
         
         {/* HEADER */}
-        <div className="cmp-header-x30sn">
-          <div className="cmp-title-group-x30sn">
+        <header className="cc-header">
+          <div className="cc-title-group">
             <h2>Complaints Center</h2>
-            <p>User Support & Ticketing — click 📧 to email reply a ticket</p>
+            <p className="cc-tagline"><FaTicketAlt /> Live Support Ticketing & AI Assistance</p>
           </div>
-        </div>
+          <button className="cc-btn" onClick={fetchTickets} title="Sync support cache">
+            <FaSync />
+          </button>
+        </header>
 
         {/* STATS */}
-        <div className="cmp-stats-grid-x30sn">
-          <div className="cmp-stat-card-x30sn">
-            <div className="cmp-stat-icon-x30sn"><FaTicketAlt/></div>
-            <div className="cmp-stat-info-x30sn"><span>Total</span><strong>{stats.totalCount}</strong></div>
+        <div className="cc-stats-grid">
+          <div className="cc-stat-card">
+            <div className="cc-stat-icon"><FaTicketAlt /></div>
+            <div className="cc-stat-info">
+              <span>Total Tickets</span>
+              <strong>{stats.totalCount}</strong>
+            </div>
           </div>
-          <div className="cmp-stat-card-x30sn">
-            <div className="cmp-stat-icon-x30sn" style={{color:'#ff4444'}}><FaExclamationTriangle/></div>
-            <div className="cmp-stat-info-x30sn"><span>Pending</span><strong>{stats.pendingCount}</strong></div>
+          <div className="cc-stat-card">
+            <div className="cc-stat-icon" style={{ color: '#ff4444', background: 'rgba(255,68,68,0.08)', borderColor: 'rgba(255,68,68,0.15)' }}><FaExclamationTriangle /></div>
+            <div className="cc-stat-info">
+              <span>Pending</span>
+              <strong>{stats.pendingCount}</strong>
+            </div>
           </div>
-          <div className="cmp-stat-card-x30sn">
-            <div className="cmp-stat-icon-x30sn" style={{color:'#00ff00'}}><FaCheckCircle/></div>
-            <div className="cmp-stat-info-x30sn"><span>Resolved</span><strong>{stats.resolvedCount}</strong></div>
+          <div className="cc-stat-card">
+            <div className="cc-stat-icon" style={{ color: '#00ff88', background: 'rgba(0,255,136,0.08)', borderColor: 'rgba(0,255,136,0.15)' }}><FaCheckCircle /></div>
+            <div className="cc-stat-info">
+              <span>Resolved</span>
+              <strong>{stats.resolvedCount}</strong>
+            </div>
           </div>
-          <div className="cmp-stat-card-x30sn">
-            <div className="cmp-stat-icon-x30sn" style={{color:'#ff69b4'}}><FaChartBar/></div>
-            <div className="cmp-stat-info-x30sn"><span>Resolution</span><strong>{stats.resolutionRate.toFixed(0)}%</strong></div>
+          <div className="cc-stat-card">
+            <div className="cc-stat-icon" style={{ color: '#ffea00', background: 'rgba(255,234,0,0.08)', borderColor: 'rgba(255,234,0,0.15)' }}><FaChartBar /></div>
+            <div className="cc-stat-info">
+              <span>Resolution Rate</span>
+              <strong>{stats.resolutionRate.toFixed(0)}%</strong>
+            </div>
+          </div>
+          <div className="cc-stat-card">
+            <div className="cc-stat-icon" style={{ color: '#a78bfa', background: 'rgba(167,139,250,0.08)', borderColor: 'rgba(167,139,250,0.15)' }}><FaEnvelope /></div>
+            <div className="cc-stat-info">
+              <span>VIP Priority Ratio</span>
+              <strong>{stats.vipRatio}</strong>
+            </div>
+          </div>
+          <div className="cc-stat-card">
+            <div className="cc-stat-icon" style={{ color: '#007aff', background: 'rgba(0,122,255,0.08)', borderColor: 'rgba(0,122,255,0.15)' }}><FaSpinner /></div>
+            <div className="cc-stat-info">
+              <span>Avg Open Time</span>
+              <strong>{stats.openAgeStr}</strong>
+            </div>
           </div>
         </div>
 
         {/* CHARTS */}
-        <div className="cmp-charts-row-x30sn">
-          <div className="cmp-chart-box-x30sn">
-            <h4 style={{margin:'0 0 15px 0', fontSize:14}}>Status Distribution</h4>
-            <ResponsiveContainer width="100%" height="90%">
+        <div className="cc-charts-row">
+          <div className="cc-chart-box">
+            <div className="cc-chart-title"><FaChartBar /> Status Split</div>
+            <ResponsiveContainer width="100%" height={210}>
               <PieChart>
-                <Pie data={[{name:'Pending', value:stats.pendingCount}, {name:'Resolved', value:stats.resolvedCount}]} innerRadius={60} outerRadius={80} dataKey="value">
-                  <Cell fill="#ff4444" /><Cell fill="#00ff00" />
+                <Pie 
+                  data={getPieData} 
+                  innerRadius={55} 
+                  outerRadius={75} 
+                  paddingAngle={4} 
+                  dataKey="value"
+                >
+                  {getPieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index]} stroke="none" />
+                  ))}
                 </Pie>
-                <Tooltip contentStyle={{background:'#000', border:'1px solid #333'}} />
-                <Legend verticalAlign="bottom" />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend verticalAlign="bottom" iconType="circle" />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="cmp-chart-box-x30sn">
-            <h4 style={{margin:'0 0 15px 0', fontSize:14}}>Ticket Flow (Daily)</h4>
-            <ResponsiveContainer width="100%" height="90%">
+
+          <div className="cc-chart-box">
+            <div className="cc-chart-title"><FaTicketAlt /> Weekly Ticket Flow</div>
+            <ResponsiveContainer width="100%" height={210}>
               <BarChart data={dailyTicketsData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#222"/>
-                <XAxis dataKey="date" stroke="#555" fontSize={12} axisLine={false} tickLine={false} />
-                <YAxis stroke="#555" fontSize={12} axisLine={false} tickLine={false} />
-                <Tooltip cursor={{fill: 'rgba(255,105,180,0.1)'}} contentStyle={{background:'#000', border:'1px solid #333'}} />
-                <Bar dataKey="tickets" fill="#ff69b4" radius={[4,4,0,0]} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#181818"/>
+                <XAxis dataKey="date" stroke="#555" fontSize={11} axisLine={false} tickLine={false} />
+                <YAxis stroke="#555" fontSize={11} axisLine={false} tickLine={false} />
+                <Tooltip cursor={{ fill: 'rgba(255,255,255,0.02)' }} content={<CustomTooltip />} />
+                <Bar dataKey="tickets" fill="#ff69b4" radius={[6,6,0,0]} barSize={26} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* FILTERS */}
-        <div className="cmp-filters-x30sn">
-          <div className="cmp-search-wrap-x30sn">
-            <FaSearch />
-            <input className="cmp-input-x30sn" placeholder="Search by issue, user name, or email..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-          </div>
-          <select className="cmp-select-x30sn" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
-            <option value="all">All Tickets</option>
-            <option value="Pending">Pending</option>
-            <option value="Resolved">Resolved</option>
-          </select>
-        </div>
-
-        {/* TICKET LIST */}
-        <div className="cmp-list-x30sn">
-          {paginatedTickets.map(ticket => (
-            <div key={ticket._id} className="cmp-ticket-card-x30sn">
-              <div>
-                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                  <span className={`cmp-status-badge-x30sn ${ticket.status?.toLowerCase()}`}>{ticket.status}</span>
-                  <span style={{fontSize:11, color:'#555'}}>{new Date(ticket.date).toLocaleDateString()}</span>
-                </div>
-                <div className="cmp-issue-text-x30sn">{ticket.issue}</div>
-                
-                <div className="cmp-user-data-x30sn" style={{display:'flex', flexDirection:'column', gap:'6px'}}>
-                  <div style={{display:'flex', justifyContent:'space-between', borderBottom:'1px solid #1a1a1a', paddingBottom:'4px'}}>
-                    <span style={{whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'70%'}}>
-                      <strong style={{color:'#ff69b4'}}>User:</strong> {ticket.user?.name || "Anonymous"}
-                    </span>
-                    <span style={{color: ticket.user?.user_type === 'subscriber' ? '#00ff00' : '#888', textTransform:'capitalize', fontSize:'11px', fontWeight:'bold'}}>
-                      {ticket.user?.user_type || "Free"}
-                    </span>
-                  </div>
-                  <div style={{display:'flex', justifyContent:'space-between'}}>
-                    <span style={{whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'100%'}}>
-                      <strong>Email:</strong> {ticket.user?.email || "N/A"}
-                    </span>
-                  </div>
-                  <div style={{display:'flex', justifyContent:'space-between'}}>
-                    <span><strong>Phone:</strong> {ticket.user?.phone_number || "N/A"}</span>
-                    <span><strong>Age:</strong> {ticket.user?.age || "N/A"} • <span style={{textTransform:'capitalize'}}>{ticket.user?.gender || "N/A"}</span></span>
-                  </div>
-                  <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                    <span><strong>Tier:</strong> <span style={{textTransform:'capitalize'}}>{ticket.user?.subscriptionTier || "none"}</span></span>
-                    <span style={{fontSize:'10px'}}><strong>ID:</strong> {ticket.user?._id ? ticket.user._id.toString().substring(0,8) + '...' : "N/A"}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="cmp-card-actions-x30sn">
-                {/* Email Reply Button */}
-                <button
-                  className="cmp-act-btn-x30sn email-btn"
-                  onClick={() => setEmailTicket(ticket)}
-                  title="Send Email Reply"
-                  style={{width:'auto', padding:'0 10px', gap:'5px', fontSize:12, fontWeight:600}}
-                >
-                  <FaEnvelope style={{fontSize:12}} />
-                  <span>Email</span>
-                </button>
-                <button className="cmp-act-btn-x30sn" onClick={() => setEditTicket(ticket)} title="Edit Status"><FaEdit/></button>
-                <button className="cmp-act-btn-x30sn del" onClick={() => handleDelete(ticket._id)} title="Delete Ticket"><FaTrash/></button>
-              </div>
+        {/* FILTERS & VIEWS BAR */}
+        <div className="cc-controls-section">
+          <div className="cc-view-toggle-bar">
+            <div style={{ fontSize: 13, color: '#666', fontWeight: 600 }}>
+              Showing {Math.min(paginatedTickets.length, filteredTickets.length)} of {filteredTickets.length} matching tickets
             </div>
-          ))}
+            <div className="cc-toggle-buttons">
+              <button 
+                className={`cc-toggle-btn ${viewMode === "card" ? "active" : ""}`}
+                onClick={() => { setViewMode("card"); setCurrentPage(1); }}
+              >
+                <FaThLarge /> Grid View
+              </button>
+              <button 
+                className={`cc-toggle-btn ${viewMode === "table" ? "active" : ""}`}
+                onClick={() => { setViewMode("table"); setCurrentPage(1); }}
+              >
+                <FaList /> Table View
+              </button>
+            </div>
+          </div>
+
+          <div className="cc-filters-bar">
+            <div className="cc-search-wrap">
+              <FaSearch className="cc-search-icon" />
+              <input 
+                className="cc-input" 
+                placeholder="Search by issue description, user name or email..." 
+                value={searchTerm} 
+                onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
+              />
+            </div>
+            <select className="cc-select" value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setCurrentPage(1); }}>
+              <option value="all">All Ticket Statuses</option>
+              <option value="Pending">Pending Only</option>
+              <option value="Resolved">Resolved Only</option>
+            </select>
+          </div>
         </div>
 
-        {/* PAGINATION */}
-        {totalPages > 1 && (
-          <div className="cmp-pagination-x30sn">
-            <button className="cmp-btn-x30sn" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Prev</button>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <button key={i} className={`cmp-page-num-x30sn ${currentPage === i + 1 ? 'active' : ''}`} onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
+        {/* TICKET CARD LISTING */}
+        {viewMode === "card" && (
+          <div className="cc-list-grid">
+            {paginatedTickets.map(ticket => (
+              <div key={ticket._id} className="cc-ticket-card">
+                <div>
+                  <div className="cc-card-top">
+                    <span className={`cc-status-badge ${ticket.status?.toLowerCase()}`}>{ticket.status}</span>
+                    <span style={{ fontSize: 11, color: '#555', fontWeight: 500 }}>{new Date(ticket.date).toLocaleDateString()}</span>
+                  </div>
+                  <div className="cc-issue-text">"{ticket.issue}"</div>
+                  
+                  <div className="cc-user-box">
+                    <div className="cc-ub-row border-bottom">
+                      <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%', fontWeight: 700, color: '#fff' }}>
+                        {ticket.user?.name || "Anonymous User"}
+                      </span>
+                      <span style={{ color: ticket.user?.user_type === 'subscriber' ? '#ffea00' : '#888', textTransform: 'capitalize', fontSize: '10px', fontWeight: 'bold' }}>
+                        {ticket.user?.user_type || "Free"}
+                      </span>
+                    </div>
+                    <div className="cc-ub-row">
+                      <span>Email</span>
+                      <strong style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '80%' }}>{ticket.user?.email || "N/A"}</strong>
+                    </div>
+                    <div className="cc-ub-row">
+                      <span>Phone</span>
+                      <strong>{ticket.user?.phone_number || "N/A"}</strong>
+                    </div>
+                    <div className="cc-ub-row">
+                      <span>User Meta</span>
+                      <strong>Age {ticket.user?.age || "N/A"} • {ticket.user?.gender || "N/A"}</strong>
+                    </div>
+                    <div className="cc-ub-row">
+                      <span>Active Tier</span>
+                      <strong style={{ color: '#ff69b4', textTransform: 'capitalize' }}>{ticket.user?.subscriptionTier || "none"}</strong>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="cc-card-actions">
+                  <button
+                    className="cc-act-btn email-btn"
+                    onClick={() => setEmailTicket(ticket)}
+                    title="Compose Email Response"
+                  >
+                    <FaEnvelope /> Email Reply
+                  </button>
+                  <button className="cc-act-btn edit-btn" onClick={() => setEditTicket(ticket)} title="Edit status"><FaEdit/></button>
+                  <button className="cc-act-btn delete-btn" onClick={() => handleDelete(ticket._id)} title="Delete ticket"><FaTrash/></button>
+                </div>
+              </div>
             ))}
-            <button className="cmp-btn-x30sn" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
           </div>
         )}
 
-        {/* EDIT MODAL */}
+        {/* ENTERPRISE TABLE VIEW */}
+        {viewMode === "table" && (
+          <div className="cc-table-wrapper">
+            <div className="cc-table-card">
+              <table className="cc-table">
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th>User</th>
+                    <th>Issue Description</th>
+                    <th>Tier Plan</th>
+                    <th>Date Reported</th>
+                    <th style={{ textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedTickets.map((ticket) => (
+                    <tr key={ticket._id}>
+                      <td>
+                        <span className={`cc-status-badge ${ticket.status?.toLowerCase()}`}>
+                          {ticket.status}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="cc-user-cell">
+                          <span className="cc-user-name">{ticket.user?.name || "Anonymous User"}</span>
+                          <span className="cc-user-email">{ticket.user?.email || "N/A"}</span>
+                        </div>
+                      </td>
+                      <td style={{ maxWidth: 300, wordBreak: 'break-word', fontWeight: 600, color: '#eee' }}>
+                        {ticket.issue}
+                      </td>
+                      <td>
+                        <span style={{ textTransform: 'capitalize', fontSize: 12, fontWeight: 700, color: '#ff69b4' }}>
+                          {ticket.user?.subscriptionTier || "none"}
+                        </span>
+                      </td>
+                      <td>
+                        {new Date(ticket.date).toLocaleDateString()}
+                      </td>
+                      <td>
+                        <div className="cc-card-actions" style={{ border: 'none', margin: 0, padding: 0 }}>
+                          <button
+                            className="cc-act-btn email-btn"
+                            onClick={() => setEmailTicket(ticket)}
+                            title="Compose Email Response"
+                          >
+                            <FaEnvelope /> Email
+                          </button>
+                          <button className="cc-act-btn edit-btn" onClick={() => setEditTicket(ticket)} title="Edit status"><FaEdit/></button>
+                          <button className="cc-act-btn delete-btn" onClick={() => handleDelete(ticket._id)} title="Delete ticket"><FaTrash/></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {filteredTickets.length === 0 && (
+                 <div style={{ padding: 60, textAlign: 'center', color: '#444', fontWeight: 600 }}>
+                   No support complaints found matching search criteria.
+                 </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* PAGINATION */}
+        {totalPages > 1 && (
+          <div className="cc-pagination">
+            <button className="cc-btn" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
+              Previous
+            </button>
+            <span style={{ color: '#666', fontSize: 13, fontWeight: 600 }}>
+              Page {currentPage} of {totalPages}
+            </span>
+            <button className="cc-btn" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
+              Next
+            </button>
+          </div>
+        )}
+
+        {/* STATUS/ISSUE EDIT MODAL */}
         {editTicket && (
-          <div className="cmp-modal-overlay-x30sn">
-            <form onSubmit={handleEditSubmit} className="cmp-modal-content-x30sn">
-              <h3>Edit Complaint</h3>
-              <div className="cmp-form-group-x30sn">
-                <label>Status</label>
-                <select className="cmp-select-x30sn" value={editTicket.status} onChange={e => setEditTicket({...editTicket, status: e.target.value})}>
+          <div className="cc-modal-overlay" onClick={() => setEditTicket(null)}>
+            <form onSubmit={handleEditSubmit} className="cc-modal-content" onClick={e => e.stopPropagation()}>
+              <h3 className="cc-modal-title">Edit Support Ticket</h3>
+              
+              <div className="cc-form-group">
+                <label>Ticket Status</label>
+                <select className="cc-select" value={editTicket.status} onChange={e => setEditTicket({...editTicket, status: e.target.value})}>
                   <option value="Pending">Pending</option>
                   <option value="Resolved">Resolved</option>
                 </select>
               </div>
-              <div className="cmp-form-group-x30sn">
+
+              <div className="cc-form-group">
                 <label>Issue Description</label>
-                <textarea className="cmp-textarea-x30sn" rows={5} value={editTicket.issue} onChange={e => setEditTicket({...editTicket, issue: e.target.value})} />
+                <textarea 
+                  className="cc-textarea" 
+                  rows={5} 
+                  value={editTicket.issue} 
+                  onChange={e => setEditTicket({...editTicket, issue: e.target.value})} 
+                />
               </div>
-              <div style={{display:'flex', gap:10, marginTop:20, justifyContent:'flex-end'}}>
-                <button type="button" className="cmp-btn-x30sn" onClick={() => setEditTicket(null)}>Cancel</button>
-                <button type="submit" className="cmp-btn-x30sn primary">Update Ticket</button>
+
+              <div style={{ display: 'flex', gap: 12, marginTop: 10 }}>
+                <button type="button" className="cc-btn" style={{ flex: 1 }} onClick={() => setEditTicket(null)}>Cancel</button>
+                <button type="submit" className="cc-btn primary" style={{ flex: 1 }}>Update Status</button>
               </div>
             </form>
           </div>
         )}
 
-        {/* EMAIL REPLY DIALOG */}
+        {/* EMAIL REPLY SPLIT COMPOSER DIALOG */}
         {emailTicket && (
           <EmailReplyDialog
             ticket={emailTicket}

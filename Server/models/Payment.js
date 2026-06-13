@@ -6,7 +6,8 @@ const paymentSchema = new mongoose.Schema({
   currency: { type: String, default: "INR" },
   transaction_id: { type: String, required: true },
   date: { type: Date, default: Date.now },
-  expiry_date: { type: Date }
+  expiry_date: { type: Date },
+  platform: { type: String, enum: ["web", "mobile"], default: "web" }
 });
 
 const Payment = mongoose.model("Payment", paymentSchema);

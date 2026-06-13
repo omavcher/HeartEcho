@@ -1,214 +1,816 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import { 
   FaEdit, FaTrash, FaEye, FaSearch, FaPlus, FaStar, FaFire, 
-  FaCity, FaTag, FaCalendar, FaUser, FaSync
+  FaCity, FaTag, FaCalendar, FaUser, FaSync, FaChartLine
 } from 'react-icons/fa';
-import { MdMenuBook } from "react-icons/md";
+import { MdMenuBook, MdDashboard, MdList } from "react-icons/md";
 import api from '../../config/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-// ------------------- CSS STYLES -------------------
+// ------------------- CSS STYLES (Pure Black, Glassmorphism, Pink & Purple Glows) -------------------
 const styles = `
-/* ROOT & LAYOUT */
-.stories-root-x30sn {
-  animation: fade-in-x30sn 0.4s ease;
-  width: 100%;
+.st-root-x30sn {
+  color: #fff;
+  background-color: #030303;
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  border-radius: 20px;
+  border: 1px solid #1a1a1a;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: st-fadeIn-x30sn 0.4s ease;
 }
-@keyframes fade-in-x30sn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes st-fadeIn-x30sn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
 /* HEADER */
-.s-header-x30sn {
-  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 30px;
+.st-header-x30sn {
+  padding: 28px 32px;
+  background: linear-gradient(180deg, #070707 0%, #030303 100%);
+  border-bottom: 1px solid #161616;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
 }
-.s-title-group-x30sn h1 { font-size: 28px; font-weight: 700; color: #fff; margin: 0; }
-.s-title-group-x30sn p { color: #ff69b4; font-size: 14px; margin-top: 5px; }
+.st-title-group-x30sn h2 { 
+  font-size: 26px; 
+  font-weight: 800; 
+  margin: 0; 
+  letter-spacing: -0.5px;
+  color: #fff; 
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.st-tagline-x30sn { 
+  color: #a78bfa; 
+  margin: 6px 0 0; 
+  font-size: 13px; 
+  font-weight: 500; 
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-.s-actions-group-x30sn { display: flex; gap: 10px; }
-
-.s-create-btn-x30sn {
-  background: #ff69b4; color: #000; padding: 10px 18px; border-radius: 8px; font-weight: 600; font-size: 14px;
-  text-decoration: none; display: flex; align-items: center; gap: 8px; border: none; transition: 0.2s;
+/* BUTTONS */
+.st-btn-x30sn {
+  display: inline-flex; 
+  align-items: center; 
+  gap: 8px; 
+  padding: 10px 20px; 
+  border-radius: 10px;
+  font-size: 13px; 
+  font-weight: 600; 
+  cursor: pointer; 
+  border: 1px solid #222;
+  background: #0c0c0c; 
+  color: #eee; 
+  transition: all 0.25s ease;
+  text-decoration: none;
 }
-.s-create-btn-x30sn:hover { opacity: 0.8; }
-
-/* STATS STRIP */
-.s-stats-grid-x30sn {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px;
+.st-btn-x30sn:hover:not(:disabled) { 
+  border-color: #ff69b4; 
+  color: #ff69b4; 
+  background: rgba(255, 105, 180, 0.03);
+  transform: translateY(-1px);
 }
-.s-stat-card-x30sn {
-  background: #111; border: 1px solid #333; border-radius: 16px; padding: 24px; position: relative; overflow: hidden;
+.st-btn-x30sn.primary {
+  background: linear-gradient(135deg, #ff69b4 0%, #da22ff 100%);
+  border: none;
+  color: #000;
 }
-.s-stat-card-x30sn::after {
-  content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #ff69b4;
+.st-btn-x30sn.primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  color: #000;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(255, 105, 180, 0.25);
 }
-.s-stat-header-x30sn {
-  display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;
-}
-.s-stat-icon-x30sn {
-  width: 44px; height: 44px; border-radius: 12px; background: rgba(255,105,180,0.1); color: #ff69b4;
-  display: flex; align-items: center; justify-content: center; font-size: 20px;
-}
-.s-stat-label-x30sn { color: #888; font-size: 14px; font-weight: 500; }
-.s-stat-value-x30sn { font-size: 32px; font-weight: 700; color: #fff; margin: 0; }
-
-
-/* FILTERS */
-.s-filters-x30sn {
-  background: #050505; padding: 20px; border-radius: 16px; border: 1px solid #222; margin-bottom: 30px;
-  display: flex; flex-direction: column; gap: 15px;
-}
-.s-search-row-x30sn { display: flex; gap: 10px; width: 100%; }
-.s-search-box-x30sn {
-  position: relative; flex: 1;
-}
-.s-search-box-x30sn svg { position: absolute; left: 14px; top: 14px; color: #555; }
-.s-input-x30sn {
-  width: 100%; background: #000; border: 1px solid #333; color: #fff; padding: 12px 12px 12px 40px;
-  border-radius: 8px; outline: none; font-size: 14px; transition: 0.2s;
-}
-.s-input-x30sn:focus { border-color: #ff69b4; }
-.s-search-btn-x30sn {
-  background: #222; color: #fff; border: 1px solid #333; padding: 0 20px; border-radius: 8px; cursor: pointer; font-weight: 600;
-}
-.s-search-btn-x30sn:hover { background: #ff69b4; color: #000; border-color: #ff69b4; }
-
-.s-filter-row-x30sn { display: flex; gap: 10px; flex-wrap: wrap; }
-.s-select-x30sn {
-  background: #000; color: #ccc; border: 1px solid #333; padding: 10px 15px; border-radius: 8px; outline: none; flex: 1; min-width: 140px; cursor: pointer;
-}
-.s-select-x30sn:focus { border-color: #ff69b4; color: #fff; }
-.s-clear-btn-x30sn {
-  background: transparent; border: 1px solid #333; color: #888; padding: 10px 20px; border-radius: 8px; cursor: pointer;
-}
-.s-clear-btn-x30sn:hover { color: #fff; border-color: #fff; }
-
-/* TABLE */
-.s-table-wrap-x30sn {
-  background: #050505; border: 1px solid #222; border-radius: 16px; overflow: hidden; margin-bottom: 30px;
-}
-.s-table-x30sn { width: 100%; border-collapse: collapse; }
-.s-table-x30sn thead { background: #111; border-bottom: 1px solid #333; }
-.s-table-x30sn th {
-  padding: 16px; text-align: left; color: #888; font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;
-}
-.s-table-x30sn tbody tr { border-bottom: 1px solid #1a1a1a; transition: 0.2s; }
-.s-table-x30sn tbody tr:last-child { border-bottom: none; }
-.s-table-x30sn tbody tr:hover { background: #0a0a0a; }
-.s-table-x30sn td { padding: 16px; vertical-align: middle; font-size: 13px; color: #ccc; }
-
-/* TABLE CELLS */
-.s-cover-cell-x30sn { display: flex; gap: 15px; align-items: center; max-width: 300px; }
-.s-cover-img-x30sn {
-  width: 60px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid #333; flex-shrink: 0;
-}
-.s-story-meta-x30sn h4 { margin: 0 0 5px 0; color: #fff; font-size: 14px; line-height: 1.4; }
-.s-story-meta-x30sn p { margin: 0; color: #666; font-size: 11px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
-.s-char-cell-x30sn { display: flex; align-items: center; gap: 10px; }
-.s-char-img-x30sn { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid #ff69b4; }
-.s-char-info-x30sn div { font-weight: 600; color: #fff; }
-.s-char-info-x30sn small { color: #666; }
-
-.s-badge-x30sn {
-  padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; display: inline-block;
-}
-.s-badge-x30sn.cat { background: #111; color: #ff69b4; border: 1px solid #333; }
-.s-badge-x30sn.city { background: #000; color: #ccc; border: 1px solid #333; display: flex; align-items: center; gap: 5px; width: fit-content; }
-
-.s-status-col-x30sn { display: flex; flex-direction: column; gap: 6px; }
-.s-toggle-btn-x30sn {
-  background: #000; border: 1px solid #333; color: #666; padding: 4px 8px; border-radius: 4px; 
-  cursor: pointer; font-size: 10px; display: flex; align-items: center; gap: 6px; width: fit-content; transition: 0.2s;
-}
-.s-toggle-btn-x30sn:hover { border-color: #666; color: #fff; }
-.s-toggle-btn-x30sn.active { background: rgba(255,105,180,0.15); color: #ff69b4; border-color: rgba(255,105,180,0.3); }
-
-.s-action-cell-x30sn { display: flex; gap: 8px; }
-.s-act-btn-x30sn {
-  width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
-  border: 1px solid #333; background: #000; color: #888; transition: 0.2s; cursor: pointer;
-}
-.s-act-btn-x30sn:hover { border-color: #ff69b4; color: #ff69b4; transform: translateY(-2px); }
-.s-act-btn-x30sn.del:hover { border-color: #ff4444; color: #ff4444; }
-
-/* PAGINATION */
-.s-pagination-x30sn { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; padding-bottom: 40px; }
-.s-page-btn-x30sn {
-  background: #000; border: 1px solid #333; color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer;
-}
-.s-page-btn-x30sn:disabled { opacity: 0.3; cursor: not-allowed; }
-.s-page-num-x30sn {
-  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; 
-  background: #000; border: 1px solid #333; color: #888; cursor: pointer;
-}
-.s-page-num-x30sn.active { background: #ff69b4; color: #000; border-color: #ff69b4; font-weight: 700; }
-
-/* MISC */
-.s-empty-x30sn { text-align: center; padding: 60px; color: #666; }
-.s-loading-x30sn { text-align: center; padding: 60px; color: #ff69b4; }
-.msg-box-x30sn { padding: 10px 20px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; }
-.msg-success-x30sn { background: rgba(0,255,0,0.1); color: #00ff00; border: 1px solid rgba(0,255,0,0.2); }
-.msg-error-x30sn { background: rgba(255,0,0,0.1); color: #ff4444; border: 1px solid rgba(255,0,0,0.2); }
+.st-btn-x30sn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* TABS */
-.s-tabs-x30sn {
-  display: flex; gap: 20px; border-bottom: 1px solid #333; margin-bottom: 25px;
+.st-tabs-x30sn {
+  display: flex; 
+  background: #090909; 
+  border-bottom: 1px solid #161616; 
+  padding: 0 32px;
 }
-.s-tab-btn-x30sn {
-  background: none; border: none; color: #888; font-size: 15px; font-weight: 600; padding: 10px 0; cursor: pointer;
-  position: relative; transition: color 0.2s;
+.st-tab-btn-x30sn {
+  padding: 16px 24px; 
+  background: none; 
+  border: none; 
+  color: #666; 
+  font-size: 13px; 
+  font-weight: 700; 
+  cursor: pointer; 
+  transition: all 0.2s ease; 
+  border-bottom: 2px solid transparent;
 }
-.s-tab-btn-x30sn:hover { color: #fff; }
-.s-tab-btn-x30sn.active { color: #ff69b4; }
-.s-tab-btn-x30sn.active::after {
-  content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: #ff69b4;
+.st-tab-btn-x30sn:hover { color: #aaa; }
+.st-tab-btn-x30sn.active { color: #ff69b4; border-bottom-color: #ff69b4; }
+
+/* KPI GRID */
+.st-kpi-grid-x30sn {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 24px 32px;
+}
+.st-kpi-card-x30sn {
+  background: rgba(10, 10, 10, 0.6); 
+  border: 1px solid #161616; 
+  border-radius: 16px; 
+  padding: 20px;
+  display: flex; 
+  align-items: center; 
+  gap: 16px; 
+  transition: all 0.3s ease;
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+}
+.st-kpi-card-x30sn:hover { 
+  border-color: #262626; 
+  transform: translateY(-3px); 
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+.st-kpi-card-x30sn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(circle at top right, rgba(167,139,250,0.02), transparent 60%);
+  pointer-events: none;
+}
+.st-kpi-icon-x30sn {
+  width: 46px; 
+  height: 46px; 
+  border-radius: 12px; 
+  background: rgba(167, 139, 250, 0.08); 
+  color: #a78bfa;
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 20px;
+  border: 1px solid rgba(167, 139, 250, 0.15);
+}
+.st-kpi-info-x30sn span { margin: 0; font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.8px; display: block; }
+.st-kpi-info-x30sn strong { font-size: 24px; color: #fff; display: block; margin-top: 4px; font-weight: 800; }
+
+/* FILTERS SECTION */
+.st-filters-card-x30sn {
+  background: rgba(10, 10, 10, 0.4);
+  border: 1px solid #161616;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin: 0 32px 24px;
+  backdrop-filter: blur(12px);
+}
+.st-filter-row-x30sn {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.st-search-box-x30sn {
+  position: relative;
+  flex: 2;
+  min-width: 260px;
+}
+.st-search-box-x30sn svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  font-size: 14px;
+}
+.st-input-x30sn {
+  width: 100%;
+  background: rgba(15, 15, 15, 0.8);
+  border: 1px solid #222;
+  color: #fff;
+  padding: 12px 14px 12px 42px;
+  border-radius: 10px;
+  outline: none;
+  font-size: 13px;
+  transition: all 0.25s ease;
+}
+.st-input-x30sn:focus {
+  border-color: #ff69b4;
+  box-shadow: 0 0 10px rgba(255, 105, 180, 0.15);
+}
+.st-select-x30sn {
+  flex: 1;
+  min-width: 140px;
+  background: rgba(15, 15, 15, 0.8);
+  border: 1px solid #222;
+  color: #fff;
+  padding: 12px 14px;
+  border-radius: 10px;
+  outline: none;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.st-select-x30sn:focus { border-color: #ff69b4; }
+.st-clear-btn-x30sn {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #0f0f0f;
+  border: 1px solid #222;
+  color: #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.st-clear-btn-x30sn:hover {
+  border-color: #ff69b4;
+  color: #ff69b4;
 }
 
-/* DASHBOARD */
-.s-chart-section-x30sn {
-  background: #111; border: 1px solid #333; border-radius: 16px; padding: 24px; margin-bottom: 30px;
+/* VIEW SWITCHER & CONTROL BAR */
+.st-control-bar-x30sn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 32px 16px;
+  flex-wrap: wrap;
+  gap: 16px;
 }
-.s-chart-head-x30sn {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+.st-view-mode-toggle-x30sn {
+  display: flex;
+  background: #0f0f0f;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 4px;
 }
-.s-chart-head-x30sn h3 { margin: 0; font-size: 18px; color: #fff; }
-.s-chart-area-x30sn { height: 350px; width: 100%; }
+.st-toggle-btn-view-x30sn {
+  background: none;
+  border: none;
+  color: #666;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.st-toggle-btn-view-x30sn.active {
+  background: rgba(255, 105, 180, 0.1);
+  color: #ff69b4;
+}
 
-.s-dash-grid-x30sn {
-  display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 10px;
+/* VISUAL CARDS GRID */
+.st-grid-x30sn {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  padding: 0 32px 32px;
 }
-.s-dash-card-x30sn {
-  background: #111; border: 1px solid #333; border-radius: 16px; padding: 24px;
+.st-card-x30sn {
+  background: rgba(10, 10, 10, 0.6);
+  border: 1px solid #161616;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(12px);
+  position: relative;
 }
-.s-dash-card-title-x30sn {
-  font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
+.st-card-x30sn:hover {
+  border-color: #ff69b4;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
-.s-story-row-x30sn {
-  display: flex; align-items: center; gap: 15px; padding: 15px 0; border-bottom: 1px solid #1a1a1a; transition: 0.2s;
+.st-card-cover-x30sn {
+  height: 190px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid #161616;
+  background: #050505;
 }
-.s-story-row-x30sn:hover { background: rgba(255,105,180,0.05); border-radius: 8px; padding: 15px 10px; margin: 0 -10px; }
-.s-story-row-x30sn:last-child { border-bottom: none; }
-.s-story-row-img-x30sn { width: 50px; height: 70px; object-fit: cover; border-radius: 6px; }
-.s-story-row-info-x30sn { flex: 1; min-width: 0; }
-.s-story-row-info-x30sn h4 { margin: 0 0 5px 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
-.s-story-row-info-x30sn p { margin: 0; font-size: 12px; color: #888; }
-.s-story-row-reads-x30sn { font-weight: bold; color: #ff69b4; display: flex; align-items: center; gap: 5px;}
+.st-card-cover-x30sn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.st-card-x30sn:hover .st-card-cover-x30sn img {
+  transform: scale(1.05);
+}
+.st-card-char-badge-x30sn {
+  position: absolute;
+  bottom: -16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+}
+.st-card-char-badge-x30sn img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid #ff69b4;
+  object-fit: cover;
+  background: #000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+.st-badge-overlay-x30sn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  backdrop-filter: blur(4px);
+}
+.st-badge-overlay-right-x30sn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 105, 180, 0.15);
+  border: 1px solid rgba(255, 105, 180, 0.3);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 850;
+  color: #ff69b4;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(4px);
+}
+.st-card-info-x30sn {
+  padding: 24px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.st-card-info-x30sn h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 750;
+  color: #fff;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.st-card-info-x30sn p {
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: #71717a;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 36px;
+}
+.st-card-meta-x30sn {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+  margin-top: auto;
+}
+.st-card-badge-x30sn {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #a1a1aa;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.st-card-badge-x30sn.char {
+  color: #ff69b4;
+  background: rgba(255, 105, 180, 0.03);
+  border-color: rgba(255, 105, 180, 0.1);
+}
+.st-card-stats-x30sn {
+  display: flex;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid #161616;
+  font-size: 11px;
+  color: #666;
+}
+.st-card-stat-item-x30sn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.st-card-stat-item-x30sn.views {
+  color: #ff69b4;
+  font-weight: 700;
+}
+.st-card-actions-x30sn {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+}
+.st-card-act-btn-x30sn {
+  flex: 1;
+  height: 34px;
+  border-radius: 8px;
+  background: #0f0f0f;
+  border: 1px solid #222;
+  color: #aaa;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  gap: 6px;
+  text-decoration: none;
+}
+.st-card-act-btn-x30sn:hover {
+  transform: translateY(-1px);
+}
+.st-card-act-btn-x30sn.edit:hover {
+  color: #ff69b4;
+  border-color: rgba(255, 105, 180, 0.3);
+  background: rgba(255, 105, 180, 0.04);
+}
+.st-card-act-btn-x30sn.delete {
+  flex: none;
+  width: 40px;
+}
+.st-card-act-btn-x30sn.delete:hover {
+  color: #ff4444;
+  border-color: rgba(255, 68, 68, 0.3);
+  background: rgba(255, 68, 68, 0.04);
+}
 
-
-@media (max-width: 1000px) {
-  .s-dash-grid-x30sn { grid-template-columns: 1fr; }
+/* HIGH DENSITY DATA TABLE */
+.st-table-wrap-x30sn {
+  background: rgba(10, 10, 10, 0.6);
+  border: 1px solid #161616;
+  border-radius: 16px;
+  margin: 0 32px 32px;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+}
+.st-table-x30sn {
+  width: 100%;
+  border-collapse: collapse;
+}
+.st-table-x30sn thead {
+  background: rgba(4, 4, 4, 0.4);
+  border-bottom: 1px solid #161616;
+}
+.st-table-x30sn th {
+  padding: 16px;
+  text-align: left;
+  color: #52525b;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+}
+.st-table-x30sn tbody tr {
+  border-bottom: 1px solid #141414;
+  transition: all 0.2s;
+}
+.st-table-x30sn tbody tr:last-child { border-bottom: none; }
+.st-table-x30sn tbody tr:hover {
+  background: rgba(255, 255, 255, 0.01);
+}
+.st-table-x30sn td {
+  padding: 14px 16px;
+  vertical-align: middle;
+  font-size: 13px;
+  color: #d4d4d8;
 }
 
-@media (max-width: 768px) {
-  .s-header-x30sn { flex-direction: column; align-items: flex-start; }
-  .s-create-btn-x30sn { width: 100%; justify-content: center; }
-  .s-filter-row-x30sn { flex-direction: column; }
-  .s-cover-cell-x30sn { max-width: 150px; }
-  .s-cover-img-x30sn { display: none; }
+/* CELL STYLES */
+.st-cover-cell-x30sn {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  max-width: 320px;
+}
+.st-cover-img-x30sn {
+  width: 48px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #222;
+  flex-shrink: 0;
+  background: #000;
+}
+.st-story-meta-x30sn h4 {
+  margin: 0 0 4px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.st-story-meta-x30sn p {
+  margin: 0;
+  color: #666;
+  font-size: 11px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.st-char-cell-x30sn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.st-char-img-x30sn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #222;
+}
+.st-char-info-x30sn div { font-weight: 700; color: #fff; font-size: 13px; }
+.st-char-info-x30sn small { color: #666; font-size: 11px; }
+
+.st-badge-x30sn {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: inline-block;
+  letter-spacing: 0.5px;
+}
+.st-badge-x30sn.cat {
+  background: rgba(255, 105, 180, 0.08);
+  color: #ff69b4;
+  border: 1px solid rgba(255, 105, 180, 0.2);
+}
+.st-badge-x30sn.city {
+  background: rgba(255, 255, 255, 0.03);
+  color: #a1a1aa;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 4px;
+}
+
+.st-status-col-x30sn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.st-toggle-btn-x30sn {
+  background: #0c0c0c;
+  border: 1px solid #222;
+  color: #666;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 750;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  transition: all 0.25s ease;
+}
+.st-toggle-btn-x30sn:hover {
+  border-color: #ff69b4;
+  color: #ff69b4;
+}
+.st-toggle-btn-x30sn.active {
+  background: rgba(255, 105, 180, 0.1);
+  color: #ff69b4;
+  border-color: rgba(255, 105, 180, 0.25);
+  box-shadow: 0 0 10px rgba(255, 105, 180, 0.1);
+}
+
+.st-action-cell-x30sn {
+  display: flex;
+  gap: 8px;
+}
+.st-act-btn-x30sn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #222;
+  background: #0c0c0c;
+  color: #888;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+.st-act-btn-x30sn:hover {
+  border-color: #ff69b4;
+  color: #ff69b4;
+  transform: translateY(-2px);
+}
+.st-act-btn-x30sn.del:hover {
+  border-color: #ff4444;
+  color: #ff4444;
+}
+
+/* CHART SECTION & DASHBOARD */
+.st-chart-section-x30sn {
+  background: rgba(10, 10, 10, 0.6);
+  border: 1px solid #161616;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 0 32px 30px;
+  backdrop-filter: blur(12px);
+}
+.st-chart-head-x30sn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.st-chart-head-x30sn h3 { margin: 0; font-size: 18px; font-weight: 800; color: #fff; }
+.st-chart-area-x30sn { height: 350px; width: 100%; }
+
+.st-dash-grid-x30sn {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr;
+  gap: 24px;
+  margin: 0 32px 32px;
+}
+.st-dash-card-x30sn {
+  background: rgba(10, 10, 10, 0.6);
+  border: 1px solid #161616;
+  border-radius: 16px;
+  padding: 24px;
+  backdrop-filter: blur(12px);
+}
+.st-dash-card-title-x30sn {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.st-story-row-x30sn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  border: 1px solid transparent;
+  border-bottom: 1px solid #161616;
+  transition: all 0.2s;
+  border-radius: 8px;
+}
+.st-story-row-x30sn:hover {
+  background: rgba(255, 105, 180, 0.03);
+  border-color: rgba(255, 105, 180, 0.1);
+  transform: translateX(2px);
+}
+.st-story-row-x30sn:last-child { border-bottom: none; }
+.st-story-row-img-x30sn {
+  width: 40px;
+  height: 54px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #222;
+  background: #000;
+  flex-shrink: 0;
+}
+.st-story-row-info-x30sn { flex: 1; min-width: 0; }
+.st-story-row-info-x30sn h4 { margin: 0 0 4px; font-size: 13px; font-weight: 750; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.st-story-row-info-x30sn p { margin: 0; font-size: 11px; color: #666; }
+.st-story-row-reads-x30sn {
+  font-weight: 750;
+  color: #ff69b4;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: monospace;
+}
+
+/* PAGINATION */
+.st-pagination-x30sn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 32px 40px;
+}
+.st-page-btn-x30sn {
+  background: #0c0c0c;
+  border: 1px solid #222;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.st-page-btn-x30sn:hover:not(:disabled) {
+  border-color: #ff69b4;
+  color: #ff69b4;
+}
+.st-page-btn-x30sn:disabled { opacity: 0.3; cursor: not-allowed; }
+.st-page-num-x30sn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #0c0c0c;
+  border: 1px solid #222;
+  color: #888;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+.st-page-num-x30sn:hover {
+  border-color: #ff69b4;
+  color: #ff69b4;
+}
+.st-page-num-x30sn.active {
+  background: linear-gradient(135deg, #ff69b4 0%, #da22ff 100%);
+  color: #000;
+  border-color: transparent;
+  font-weight: 800;
+  box-shadow: 0 0 10px rgba(255, 105, 180, 0.25);
+}
+
+/* LOAD & LOADER */
+.st-loader-x30sn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+}
+.st-spinner-x30sn {
+  width: 32px;
+  height: 32px;
+  border: 2px solid #222;
+  border-top-color: #ff69b4;
+  border-radius: 50%;
+  animation: st-spin-x30sn 0.8s linear infinite;
+  margin-bottom: 12px;
+}
+@keyframes st-spin-x30sn { to { transform: rotate(360deg); } }
+
+.st-empty-x30sn { text-align: center; padding: 60px; color: #666; font-weight: 600; font-size: 14px; }
+.st-loading-x30sn { text-align: center; padding: 60px; color: #ff69b4; font-weight: 600; font-size: 14px; }
+
+/* MESSAGES */
+.st-msg-box-x30sn {
+  padding: 12px 20px;
+  border-radius: 10px;
+  margin: 0 32px 24px;
+  font-size: 13px;
+  font-weight: 600;
+  animation: st-slideIn-x30sn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes st-slideIn-x30sn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.st-msg-success-x30sn {
+  background: rgba(0, 255, 136, 0.08);
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.2);
+}
+.st-msg-error-x30sn {
+  background: rgba(239, 68, 68, 0.08);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 `;
 
@@ -218,9 +820,10 @@ const StoriesAdmin = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
-  // Filters
+  // Filters & Views
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({ category: '', city: '', featured: '', trending: '' });
+  const [viewMode, setViewMode] = useState('grid'); // grid | table
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -311,126 +914,179 @@ const StoriesAdmin = () => {
     } catch (err) { setError('Delete failed.'); }
   };
 
-  const toggleStatus = async (id, type, current) => {
+  const toggleStatus = async (id, type) => {
     try {
       const response = await axios.patch(`${api.Url}/story/${id}/toggle-${type}`);
       if (response.data.success) {
-        fetchStories();
+        if (activeTab === 'content') {
+          fetchStories();
+        } else {
+          fetchAnalytics();
+        }
       }
     } catch (err) { console.error(err); }
   };
 
-  const formatDate = (dateString) => new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const formatDate = (dateString) => new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  // 5 KPIs computations
+  const stats = useMemo(() => {
+    const totalCount = analytics?.totalStories || 0;
+    const featuredCount = analytics?.featuredCount || 0;
+    const trendingCount = analytics?.trendingCount || 0;
+    const totalReads = analytics?.totalReads || 0;
+    const avgReads = totalCount ? Math.round(totalReads / totalCount) : 0;
+    return { totalCount, featuredCount, trendingCount, totalReads, avgReads };
+  }, [analytics]);
 
   return (
     <>
       <style>{styles}</style>
-      <div className="stories-root-x30sn">
+      <div className="st-root-x30sn">
         
         {/* HEADER */}
-        <div className="s-header-x30sn">
-          <div className="s-title-group-x30sn">
-            <h1>Story Content</h1>
-            <p>Manage & Curate Database</p>
+        <header className="st-header-x30sn">
+          <div className="st-title-group-x30sn">
+            <h2>Stories Analytics</h2>
+            <p className="st-tagline-x30sn"><MdMenuBook /> Manage & Curate Desi Interactive Stories Database</p>
           </div>
-          <div className="s-actions-group-x30sn">
-            <Link href="/admin/create-story" className="s-create-btn-x30sn">
+          <div className="st-actions-group-x30sn">
+            <Link href="/admin/create-story" className="st-btn-x30sn primary">
               <FaPlus /> New Story
             </Link>
           </div>
-        </div>
+        </header>
 
-        {/* FEEDBACK MSG */}
-        {success && <div className="msg-box-x30sn msg-success-x30sn">{success}</div>}
-        {error && <div className="msg-box-x30sn msg-error-x30sn">{error}</div>}
+        {/* FEEDBACK MSGS */}
+        {success && <div className="st-msg-box-x30sn st-msg-success-x30sn">{success}</div>}
+        {error && <div className="st-msg-box-x30sn st-msg-error-x30sn">{error}</div>}
 
         {/* TABS */}
-        <div className="s-tabs-x30sn">
-          <button className={`s-tab-btn-x30sn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>Analytics Dashboard</button>
-          <button className={`s-tab-btn-x30sn ${activeTab === 'content' ? 'active' : ''}`} onClick={() => setActiveTab('content')}>Story Content</button>
+        <div className="st-tabs-x30sn">
+          <button className={`st-tab-btn-x30sn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
+            Analytics Dashboard
+          </button>
+          <button className={`st-tab-btn-x30sn ${activeTab === 'content' ? 'active' : ''}`} onClick={() => setActiveTab('content')}>
+            Story Content DB
+          </button>
         </div>
 
         {activeTab === 'dashboard' && (
           <>
-            {/* STATS STRIP FOR DASHBOARD - MATCHING ADMIN UI EXACTLY */}
-            <div className="s-stats-grid-x30sn">
-              <div className="s-stat-card-x30sn">
-                <div className="s-stat-header-x30sn">
-                  <div className="s-stat-icon-x30sn"><MdMenuBook /></div>
-                  <span className="s-stat-label-x30sn">Total Stories</span>
+            {/* KPI STATS CARDS */}
+            <div className="st-kpi-grid-x30sn">
+              <div className="st-kpi-card-x30sn">
+                <div className="st-kpi-icon-x30sn"><MdMenuBook /></div>
+                <div className="st-kpi-info-x30sn">
+                  <span>Total Stories</span>
+                  <strong>{stats.totalCount}</strong>
                 </div>
-                <h3 className="s-stat-value-x30sn">{analytics?.totalStories || 0}</h3>
               </div>
-              <div className="s-stat-card-x30sn">
-                <div className="s-stat-header-x30sn">
-                  <div className="s-stat-icon-x30sn"><FaStar /></div>
-                  <span className="s-stat-label-x30sn">Featured Stories</span>
+              <div className="st-kpi-card-x30sn">
+                <div className="st-kpi-icon-x30sn" style={{ color: '#ffea00', background: 'rgba(255,234,0,0.04)', borderColor: 'rgba(255,234,0,0.15)' }}><FaStar /></div>
+                <div className="st-kpi-info-x30sn">
+                  <span>Featured Stories</span>
+                  <strong>{stats.featuredCount}</strong>
                 </div>
-                <h3 className="s-stat-value-x30sn">{analytics?.featuredCount || 0}</h3>
               </div>
-              <div className="s-stat-card-x30sn">
-                <div className="s-stat-header-x30sn">
-                  <div className="s-stat-icon-x30sn"><FaEye /></div>
-                  <span className="s-stat-label-x30sn">Total Views (All Time)</span>
+              <div className="st-kpi-card-x30sn">
+                <div className="st-kpi-icon-x30sn" style={{ color: '#ff69b4', background: 'rgba(255,105,180,0.04)', borderColor: 'rgba(255,105,180,0.15)' }}><FaFire /></div>
+                <div className="st-kpi-info-x30sn">
+                  <span>Trending Stories</span>
+                  <strong>{stats.trendingCount}</strong>
                 </div>
-                <h3 className="s-stat-value-x30sn">{analytics?.totalReads?.toLocaleString() || 0}</h3>
+              </div>
+              <div className="st-kpi-card-x30sn">
+                <div className="st-kpi-icon-x30sn" style={{ color: '#00ff88', background: 'rgba(0,255,136,0.04)', borderColor: 'rgba(0,255,136,0.15)' }}><FaEye /></div>
+                <div className="st-kpi-info-x30sn">
+                  <span>Total Reads</span>
+                  <strong>{stats.totalReads.toLocaleString()}</strong>
+                </div>
+              </div>
+              <div className="st-kpi-card-x30sn">
+                <div className="st-kpi-icon-x30sn" style={{ color: '#007aff', background: 'rgba(0,122,255,0.04)', borderColor: 'rgba(0,122,255,0.15)' }}><FaChartLine /></div>
+                <div className="st-kpi-info-x30sn">
+                  <span>Avg. Reads/Story</span>
+                  <strong>{stats.avgReads.toLocaleString()}</strong>
+                </div>
               </div>
             </div>
 
             {/* CHART SECTION */}
-            <div className="s-chart-section-x30sn">
-              <div className="s-chart-head-x30sn">
-                <FaFire style={{color:'#ff69b4'}} />
-                <h3>Views Performance Analytics</h3>
+            <div className="st-chart-section-x30sn">
+              <div className="st-chart-head-x30sn">
+                <FaFire style={{ color: '#ff69b4' }} />
+                <h3>Top Performing Stories (By All-Time Reads)</h3>
               </div>
-              <div className="s-chart-area-x30sn">
-                {loadingAnalytics ? <div className="s-loading-x30sn">Loading Graph...</div> : (
+              <div className="st-chart-area-x30sn">
+                {loadingAnalytics ? (
+                  <div className="st-loading-x30sn">Loading Analytics Data...</div>
+                ) : (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={analytics?.topStories || []}>
-                      <XAxis dataKey="title" stroke="#888" tick={{fill: '#888', fontSize: 12}} axisLine={false} tickLine={false} tickFormatter={(val) => val.length > 15 ? val.substring(0, 15) + '...' : val} />
-                      <YAxis stroke="#888" tick={{fill: '#888', fontSize: 12}} axisLine={false} tickLine={false} />
-                      <Tooltip contentStyle={{backgroundColor: '#111', border: '1px solid #333', borderRadius: '8px', color: '#fff'}} itemStyle={{color: '#ff69b4'}} cursor={{fill: 'rgba(255,105,180,0.05)'}} />
+                      <XAxis dataKey="title" stroke="#666" tick={{ fill: '#888', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(val) => val.length > 15 ? val.substring(0, 15) + '...' : val} />
+                      <YAxis stroke="#666" tick={{ fill: '#888', fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #1a1a1a', borderRadius: '8px', color: '#fff' }} 
+                        itemStyle={{ color: '#ff69b4' }} 
+                        cursor={{ fill: 'rgba(255,105,180,0.03)' }} 
+                      />
                       <defs>
-                        <linearGradient id="colorPink" x1="0" y1="0" x2="0" y2="1">
+                        <linearGradient id="stColorPink" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#ff69b4" stopOpacity={1}/>
-                          <stop offset="95%" stopColor="#d31d71" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#da22ff" stopOpacity={0.8}/>
                         </linearGradient>
                       </defs>
-                      <Bar dataKey="readCount" name="Total Views" fill="url(#colorPink)" radius={[6, 6, 0, 0]} barSize={50} />
+                      <Bar dataKey="readCount" name="Total Reads" fill="url(#stColorPink)" radius={[6, 6, 0, 0]} barSize={45} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
               </div>
             </div>
 
-            <div className="s-dash-grid-x30sn">
-              <div className="s-dash-card-x30sn">
-                <div className="s-dash-card-title-x30sn"><div style={{display:'flex', gap:8, alignItems:'center'}}><FaFire color="#ff69b4"/> Top Performing Stories</div> <small style={{color:'#888', fontWeight:'normal'}}>By All-Time Views</small></div>
-                {loadingAnalytics ? <div className="s-loading-x30sn">Loading Analytics...</div> : analytics?.topStories?.map((story, i) => (
-                  <div key={story._id} className="s-story-row-x30sn">
-                    <div style={{fontWeight:'bold', color:'#555', fontSize:18, width: 20}}>{i+1}</div>
-                    <img src={story.backgroundImage} className="s-story-row-img-x30sn" alt="" />
-                    <div className="s-story-row-info-x30sn">
-                      <h4>{story.title}</h4>
-                      <p>{story.category}</p>
+            {/* TWIN LEADERBOARDS ROW */}
+            <div className="st-dash-grid-x30sn">
+              <div className="st-dash-card-x30sn">
+                <div className="st-dash-card-title-x30sn">
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><FaFire color="#ff69b4" /> Top Performing Stories</div>
+                  <small style={{ color: '#888', fontWeight: 'normal' }}>Ranked by views</small>
+                </div>
+                {loadingAnalytics ? (
+                  <div className="st-loading-x30sn">Loading leaderboard…</div>
+                ) : (
+                  (analytics?.topStories || []).map((story, i) => (
+                    <div key={story._id} className="st-story-row-x30sn">
+                      <div style={{ fontWeight: '800', color: '#3f3f46', fontSize: 15, width: 22 }}>#{i + 1}</div>
+                      <img src={story.backgroundImage} className="st-story-row-img-x30sn" alt="" />
+                      <div className="st-story-row-info-x30sn">
+                        <h4>{story.title}</h4>
+                        <p>{story.category}</p>
+                      </div>
+                      <div className="st-story-row-reads-x30sn"><FaEye /> {story.readCount?.toLocaleString()}</div>
                     </div>
-                    <div className="s-story-row-reads-x30sn"><FaEye/> {story.readCount?.toLocaleString()}</div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
 
-              <div className="s-dash-card-x30sn">
-                <div className="s-dash-card-title-x30sn">Latest Stories <small style={{color:'#888', fontWeight:'normal'}}>Recent additions</small></div>
-                {loadingAnalytics ? <div className="s-loading-x30sn">Loading Analytics...</div> : analytics?.recentStories?.map(story => (
-                  <div key={story._id} className="s-story-row-x30sn">
-                    <img src={story.backgroundImage} className="s-story-row-img-x30sn" style={{width: 40, height: 40, borderRadius: '50%'}} alt="" />
-                    <div className="s-story-row-info-x30sn">
-                      <h4>{story.title}</h4>
-                      <p>{new Date(story.createdAt).toLocaleDateString()}</p>
+              <div className="st-dash-card-x30sn">
+                <div className="st-dash-card-title-x30sn">
+                  Latest Additions
+                  <small style={{ color: '#888', fontWeight: 'normal' }}>Recent publications</small>
+                </div>
+                {loadingAnalytics ? (
+                  <div className="st-loading-x30sn">Loading recent…</div>
+                ) : (
+                  (analytics?.recentStories || []).map((story) => (
+                    <div key={story._id} className="st-story-row-x30sn">
+                      <img src={story.backgroundImage} className="st-story-row-img-x30sn" style={{ width: 34, height: 34, borderRadius: '50%' }} alt="" />
+                      <div className="st-story-row-info-x30sn">
+                        <h4>{story.title}</h4>
+                        <p>{formatDate(story.createdAt)}</p>
+                      </div>
+                      <div className="st-story-row-reads-x30sn" style={{ color: '#52525b', fontSize: 11 }}><FaEye /> {story.readCount}</div>
                     </div>
-                    <div className="s-story-row-reads-x30sn" style={{color:'#ccc', fontSize:12}}><FaEye/> {story.readCount}</div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </>
@@ -438,149 +1094,222 @@ const StoriesAdmin = () => {
 
         {activeTab === 'content' && (
           <>
-            {/* STATS STRIP FOR CONTENT TAB ONLY */}
-            <div className="s-stats-grid-x30sn" style={{marginBottom: 30}}>
-              <div className="s-stat-card-x30sn">
-                <div className="s-stat-header-x30sn">
-                  <div className="s-stat-icon-x30sn"><MdMenuBook /></div>
-                  <span className="s-stat-label-x30sn">Filtered Stories</span>
-                </div>
-                <h3 className="s-stat-value-x30sn">{totalStories}</h3>
-              </div>
-            </div>
-
-            {/* FILTERS */}
-            <div className="s-filters-x30sn">
-              <form onSubmit={handleSearch} className="s-search-row-x30sn">
-                <div className="s-search-box-x30sn">
+            {/* FILTERS CARD */}
+            <div className="st-filters-card-x30sn">
+              <form onSubmit={handleSearch} className="st-filter-row-x30sn" style={{ marginBottom: 12 }}>
+                <div className="st-search-box-x30sn">
                   <FaSearch />
                   <input 
-                    type="text" className="s-input-x30sn" placeholder="Search by title, character..." 
+                    type="text" className="st-input-x30sn" placeholder="Search by title, excerpt, character or tags..." 
                     value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} 
                   />
                 </div>
-                <button type="submit" className="s-search-btn-x30sn">Search</button>
+                <button type="submit" className="st-btn-x30sn primary" style={{ height: 42 }}>Search</button>
               </form>
 
-              <div className="s-filter-row-x30sn">
-                <select className="s-select-x30sn" value={filters.category} onChange={(e) => handleFilterChange('category', e.target.value)}>
+              <div className="st-filter-row-x30sn">
+                <select className="st-select-x30sn" value={filters.category} onChange={(e) => handleFilterChange('category', e.target.value)}>
                   <option value="">All Categories</option>
                   {categories.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
-                <select className="s-select-x30sn" value={filters.city} onChange={(e) => handleFilterChange('city', e.target.value)}>
+                <select className="st-select-x30sn" value={filters.city} onChange={(e) => handleFilterChange('city', e.target.value)}>
                   <option value="">All Cities</option>
                   {cities.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
-                <select className="s-select-x30sn" value={filters.featured} onChange={(e) => handleFilterChange('featured', e.target.value)}>
+                <select className="st-select-x30sn" value={filters.featured} onChange={(e) => handleFilterChange('featured', e.target.value)}>
                   <option value="">Featured: Any</option>
                   <option value="true">Featured Only</option>
                   <option value="false">Not Featured</option>
                 </select>
-                <select className="s-select-x30sn" value={filters.trending} onChange={(e) => handleFilterChange('trending', e.target.value)}>
+                <select className="st-select-x30sn" value={filters.trending} onChange={(e) => handleFilterChange('trending', e.target.value)}>
                   <option value="">Trending: Any</option>
                   <option value="true">Trending Only</option>
                   <option value="false">Not Trending</option>
                 </select>
-                <button className="s-clear-btn-x30sn" onClick={clearFilters}><FaSync/></button>
+                <button className="st-clear-btn-x30sn" onClick={clearFilters} title="Reset all filters"><FaSync /></button>
               </div>
             </div>
 
-        {/* TABLE */}
-        <div className="s-table-wrap-x30sn">
-          {loading ? <div className="s-loading-x30sn">Loading Database...</div> : 
-           stories.length === 0 ? <div className="s-empty-x30sn">No stories found.</div> : (
-            <div style={{overflowX:'auto'}}>
-              <table className="s-table-x30sn">
-                <thead>
-                  <tr>
-                    <th>Story</th>
-                    <th>Character</th>
-                    <th>Tags</th>
-                    <th>Status</th>
-                    <th>Reads</th>
-                    <th>Date</th>
-                    <th style={{textAlign:'right'}}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stories.map(story => (
-                    <tr key={story._id || story.id}>
-                      <td>
-                        <div className="s-cover-cell-x30sn">
-                          <img src={story.backgroundImage || '/placeholder.jpg'} className="s-cover-img-x30sn" alt="" onError={(e) => e.target.style.display='none'} />
-                          <div className="s-story-meta-x30sn">
-                            <h4>{story.title}</h4>
-                            <p>{story.excerpt}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="s-char-cell-x30sn">
-                          <img src={story.characterAvatar || '/placeholder.jpg'} className="s-char-img-x30sn" alt="" />
-                          <div className="s-char-info-x30sn">
-                            <div>{story.characterName}</div>
-                            <small>{story.characterAge}y • {story.characterOccupation}</small>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div style={{display:'flex', flexDirection:'column', gap:5}}>
-                          <span className="s-badge-x30sn cat">{story.category}</span>
-                          <span className="s-badge-x30sn city"><FaCity/> {story.city}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="s-status-col-x30sn">
-                          <button 
-                            className={`s-toggle-btn-x30sn ${story.featured ? 'active' : ''}`}
-                            onClick={() => toggleStatus(story._id || story.id, 'featured', story.featured)}
-                          >
-                            <FaStar/> {story.featured ? 'Featured' : 'Feature'}
-                          </button>
-                          <button 
-                            className={`s-toggle-btn-x30sn ${story.trending ? 'active' : ''}`}
-                            onClick={() => toggleStatus(story._id || story.id, 'trending', story.trending)}
-                          >
-                            <FaFire/> {story.trending ? 'Trending' : 'Trend'}
-                          </button>
-                        </div>
-                      </td>
-                      <td>
-                        <div style={{display:'flex', alignItems:'center', gap:5, color:'#888'}}>
-                          <FaEye style={{color:'#666'}}/> {story.readCount?.toLocaleString() || 0}
-                        </div>
-                      </td>
-                      <td>{formatDate(story.createdAt)}</td>
-                      <td>
-                        <div className="s-action-cell-x30sn" style={{justifyContent:'flex-end'}}>
-                           <Link href={`/hot-stories/${story.slug || story.id}`} target="_blank" className="s-act-btn-x30sn"><FaEye/></Link>
-                           <Link href={`/admin/stories/edit/${story._id || story.id}`} className="s-act-btn-x30sn"><FaEdit/></Link>
-                           <button onClick={() => handleDeleteStory(story._id || story.id, story.title)} className="s-act-btn-x30sn del"><FaTrash/></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            {/* DUAL VIEW SWITCHER CONTROL BAR */}
+            <div className="st-control-bar-x30sn">
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#888' }}>
+                Filtered Results: <span style={{ color: '#fff', fontWeight: 800 }}>{totalStories}</span> stories found
+              </div>
+              <div className="st-view-mode-toggle-x30sn">
+                <button 
+                  type="button" 
+                  className={`st-toggle-btn-view-x30sn ${viewMode === 'grid' ? 'active' : ''}`}
+                  onClick={() => setViewMode('grid')}
+                >
+                  <MdDashboard size={16} /> Grid Catalog
+                </button>
+                <button 
+                  type="button" 
+                  className={`st-toggle-btn-view-x30sn ${viewMode === 'table' ? 'active' : ''}`}
+                  onClick={() => setViewMode('table')}
+                >
+                  <MdList size={16} /> Data Table
+                </button>
+              </div>
             </div>
-          )}
-        </div>
 
-        {/* PAGINATION */}
-        {totalPages > 1 && (
-          <div className="s-pagination-x30sn">
-            <button className="s-page-btn-x30sn" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Prev</button>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-               // Simple logic to show window of pages
-               let p = i + 1;
-               if(currentPage > 3 && totalPages > 5) p = currentPage - 2 + i;
-               if(p > totalPages) return null;
-               return <button key={p} className={`s-page-num-x30sn ${currentPage === p ? 'active' : ''}`} onClick={() => setCurrentPage(p)}>{p}</button>
-            })}
-            <button className="s-page-btn-x30sn" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
-          </div>
-        )}
-        </>
+            {/* VISUAL CARDS GRID VIEW */}
+            {viewMode === 'grid' && (
+              <div className="st-grid-x30sn">
+                {loading ? (
+                  <div className="st-loading-x30sn" style={{ gridColumn: 'span 4' }}>Loading database catalog…</div>
+                ) : stories.length === 0 ? (
+                  <div className="st-empty-x30sn" style={{ gridColumn: 'span 4' }}>No stories match your filter query.</div>
+                ) : (
+                  stories.map((story) => (
+                    <article className="st-card-x30sn" key={story._id || story.id}>
+                      <div className="st-card-cover-x30sn">
+                        <img src={story.backgroundImage || '/placeholder.jpg'} alt={story.title} onError={(e) => e.target.style.display='none'} />
+                        <span className="st-badge-overlay-x30sn">{story.category}</span>
+                        {story.featured && <span className="st-badge-overlay-right-x30sn">Featured</span>}
+                        
+                        <div className="st-card-char-badge-x30sn" title={`${story.characterName} (${story.characterOccupation})`}>
+                          <img src={story.characterAvatar || '/placeholder.jpg'} alt={story.characterName} />
+                        </div>
+                      </div>
+
+                      <div className="st-card-info-x30sn">
+                        <h3>{story.title}</h3>
+                        <p>{story.excerpt}</p>
+
+                        <div className="st-card-meta-x30sn">
+                          <span className="st-card-badge-x30sn char"><FaUser /> {story.characterName} ({story.characterAge}y)</span>
+                          <span className="st-card-badge-x30sn"><FaCity /> {story.city}</span>
+                        </div>
+
+                        <div className="st-card-stats-x30sn">
+                          <div className="st-card-stat-item-x30sn views"><FaEye /> {story.readCount?.toLocaleString() || 0} reads</div>
+                          <div className="st-card-stat-item-x30sn"><FaCalendar /> {formatDate(story.createdAt)}</div>
+                        </div>
+
+                        <div className="st-card-actions-x30sn">
+                          <Link href={`/hot-stories/${story.slug || story.id}`} target="_blank" className="st-card-act-btn-x30sn edit">
+                            <FaEye /> Preview
+                          </Link>
+                          <Link href={`/admin/stories/edit/${story._id || story.id}`} className="st-card-act-btn-x30sn">
+                            <FaEdit /> Edit
+                          </Link>
+                          <button 
+                            type="button" 
+                            className="st-card-act-btn-x30sn delete"
+                            onClick={() => handleDeleteStory(story._id || story.id, story.title)}
+                            title="Delete Story"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* HIGH-DENSITY DATA TABLE VIEW */}
+            {viewMode === 'table' && (
+              <div className="st-table-wrap-x30sn">
+                {loading ? (
+                  <div className="st-loading-x30sn">Loading database rows…</div>
+                ) : stories.length === 0 ? (
+                  <div className="st-empty-x30sn">No stories found.</div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table className="st-table-x30sn">
+                      <thead>
+                        <tr>
+                          <th>Story Meta</th>
+                          <th>Star Character</th>
+                          <th>Tags</th>
+                          <th>Status Checks</th>
+                          <th>Reads</th>
+                          <th>Published</th>
+                          <th style={{ textAlign: 'right' }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {stories.map(story => (
+                          <tr key={story._id || story.id}>
+                            <td>
+                              <div className="st-cover-cell-x30sn">
+                                <img src={story.backgroundImage || '/placeholder.jpg'} className="st-cover-img-x30sn" alt="" onError={(e) => e.target.style.display='none'} />
+                                <div className="st-story-meta-x30sn">
+                                  <h4>{story.title}</h4>
+                                  <p>{story.excerpt}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="st-char-cell-x30sn">
+                                <img src={story.characterAvatar || '/placeholder.jpg'} className="st-char-img-x30sn" alt="" />
+                                <div className="st-char-info-x30sn">
+                                  <div>{story.characterName}</div>
+                                  <small>{story.characterAge}y • {story.characterOccupation}</small>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                <span className="st-badge-x30sn cat">{story.category}</span>
+                                <span className="st-badge-x30sn city"><FaCity /> {story.city}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="st-status-col-x30sn">
+                                <button 
+                                  className={`st-toggle-btn-x30sn ${story.featured ? 'active' : ''}`}
+                                  onClick={() => toggleStatus(story._id || story.id, 'featured')}
+                                >
+                                  <FaStar /> {story.featured ? 'Featured' : 'Feature'}
+                                </button>
+                                <button 
+                                  className={`st-toggle-btn-x30sn ${story.trending ? 'active' : ''}`}
+                                  onClick={() => toggleStatus(story._id || story.id, 'trending')}
+                                >
+                                  <FaFire /> {story.trending ? 'Trending' : 'Trend'}
+                                </button>
+                              </div>
+                            </td>
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#ff69b4', fontWeight: 700, fontFamily: 'monospace' }}>
+                                <FaEye style={{ color: '#ff69b4' }} /> {story.readCount?.toLocaleString() || 0}
+                              </div>
+                            </td>
+                            <td>{formatDate(story.createdAt)}</td>
+                            <td>
+                              <div className="st-action-cell-x30sn" style={{ justifyContent: 'flex-end' }}>
+                                <Link href={`/hot-stories/${story.slug || story.id}`} target="_blank" className="st-act-btn-x30sn" title="View Production Story"><FaEye /></Link>
+                                <Link href={`/admin/stories/edit/${story._id || story.id}`} className="st-act-btn-x30sn" title="Edit Content"><FaEdit /></Link>
+                                <button onClick={() => handleDeleteStory(story._id || story.id, story.title)} className="st-act-btn-x30sn del" title="Delete Permanent"><FaTrash /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* PAGINATION */}
+            {totalPages > 1 && (
+              <div className="st-pagination-x30sn">
+                <button className="st-page-btn-x30sn" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Prev</button>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                   let p = i + 1;
+                   if (currentPage > 3 && totalPages > 5) p = currentPage - 2 + i;
+                   if (p > totalPages) return null;
+                   return <button key={p} className={`st-page-num-x30sn ${currentPage === p ? 'active' : ''}`} onClick={() => setCurrentPage(p)}>{p}</button>
+                })}
+                <button className="st-page-btn-x30sn" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
+              </div>
+            )}
+          </>
         )}
 
       </div>

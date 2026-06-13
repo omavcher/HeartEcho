@@ -13,6 +13,29 @@ const DeletedAccount = require("../models/DeletedAccount");
 const ReferralCreator = require("../models/ReferralCreator");
 const { getCityFromCoordinates } = require("../utils/geocoding");
 
+const determinePlatform = (req) => {
+  if (req.body && (req.body.platform === "web" || req.body.platform === "mobile")) {
+    return req.body.platform;
+  }
+  if (req.headers && (req.headers["x-platform"] === "web" || req.headers["x-platform"] === "mobile")) {
+    return req.headers["x-platform"];
+  }
+  const ua = (req.headers && req.headers["user-agent"]) || "";
+  const uaLower = ua.toLowerCase();
+  if (
+    uaLower.includes("okhttp") ||
+    uaLower.includes("dart") ||
+    uaLower.includes("retrofit") ||
+    uaLower.includes("heartecho-app") ||
+    uaLower.includes("heartecho_app") ||
+    uaLower.includes("flutter") ||
+    uaLower.includes("react-native")
+  ) {
+    return "mobile";
+  }
+  return "web";
+};
+
 require("dotenv").config();
 
 const sendEmail = async (to, subject, html) => {
@@ -114,7 +137,10 @@ exports.loginDetail = async (req, res) => {
     let { ip: clientIp, coordinates, platform, locationUser } = req.body;
 
     // Resolve IP address (use client-sent IP or request connection IP)
-    const ip = clientIp || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+    let ip = clientIp || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+    if (ip && ip.includes(",")) {
+      ip = ip.split(",")[0].trim();
+    }
 
     let parsedCoordinates = {
       lat: coordinates?.lat || null,
@@ -903,6 +929,7 @@ exports.paymentSave = async (req, res) => {
       currency: currency || (rupeesNum < 40 ? "USD" : "INR"), // Auto-detect if not provided
       transaction_id,
       expiry_date: expiryDate,
+      platform: determinePlatform(req),
     });
 
     await payment.save();
@@ -1200,6 +1227,7 @@ exports.razorpayWebhook = async (req, res) => {
         currency,
         transaction_id,
         expiry_date: expiryDate,
+        platform: paymentEntity.notes?.platform || (existingUser && existingUser.isMobileUser ? "mobile" : "web")
       });
 
       await payment.save();
@@ -1338,7 +1366,8 @@ exports.updateSubscription = async (req, res) => {
         rupees: paymentDetails.amount,
         transaction_id: paymentDetails.transactionId,
         expiry_date: user.subscriptionExpiry,
-        plan_type: durationType
+        plan_type: durationType,
+        platform: determinePlatform(req)
       });
       await payment.save();
 
@@ -1411,7 +1440,8 @@ exports.upgradeSubscription = async (req, res) => {
       rupees: rupeesNum,
       transaction_id,
       expiry_date: user.subscriptionExpiry,
-      plan_type: `upgrade_to_${newTier}`
+      plan_type: `upgrade_to_${newTier}`,
+      platform: determinePlatform(req)
     });
     await payment.save();
 

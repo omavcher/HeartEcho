@@ -6,7 +6,8 @@ import {
   BarChart, Bar, Legend, PieChart, Pie, Cell
 } from "recharts";
 import {
-  FaUsers, FaMoneyBillWave, FaEnvelope, FaUserCheck, FaChartLine, FaMobileAlt, FaDesktop, FaMapMarkerAlt
+  FaUsers, FaMoneyBillWave, FaEnvelope, FaChartLine, FaMobileAlt, FaDesktop, FaMapMarkerAlt,
+  FaCrown, FaFacebook, FaComments, FaHourglassHalf, FaEnvelopeOpenText
 } from "react-icons/fa";
 import { IoMdRefresh } from "react-icons/io";
 import api from "../../config/api";
@@ -18,6 +19,7 @@ const MAPBOX_TOKEN = "pk.eyJ1Ijoib21hd2NoYXIwNyIsImEiOiJjbHlmbGtwdmowMHhkMmtxeXA
 const dashboardStyles = `
 .dash-container-x30sn {
   color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
 }
 .dash-header-x30sn {
   display: flex;
@@ -27,8 +29,8 @@ const dashboardStyles = `
   gap: 20px;
   margin-bottom: 30px;
 }
-.dash-title-x30sn { font-size: 28px; font-weight: 700; color: #fff; margin: 0; }
-.dash-subtitle-x30sn { color: #ff69b4; font-size: 14px; margin-top: 5px; }
+.dash-title-x30sn { font-size: 28px; font-weight: 700; color: #fff; margin: 0; letter-spacing: -0.5px; }
+.dash-subtitle-x30sn { color: #ff69b4; font-size: 14px; margin-top: 5px; font-weight: 500; }
 
 .dash-actions-x30sn { display: flex; gap: 10px; }
 .dash-select-x30sn {
@@ -38,6 +40,12 @@ const dashboardStyles = `
   padding: 8px 12px;
   border-radius: 8px;
   outline: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: border-color 0.2s;
+}
+.dash-select-x30sn:focus {
+  border-color: #ff69b4;
 }
 .dash-btn-x30sn {
   background: #ff69b4;
@@ -51,8 +59,10 @@ const dashboardStyles = `
   justify-content: center;
   cursor: pointer;
   font-size: 18px;
+  transition: opacity 0.2s, transform 0.2s;
 }
-.dash-btn-x30sn:hover { opacity: 0.8; }
+.dash-btn-x30sn:hover { opacity: 0.9; transform: scale(1.03); }
+.dash-btn-x30sn:active { transform: scale(0.97); }
 
 .dash-grid-x30sn {
   display: grid;
@@ -62,12 +72,17 @@ const dashboardStyles = `
 }
 
 .stat-card-x30sn {
-  background: #111;
-  border: 1px solid #333;
+  background: #0a0a0a;
+  border: 1px solid #222;
   padding: 24px;
   border-radius: 16px;
   position: relative;
   overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s, box-shadow 0.3s;
+}
+.stat-card-x30sn:hover {
+  transform: translateY(-4px);
+  border-color: #333;
 }
 .stat-card-x30sn::after {
   content: '';
@@ -75,6 +90,16 @@ const dashboardStyles = `
   top: 0; left: 0; width: 4px; height: 100%;
   background: #ff69b4;
 }
+
+.card-pink::after { background: #ff69b4; }
+.card-blue::after { background: #00b4d8; }
+.card-purple::after { background: #a020f0; }
+.card-gold::after { background: #ffd700; }
+
+.stat-card-x30sn:hover.card-pink { box-shadow: 0 10px 30px rgba(255, 105, 180, 0.08); border-color: rgba(255, 105, 180, 0.3); }
+.stat-card-x30sn:hover.card-blue { box-shadow: 0 10px 30px rgba(0, 180, 216, 0.08); border-color: rgba(0, 180, 216, 0.3); }
+.stat-card-x30sn:hover.card-purple { box-shadow: 0 10px 30px rgba(160, 32, 240, 0.08); border-color: rgba(160, 32, 240, 0.3); }
+.stat-card-x30sn:hover.card-gold { box-shadow: 0 10px 30px rgba(255, 215, 0, 0.08); border-color: rgba(255, 215, 0, 0.3); }
 
 .stat-header-x30sn {
   display: flex;
@@ -87,23 +112,173 @@ const dashboardStyles = `
   border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   font-size: 20px;
-  background: rgba(255, 105, 180, 0.1);
+  background: rgba(255, 105, 180, 0.08);
   color: #ff69b4;
 }
-.stat-label-x30sn { color: #888; font-size: 14px; font-weight: 500; }
-.stat-value-x30sn { font-size: 32px; font-weight: 700; color: #fff; margin: 0; }
+.card-blue .stat-icon-x30sn { background: rgba(0, 180, 216, 0.08); color: #00b4d8; }
+.card-purple .stat-icon-x30sn { background: rgba(160, 32, 240, 0.08); color: #a020f0; }
+.card-gold .stat-icon-x30sn { background: rgba(255, 215, 0, 0.08); color: #ffd700; }
+
+.stat-label-x30sn { color: #888; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-value-x30sn { font-size: 32px; font-weight: 700; color: #fff; margin: 0; letter-spacing: -0.5px; }
 
 .chart-section-x30sn {
-  background: #111;
-  border: 1px solid #333;
-  border-radius: 16px;
+  background: #0a0a0a;
+  border: 1px solid #222;
+  border-radius: 20px;
   padding: 24px;
 }
 .chart-head-x30sn {
   display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
 }
-.chart-head-x30sn h3 { margin: 0; font-size: 18px; color: #fff; }
+.chart-head-x30sn h3 { margin: 0; font-size: 18px; color: #fff; font-weight: 700; }
 .chart-area-x30sn { height: 350px; width: 100%; }
+
+/* Acquisition Section */
+.acq-section-x30sn {
+  background: #0a0a0a;
+  border: 1px solid #222;
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+.acq-grid-x30sn {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+.acq-card-x30sn {
+  background: #111;
+  border: 1px solid #1a1a1a;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.acq-header-x30sn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.acq-title-x30sn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #eee;
+}
+.acq-badge-x30sn {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.badge-mobile { background: rgba(0, 180, 216, 0.1); color: #00b4d8; border: 1px solid rgba(0, 180, 216, 0.2); }
+.badge-web { background: rgba(255, 105, 180, 0.1); color: #ff69b4; border: 1px solid rgba(255, 105, 180, 0.2); }
+
+.acq-metrics-x30sn {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+.acq-metric-item-x30sn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.acq-metric-label-x30sn {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.acq-metric-value-x30sn {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Progress bar */
+.progress-track-x30sn {
+  height: 6px;
+  background: #1a1a1a;
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+.progress-fill-x30sn {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1s ease-in-out;
+}
+.fill-mobile { background: linear-gradient(90deg, #00b4d8, #0077b6); }
+.fill-web { background: linear-gradient(90deg, #ff69b4, #ff1493); }
+
+/* Plan Distribution Table */
+.tier-list-x30sn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tier-row-x30sn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: #111;
+  border: 1px solid #1a1a1a;
+  border-radius: 12px;
+  transition: background 0.2s, border-color 0.2s;
+}
+.tier-row-x30sn:hover {
+  background: #151515;
+  border-color: #222;
+}
+.tier-info-x30sn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tier-indicator-x30sn {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.tier-name-x30sn {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e0e0e0;
+}
+.tier-stats-x30sn {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.tier-count-x30sn {
+  font-size: 13px;
+  color: #888;
+}
+.tier-revenue-x30sn {
+  font-size: 14px;
+  font-weight: 700;
+  color: #00ff88;
+}
+
+/* Facebook Ads Widget */
+.fb-badge-x30sn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(24, 119, 242, 0.1);
+  color: #1877f2;
+  border: 1px solid rgba(24, 119, 242, 0.2);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
 
 /* Loading */
 .loading-x30sn {
@@ -114,11 +289,13 @@ const dashboardStyles = `
   border-radius: 50%; animation: spin 1s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
 .conversion-toggle-x30sn {
   display: flex;
-  background: #222;
+  background: #111;
   border-radius: 8px;
   padding: 4px;
+  border: 1px solid #222;
 }
 .toggle-btn-x30sn {
   padding: 6px 12px;
@@ -129,6 +306,7 @@ const dashboardStyles = `
   background: transparent;
   color: #888;
   transition: all 0.3s;
+  font-weight: 600;
 }
 .toggle-btn-x30sn.active {
   background: #ff69b4;
@@ -170,7 +348,15 @@ const AdminDashboard = () => {
     messagesSent: 0, 
     revenueByCurrency: { INR: 0, USD: 0 },
     countryBreakdown: [],
-    userMapData: [] 
+    userMapData: [],
+    subscriberStats: { totalSubscribers: 0, mobileSubscribers: 0, webSubscribers: 0, subscriberPercentage: "0.0" },
+    revenueStats: { mobileRevenue: 0, webRevenue: 0, mobileTransactions: 0, webTransactions: 0 },
+    facebookAdsStats: { fbSubscribers: 0, fbRevenue: 0 },
+    groupedPricingTiers: [],
+    userFunnel: { visitors: 0, signups: 0, startedChat: 0, engaged: 0, paid: 0 },
+    retentionStats: { day1: 0, day7: 0, day30: 0, d1Count: 0, d1Total: 0, d7Count: 0, d7Total: 0, d30Count: 0, d30Total: 0 },
+    heatmapData: [],
+    chatAnalytics: { totalMessages: 0, avgMessagesPerUser: 0, avgSessionLength: 0 }
   });
 
   const mapContainerRef = useRef(null);
@@ -180,7 +366,6 @@ const AdminDashboard = () => {
   const [conversionData, setConversionData] = useState([]);
   const [conversionType, setConversionType] = useState("daily");
   const [notification, setNotification] = useState({ show: false, message: "", type: "error" });
-  const [deviceStats, setDeviceStats] = useState({ mobileUsers: 0, webUsers: 0 });
 
   // Stable reference for onClose — prevents PopNoti's useEffect from firing on every parent re-render
   const handleCloseNotification = useCallback(() => {
@@ -210,7 +395,15 @@ const AdminDashboard = () => {
         messagesSent: data.messageQuotaData || 0,
         revenueByCurrency: data.revenueByCurrency || { INR: 0, USD: 0 },
         countryBreakdown: data.countryBreakdown || [],
-        userMapData: data.userMapData || []
+        userMapData: data.userMapData || [],
+        subscriberStats: data.subscriberStats || { totalSubscribers: 0, mobileSubscribers: 0, webSubscribers: 0, subscriberPercentage: "0.0" },
+        revenueStats: data.revenueStats || { mobileRevenue: 0, webRevenue: 0, mobileTransactions: 0, webTransactions: 0 },
+        facebookAdsStats: data.facebookAdsStats || { fbSubscribers: 0, fbRevenue: 0 },
+        groupedPricingTiers: data.groupedPricingTiers || [],
+        userFunnel: data.userFunnel || { visitors: 0, signups: 0, startedChat: 0, engaged: 0, paid: 0 },
+        retentionStats: data.retentionStats || { day1: 0, day7: 0, day30: 0, d1Count: 0, d1Total: 0, d7Count: 0, d7Total: 0, d30Count: 0, d30Total: 0 },
+        heatmapData: data.heatmapData || [],
+        chatAnalytics: data.chatAnalytics || { totalMessages: 0, avgMessagesPerUser: 0, avgSessionLength: 0 }
       });
 
       const revenueTrendMapped = data.revenueTrend?.map(item => ({
@@ -224,23 +417,11 @@ const AdminDashboard = () => {
         setNotification(p => ({ ...p, show: false }));
       }, 4000);
     } catch (err) {
-      // Error handling
+      console.error("Error fetching dashboard data:", err);
     } finally {
       setLoading(false);
     }
   }, [timePeriod, getToken]);
-
-  const fetchDeviceStats = useCallback(async () => {
-    try {
-      const token = getToken();
-      const res = await axios.get(`${api.Url}/admin/device-stats`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.data.success) setDeviceStats(res.data.data);
-    } catch (err) {
-      console.error("Error fetching device stats", err);
-    }
-  }, [getToken]);
 
   const fetchConversionStats = useCallback(async () => {
     try {
@@ -259,8 +440,7 @@ const AdminDashboard = () => {
   useEffect(() => { 
     fetchDashboardData();
     fetchConversionStats();
-    fetchDeviceStats();
-  }, [fetchDashboardData, fetchConversionStats, fetchDeviceStats, refresh]);
+  }, [fetchDashboardData, fetchConversionStats, refresh]);
 
   // Map init effect - fires when loading transitions from true to false
   useEffect(() => {
@@ -272,7 +452,7 @@ const AdminDashboard = () => {
 
       // Clean up any previous map instance
       if (mapInstanceRef.current) {
-        try { mapInstanceRef.current.remove(); } catch(e) {}
+        try { mapInstanceRef.current.remove(); } catch (err) { console.error("Map cleanup error:", err); }
         mapInstanceRef.current = null;
       }
 
@@ -472,7 +652,7 @@ const AdminDashboard = () => {
     return () => {
       clearTimeout(timer);
       if (mapInstanceRef.current) {
-        try { mapInstanceRef.current.remove(); } catch(e) {}
+        try { mapInstanceRef.current.remove(); } catch (err) { console.error("Map cleanup error:", err); }
         mapInstanceRef.current = null;
       }
     };
@@ -485,6 +665,47 @@ const AdminDashboard = () => {
     .slice(0, 8);
 
   const totalMapUsers = topCities.reduce((s, c) => s + (c.count || 0), 0);
+
+  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+  
+  const heatmapMatrix = Array.from({ length: 7 }, () => Array(24).fill(0));
+  let maxHeatmapValue = 0;
+  
+  (statsData.heatmapData || []).forEach(item => {
+    const dIdx = item.dayOfWeek - 1;
+    const hIdx = item.hour;
+    if (dIdx >= 0 && dIdx < 7 && hIdx >= 0 && hIdx < 24) {
+      heatmapMatrix[dIdx][hIdx] = item.count;
+      if (item.count > maxHeatmapValue) {
+        maxHeatmapValue = item.count;
+      }
+    }
+  });
+
+  const hourlySum = Array(24).fill(0);
+  (statsData.heatmapData || []).forEach(item => {
+    if (item.hour >= 0 && item.hour < 24) {
+      hourlySum[item.hour] += item.count;
+    }
+  });
+  let peakHour = 22;
+  let maxHourSum = 0;
+  hourlySum.forEach((sum, hr) => {
+    if (sum > maxHourSum) {
+      maxHourSum = sum;
+      peakHour = hr;
+    }
+  });
+
+  const getPeakHourLabel = (hr) => {
+    const formattedHr = hr % 12 === 0 ? 12 : hr % 12;
+    const ampm = hr >= 12 ? 'PM' : 'AM';
+    const nextHr = (hr + 3) % 24;
+    const formattedNextHr = nextHr % 12 === 0 ? 12 : nextHr % 12;
+    const nextampm = nextHr >= 12 ? 'PM' : 'AM';
+    return `${formattedHr} ${ampm} - ${formattedNextHr} ${nextampm}`;
+  };
 
   return (
     <>
@@ -561,7 +782,7 @@ const AdminDashboard = () => {
 
             {/* Stat Cards */}
             <div className="dash-grid-x30sn">
-              <div className="stat-card-x30sn">
+              <div className="stat-card-x30sn card-pink">
                 <div className="stat-header-x30sn">
                   <div className="stat-icon-x30sn"><FaUsers /></div>
                   <span className="stat-label-x30sn">Total Users</span>
@@ -569,15 +790,20 @@ const AdminDashboard = () => {
                 <h3 className="stat-value-x30sn">{statsData.totalUsers}</h3>
               </div>
               
-              <div className="stat-card-x30sn">
+              <div className="stat-card-x30sn card-blue">
                 <div className="stat-header-x30sn">
-                  <div className="stat-icon-x30sn"><FaUserCheck /></div>
-                  <span className="stat-label-x30sn">Active Users</span>
+                  <div className="stat-icon-x30sn"><FaCrown /></div>
+                  <span className="stat-label-x30sn">Subscribers</span>
                 </div>
-                <h3 className="stat-value-x30sn">{statsData.activeUsers} <span style={{fontSize:14, color:'#ff69b4'}}>({safeCalculatePercentage(statsData.activeUsers, statsData.totalUsers).toFixed(0)}%)</span></h3>
+                <h3 className="stat-value-x30sn">
+                  {statsData.subscriberStats?.totalSubscribers ?? 0}{' '}
+                  <span style={{ fontSize: 14, color: '#00b4d8' }}>
+                    ({statsData.subscriberStats?.subscriberPercentage ?? '0.0'}%)
+                  </span>
+                </h3>
               </div>
 
-              <div className="stat-card-x30sn">
+              <div className="stat-card-x30sn card-purple">
                 <div className="stat-header-x30sn">
                   <div className="stat-icon-x30sn"><FaEnvelope /></div>
                   <span className="stat-label-x30sn">Messages</span>
@@ -585,43 +811,112 @@ const AdminDashboard = () => {
                 <h3 className="stat-value-x30sn">{statsData.messagesSent}</h3>
               </div>
 
-              <div className="stat-card-x30sn">
+              <div className="stat-card-x30sn card-gold">
                 <div className="stat-header-x30sn">
                   <div className="stat-icon-x30sn"><FaMoneyBillWave /></div>
                   <span className="stat-label-x30sn">Revenue (Est. INR)</span>
                 </div>
-                <h3 className="stat-value-x30sn" style={{ fontSize: '24px' }}>₹{statsData.totalRevenue.toLocaleString()}</h3>
+                <h3 className="stat-value-x30sn" style={{ fontSize: '24px' }}>₹{(statsData.totalRevenue ?? 0).toLocaleString()}</h3>
                 <div style={{ marginTop: '8px', fontSize: '12px', color: '#888' }}>
-                  ₹{statsData.revenueByCurrency.INR.toLocaleString()} + ${statsData.revenueByCurrency.USD.toLocaleString()}
+                  ₹{(statsData.revenueByCurrency?.INR ?? 0).toLocaleString()} + ${(statsData.revenueByCurrency?.USD ?? 0).toLocaleString()}
                 </div>
               </div>
             </div>
 
-            {/* Device Stats */}
-            <div className="dash-grid-x30sn" style={{marginBottom: 30}}>
-              <div className="stat-card-x30sn">
+            {/* Chat Engagement Cards */}
+            <div className="dash-grid-x30sn" style={{ marginTop: '20px' }}>
+              <div className="stat-card-x30sn card-blue">
                 <div className="stat-header-x30sn">
-                  <div className="stat-icon-x30sn" style={{background:'rgba(0,180,216,0.1)', color:'#00b4d8'}}><FaMobileAlt /></div>
-                  <span className="stat-label-x30sn">Mobile App Users</span>
+                  <div className="stat-icon-x30sn" style={{ color: '#00b4d8', background: 'rgba(0,180,216,0.08)' }}><FaEnvelopeOpenText /></div>
+                  <span className="stat-label-x30sn">Total User Messages</span>
                 </div>
-                <h3 className="stat-value-x30sn">{deviceStats.mobileUsers}</h3>
-                <div style={{marginTop:8, fontSize:12, color:'#555'}}>
-                  {deviceStats.mobileUsers + deviceStats.webUsers > 0
-                    ? `${((deviceStats.mobileUsers / (deviceStats.mobileUsers + deviceStats.webUsers)) * 100).toFixed(1)}% of total`
-                    : 'No data yet'}
+                <h3 className="stat-value-x30sn">{(statsData.chatAnalytics?.totalMessages ?? 0).toLocaleString()}</h3>
+              </div>
+
+              <div className="stat-card-x30sn card-purple">
+                <div className="stat-header-x30sn">
+                  <div className="stat-icon-x30sn" style={{ color: '#a020f0', background: 'rgba(160,32,240,0.08)' }}><FaComments /></div>
+                  <span className="stat-label-x30sn">Messages Per User</span>
+                </div>
+                <h3 className="stat-value-x30sn">{statsData.chatAnalytics?.avgMessagesPerUser ?? 0} <span style={{ fontSize: 13, color: '#888' }}>avg</span></h3>
+              </div>
+
+              <div className="stat-card-x30sn card-gold">
+                <div className="stat-header-x30sn">
+                  <div className="stat-icon-x30sn" style={{ color: '#ffd700', background: 'rgba(255,215,0,0.08)' }}><FaHourglassHalf /></div>
+                  <span className="stat-label-x30sn">Avg Session Duration</span>
+                </div>
+                <h3 className="stat-value-x30sn">{statsData.chatAnalytics?.avgSessionLength ?? 0} <span style={{ fontSize: 13, color: '#888' }}>mins</span></h3>
+              </div>
+            </div>
+
+            {/* ======== CHANNEL ACQUISITION & ATTRIBUTION (NEW) ======== */}
+            <div className="acq-section-x30sn">
+              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '16px' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#fff' }}>Acquisition Channels & Platform Split</h3>
+                  <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#666' }}>Performance analysis of subscriptions and platform distribution</p>
+                </div>
+                <div className="fb-badge-x30sn">
+                  <FaFacebook style={{ marginRight: 6 }} /> Facebook Ads: {statsData.facebookAdsStats?.fbSubscribers ?? 0} Subs (Est. ₹{(statsData.facebookAdsStats?.fbRevenue ?? 0).toLocaleString()})
                 </div>
               </div>
 
-              <div className="stat-card-x30sn">
-                <div className="stat-header-x30sn">
-                  <div className="stat-icon-x30sn"><FaDesktop /></div>
-                  <span className="stat-label-x30sn">Web Users</span>
+              <div className="acq-grid-x30sn">
+                {/* Mobile platform tracking card */}
+                <div className="acq-card-x30sn">
+                  <div className="acq-header-x30sn">
+                    <span className="acq-title-x30sn"><FaMobileAlt style={{ color: '#00b4d8' }} /> Mobile App</span>
+                    <span className="acq-badge-x30sn badge-mobile">App Traffic</span>
+                  </div>
+                  <div className="acq-metrics-x30sn">
+                    <div className="acq-metric-item-x30sn">
+                      <span className="acq-metric-label-x30sn">Active Subs</span>
+                      <span className="acq-metric-value-x30sn">{statsData.subscriberStats?.mobileSubscribers ?? 0}</span>
+                    </div>
+                    <div className="acq-metric-item-x30sn" style={{ textAlign: 'right' }}>
+                      <span className="acq-metric-label-x30sn">Est. Revenue</span>
+                      <span className="acq-metric-value-x30sn" style={{ color: '#00ff88' }}>₹{(statsData.revenueStats?.mobileRevenue ?? 0).toLocaleString()}</span>
+                    </div>
+                  </div>
+                  <div className="progress-track-x30sn">
+                    <div 
+                      className="progress-fill-x30sn fill-mobile" 
+                      style={{ width: `${safeCalculatePercentage(statsData.subscriberStats?.mobileSubscribers ?? 0, statsData.subscriberStats?.totalSubscribers ?? 0)}%` }} 
+                    />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#666' }}>
+                    <span>{safeCalculatePercentage(statsData.subscriberStats?.mobileSubscribers ?? 0, statsData.subscriberStats?.totalSubscribers ?? 0).toFixed(1)}% of subscribers</span>
+                    <span>{statsData.revenueStats?.mobileTransactions ?? 0} purchases</span>
+                  </div>
                 </div>
-                <h3 className="stat-value-x30sn">{deviceStats.webUsers}</h3>
-                <div style={{marginTop:8, fontSize:12, color:'#555'}}>
-                  {deviceStats.mobileUsers + deviceStats.webUsers > 0
-                    ? `${((deviceStats.webUsers / (deviceStats.mobileUsers + deviceStats.webUsers)) * 100).toFixed(1)}% of total`
-                    : 'No data yet'}
+
+                {/* Web platform tracking card */}
+                <div className="acq-card-x30sn">
+                  <div className="acq-header-x30sn">
+                    <span className="acq-title-x30sn"><FaDesktop style={{ color: '#ff69b4' }} /> Web Platform</span>
+                    <span className="acq-badge-x30sn badge-web">Desktop & Mobile Web</span>
+                  </div>
+                  <div className="acq-metrics-x30sn">
+                    <div className="acq-metric-item-x30sn">
+                      <span className="acq-metric-label-x30sn">Active Subs</span>
+                      <span className="acq-metric-value-x30sn">{statsData.subscriberStats?.webSubscribers ?? 0}</span>
+                    </div>
+                    <div className="acq-metric-item-x30sn" style={{ textAlign: 'right' }}>
+                      <span className="acq-metric-label-x30sn">Est. Revenue</span>
+                      <span className="acq-metric-value-x30sn" style={{ color: '#00ff88' }}>₹{(statsData.revenueStats?.webRevenue ?? 0).toLocaleString()}</span>
+                    </div>
+                  </div>
+                  <div className="progress-track-x30sn">
+                    <div 
+                      className="progress-fill-x30sn fill-web" 
+                      style={{ width: `${safeCalculatePercentage(statsData.subscriberStats?.webSubscribers ?? 0, statsData.subscriberStats?.totalSubscribers ?? 0)}%` }} 
+                    />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#666' }}>
+                    <span>{safeCalculatePercentage(statsData.subscriberStats?.webSubscribers ?? 0, statsData.subscriberStats?.totalSubscribers ?? 0).toFixed(1)}% of subscribers</span>
+                    <span>{statsData.revenueStats?.webTransactions ?? 0} purchases</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -747,6 +1042,108 @@ const AdminDashboard = () => {
               </div>
             </div>
 
+
+
+            {/* ======== USER ACTIVITY HEATMAP (NEW) ======== */}
+            <div style={{
+              background: '#0a0a0a',
+              border: '1px solid #222',
+              borderRadius: '20px',
+              padding: '24px',
+              marginBottom: '24px',
+              overflowX: 'auto'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '16px', flexWrap: 'wrap' }}>
+                <div>
+                  <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 700, color: '#fff' }}>User Activity Heatmap (IST)</h3>
+                  <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#666' }}>Hourly logins and active user engagement slots</p>
+                </div>
+                <div style={{
+                  background: 'rgba(255, 105, 180, 0.08)',
+                  border: '1px solid rgba(255, 105, 180, 0.2)',
+                  color: '#ff69b4',
+                  borderRadius: '10px',
+                  padding: '8px 16px',
+                  fontSize: '13px',
+                  fontWeight: 600
+                }}>
+                  🔥 Peak Activity Hours: {getPeakHourLabel(peakHour)}
+                </div>
+              </div>
+
+              {/* Heatmap Grid Wrapper */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '700px' }}>
+                {/* Hours Header Row */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div style={{ width: '45px', flexShrink: 0 }} />
+                  <div style={{ display: 'flex', flex: 1, justifyContent: 'space-between', fontSize: '11px', color: '#444', paddingRight: '8px' }}>
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const hr = i * 2;
+                      const label = hr === 0 ? '12A' : hr === 12 ? '12P' : hr > 12 ? `${hr - 12}P` : `${hr}A`;
+                      return <span key={i} style={{ width: '4.1%', textAlign: 'center' }}>{label}</span>;
+                    })}
+                  </div>
+                </div>
+
+                {/* Days Rows */}
+                {daysOfWeek.map((day, dIdx) => (
+                  <div key={day} style={{ display: 'flex', alignItems: 'center' }}>
+                    {/* Day label */}
+                    <div style={{ width: '45px', fontSize: '12px', color: '#666', fontWeight: 600, flexShrink: 0 }}>
+                      {day}
+                    </div>
+                    {/* 24 Cells */}
+                    <div style={{ display: 'flex', flex: 1, gap: '4px' }}>
+                      {hours.map(hr => {
+                        const count = heatmapMatrix[dIdx][hr];
+                        const opacity = maxHeatmapValue > 0 ? (count / maxHeatmapValue) : 0;
+                        const cellColor = opacity > 0 ? `rgba(255, 105, 180, ${0.1 + opacity * 0.9})` : 'rgba(255,255,255,0.02)';
+                        const cellBorder = opacity > 0 ? `1px solid rgba(255, 105, 180, ${0.2 + opacity * 0.4})` : '1px solid #141414';
+                        const glowEffect = opacity > 0.7 ? `0 0 8px rgba(255, 105, 180, ${opacity * 0.4})` : 'none';
+
+                        return (
+                          <div 
+                            key={hr}
+                            title={`${day} at ${hr % 12 === 0 ? 12 : hr % 12} ${hr >= 12 ? 'PM' : 'AM'}: ${count} activity counts`}
+                            style={{
+                              flex: 1,
+                              aspectRatio: '1',
+                              borderRadius: '4px',
+                              background: cellColor,
+                              border: cellBorder,
+                              boxShadow: glowEffect,
+                              cursor: 'pointer',
+                              position: 'relative',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'scale(1.18)';
+                              e.currentTarget.style.zIndex = '10';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'scale(1)';
+                              e.currentTarget.style.zIndex = '1';
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Heatmap Legend */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#555', marginTop: '10px' }}>
+                  <span>Less active</span>
+                  <div style={{ width: '10px', height: '10px', background: 'rgba(255,255,255,0.02)', border: '1px solid #141414', borderRadius: '2px' }} />
+                  <div style={{ width: '10px', height: '10px', background: 'rgba(255, 105, 180, 0.25)', borderRadius: '2px' }} />
+                  <div style={{ width: '10px', height: '10px', background: 'rgba(255, 105, 180, 0.55)', borderRadius: '2px' }} />
+                  <div style={{ width: '10px', height: '10px', background: 'rgba(255, 105, 180, 0.85)', borderRadius: '2px' }} />
+                  <div style={{ width: '10px', height: '10px', background: '#ff69b4', boxShadow: '0 0 6px #ff69b4', borderRadius: '2px' }} />
+                  <span>Highly active</span>
+                </div>
+              </div>
+            </div>
+
             {/* Charts Grid */}
             <div className="chart-grid-layout-x30sn">
               <div className="chart-section-x30sn">
@@ -809,6 +1206,42 @@ const AdminDashboard = () => {
                       <Bar name="Premium Conversions" dataKey="conversions" fill="#fff" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* ======== GROUPED PLAN DISTRIBUTION (NEW) ======== */}
+              <div className="chart-section-x30sn" style={{ gridColumn: '1 / -1' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                  <FaCrown style={{color:'#ffd700'}} />
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#fff' }}>Plan Revenue & Pricing Distribution</h3>
+                </div>
+                <p style={{ margin: '-10px 0 20px 0', fontSize: '13px', color: '#666' }}>Active pricing tier statistics including historical and upgraded rates</p>
+                <div className="tier-list-x30sn">
+                  {statsData.groupedPricingTiers && statsData.groupedPricingTiers.length > 0 ? (
+                    statsData.groupedPricingTiers.map((tier, idx) => {
+                      const colors = {
+                        monthly: '#ff69b4',
+                        yearly: '#00b4d8',
+                        ultimate: '#a020f0',
+                        other: '#ffd700'
+                      };
+                      const color = colors[tier.tier] || '#888';
+                      return (
+                        <div className="tier-row-x30sn" key={idx}>
+                          <div className="tier-info-x30sn">
+                            <div className="tier-indicator-x30sn" style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}` }} />
+                            <span className="tier-name-x30sn">{tier.label}</span>
+                          </div>
+                          <div className="tier-stats-x30sn">
+                            <span className="tier-count-x30sn">{tier.count} sales</span>
+                            <span className="tier-revenue-x30sn">₹{tier.revenueINR.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div style={{ color: '#444', padding: '10px', fontSize: '13px' }}>No tier sales recorded yet.</div>
+                  )}
                 </div>
               </div>
 

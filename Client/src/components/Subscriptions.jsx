@@ -155,7 +155,8 @@ function SubscriptionContent() {
         user: userData?._id, 
         rupees: amount, 
         transaction_id: order.id,
-        currency: 'USD'
+        currency: 'USD',
+        platform: 'web'
       }, { headers: { Authorization: `Bearer ${token}` } });
       const storedUser = JSON.parse(localStorage.getItem("user") || '{}');
       if (storedUser) { storedUser.user_type = "subscriber"; localStorage.setItem("user", JSON.stringify(storedUser)); }
@@ -252,7 +253,7 @@ function SubscriptionContent() {
             window.gtag('event', 'payment_completed', { value: amount, subscription_type: plan.toLowerCase() });
           }
           await axios.post(`${api.Url}/user/payment/save`, {
-            user: userData?._id, rupees: amount, transaction_id: res.razorpay_payment_id,
+            user: userData?._id, rupees: amount, transaction_id: res.razorpay_payment_id, platform: 'web'
           }, { headers: { Authorization: `Bearer ${token}` } });
           const storedUser = JSON.parse(localStorage.getItem("user") || '{}');
           if (storedUser) { storedUser.user_type = "subscriber"; localStorage.setItem("user", JSON.stringify(storedUser)); }
@@ -260,7 +261,7 @@ function SubscriptionContent() {
           router.push('/thank-you');
         },
         prefill: { name: userData?.name, email: userData?.email, contact: userData?.phone_number },
-        notes: { userId: userData?._id, email: userData?.email },
+        notes: { userId: userData?._id, email: userData?.email, platform: 'web' },
         theme: { color: '#ce4085' }
       };
       new window.Razorpay(options).open();

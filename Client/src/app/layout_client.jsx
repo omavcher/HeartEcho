@@ -55,6 +55,16 @@ export default function ClientLayout({ children }) {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
+  const isAdminPage = pathname?.startsWith('/admin');
+
+  if (isAdminPage) {
+    return (
+      <div className="admin-layout-root-x30sn">
+        {children}
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Mobile App Promo Banner */}

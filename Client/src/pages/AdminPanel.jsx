@@ -1,16 +1,15 @@
 'use client';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import api from "../config/api";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
-  FaUsers, FaRobot, FaExclamationCircle, FaChartBar, FaBars, 
+  FaUsers, FaRobot, FaExclamationCircle, FaBars, 
   FaTimes, FaChevronRight, FaUserPlus, FaGem, FaEnvelope,
   FaMobileAlt, FaCommentAlt
 } from "react-icons/fa";
 import { MdHistoryEdu, MdDashboard, MdChat, MdPayment, MdAnalytics } from "react-icons/md";
-import { CiEdit } from "react-icons/ci";
 import "./AdminPanel.css";
 
 // Import your admin components
@@ -25,7 +24,6 @@ import EditStoryPage from "./Admin/EditStoryPage.jsx";
 import ChatsDataAdmin from "./Admin/ChatsDataAdmin.jsx";
 import LoginActivityAdmin from "./Admin/LoginActivityAdmin.jsx";
 import TrackingAdmin from "./Admin/TrackingAdmin.jsx";
-import { IoLogoSass, IoMdLogIn } from "react-icons/io";
 import PaymentActivityAdmin from "./Admin/PaymentActivityAdmin.jsx";
 import LiveStoriesAdmin from "./Admin/LiveStoriesAdmin.jsx";
 import AiLiveViewAdmin from "./Admin/AiLiveViewAdmin.jsx";
@@ -63,26 +61,56 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const navItems = [
-    { path: "/admin/dashboard", label: "Dashboard", icon: <MdDashboard /> },
-    { path: "/admin/users", label: "Users", icon: <FaUsers />, countKey: "users" },
-    { path: "/admin/stories", label: "Stories", icon: <MdHistoryEdu /> },
-    { path: "/admin/ai-friends", label: "AI Friends", icon: <FaRobot /> },
-    { path: "/admin/complaints", label: "Complaints", icon: <FaExclamationCircle />, countKey: "complaints" },
-    { path: "/admin/referral", label: "Referral Intelligence", icon: <FaUserPlus />, countKey: "referrals" },
-    { path: "/admin/create-story", label: "Create Story", icon: <FaGem /> },
-    { path: "/admin/chats", label: "Chats", icon: <MdChat /> },
-    { path: "/admin/analytics", label: "Tracking & Analytics", icon: <MdAnalytics /> },
-    { path: "/admin/login-activity", label: "Login Activity", icon: <MdAnalytics />, countKey: "logins" },
-    { path: "/admin/payment-activity", label: "Payment Activity", icon: <MdPayment />, countKey: "payments" },
-    { path: "/admin/deleted-accounts", label: "Deleted Accounts", icon: <FaUsers />, countKey: "deletedAccounts" },
-    { path: "/admin/live-stories", label: "Live Stories AI", icon: <FaGem /> },
-    { path: "/admin/ai-live-view", label: "AI Live View", icon: <FaGem /> },
-    { path: "/admin/notifications", label: "Push Notifications", icon: <FaExclamationCircle /> },
-    { path: "/admin/email-marketing", label: "Email Marketing", icon: <FaEnvelope /> },
-    { path: "/admin/versioning", label: "App Versioning", icon: <FaMobileAlt /> },
-    { path: "/admin/feedback", label: "Feedbacks & Reviews", icon: <FaCommentAlt /> }
-  ];
+  const navigationCategories = useMemo(() => [
+    {
+      title: "Core Operations",
+      items: [
+        { path: "/admin/dashboard", label: "Dashboard", icon: <MdDashboard /> },
+        { path: "/admin/analytics", label: "Tracking & Analytics", icon: <MdAnalytics /> },
+        { path: "/admin/login-activity", label: "Login Activity", icon: <MdAnalytics />, countKey: "logins" },
+        { path: "/admin/versioning", label: "App Versioning", icon: <FaMobileAlt /> }
+      ]
+    },
+    {
+      title: "User Economy",
+      items: [
+        { path: "/admin/users", label: "Users", icon: <FaUsers />, countKey: "users" },
+        { path: "/admin/payment-activity", label: "Payment Activity", icon: <MdPayment />, countKey: "payments" },
+        { path: "/admin/referral", label: "Referral Intelligence", icon: <FaUserPlus />, countKey: "referrals" },
+        { path: "/admin/deleted-accounts", label: "Deleted Accounts", icon: <FaUsers />, countKey: "deletedAccounts" }
+      ]
+    },
+    {
+      title: "AI Engine",
+      items: [
+        { path: "/admin/ai-friends", label: "AI Friends", icon: <FaRobot /> },
+        { path: "/admin/ai-live-view", label: "AI Live View", icon: <FaGem /> },
+        { path: "/admin/live-stories", label: "Live Stories AI", icon: <FaGem /> },
+        { path: "/admin/chats", label: "Chats", icon: <MdChat /> },
+        { path: "/admin/feedback", label: "Feedbacks & Reviews", icon: <FaCommentAlt /> }
+      ]
+    },
+    {
+      title: "Content & Growth",
+      items: [
+        { path: "/admin/stories", label: "Stories", icon: <MdHistoryEdu /> },
+        { path: "/admin/create-story", label: "Create Story", icon: <FaGem /> },
+        { path: "/admin/complaints", label: "Complaints", icon: <FaExclamationCircle />, countKey: "complaints" },
+        { path: "/admin/notifications", label: "Push Notifications", icon: <FaExclamationCircle /> },
+        { path: "/admin/email-marketing", label: "Email Marketing", icon: <FaEnvelope /> }
+      ]
+    }
+  ], []);
+
+  const flatNavItems = useMemo(() => {
+    return navigationCategories.flatMap(cat => cat.items);
+  }, [navigationCategories]);
+
+  let activeLabel = flatNavItems.find(item => item.path === pathname)?.label;
+  if (!activeLabel && pathname?.startsWith('/admin/stories/edit/')) {
+    activeLabel = "Edit Story";
+  }
+  if (!activeLabel) activeLabel = "Dashboard";
 
   return (
     <>
@@ -99,7 +127,7 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
         <div className="sidebar-header-x30sn">
           <div className="nav-logo-x30sn">
             <div className="logo-icon-x30sn">H</div>
-            <span>Admin<span className="text-pink-x30sn">Panel</span></span>
+            <span>Heart<span className="text-pink-x30sn">Echo</span></span>
           </div>
           <button 
             className="sidebar-close-x30sn" 
@@ -110,25 +138,30 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
         </div>
 
         <div className="nav-scroll-x30sn">
-            <div className="nav-links-x30sn">
-            {navItems.map((item) => (
-                <Link
-                key={item.path}
-                href={item.path}
-                className={`nav-item-x30sn ${isActive(item.path) ? "active-x30sn" : ""}`}
-                onClick={() => setSidebarOpen(false)}
-                >
-                <span className="nav-icon-x30sn">{item.icon}</span>
-                <span className="nav-label-x30sn">{item.label}</span>
-                
-                {item.countKey && indicators[item.countKey] > 0 && (
-                  <span className="nav-badge-x30sn">+{indicators[item.countKey]}</span>
-                )}
+          {navigationCategories.map((category) => (
+            <div key={category.title} className="nav-section-x30sn">
+              <h4 className="nav-section-title-x30sn">{category.title}</h4>
+              <div className="nav-section-links-x30sn">
+                {category.items.map((item) => (
+                  <Link
+                    key={item.path}
+                    href={item.path}
+                    className={`nav-item-x30sn ${isActive(item.path) ? "active-x30sn" : ""}`}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <span className="nav-icon-x30sn">{item.icon}</span>
+                    <span className="nav-label-x30sn">{item.label}</span>
+                    
+                    {item.countKey && indicators[item.countKey] > 0 && (
+                      <span className="nav-badge-x30sn">+{indicators[item.countKey]}</span>
+                    )}
 
-                {!(item.countKey && indicators[item.countKey] > 0) && isActive(item.path) && <FaChevronRight className="nav-chevron-x30sn" />}
-                </Link>
-            ))}
+                    {!(item.countKey && indicators[item.countKey] > 0) && isActive(item.path) && <FaChevronRight className="nav-chevron-x30sn" />}
+                  </Link>
+                ))}
+              </div>
             </div>
+          ))}
         </div>
 
         <div className="sidebar-footer-x30sn">
@@ -152,7 +185,7 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
             <FaBars />
           </button>
           <div className="page-title-x30sn">
-            {navItems.find(item => item.path === pathname)?.label || "Dashboard"}
+            {activeLabel}
           </div>
         </div>
         <div className="top-bar-right-x30sn">
@@ -189,16 +222,15 @@ const AdminPanel = () => {
       '/admin/create-story': <div className="content-wrapper-x30sn"><CreateStoryPage/></div>,
       '/admin/chats': <div className="content-wrapper-x30sn"><ChatsDataAdmin /></div>,
       '/admin/analytics': <div className="content-wrapper-x30sn"><TrackingAdmin /></div>,
-       '/admin/login-activity': <div className="content-wrapper-x30sn"><LoginActivityAdmin /></div>,
-        '/admin/payment-activity': <div className="content-wrapper-x30sn"><PaymentActivityAdmin /></div>,
-        '/admin/deleted-accounts': <div className="content-wrapper-x30sn"><DeletedAccountsAdmin /></div>,
-        '/admin/live-stories': <div className="content-wrapper-x30sn"><LiveStoriesAdmin /></div>,
-        '/admin/ai-live-view': <div className="content-wrapper-x30sn"><AiLiveViewAdmin /></div>,
-        '/admin/notifications': <div className="content-wrapper-x30sn"><NotificationsAdmin /></div>,
-        '/admin/email-marketing': <div className="content-wrapper-x30sn"><EmailMarketingAdmin /></div>,
-        '/admin/versioning': <div className="content-wrapper-x30sn"><AppVersioningAdmin /></div>,
-        '/admin/feedback': <div className="content-wrapper-x30sn"><FeedbackAdmin /></div>,
-
+      '/admin/login-activity': <div className="content-wrapper-x30sn"><LoginActivityAdmin /></div>,
+      '/admin/payment-activity': <div className="content-wrapper-x30sn"><PaymentActivityAdmin /></div>,
+      '/admin/deleted-accounts': <div className="content-wrapper-x30sn"><DeletedAccountsAdmin /></div>,
+      '/admin/live-stories': <div className="content-wrapper-x30sn"><LiveStoriesAdmin /></div>,
+      '/admin/ai-live-view': <div className="content-wrapper-x30sn"><AiLiveViewAdmin /></div>,
+      '/admin/notifications': <div className="content-wrapper-x30sn"><NotificationsAdmin /></div>,
+      '/admin/email-marketing': <div className="content-wrapper-x30sn"><EmailMarketingAdmin /></div>,
+      '/admin/versioning': <div className="content-wrapper-x30sn"><AppVersioningAdmin /></div>,
+      '/admin/feedback': <div className="content-wrapper-x30sn"><FeedbackAdmin /></div>,
     };
     // If the path matches edit story dynamic route
     if (pathname?.startsWith('/admin/stories/edit/')) {

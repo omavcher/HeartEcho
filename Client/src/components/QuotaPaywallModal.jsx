@@ -146,13 +146,14 @@ export default function QuotaPaywallModal({ onClose, aiName = 'your AI', userDat
             window.gtag('event', 'payment_completed', { value: amount, subscription_type: plan.toLowerCase() });
           }
           await axios.post(`${api.Url}/user/payment/save`, {
-            user: userData?._id, rupees: amount, transaction_id: res.razorpay_payment_id,
+            user: userData?._id, rupees: amount, transaction_id: res.razorpay_payment_id, platform: 'web'
           }, { headers: { Authorization: `Bearer ${token}` } });
           const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
           if (storedUser) { storedUser.user_type = 'subscriber'; localStorage.setItem('user', JSON.stringify(storedUser)); }
           router.push('/thank-you');
         },
         prefill: { name: userData?.name, contact: userData?.phone_number },
+        notes: { userId: userData?._id, platform: 'web' },
         theme: { color: '#ce4085' },
       };
       new window.Razorpay(options).open();
