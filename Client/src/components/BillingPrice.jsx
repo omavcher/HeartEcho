@@ -20,10 +20,18 @@ const BillingPrice = () => {
     amount: "",
   });
   const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Client-side only code
-    setToken(typeof window !== 'undefined' ? localStorage.getItem("token") : null);
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem("token");
+      setToken(storedToken);
+      if (!storedToken) {
+        setLoading(false);
+      }
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -47,6 +55,8 @@ const BillingPrice = () => {
           message: "Error fetching user data. Please try again!",
           type: "error",
         });
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -62,6 +72,31 @@ const BillingPrice = () => {
   const handleSearch = () => {
     console.log("Searching for:", formData);
   };
+
+  if (loading) {
+    return (
+      <div className="ios-settings-container">
+        <div className="ios-skeleton-container-premium">
+          <div className="ios-skeleton-group-premium">
+            <div className="ios-skeleton-text-line shimmer-bg width-30" style={{ marginBottom: '10px' }}></div>
+            <div className="ios-skeleton-card-form">
+              <div className="ios-skeleton-form-row shimmer-bg"></div>
+              <div className="ios-skeleton-form-row shimmer-bg"></div>
+              <div className="ios-skeleton-form-row shimmer-bg"></div>
+              <div className="ios-skeleton-form-row shimmer-bg" style={{ width: '30%', height: '14px', margin: '0.5rem auto 0' }}></div>
+            </div>
+          </div>
+          <div className="ios-skeleton-group-premium">
+            <div className="ios-skeleton-text-line shimmer-bg width-20" style={{ marginBottom: '10px' }}></div>
+            <div className="ios-skeleton-card-form">
+              <div className="ios-skeleton-form-row shimmer-bg"></div>
+              <div className="ios-skeleton-form-row shimmer-bg"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="ios-settings-container">

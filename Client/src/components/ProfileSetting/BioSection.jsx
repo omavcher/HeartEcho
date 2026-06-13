@@ -137,9 +137,31 @@ function BioSection({ onBackSBTNSelect }) {
 
       <div className="ios-settings-container">
         {loading ? (
-          <div className="ios-skeleton-container">
-            <div className="ios-skeleton-avatar"></div>
-            <div className="ios-skeleton-text"></div>
+          <div className="ios-skeleton-container-premium">
+            <div className="ios-skeleton-hero">
+              <div className="ios-skeleton-avatar-premium shimmer-bg"></div>
+              <div className="ios-skeleton-text-line shimmer-bg width-40"></div>
+            </div>
+            <div className="ios-skeleton-group-premium">
+              <div className="ios-skeleton-text-line shimmer-bg width-30" style={{ marginBottom: '10px' }}></div>
+              <div className="ios-skeleton-card-form">
+                <div className="ios-skeleton-form-row shimmer-bg"></div>
+                <div className="ios-skeleton-form-row shimmer-bg"></div>
+                <div className="ios-skeleton-form-row shimmer-bg"></div>
+                <div className="ios-skeleton-form-row shimmer-bg"></div>
+              </div>
+            </div>
+            <div className="ios-skeleton-group-premium">
+              <div className="ios-skeleton-text-line shimmer-bg width-20" style={{ marginBottom: '10px' }}></div>
+              <div className="ios-skeleton-chips-grid">
+                <div className="ios-skeleton-chip shimmer-bg"></div>
+                <div className="ios-skeleton-chip shimmer-bg"></div>
+                <div className="ios-skeleton-chip shimmer-bg"></div>
+                <div className="ios-skeleton-chip shimmer-bg"></div>
+                <div className="ios-skeleton-chip shimmer-bg"></div>
+                <div className="ios-skeleton-chip shimmer-bg"></div>
+              </div>
+            </div>
           </div>
         ) : (
           <>

@@ -15,6 +15,7 @@ router.post("/login-details", authMiddleware, controller.loginDetail );
 router.get("/login-details", authMiddleware, controller.getLoginDetail );
 router.get("/get-tickets", authMiddleware, controller.getTickets );
 router.post("/make-ticket", authMiddleware, controller.makeTicket );
+router.post("/support-chat", authMiddleware, require("../controllers/supportController").handleSupportChat);
 router.post("/send-otp-destroy", authMiddleware, controller.sendOtpDestroy );
 router.post("/verify-otp-destroy", authMiddleware, controller.verifyOtpDestroy );
 router.delete("/delete-account", authMiddleware, controller.deleteAccount );

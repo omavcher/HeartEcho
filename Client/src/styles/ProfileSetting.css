@@ -14,9 +14,11 @@
   padding: 0.2rem 0rem;
 }
 .profile-setting-header3 h2{
-  font-size: 1.1rem;
-  color: #ffb7d2;
-  font-family: "Poppins", serif;
+  font-size: 1.15rem;
+  color: var(--ios-theme-accent, #ce4085);
+  font-family: var(--ios-font, 'Inter', sans-serif);
+  font-weight: 700;
+  letter-spacing: -0.3px;
 }
 .profile-setting-header3 button svg{
   width: 2rem;
@@ -35,12 +37,11 @@
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-
 }
 
 .profile-setting-header3 h2 {
-  color: #ffb7d2;
-  font-weight: bold;
+  color: var(--ios-theme-accent, #ce4085);
+  font-weight: 700;
 }
 
 .profile-setting-header3 button {

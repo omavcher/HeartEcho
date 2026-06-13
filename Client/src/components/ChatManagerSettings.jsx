@@ -36,7 +36,35 @@ function ChatManagerSettings() {
   }, [token]);
 
   if (loading) {
-    return <AdvancedLoader variant="spinner" size="large" color="primary" text="Loading..." overlay={false} />;
+    return (
+      <div className="ios-settings-container">
+        <div className="ios-skeleton-container-premium">
+          <div className="ios-skeleton-group-premium">
+            <div className="ios-skeleton-text-line shimmer-bg width-30" style={{ marginBottom: '10px' }}></div>
+            <div className="ios-skeleton-card-form">
+              <div className="ios-skeleton-form-row shimmer-bg"></div>
+              <div className="ios-skeleton-form-row shimmer-bg"></div>
+              <div className="ios-skeleton-form-row shimmer-bg"></div>
+            </div>
+          </div>
+          <div className="ios-skeleton-group-premium">
+            <div className="ios-skeleton-text-line shimmer-bg width-20" style={{ marginBottom: '10px' }}></div>
+            <div className="ios-skeleton-card-form" style={{ gap: '1.25rem', padding: '1.25rem 1rem' }}>
+              <div className="ios-skeleton-form-row shimmer-bg" style={{ width: '40%', height: '14px' }}></div>
+              <div className="ios-skeleton-form-row shimmer-bg" style={{ height: '10px', borderRadius: '5px' }}></div>
+              <div className="ios-skeleton-form-row shimmer-bg" style={{ width: '80%', height: '12px' }}></div>
+            </div>
+          </div>
+          <div className="ios-skeleton-group-premium">
+            <div className="ios-skeleton-text-line shimmer-bg width-30" style={{ marginBottom: '10px' }}></div>
+            <div className="ios-skeleton-card-form">
+              <div className="ios-skeleton-form-row shimmer-bg"></div>
+              <div className="ios-skeleton-form-row shimmer-bg"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!userData) {
