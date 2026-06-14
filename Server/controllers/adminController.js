@@ -276,8 +276,9 @@ const migrateOldLoginDetails = async () => {
 
 exports.dashboardData = async (req, res) => {
   try {
-      await syncDeletedAccountPayments();
-      await migratePaymentPlatforms();
+      // Run DB sync and migrations asynchronously in the background so they don't block the request
+      syncDeletedAccountPayments().catch(err => console.error("Error in background syncDeletedAccountPayments:", err));
+      migratePaymentPlatforms().catch(err => console.error("Error in background migratePaymentPlatforms:", err));
 
       const { timePeriod } = req.body || {};
       const now = new Date();
@@ -305,425 +306,371 @@ exports.dashboardData = async (req, res) => {
       const ignoredUser = await User.findOne({ email: "omawchar07@gmail.com" });
       const ignoredUserId = ignoredUser ? ignoredUser._id : null;
 
-      // Total users ever registered
-      const usersData = await User.countDocuments(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {});
+      // Execute independent database queries concurrently using Promise.all
+      const [
+          usersData,
+          paymentsData,
+          activeUsersData,
+          revenueTrend,
+          notifications,
+          countryBreakdown,
+          userMapData,
+          totalSubscribers,
+          subscriberPlatformData,
+          paymentSourceData,
+          fbAttributedUserIds,
+          rawPaymentsData,
+          visitorsCount,
+          signupsCount,
+          chattedUsers,
+          engagedData,
+          paidUsers,
+          retentionCohort,
+          heatmapRaw,
+          chatMessageStats,
+          sessionData
+      ] = await Promise.all([
+          // 1. Total users ever registered
+          User.countDocuments(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}),
 
-      // Total revenue ever (grouped by currency)
-      const paymentsData = await Payment.aggregate([
-          ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
-          { $group: { _id: "$currency", totalRevenue: { $sum: "$rupees" } } }
-      ].filter(Boolean));
-      const revenueByCurrency = paymentsData.reduce((acc, curr) => {
-          acc[curr._id || "INR"] = curr.totalRevenue;
-          return acc;
-      }, { INR: 0, USD: 0 });
-      
-      // Estimated total in INR for summary (assuming 1 USD = 83 INR)
-      const totalRevenue = revenueByCurrency.INR + (revenueByCurrency.USD * 83);
+          // 2. Total revenue ever (grouped by currency)
+          Payment.aggregate([
+              ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
+              { $group: { _id: "$currency", totalRevenue: { $sum: "$rupees" } } }
+          ].filter(Boolean)),
 
-      // Total messages sent by all users
-      const messageQuotaData = await Chat.aggregate([
-          ignoredUserId ? { $match: { participants: { $ne: ignoredUserId } } } : null,
-          { $unwind: "$messages" },
-          { $match: { "messages.senderModel": "User" } },
-          ignoredUserId ? { $match: { "messages.sender": { $ne: ignoredUserId } } } : null,
-          { $group: { _id: "$messages.sender", totalMessages: { $sum: 1 } } },
-          { $sort: { totalMessages: -1 } }
-      ].filter(Boolean));
-      const totalMessages = messageQuotaData.reduce((sum, u) => sum + u.totalMessages, 0);
+          // 3. Total unique active users (all time)
+          LoginDetail.aggregate([
+              ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
+              { $group: { _id: "$user" } },
+              { $count: "totalActiveUsers" }
+          ].filter(Boolean)),
 
-      // Total unique active users (all time)
-      const activeUsersData = await LoginDetail.aggregate([
-          ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
-          { $group: { _id: "$user" } },
-          { $count: "totalActiveUsers" }
-      ].filter(Boolean));
-      const totalActiveUsers = activeUsersData.length > 0 ? activeUsersData[0].totalActiveUsers : 0;
-
-      // Revenue trend over time (lifetime daily trend)
-      const revenueTrend = await Payment.aggregate([
-          ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
-          { 
-              $group: { 
-                  _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } }, 
-                  totalInINR: { 
-                    $sum: {
-                      $cond: [
-                        { $eq: ["$currency", "USD"] },
-                        { $multiply: ["$rupees", 83] },
-                        "$rupees"
-                      ]
-                    }
+          // 4. Revenue trend over time (lifetime daily trend)
+          Payment.aggregate([
+              ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
+              { 
+                  $group: { 
+                      _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } }, 
+                      totalInINR: { 
+                        $sum: {
+                          $cond: [
+                            { $eq: ["$currency", "USD"] },
+                            { $multiply: ["$rupees", 83] },
+                            "$rupees"
+                          ]
+                        }
+                      } 
                   } 
-              } 
-          },
-          { $sort: { _id: 1 } }
-      ].filter(Boolean));
+              },
+              { $sort: { _id: 1 } }
+          ].filter(Boolean)),
 
-      // Latest 10 AI friends created (lifetime)
-      const notifications = await AIFriend.find().sort({ createdAt: -1 }).limit(10);
+          // 5. Latest 10 AI friends created (lifetime)
+          AIFriend.find().sort({ createdAt: -1 }).limit(10),
 
-      // User breakdown by country
-      const countryBreakdown = await User.aggregate([
-          ignoredUserId ? { $match: { _id: { $ne: ignoredUserId } } } : null,
-          { $group: { _id: "$country", count: { $sum: 1 } } },
-          { $sort: { count: -1 } }
-      ].filter(Boolean));
+          // 6. User breakdown by country
+          User.aggregate([
+              ignoredUserId ? { $match: { _id: { $ne: ignoredUserId } } } : null,
+              { $group: { _id: "$country", count: { $sum: 1 } } },
+              { $sort: { count: -1 } }
+          ].filter(Boolean)),
 
-      const formattedCountryBreakdown = countryBreakdown.map(item => ({
-          country: item._id || "Unknown",
-          count: item.count,
-          percentage: ((item.count / usersData) * 100).toFixed(1)
-      }));
+          // 7. Get map data showing active users' locations and coordinate centers
+          LoginDetail.aggregate([
+              ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
+              { $match: { 
+                  "coordinates.lat": { $exists: true, $ne: null }, 
+                  "coordinates.lon": { $exists: true, $ne: null }
+              }},
+              { $sort: { time: -1 } },
+              { $group: {
+                  _id: "$user",
+                  lat: { $first: "$coordinates.lat" },
+                  lon: { $first: "$coordinates.lon" },
+                  cityName: { $first: { $ifNull: ["$cityName", "$location"] } },
+                  country: { $first: "$country" }
+              } },
+              { $match: { 
+                  cityName: { $nin: [null, "", "Unknown"] }
+              }},
+              { $lookup: {
+                  from: "users",
+                  localField: "_id",
+                  foreignField: "_id",
+                  as: "userDoc"
+              } },
+              { $unwind: { path: "$userDoc", preserveNullAndEmptyArrays: true } },
+              { $group: {
+                  _id: { $toLower: "$cityName" },
+                  cityName: { $first: "$cityName" },
+                  country: { $first: "$country" },
+                  lat: { $avg: "$lat" },
+                  lon: { $avg: "$lon" },
+                  count: { $sum: 1 },
+                  paidCount: {
+                      $sum: {
+                          $cond: [
+                              { $eq: ["$userDoc.user_type", "subscriber"] },
+                              1,
+                              0
+                          ]
+                      }
+                  }
+              } },
+              { $sort: { count: -1 } },
+              { $limit: 50 }
+          ].filter(Boolean)),
 
-      // Get map data showing active users' locations and coordinate centers
-      // Use cityName field (new) with fallback to location field (legacy)
-      const userMapData = await LoginDetail.aggregate([
-          ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
-          { $match: { 
-              "coordinates.lat": { $exists: true, $ne: null }, 
-              "coordinates.lon": { $exists: true, $ne: null }
-          }},
-          { $sort: { time: -1 } },
-          { $group: {
-              _id: "$user",
-              lat: { $first: "$coordinates.lat" },
-              lon: { $first: "$coordinates.lon" },
-              cityName: { $first: { $ifNull: ["$cityName", "$location"] } },
-              country: { $first: "$country" }
-          } },
-          // Filter out users with no valid city
-          { $match: { 
-              cityName: { $nin: [null, "", "Unknown"] }
-          }},
-          // Lookup user details to get user_type (subscriber vs free)
-          { $lookup: {
-              from: "users",
-              localField: "_id",
-              foreignField: "_id",
-              as: "userDoc"
-          } },
-          { $unwind: { path: "$userDoc", preserveNullAndEmptyArrays: true } },
-          // Group by city (case-insensitive)
-          { $group: {
-              _id: { $toLower: "$cityName" },
-              cityName: { $first: "$cityName" },
-              country: { $first: "$country" },
-              lat: { $avg: "$lat" },
-              lon: { $avg: "$lon" },
-              count: { $sum: 1 },
-              paidCount: {
-                  $sum: {
-                      $cond: [
-                          { $eq: ["$userDoc.user_type", "subscriber"] },
-                          1,
-                          0
+          // 8. Calculate active subscriber splits (mobile vs. web) - total
+          User.countDocuments({
+              user_type: "subscriber",
+              ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}),
+              $or: [
+                  { subscriptionExpiry: null },
+                  { subscriptionExpiry: { $gte: now } }
+              ]
+          }),
+
+          // 9. Calculate active subscriber splits (mobile vs. web) - platform aggregation
+          User.aggregate([
+              {
+                  $match: {
+                      user_type: "subscriber",
+                      ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}),
+                      $or: [
+                          { subscriptionExpiry: null },
+                          { subscriptionExpiry: { $gte: now } }
                       ]
                   }
-              }
-          } },
-          { $sort: { count: -1 } },
-          { $limit: 50 }
-      ].filter(Boolean));
-
-      // Post-process map data to resolve any state-level names or "Unknown" to proper city names
-      const cityGroups = {};
-      for (const item of (userMapData || [])) {
-          let name = item.cityName;
-          let country = item.country;
-          const lat = item.lat;
-          const lon = item.lon;
-          const paidCount = item.paidCount || 0;
-
-          if (isStateName(name) || name === "Unknown" || !name) {
-              const geo = await getCityFromCoordinates(lat, lon);
-              if (geo && geo.cityName && geo.cityName !== "Unknown") {
-                  name = geo.cityName;
-                  if (geo.country && geo.country !== "Unknown") {
-                      country = geo.country;
+              },
+              {
+                  $lookup: {
+                      from: "payments",
+                      localField: "_id",
+                      foreignField: "user",
+                      as: "userPayments"
+                  }
+              },
+              {
+                  $addFields: {
+                      latestPayment: {
+                          $reduce: {
+                              input: "$userPayments",
+                              initialValue: null,
+                              in: {
+                                  $cond: [
+                                      { $gt: ["$$this.date", { $ifNull: ["$$value.date", new Date(0)] }] },
+                                      "$$this",
+                                      "$$value"
+                                  ]
+                              }
+                          }
+                      }
+                  }
+              },
+              {
+                  $group: {
+                      _id: { $ifNull: ["$latestPayment.platform", "web"] },
+                      count: { $sum: 1 }
                   }
               }
-          }
+          ]),
 
-          // Group by city name case-insensitively to combine duplicates after geocoding
-          const key = (name || "Unknown").toLowerCase().trim();
-          if (cityGroups[key]) {
-              const prevCount = cityGroups[key].count;
-              cityGroups[key].count += item.count;
-              cityGroups[key].paidCount = (cityGroups[key].paidCount || 0) + paidCount;
-              // Average coordinates of the grouped entries weighted by count
-              cityGroups[key].lat = (cityGroups[key].lat * prevCount + lat * item.count) / cityGroups[key].count;
-              cityGroups[key].lon = (cityGroups[key].lon * prevCount + lon * item.count) / cityGroups[key].count;
-          } else {
-              cityGroups[key] = {
-                  _id: key,
-                  cityName: name || "Unknown",
-                  country: country || "Unknown",
-                  lat: lat,
-                  lon: lon,
-                  count: item.count,
-                  paidCount: paidCount
-              };
-          }
-      }
-
-      let finalUserMapData = Object.values(cityGroups).sort((a, b) => b.count - a.count);
-
-      // Trigger background migration asynchronously to heal DB records
-      migrateOldLoginDetails().catch(err => console.error("Migration call error:", err));
-
-      // Calculate active subscriber splits (mobile vs. web)
-      const totalSubscribers = await User.countDocuments({
-          user_type: "subscriber",
-          ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}),
-          $or: [
-              { subscriptionExpiry: null },
-              { subscriptionExpiry: { $gte: now } }
-          ]
-      });
-
-      const subscriberPlatformData = await User.aggregate([
-          {
-              $match: {
-                  user_type: "subscriber",
-                  ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}),
-                  $or: [
-                      { subscriptionExpiry: null },
-                      { subscriptionExpiry: { $gte: now } }
-                  ]
-              }
-          },
-          {
-              $lookup: {
-                  from: "payments",
-                  localField: "_id",
-                  foreignField: "user",
-                  as: "userPayments"
-              }
-          },
-          {
-              $addFields: {
-                  latestPayment: {
-                      $reduce: {
-                          input: "$userPayments",
-                          initialValue: null,
-                          in: {
+          // 10. Calculate revenue split by actual payment platform
+          Payment.aggregate([
+              ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
+              {
+                  $group: {
+                      _id: { $ifNull: ["$platform", "web"] },
+                      totalInINR: {
+                          $sum: {
                               $cond: [
-                                  { $gt: ["$$this.date", { $ifNull: ["$$value.date", new Date(0)] }] },
-                                  "$$this",
-                                  "$$value"
+                                  { $eq: ["$currency", "USD"] },
+                                  { $multiply: ["$rupees", 83] },
+                                  "$rupees"
+                              ]
+                          }
+                      },
+                      count: { $sum: 1 }
+                  }
+              }
+          ].filter(Boolean)),
+
+          // 11. Calculate Facebook Ads attribution metrics - fbAttributedUserIds
+          TrackingEvent.distinct("user", {
+              $or: [
+                  { "eventData.fbclid": { $ne: null, $exists: true } },
+                  { "eventData.utm_source": { $regex: /facebook|fb|ig|instagram/i } }
+              ],
+              user: ignoredUserId ? { $nin: [null, ignoredUserId] } : { $ne: null }
+          }),
+
+          // 12. Calculate Grouped pricing tiers distribution
+          Payment.aggregate([
+              ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
+              { $group: { _id: { rupees: "$rupees", currency: "$currency" }, count: { $sum: 1 } } }
+          ].filter(Boolean)),
+
+          // 13. Advanced metrics - Funnel: Visitors
+          TrackingEvent.distinct("sessionId", {
+              ...trackingTimeQuery,
+              ...(ignoredUserId ? { user: { $ne: ignoredUserId } } : {})
+          }),
+
+          // 14. Advanced metrics - Funnel: Signups
+          User.countDocuments({ 
+              joinedAt: { $gte: startDate },
+              ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {})
+          }),
+
+          // 15. Advanced metrics - Funnel: Chatted users
+          TrackingEvent.distinct("user", {
+              eventType: "chat_message_sent",
+              user: ignoredUserId ? { $nin: [null, ignoredUserId] } : { $ne: null },
+              ...trackingTimeQuery
+          }),
+
+          // 16. Advanced metrics - Funnel: Engaged users
+          TrackingEvent.aggregate([
+              { $match: { 
+                  eventType: "chat_message_sent", 
+                  user: ignoredUserId ? { $nin: [null, ignoredUserId] } : { $ne: null }, 
+                  ...trackingTimeQuery 
+              } },
+              { $group: { _id: "$user", messageCount: { $sum: 1 } } },
+              { $match: { messageCount: { $gte: 10 } } },
+              { $count: "engagedCount" }
+          ]),
+
+          // 17. Advanced metrics - Funnel: Paid users
+          Payment.distinct("user", {
+              ...timeQuery,
+              user: ignoredUserId ? { $nin: [null, ignoredUserId] } : { $ne: null }
+          }),
+
+          // 18. Cohort Retention Dashboard - select recent cohort (joined last 30 days) to prevent scaling issues
+          User.find({
+              joinedAt: { 
+                  $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+                  $lte: new Date(Date.now() - 24 * 60 * 60 * 1000) 
+              },
+              ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {})
+          }).select("_id joinedAt").lean(),
+
+          // 19. User Activity Heatmap
+          LoginDetail.aggregate([
+              ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
+              {
+                  $project: {
+                      dayOfWeek: { $dayOfWeek: { date: "$time", timezone: "Asia/Kolkata" } },
+                      hour: { $hour: { date: "$time", timezone: "Asia/Kolkata" } }
+                  }
+              },
+              {
+                  $group: {
+                      _id: { dayOfWeek: "$dayOfWeek", hour: "$hour" },
+                      count: { $sum: 1 }
+                  }
+              }
+          ].filter(Boolean)),
+
+          // 20. Chat Analytics - Total & Avg message statistics (highly optimized in a single pipeline without $unwind)
+          Chat.aggregate([
+              ignoredUserId ? { $match: { participants: { $ne: ignoredUserId } } } : null,
+              {
+                  $project: {
+                      participants: 1,
+                      userMessagesCount: {
+                          $size: {
+                              $filter: {
+                                  input: "$messages",
+                                  as: "msg",
+                                  cond: { $eq: ["$$msg.senderModel", "User"] }
+                              }
+                          }
+                      }
+                  }
+              },
+              { $match: { userMessagesCount: { $gt: 0 } } },
+              {
+                  $group: {
+                      _id: null,
+                      totalMessages: { $sum: "$userMessagesCount" },
+                      uniqueUsers: { $addToSet: "$participants" }
+                  }
+              },
+              {
+                  $project: {
+                      totalMessages: 1,
+                      uniqueUsersCount: { $size: "$uniqueUsers" }
+                  }
+              }
+          ].filter(Boolean)),
+
+          // 21. Chat Analytics - Session duration metrics
+          TrackingEvent.aggregate([
+              ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
+              {
+                  $group: {
+                      _id: "$sessionId",
+                      minTime: { $min: "$createdAt" },
+                      maxTime: { $max: "$createdAt" }
+                  }
+              },
+              {
+                  $project: {
+                      durationMin: {
+                          $divide: [
+                              { $subtract: ["$maxTime", "$minTime"] },
+                              1000 * 60
+                          ]
+                      }
+                  }
+              },
+              {
+                  $match: {
+                      durationMin: { $gt: 0.5, $lt: 180 }
+                  }
+              },
+              {
+                  $group: {
+                      _id: null,
+                      avgSessionLen: { $avg: "$durationMin" }
+                  }
+              }
+          ].filter(Boolean))
+      ]);
+
+      // Calculate Facebook Ads attribution metrics that depend on fbAttributedUserIds
+      const [fbSubscribersCount, fbRevenueData] = await Promise.all([
+          User.countDocuments({
+              _id: { $in: fbAttributedUserIds },
+              user_type: "subscriber",
+              ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}),
+              $or: [
+                  { subscriptionExpiry: null },
+                  { subscriptionExpiry: { $gte: now } }
+              ]
+          }),
+          Payment.aggregate([
+              { $match: { user: { $in: fbAttributedUserIds } } },
+              {
+                  $group: {
+                      _id: null,
+                      totalInINR: {
+                          $sum: {
+                              $cond: [
+                                  { $eq: ["$currency", "USD"] },
+                                  { $multiply: ["$rupees", 83] },
+                                  "$rupees"
                               ]
                           }
                       }
                   }
               }
-          },
-          {
-              $group: {
-                  _id: { $ifNull: ["$latestPayment.platform", "web"] },
-                  count: { $sum: 1 }
-              }
-          }
+          ])
       ]);
-
-      let mobileSubscribers = 0;
-      let webSubscribers = 0;
-
-      subscriberPlatformData.forEach(item => {
-          if (item._id === "mobile") {
-              mobileSubscribers = item.count;
-          } else {
-              webSubscribers = item.count;
-          }
-      });
-
-      if (webSubscribers + mobileSubscribers < totalSubscribers) {
-          webSubscribers = totalSubscribers - mobileSubscribers;
-      }
-
-      const subscriberPercentage = usersData > 0 ? ((totalSubscribers / usersData) * 100).toFixed(1) : "0.0";
-
-      // Calculate revenue split by actual payment platform
-      const paymentSourceData = await Payment.aggregate([
-          ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
-          {
-              $group: {
-                  _id: { $ifNull: ["$platform", "web"] },
-                  totalInINR: {
-                      $sum: {
-                          $cond: [
-                              { $eq: ["$currency", "USD"] },
-                              { $multiply: ["$rupees", 83] },
-                              "$rupees"
-                          ]
-                      }
-                  },
-                  count: { $sum: 1 }
-              }
-          }
-      ].filter(Boolean));
-
-      let mobileRevenue = 0;
-      let webRevenue = 0;
-      let mobileTransactions = 0;
-      let webTransactions = 0;
-
-      paymentSourceData.forEach(item => {
-          if (item._id === "mobile") {
-              mobileRevenue = item.totalInINR;
-              mobileTransactions = item.count;
-          } else {
-              webRevenue = item.totalInINR;
-              webTransactions = item.count;
-          }
-      });
-
-      // Calculate Facebook Ads attribution metrics
-      const fbAttributedUserIds = await TrackingEvent.distinct("user", {
-          $or: [
-              { "eventData.fbclid": { $ne: null, $exists: true } },
-              { "eventData.utm_source": { $regex: /facebook|fb|ig|instagram/i } }
-          ],
-          user: ignoredUserId ? { $nin: [null, ignoredUserId] } : { $ne: null }
-      });
-
-      const fbSubscribersCount = await User.countDocuments({
-          _id: { $in: fbAttributedUserIds },
-          user_type: "subscriber",
-          ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {}),
-          $or: [
-              { subscriptionExpiry: null },
-              { subscriptionExpiry: { $gte: now } }
-          ]
-      });
-
-      const fbRevenueData = await Payment.aggregate([
-          { $match: { user: { $in: fbAttributedUserIds } } },
-          {
-              $group: {
-                  _id: null,
-                  totalInINR: {
-                      $sum: {
-                          $cond: [
-                              { $eq: ["$currency", "USD"] },
-                              { $multiply: ["$rupees", 83] },
-                              "$rupees"
-                          ]
-                      }
-                  }
-              }
-          }
-      ]);
-      const fbRevenue = fbRevenueData.length > 0 ? fbRevenueData[0].totalInINR : 0;
-
-      // Calculate Grouped pricing tiers distribution
-      const rawPaymentsData = await Payment.aggregate([
-          ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
-          { $group: { _id: { rupees: "$rupees", currency: "$currency" }, count: { $sum: 1 } } }
-      ].filter(Boolean));
-
-      const groupedTiers = {
-          monthly: { count: 0, revenueINR: 0, label: "Monthly Plan (₹99 / $1.49)" },
-          yearly: { count: 0, revenueINR: 0, label: "Premium Yearly Plan (₹599 / $9)" },
-          ultimate: { count: 0, revenueINR: 0, label: "Ultimate Yearly Plan (₹1499 / $19)" },
-          other: { count: 0, revenueINR: 0, label: "Custom / Manual" }
-      };
-
-      rawPaymentsData.forEach(item => {
-          const amount = Number(item._id.rupees || 0);
-          const currency = item._id.currency || "INR";
-          const count = item.count || 0;
-          const revINR = currency === "USD" ? amount * 83 * count : amount * count;
-
-          if (currency === "USD") {
-              if (amount < 5) {
-                  groupedTiers.monthly.count += count;
-                  groupedTiers.monthly.revenueINR += revINR;
-              } else if (amount < 12) {
-                  groupedTiers.yearly.count += count;
-                  groupedTiers.yearly.revenueINR += revINR;
-              } else {
-                  groupedTiers.ultimate.count += count;
-                  groupedTiers.ultimate.revenueINR += revINR;
-              }
-          } else {
-              if (amount <= 150) {
-                  groupedTiers.monthly.count += count;
-                  groupedTiers.monthly.revenueINR += revINR;
-              } else if (amount <= 750) {
-                  groupedTiers.yearly.count += count;
-                  groupedTiers.yearly.revenueINR += revINR;
-              } else {
-                  groupedTiers.ultimate.count += count;
-                  groupedTiers.ultimate.revenueINR += revINR;
-              }
-          }
-      });
-
-      const finalPricingTiers = Object.keys(groupedTiers).map(key => ({
-          tier: key,
-          label: groupedTiers[key].label,
-          count: groupedTiers[key].count,
-          revenueINR: Math.round(groupedTiers[key].revenueINR)
-      }));
-
-      // ── ADVANCED METRICS ──
-      // 1. User Funnel
-      const visitorsCount = (await TrackingEvent.distinct("sessionId", {
-          ...trackingTimeQuery,
-          ...(ignoredUserId ? { user: { $ne: ignoredUserId } } : {})
-      })).length;
-      
-      const signupsCount = await User.countDocuments({ 
-          joinedAt: { $gte: startDate },
-          ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {})
-      });
-
-      const chattedUsers = await TrackingEvent.distinct("user", {
-          eventType: "chat_message_sent",
-          user: ignoredUserId ? { $nin: [null, ignoredUserId] } : { $ne: null },
-          ...trackingTimeQuery
-      });
-      const chattedCount = chattedUsers.length;
-
-      const engagedData = await TrackingEvent.aggregate([
-          { $match: { 
-              eventType: "chat_message_sent", 
-              user: ignoredUserId ? { $nin: [null, ignoredUserId] } : { $ne: null }, 
-              ...trackingTimeQuery 
-          } },
-          { $group: { _id: "$user", messageCount: { $sum: 1 } } },
-          { $match: { messageCount: { $gte: 10 } } },
-          { $count: "engagedCount" }
-      ]);
-      const engagedCount = engagedData.length > 0 ? engagedData[0].engagedCount : 0;
-
-      const paidUsers = await Payment.distinct("user", {
-          ...timeQuery,
-          user: ignoredUserId ? { $nin: [null, ignoredUserId] } : { $ne: null }
-      });
-      const paidCount = paidUsers.length;
-
-      // progressive cascade to ensure funnel format is strictly logical (Visitors >= Signups >= Chatted >= Engaged >= Paid)
-      const fVisitors = Math.max(visitorsCount, signupsCount, 1);
-      const fSignups = Math.max(signupsCount, chattedCount);
-      const fChatted = Math.max(chattedCount, engagedCount);
-      const fEngaged = Math.max(engagedCount, paidCount);
-      const fPaid = paidCount;
-
-      const userFunnel = {
-          visitors: fVisitors,
-          signups: fSignups,
-          startedChat: fChatted,
-          engaged: fEngaged,
-          paid: fPaid
-      };
-
-      // 2. Cohort Retention Dashboard
-      const retentionCohort = await User.find({
-          joinedAt: { $lte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-          ...(ignoredUserId ? { _id: { $ne: ignoredUserId } } : {})
-      }).select("_id joinedAt").lean();
 
       let d1Eligible = 0, d1Retained = 0;
       let d7Eligible = 0, d7Retained = 0;
@@ -774,6 +721,167 @@ exports.dashboardData = async (req, res) => {
           });
       }
 
+      const revenueByCurrency = paymentsData.reduce((acc, curr) => {
+          acc[curr._id || "INR"] = curr.totalRevenue;
+          return acc;
+      }, { INR: 0, USD: 0 });
+      
+      // Estimated total in INR for summary (assuming 1 USD = 83 INR)
+      const totalRevenue = revenueByCurrency.INR + (revenueByCurrency.USD * 83);
+
+      // Parse Chat metrics
+      const totalMessages = chatMessageStats.length > 0 ? chatMessageStats[0].totalMessages : 0;
+      const uniqueSendersCount = chatMessageStats.length > 0 ? chatMessageStats[0].uniqueUsersCount : 0;
+      const avgMessagesPerUser = uniqueSendersCount > 0 ? Math.round(totalMessages / uniqueSendersCount) : 0;
+
+      const totalActiveUsers = activeUsersData.length > 0 ? activeUsersData[0].totalActiveUsers : 0;
+
+      const formattedCountryBreakdown = countryBreakdown.map(item => ({
+          country: item._id || "Unknown",
+          count: item.count,
+          percentage: ((item.count / usersData) * 100).toFixed(1)
+      }));
+
+      // Post-process map data to resolve any state-level names or "Unknown" to proper city names
+      const cityGroups = {};
+      for (const item of (userMapData || [])) {
+          let name = item.cityName;
+          let country = item.country;
+          const lat = item.lat;
+          const lon = item.lon;
+          const paidCount = item.paidCount || 0;
+
+          if (isStateName(name) || name === "Unknown" || !name) {
+              const geo = await getCityFromCoordinates(lat, lon);
+              if (geo && geo.cityName && geo.cityName !== "Unknown") {
+                  name = geo.cityName;
+                  if (geo.country && geo.country !== "Unknown") {
+                      country = geo.country;
+                  }
+              }
+          }
+
+          // Group by city name case-insensitively to combine duplicates after geocoding
+          const key = (name || "Unknown").toLowerCase().trim();
+          if (cityGroups[key]) {
+              const prevCount = cityGroups[key].count;
+              cityGroups[key].count += item.count;
+              cityGroups[key].paidCount = (cityGroups[key].paidCount || 0) + paidCount;
+              // Average coordinates of the grouped entries weighted by count
+              cityGroups[key].lat = (cityGroups[key].lat * prevCount + lat * item.count) / cityGroups[key].count;
+              cityGroups[key].lon = (cityGroups[key].lon * prevCount + lon * item.count) / cityGroups[key].count;
+          } else {
+              cityGroups[key] = {
+                  _id: key,
+                  cityName: name || "Unknown",
+                  country: country || "Unknown",
+                  lat: lat,
+                  lon: lon,
+                  count: item.count,
+                  paidCount: paidCount
+              };
+          }
+      }
+
+      let finalUserMapData = Object.values(cityGroups).sort((a, b) => b.count - a.count);
+
+      // Trigger background migration asynchronously to heal DB records
+      migrateOldLoginDetails().catch(err => console.error("Migration call error:", err));
+
+      let mobileSubscribers = 0;
+      let webSubscribers = 0;
+
+      subscriberPlatformData.forEach(item => {
+          if (item._id === "mobile") {
+              mobileSubscribers = item.count;
+          } else {
+              webSubscribers = item.count;
+          }
+      });
+
+      if (webSubscribers + mobileSubscribers < totalSubscribers) {
+          webSubscribers = totalSubscribers - mobileSubscribers;
+      }
+
+      const subscriberPercentage = usersData > 0 ? ((totalSubscribers / usersData) * 100).toFixed(1) : "0.0";
+
+      let mobileRevenue = 0;
+      let webRevenue = 0;
+      let mobileTransactions = 0;
+      let webTransactions = 0;
+
+      paymentSourceData.forEach(item => {
+          if (item._id === "mobile") {
+              mobileRevenue = item.totalInINR;
+              mobileTransactions = item.count;
+          } else {
+              webRevenue = item.totalInINR;
+              webTransactions = item.count;
+          }
+      });
+
+      const fbRevenue = fbRevenueData.length > 0 ? fbRevenueData[0].totalInINR : 0;
+
+      const groupedTiers = {
+          monthly: { count: 0, revenueINR: 0, label: "Monthly Plan (₹99 / $1.49)" },
+          yearly: { count: 0, revenueINR: 0, label: "Premium Yearly Plan (₹599 / $9)" },
+          ultimate: { count: 0, revenueINR: 0, label: "Ultimate Yearly Plan (₹1499 / $19)" },
+          other: { count: 0, revenueINR: 0, label: "Custom / Manual" }
+      };
+
+      rawPaymentsData.forEach(item => {
+          const amount = Number(item._id.rupees || 0);
+          const currency = item._id.currency || "INR";
+          const count = item.count || 0;
+          const revINR = currency === "USD" ? amount * 83 * count : amount * count;
+
+          if (currency === "USD") {
+              if (amount < 5) {
+                  groupedTiers.monthly.count += count;
+                  groupedTiers.monthly.revenueINR += revINR;
+              } else if (amount < 12) {
+                  groupedTiers.yearly.count += count;
+                  groupedTiers.yearly.revenueINR += revINR;
+              } else {
+                  groupedTiers.ultimate.count += count;
+                  groupedTiers.ultimate.revenueINR += revINR;
+              }
+          } else {
+              if (amount <= 150) {
+                  groupedTiers.monthly.count += count;
+                  groupedTiers.monthly.revenueINR += revINR;
+              } else if (amount <= 750) {
+                  groupedTiers.yearly.count += count;
+                  groupedTiers.yearly.revenueINR += revINR;
+              } else {
+                  groupedTiers.ultimate.count += count;
+                  groupedTiers.ultimate.revenueINR += revINR;
+              }
+          }
+      });
+
+      const finalPricingTiers = Object.keys(groupedTiers).map(key => ({
+          tier: key,
+          label: groupedTiers[key].label,
+          count: groupedTiers[key].count,
+          revenueINR: Math.round(groupedTiers[key].revenueINR)
+      }));
+
+      // Funnel formatting
+      const fVisitors = Math.max(visitorsCount.length, signupsCount, 1);
+      const fSignups = Math.max(signupsCount, chattedUsers.length);
+      const fChatted = Math.max(chattedUsers.length, engagedData.length > 0 ? engagedData[0].engagedCount : 0);
+      const fEngaged = Math.max(engagedData.length > 0 ? engagedData[0].engagedCount : 0, paidUsers.length);
+      const fPaid = paidUsers.length;
+
+      const userFunnel = {
+          visitors: fVisitors,
+          signups: fSignups,
+          startedChat: fChatted,
+          engaged: fEngaged,
+          paid: fPaid
+      };
+
       const retentionStats = {
           day1: d1Eligible > 0 ? Number(((d1Retained / d1Eligible) * 100).toFixed(1)) : 0,
           day7: d7Eligible > 0 ? Number(((d7Retained / d7Eligible) * 100).toFixed(1)) : 0,
@@ -786,72 +894,12 @@ exports.dashboardData = async (req, res) => {
           d30Total: d30Eligible
       };
 
-      // 3. User Activity Heatmap
-      const heatmapRaw = await LoginDetail.aggregate([
-          ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
-          {
-              $project: {
-                  dayOfWeek: { $dayOfWeek: { date: "$time", timezone: "Asia/Kolkata" } },
-                  hour: { $hour: { date: "$time", timezone: "Asia/Kolkata" } }
-              }
-          },
-          {
-              $group: {
-                  _id: { dayOfWeek: "$dayOfWeek", hour: "$hour" },
-                  count: { $sum: 1 }
-              }
-          }
-      ].filter(Boolean));
-
       const heatmapData = heatmapRaw.map(item => ({
           dayOfWeek: item._id.dayOfWeek,
           hour: item._id.hour,
           count: item.count
       }));
 
-      // 4. Chat Analytics
-      const userMessageCounts = await Chat.aggregate([
-          ignoredUserId ? { $match: { participants: { $ne: ignoredUserId } } } : null,
-          { $unwind: "$messages" },
-          { $match: { "messages.senderModel": "User" } },
-          ignoredUserId ? { $match: { "messages.sender": { $ne: ignoredUserId } } } : null,
-          { $group: { _id: "$messages.sender", count: { $sum: 1 } } },
-          { $group: { _id: null, avgMessages: { $avg: "$count" }, totalMessages: { $sum: "$count" } } }
-      ].filter(Boolean));
-      const avgMessagesPerUser = userMessageCounts.length > 0 ? Math.round(userMessageCounts[0].avgMessages) : 0;
-      const totalMessagesCount = userMessageCounts.length > 0 ? userMessageCounts[0].totalMessages : 0;
-
-      const sessionData = await TrackingEvent.aggregate([
-          ignoredUserId ? { $match: { user: { $ne: ignoredUserId } } } : null,
-          {
-              $group: {
-                  _id: "$sessionId",
-                  minTime: { $min: "$createdAt" },
-                  maxTime: { $max: "$createdAt" }
-              }
-          },
-          {
-              $project: {
-                  durationMin: {
-                      $divide: [
-                          { $subtract: ["$maxTime", "$minTime"] },
-                          1000 * 60
-                      ]
-                  }
-              }
-          },
-          {
-              $match: {
-                  durationMin: { $gt: 0.5, $lt: 180 }
-              }
-          },
-          {
-              $group: {
-                  _id: null,
-                  avgSessionLen: { $avg: "$durationMin" }
-              }
-          }
-      ].filter(Boolean));
       const avgSessionLength = sessionData.length > 0 ? Math.round(sessionData[0].avgSessionLen) : 15;
 
       return res.status(200).json({
@@ -885,7 +933,7 @@ exports.dashboardData = async (req, res) => {
           retentionStats,
           heatmapData,
           chatAnalytics: {
-              totalMessages: totalMessagesCount || totalMessages,
+              totalMessages,
               avgMessagesPerUser,
               avgSessionLength
           }

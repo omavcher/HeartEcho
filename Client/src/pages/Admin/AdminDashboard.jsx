@@ -363,6 +363,7 @@ const AdminDashboard = () => {
   const mapInstanceRef = useRef(null);
   const [graphData, setGraphData] = useState({ revenueTrend: [] });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [conversionData, setConversionData] = useState([]);
   const [conversionType, setConversionType] = useState("daily");
   const [notification, setNotification] = useState({ show: false, message: "", type: "error" });
@@ -382,9 +383,10 @@ const AdminDashboard = () => {
   const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const token = getToken();
       const response = await axios.post(`${api.Url}/admin/dashboard-data`, { timePeriod }, { 
-        headers: { Authorization: `Bearer ${token}` }, timeout: 10000 
+        headers: { Authorization: `Bearer ${token}` }, timeout: 15000 
       });
 
       const data = response.data;
@@ -418,6 +420,11 @@ const AdminDashboard = () => {
       }, 4000);
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
+      setError(err.message || "Failed to load dashboard data");
+      setNotification({ show: true, message: err.message || "Failed to load dashboard data", type: "error" });
+      setTimeout(() => {
+        setNotification(p => ({ ...p, show: false }));
+      }, 4000);
     } finally {
       setLoading(false);
     }
@@ -444,7 +451,7 @@ const AdminDashboard = () => {
 
   // Map init effect - fires when loading transitions from true to false
   useEffect(() => {
-    if (loading) return;
+    if (loading || error) return;
 
     // Delay so React finishes painting the DOM before we touch the canvas
     const timer = setTimeout(() => {
@@ -761,7 +768,52 @@ const AdminDashboard = () => {
           </div>
         )}
         
-        {loading ? (
+        {error ? (
+          <div style={{
+            height: '60vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '20px',
+            textAlign: 'center',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif'
+          }}>
+            <span style={{ fontSize: '48px' }}>⚠️</span>
+            <h3 style={{ margin: 0, color: '#fff', fontSize: '22px', fontWeight: 700, letterSpacing: '-0.5px' }}>Dashboard Offline</h3>
+            <p style={{ margin: 0, color: '#ff69b4', maxWidth: '400px', fontSize: '14px', fontWeight: 500 }}>
+              {error}
+            </p>
+            <p style={{ margin: 0, color: '#888', maxWidth: '400px', fontSize: '13px' }}>
+              The server took too long to compile analytics or returned an error. Please retry.
+            </p>
+            <button 
+              onClick={fetchDashboardData}
+              style={{
+                background: '#ff69b4',
+                color: '#000',
+                border: 'none',
+                padding: '12px 28px',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                fontWeight: 700,
+                fontSize: '14px',
+                boxShadow: '0 8px 20px rgba(255, 105, 180, 0.25)',
+                transition: 'opacity 0.2s, transform 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.opacity = '0.9';
+                e.target.style.transform = 'scale(1.02)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.opacity = '1';
+                e.target.style.transform = 'scale(1)';
+              }}
+            >
+              Retry Loading
+            </button>
+          </div>
+        ) : loading ? (
           <div className="loading-x30sn"><div className="spinner-x30sn"></div><p style={{marginTop:10, color:'#888'}}>Analyzing Data...</p></div>
         ) : (
           <>

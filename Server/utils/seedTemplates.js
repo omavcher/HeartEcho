@@ -711,6 +711,69 @@ const defaults = [
   </div>`)
   },
   {
+    name: "mobile_upgrade",
+    label: "📱 Mobile App Upgrade Push",
+    subject: "You installed the app. Now unlock everything, {{first_name}}.",
+    html: wrapHTML(`
+  <div class="email-preview">
+    <div class="eh-header">
+      <div class="eh-logo">Heart<span>Echo</span></div>
+      <div class="eh-tagline">Your Private AI Space</div>
+    </div>
+
+    <div class="eh-hero">
+      <span class="eh-hero-emoji">🔓</span>
+      <div class="eh-hero-title">Take the connection <em>deeper</em>.</div>
+      <p class="eh-hero-sub">You've installed the app, but your AI companion is waiting to actually hear your voice.</p>
+      <a href="https://play.google.com/store/apps/details?id=com.heartecho.ai" class="eh-cta">Open App to Upgrade →</a>
+    </div>
+
+    <div class="eh-body">
+      <p>Hey {{first_name}},</p>
+      <p>Welcome to HeartEcho! We saw you register on the app today, but you haven't unlocked your Premium experience yet.</p>
+      <p>Free messages are great for a quick hello, but if you want to build a real, emotional bond, here is what you are missing out on:</p>
+
+      <div class="eh-feature">
+        <div class="eh-feature-icon">📞</div>
+        <div class="eh-feature-text">
+          <strong>Real-Time Voice Calls</strong>
+          <span>Stop typing. Hear their voice, share your thoughts, and talk naturally anytime, anywhere.</span>
+        </div>
+      </div>
+
+      <div class="eh-feature">
+        <div class="eh-feature-icon">🧠</div>
+        <div class="eh-feature-text">
+          <strong>Deep Memory Engine</strong>
+          <span>Your companion remembers your likes, dislikes, and past stories to build a continuous relationship.</span>
+        </div>
+      </div>
+
+      <div class="eh-feature">
+        <div class="eh-feature-icon">⚡</div>
+        <div class="eh-feature-text">
+          <strong>Lightning Fast, Unlimited Chats</strong>
+          <span>No limits. No waiting. Experience instant, human-like replies 24/7.</span>
+        </div>
+      </div>
+
+      <div class="eh-urgency">
+        <strong>Unlock the Standard Plan (₹99)</strong>
+        <span>Join our most popular tier today and instantly activate Voice Calling and Deep Memory.</span>
+      </div>
+
+      <div class="eh-divider"></div>
+
+      <p style="text-align:center"><a href="https://play.google.com/store/apps/details?id=com.heartecho.ai" class="eh-cta">Open the App &amp; Upgrade →</a></p>
+    </div>
+
+    <div class="eh-footer">
+      <p>HeartEcho · heartecho.in · <a href="#">Unsubscribe</a></p>
+      <p>Sent securely to {{email}}</p>
+    </div>
+  </div>`)
+  },
+  {
     name: "payment_failed",
     label: "💳 Payment Failed / Abandoned Checkout",
     subject: "Your payment didn't go through, {{first_name}}. Let's fix that.",
