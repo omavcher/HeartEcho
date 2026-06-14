@@ -5,7 +5,8 @@ import axios from "axios";
 import api from "../../config/api";
 import { 
   FaMoneyBillWave, FaChartLine, FaUsers, FaCreditCard, 
-  FaSync, FaArrowUp, FaCrown, FaFacebook, FaSearch, FaDownload, FaArrowDown
+  FaSync, FaArrowUp, FaCrown, FaFacebook, FaSearch, FaDownload, FaArrowDown,
+  FaGlobe, FaMobileAlt
 } from "react-icons/fa";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid
@@ -358,6 +359,25 @@ const styles = `
   border: 1px solid rgba(255, 59, 48, 0.15); 
 }
 
+.pa-platform-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.platform-web {
+  background: rgba(0, 122, 255, 0.05);
+  color: #007aff;
+  border: 1px solid rgba(0, 122, 255, 0.15);
+}
+.platform-mobile {
+  background: rgba(218, 34, 255, 0.05);
+  color: #da22ff;
+  border: 1px solid rgba(218, 34, 255, 0.15);
+}
+
 /* RESPONSIVE LAYOUT */
 @media (max-width: 1024px) {
   .pa-charts-row {
@@ -464,6 +484,7 @@ const PaymentActivityAdmin = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [currencyFilter, setCurrencyFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
+  const [platformFilter, setPlatformFilter] = useState("all");
   const [visibleCount, setVisibleCount] = useState(25);
 
   const getToken = useCallback(() => (typeof window !== 'undefined' ? localStorage.getItem("token") || "" : ""), []);
@@ -514,6 +535,46 @@ const PaymentActivityAdmin = () => {
       totalTxns
     };
   }, [transactions]);
+
+  // --- PLATFORM SPLIT METRICS ---
+  const platformStats = useMemo(() => {
+    let webCount = 0;
+    let webRevenue = 0;
+    let mobileCount = 0;
+    let mobileRevenue = 0;
+
+    transactions.forEach(t => {
+      const isMobile = t.platform === "mobile";
+      const amtINR = t.currency === 'USD' ? t.rupees * 83 : t.rupees;
+      if (isMobile) {
+        mobileCount++;
+        mobileRevenue += amtINR;
+      } else {
+        webCount++;
+        webRevenue += amtINR;
+      }
+    });
+
+    if (data?.platformDistribution && data.platformDistribution.length > 0) {
+      const webAgg = data.platformDistribution.find(p => p.platform === "web");
+      const mobAgg = data.platformDistribution.find(p => p.platform === "mobile");
+      return {
+        web: {
+          count: webAgg ? webAgg.count : 0,
+          revenueINR: webAgg ? webAgg.revenueINR : 0
+        },
+        mobile: {
+          count: mobAgg ? mobAgg.count : 0,
+          revenueINR: mobAgg ? mobAgg.revenueINR : 0
+        }
+      };
+    }
+
+    return {
+      web: { count: webCount, revenueINR: webRevenue },
+      mobile: { count: mobileCount, revenueINR: mobileRevenue }
+    };
+  }, [data, transactions]);
 
   // --- CHART DATA PREPARATION ---
   const tiersData = useMemo(() => {
@@ -590,8 +651,13 @@ const PaymentActivityAdmin = () => {
       });
     }
 
+    // 5. Platform Filter
+    if (platformFilter !== "all") {
+      result = result.filter(t => (t.platform || "web") === platformFilter);
+    }
+
     return result;
-  }, [transactions, searchTerm, statusFilter, currencyFilter, sourceFilter]);
+  }, [transactions, searchTerm, statusFilter, currencyFilter, sourceFilter, platformFilter]);
 
   const paginatedTxns = useMemo(() => {
     return filteredTransactions.slice(0, visibleCount);
@@ -599,7 +665,7 @@ const PaymentActivityAdmin = () => {
 
   // --- EXPORT UTILITIES ---
   const exportCSV = () => {
-    const headers = ["Transaction ID", "User Name", "Email", "Amount", "Currency", "Amount (INR)", "Source", "Date", "Plan Expiry", "Status"];
+    const headers = ["Transaction ID", "User Name", "Email", "Amount", "Currency", "Amount (INR)", "Source", "Platform", "Date", "Plan Expiry", "Status"];
     const rows = filteredTransactions.map(t => {
       const isActive = new Date(t.expiry_date) > new Date();
       const amountInINR = t.currency === 'USD' ? t.rupees * 83 : t.rupees;
@@ -611,6 +677,7 @@ const PaymentActivityAdmin = () => {
         t.currency || "INR",
         Math.round(amountInINR),
         t.isFacebookSource ? "Facebook Ads" : "Organic",
+        t.platform || "web",
         new Date(t.date).toISOString(),
         new Date(t.expiry_date).toISOString(),
         isActive ? "Active" : "Expired"
@@ -639,6 +706,7 @@ const PaymentActivityAdmin = () => {
         amount: t.rupees || 0,
         currency: t.currency || "INR",
         isFacebookSource: t.isFacebookSource,
+        platform: t.platform || "web",
         date: t.date,
         expiryDate: t.expiry_date,
         status: isActive ? "Active" : "Expired"
@@ -760,6 +828,18 @@ const PaymentActivityAdmin = () => {
             <span>{advancedStats.inrCount} INR Payments</span>
           </div>
         </div>
+
+        {/* Platform split */}
+        <div className="pa-kpi-card">
+          <div className="pa-kpi-top">
+            <span className="pa-kpi-label">Platform Split (Web / Mob)</span>
+            <div className="pa-kpi-icon" style={{ color: '#da22ff', background: 'rgba(218,34,255,0.08)', borderColor: 'rgba(218,34,255,0.15)' }}><FaGlobe /></div>
+          </div>
+          <div className="pa-kpi-value">{platformStats.web.count} / {platformStats.mobile.count}</div>
+          <div className="pa-kpi-trend trend-up" style={{ color: '#888' }}>
+            <span>₹{Math.round(platformStats.web.revenueINR).toLocaleString()} Web | ₹{Math.round(platformStats.mobile.revenueINR).toLocaleString()} Mob</span>
+          </div>
+        </div>
       </div>
 
       {/* CHARTS */}
@@ -823,6 +903,11 @@ const PaymentActivityAdmin = () => {
             <option value="facebook">Facebook Ads</option>
             <option value="organic">Organic / Others</option>
           </select>
+          <select className="pa-select" value={platformFilter} onChange={e => { setPlatformFilter(e.target.value); setVisibleCount(25); }}>
+            <option value="all">All Platforms</option>
+            <option value="web">Web</option>
+            <option value="mobile">Mobile</option>
+          </select>
           <button className="pa-btn" onClick={exportJSON} title="Export JSON format">
             JSON
           </button>
@@ -843,6 +928,7 @@ const PaymentActivityAdmin = () => {
               <tr>
                 <th>User / Subscriber</th>
                 <th>Amount</th>
+                <th>Platform</th>
                 <th>Transaction ID</th>
                 <th>Date</th>
                 <th>Plan Expiry</th>
@@ -870,6 +956,12 @@ const PaymentActivityAdmin = () => {
                     </td>
                     <td>
                       <span className="pa-amount">{formatCurrency(txn.rupees, txn.currency)}</span>
+                    </td>
+                    <td>
+                      <span className={`pa-platform-badge ${txn.platform === 'mobile' ? 'platform-mobile' : 'platform-web'}`}>
+                        {txn.platform === 'mobile' ? <FaMobileAlt style={{ marginRight: '6px' }} /> : <FaGlobe style={{ marginRight: '6px' }} />}
+                        {txn.platform === 'mobile' ? 'Mobile' : 'Web'}
+                      </span>
                     </td>
                     <td>
                       <span className="pa-mono-id">{txn.transaction_id}</span>

@@ -3612,6 +3612,9 @@ exports.getPaymentAnalytics = async (req, res) => {
           paymentDistribution: [
              { $group: { _id: { amount: "$rupees", currency: "$currency" }, count: { $sum: 1 } } },
              { $sort: { "_id.amount": 1 } }
+          ],
+          platformDistribution: [
+             { $group: { _id: { platform: "$platform", currency: "$currency" }, count: { $sum: 1 }, revenue: { $sum: "$rupees" } } }
           ]
         }
       }
@@ -3755,6 +3758,32 @@ exports.getPaymentAnalytics = async (req, res) => {
         revenueINR: Math.round(groupedTiersMap[key].revenueINR)
     }));
 
+    // Calculate Platform Distribution Stats
+    const rawPlatforms = stats[0].platformDistribution || [];
+    const platformStatsMap = {
+        web: { count: 0, revenueINR: 0 },
+        mobile: { count: 0, revenueINR: 0 }
+    };
+
+    rawPlatforms.forEach(item => {
+        const platform = item._id.platform || "web";
+        const currency = item._id.currency || "INR";
+        const count = item.count || 0;
+        const revenue = item.revenue || 0;
+        const revINR = currency === "USD" ? revenue * 83 : revenue;
+
+        if (platformStatsMap[platform]) {
+            platformStatsMap[platform].count += count;
+            platformStatsMap[platform].revenueINR += revINR;
+        }
+    });
+
+    const finalPlatformDistribution = Object.keys(platformStatsMap).map(key => ({
+        platform: key,
+        count: platformStatsMap[key].count,
+        revenueINR: Math.round(platformStatsMap[key].revenueINR)
+    }));
+
     res.status(200).json({
       success: true,
       summary: {
@@ -3770,7 +3799,8 @@ exports.getPaymentAnalytics = async (req, res) => {
           // Estimated churn could be added here if you track cancels
         },
         pricingTiers: stats[0].paymentDistribution, // Shows which plan price is most popular
-        groupedPricingTiers: finalGroupedPricingTiers
+        groupedPricingTiers: finalGroupedPricingTiers,
+        platformDistribution: finalPlatformDistribution
       },
       transactions: enrichedLogs
     });
