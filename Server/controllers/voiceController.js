@@ -101,14 +101,97 @@ exports.handleVoiceCall = async (req, res) => {
     // Valid Bulbul v3 speakers: shubh (M), ritu (F)
     const speakerId = aiFriend.gender === "male" ? "shubh" : "ritu";
 
-    // Optimized Prompt: Strictly Devanagari for Native Accent + Ultra-Concise for speed
-    const contextPrompt = `You are ${aiFriend.name}, an Indian ${aiFriend.gender} persona (${aiFriend.relationship}). 
-STRICT RULES:
-1. ALWAYS respond in DEVANAGARI HINDI script (actual Hindi letters).
-2. NEVER use English/Roman script. 
-3. Keep response under 15-20 words to minimize processing time.
-4. Speak like a real human, not a bot. Be seductive or friendly as per your role.`;
+    // --- Retrieve or create chat session to get recent history ---
+    let chat = await Chat.findOne({ _id: chatId });
+    if (!chat) {
+       chat = await Chat.findOne({ participants: userId, aiParticipants: aiFriend._id });
+    }
+    if (!chat) {
+      chat = new Chat({ participants: userId, aiParticipants: aiFriend._id, messages: [] });
+    }
 
+    // Get recent chat history (last 10 messages)
+    const recentMessages = chat.messages.slice(-10);
+    const chatHistory = recentMessages
+      .map((msg) => {
+        const senderName = msg.senderModel === "User" ? (user.name || "User") : aiFriend.name;
+        return msg.text ? `${senderName}: ${msg.text}` : null;
+      })
+      .filter((msg) => msg !== null)
+      .join("\n");
+
+    const firstName = user.name ? user.name.split(" ")[0] : "User";
+    const interests = user.selectedInterests ? user.selectedInterests.join(", ") : "Not specified";
+
+    // Build the base system prompt containing AI's details and constraints
+    const baseSystemPrompt = `You are ${aiFriend.name}, an Indian ${aiFriend.gender} persona.
+Your Age: ${aiFriend.age || 'Not specified'}.
+Your Relationship to the user: ${aiFriend.relationship || 'Friend'}.
+Your Vibe: ${aiFriend.settings?.persona || 'friendly'}.
+Your Background: ${aiFriend.description || 'Normal Indian background'}.
+
+**User Context (use naturally if relevant):**
+- Name: ${firstName}
+- Age: ${user.age || 'Not specified'}
+- City: ${user.city || 'Not specified'}
+- Interests: ${interests}
+
+**Voice Calling Constraints (CRITICAL):**
+1. Keep your response extremely short (under 15-20 words, max 25 words) to ensure fast text-to-speech processing.
+2. Speak naturally like a real human on a phone call. Avoid robotic phrasing or prefixes like "AI:" or "${aiFriend.name}:".
+3. Do not use emojis (no emojis at all), since this text will be read aloud.
+4. Adhere strictly to the script/language rules below.`;
+
+    // Determine target language, script, and prompt context based on user preferredLanguage
+    const userPreferredLang = user.preferredLanguage || "Hinglish";
+    let targetLanguageCode = "hi-IN";
+    let scriptInstruction = "";
+
+    if (userPreferredLang === "English") {
+      targetLanguageCode = "en-IN";
+      scriptInstruction = `1. ALWAYS respond in PURE ENGLISH.\n2. Use the English alphabet/script.\n3. NEVER use Hindi or other Indian scripts.`;
+    } else if (userPreferredLang === "Hinglish") {
+      targetLanguageCode = "hi-IN";
+      scriptInstruction = `1. ALWAYS respond in DEVANAGARI HINDI script (actual Hindi letters).\n2. Speak in conversational Hinglish (Mix of Hindi & English words), but write EVERYTHING using Devanagari script (e.g. write 'बिजी' for busy, 'क्यूट' for cute, 'थैंक यू' for thank you). NEVER use English/Latin alphabet.`;
+    } else if (userPreferredLang === "Hindi") {
+      targetLanguageCode = "hi-IN";
+      scriptInstruction = `1. ALWAYS respond in DEVANAGARI HINDI script (actual Hindi letters).\n2. Use standard Hindi phrasing.\n3. NEVER use English/Latin letters.`;
+    } else {
+      const scriptMap = {
+        "Bengali": { code: "bn-IN", name: "BENGALI script (actual Bengali letters)" },
+        "Marathi": { code: "mr-IN", name: "MARATHI/DEVANAGARI script (actual Marathi letters)" },
+        "Telugu": { code: "te-IN", name: "TELUGU script (actual Telugu letters)" },
+        "Tamil": { code: "ta-IN", name: "TAMIL script (actual Tamil letters)" },
+        "Gujarati": { code: "gu-IN", name: "GUJARATI script (actual Gujarati letters)" },
+        "Urdu": { code: "ur-IN", name: "URDU script (actual Urdu letters)" },
+        "Kannada": { code: "kn-IN", name: "KANNADA script (actual Kannada letters)" },
+        "Odia": { code: "or-IN", name: "ODIA script (actual Odia letters)" },
+        "Malayalam": { code: "ml-IN", name: "MALAYALAM script (actual Malayalam letters)" },
+        "Punjabi": { code: "pa-IN", name: "PUNJABI/GURMUKHI script (actual Punjabi letters)" }
+      };
+
+      const langConfig = scriptMap[userPreferredLang];
+      if (langConfig) {
+        targetLanguageCode = langConfig.code;
+        scriptInstruction = `1. ALWAYS respond in ${userPreferredLang} using the native ${langConfig.name}.\n2. NEVER use English/Latin letters or other scripts.`;
+      } else {
+        targetLanguageCode = "hi-IN";
+        scriptInstruction = `1. ALWAYS respond in DEVANAGARI HINDI script.\n2. NEVER use English/Latin letters.`;
+      }
+    }
+
+    const fullSystemPrompt = `${baseSystemPrompt}\n\n**LANGUAGE & SCRIPT RULE (MUST FOLLOW):**\n${scriptInstruction}`;
+
+    // Build messages list for OpenRouter
+    const openRouterMessages = [
+      { role: "system", content: fullSystemPrompt }
+    ];
+
+    if (chatHistory) {
+      openRouterMessages.push({ role: "system", content: `Recent chat history context:\n${chatHistory}` });
+    }
+
+    openRouterMessages.push({ role: "user", content: text });
 
     // --- 1. Check Quotas ---
     const userQuota = user.audioCallQuota || 0;
@@ -125,18 +208,14 @@ STRICT RULES:
       }
     }
 
-    // --- 2. Call OpenRouter xAI ---
+    // --- 2. Call OpenRouter xAI (with Google Gemini fallback) ---
     let aiResponseText = "";
     try {
       const openRouterRes = await axios.post(
         "https://openrouter.ai/api/v1/chat/completions",
         {
-          // We use grok-beta or a fast model
           model: "x-ai/grok-4.3", 
-          messages: [
-            { role: "system", content: contextPrompt },
-            { role: "user", content: text }
-          ]
+          messages: openRouterMessages
         },
         {
           headers: {
@@ -148,13 +227,40 @@ STRICT RULES:
       );
       aiResponseText = openRouterRes.data.choices[0].message.content;
     } catch (llmError) {
-      console.error("LLM Error:", llmError.message);
-      return res.status(503).json({
-        success: false,
-        reason: "high_traffic",
-        message: "OpenRouter: " + (llmError.response?.data?.error?.message || llmError.message)
-      });
+      console.warn("Primary LLM Error, trying fallback:", llmError.message);
+      try {
+        const openRouterRes = await axios.post(
+          "https://openrouter.ai/api/v1/chat/completions",
+          {
+            model: "x-ai/grok-4.3", 
+            messages: openRouterMessages
+          },
+          {
+            headers: {
+              "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY || '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'}`,
+              "Content-Type": "application/json"
+            },
+            timeout: 10000
+          }
+        );
+        aiResponseText = openRouterRes.data.choices[0].message.content;
+      } catch (fallbackError) {
+        console.error("LLM Fallback Error:", fallbackError.message);
+        return res.status(503).json({
+          success: false,
+          reason: "high_traffic",
+          message: "OpenRouter: " + (fallbackError.response?.data?.error?.message || fallbackError.message)
+        });
+      }
     }
+
+    // Clean up response: remove markdown symbols, parenthetical actions, and potential speaker prefixes
+    let cleanedText = aiResponseText.trim();
+    const namePrefixRegex = new RegExp(`^(AI|Assistant|Bot|System|User|You|${aiFriend.name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}):\\s*`, 'i');
+    cleanedText = cleanedText.replace(namePrefixRegex, '');
+    cleanedText = cleanedText.replace(/[\*\_\~]+/g, ''); // Remove markdown bold/italic/tilde
+    cleanedText = cleanedText.replace(/[\(\[\{].*?[\)\]\}]/g, ''); // Remove action/stage directions like (laughs)
+    cleanedText = cleanedText.trim();
 
     // --- 3. Call Sarvam AI for Audio ---
     let audioBase64 = null;
@@ -162,8 +268,8 @@ STRICT RULES:
       const sarvamRes = await axios.post(
         "https://api.sarvam.ai/text-to-speech",
         {
-          inputs: [aiResponseText],
-          target_language_code: "hi-IN",
+          inputs: [cleanedText],
+          target_language_code: targetLanguageCode,
           speaker: speakerId,
           model: "bulbul:v3",
           speech_sample_rate: 24000,
@@ -201,16 +307,6 @@ STRICT RULES:
     }
 
     // --- 5. Save Calling History to Chat ---
-    // Search for existing chat session by ID (if chatId was the chat) OR by user/ai pair
-    let chat = await Chat.findOne({ _id: chatId });
-    if (!chat) {
-       chat = await Chat.findOne({ participants: userId, aiParticipants: aiFriend._id });
-    }
-    
-    if (!chat) {
-      chat = new Chat({ participants: userId, aiParticipants: aiFriend._id, messages: [] });
-    }
-    
     // User voice transcript message
     chat.messages.push({
       sender: userId,
@@ -220,11 +316,11 @@ STRICT RULES:
       mediaType: "text"
     });
     
-    // AI voice response message
+    // AI voice response message (using cleanedText for history so it matches what they heard)
     chat.messages.push({
       sender: chatId,
       senderModel: senderModelStr,
-      text: aiResponseText,
+      text: cleanedText,
       time: new Date(),
       mediaType: "text"
     });
@@ -235,7 +331,7 @@ STRICT RULES:
     return res.status(200).json({
       success: true,
       audioBase64: audioBase64,
-      text: aiResponseText,
+      text: cleanedText,
       minutesUsed: user.audioCallMinutesUsedToday || 0,
       quotaTotal: user.audioCallQuota || 0
     });

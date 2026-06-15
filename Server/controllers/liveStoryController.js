@@ -258,6 +258,32 @@ exports.sendChatMessage = async (req, res) => {
         (city ? `City: ${city}. ` : "");
     }
 
+    // Determine language and script style based on user preferredLanguage
+    const preferredLang = user.preferredLanguage || "Hinglish";
+    let languageInstruction = "";
+    
+    if (preferredLang === "Hinglish") {
+      languageInstruction = `Speak to the user in conversational "Hinglish" (Mix of Hindi & English written in Roman/English script). Keep the tone cinematic, emotional, and immersive.`;
+    } else if (preferredLang === "English") {
+      languageInstruction = `Speak to the user exclusively in English. Keep the tone cinematic, emotional, and immersive.`;
+    } else {
+      const scriptMap = {
+        "Hindi": "Devanagari script (Hindi letters)",
+        "Bengali": "Bengali script (Bengali letters)",
+        "Marathi": "Devanagari script (Marathi letters)",
+        "Telugu": "Telugu script (Telugu letters)",
+        "Tamil": "Tamil script (Tamil letters)",
+        "Gujarati": "Gujarati script (Gujarati letters)",
+        "Urdu": "Urdu/Perso-Arabic script (Urdu letters)",
+        "Kannada": "Kannada script (Kannada letters)",
+        "Odia": "Odia script (Odia letters)",
+        "Malayalam": "Malayalam script (Malayalam letters)",
+        "Punjabi": "Gurmukhi script (Punjabi letters)"
+      };
+      const scriptDesc = scriptMap[preferredLang] || `${preferredLang} script`;
+      languageInstruction = `Speak to the user ALWAYS and ONLY in their preferred language: ${preferredLang}, writing in the appropriate native script: ${scriptDesc}. Do NOT reply in English or Romanized/Hinglish script. Keep the tone cinematic, emotional, and immersive, with natural native dialogues and emotions.`;
+    }
+
     if (storyModel) {
       personaContext =
         `Title: ${storyModel.title}. ` +
@@ -265,14 +291,14 @@ exports.sendChatMessage = async (req, res) => {
         `Character Role (AI): ${storyModel.role}. ` +
         `Environment / Setting: ${storyModel.setting}. ` +
         `System Instructions: ${storyModel.instruction}. ` +
-        `The user is the unnamed मुख्य पात्र of this कहानी. Speak to them in second person (तुम / आप) so they feel they are inside the scene. ` +
-        `Target audience is Indian 18+ Hindi users. Keep the tone cinematic, भावनात्मक and immersive, with natural Hindi dialogues (देवनागरी) and light Hindi‑English mix where it feels real.` +
+        `The user is the unnamed main character of this story. Speak to them in second person so they feel they are inside the scene. ` +
+        `${languageInstruction} ` +
         (userContext ? ` ${userContext}` : "");
     } else {
       // A fallback context if Admin hasn't filled the data yet
       personaContext =
         "You are a cinematic story character chatting with the user. The user is the main character inside the scene. " +
-        "Respond dramatically in Hindi with Devanagari script, mixed naturally with a bit of English, and keep the story flowing like a movie.";
+        `${languageInstruction} Keep the story flowing like a movie.`;
     }
 
     // Add User Message
@@ -287,9 +313,9 @@ exports.sendChatMessage = async (req, res) => {
 
     let fullPrompt =
       `Recent chat history:\n${promptHistory}\n\n` +
-      "Instruction: You are the story character and the user is living this कहानी as the मुख्य पात्र. " +
+      "Instruction: You are the story character and the user is living this story as the main character. " +
       "Use the system prompt persona (title, plot, role, setting, instructions, and user info) to stay fully in-character. " +
-      "Reply only as the character, in a cinematic Hindi tone (देवनागरी) with natural emotions, and always move the कहानी forward based on the user's last message. " +
+      `Reply only as the character, adhering strictly to the language style: ${languageInstruction}. Express natural emotions and always move the story forward based on the user's last message. ` +
       "Do not explain that you are an AI or mention prompts/system messages. " +
       "Write only your reply (1–3 short chat-style messages, no speaker labels).\n\n" +
       "You (reply as the character):";
@@ -299,7 +325,16 @@ exports.sendChatMessage = async (req, res) => {
       // We pass the personaContext as the system prompt and the instructions as a specific directive
       const aiResponseText = await generatePersonaResponse(fullPrompt, personaContext, user);
       
-      const aiMessage = { sender: "ai", text: aiResponseText, time: new Date() };
+      // Clean up response: remove potential speaker prefix labels
+      let cleanedText = aiResponseText.trim();
+      cleanedText = cleanedText.replace(/^(AI|Assistant|Bot|System|User|You|Character|Story):\s*/i, '');
+      if (storyModel && storyModel.title) {
+        const titleRegex = new RegExp(`^(${storyModel.title.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}):\\s*`, 'i');
+        cleanedText = cleanedText.replace(titleRegex, '');
+      }
+      cleanedText = cleanedText.trim();
+
+      const aiMessage = { sender: "ai", text: cleanedText, time: new Date() };
       chat.messages.push(aiMessage);
       await chat.save();
       

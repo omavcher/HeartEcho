@@ -74,6 +74,14 @@ function ProfileLists({ handleSettindSelection, onBackSBTNSelect, selectedId }) 
     fetchUserData();
   }, [token]);
 
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      fetchUserData();
+    };
+    window.addEventListener('userProfileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('userProfileUpdated', handleProfileUpdate);
+  }, [token]);
+
   // Fetch city suggestions from Mapbox Geocoding API (debounced)
   useEffect(() => {
     if (!feedbackCity.trim() || feedbackCity.length < 3) {
@@ -375,6 +383,23 @@ function ProfileLists({ handleSettindSelection, onBackSBTNSelect, selectedId }) 
                   <span className="ios-item-title">Chat Settings</span>
                </div>
                <svg viewBox="0 0 24 24" fill="currentColor" className="ios-chevron"><path d="M9.29 15.88L13.17 12 9.29 8.12c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l4.59 4.59c.39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0-.38-.39-.39-1.03 0-1.42z"/></svg>
+             </div>
+
+             <div className={`ios-list-item ios-nav-item ${selectedId === 13 ? 'active' : ''}`} onClick={() => navigateTo(13)}>
+                <div className="ios-item-left">
+                   <div className="ios-icon-box" style={{background: '#007aff'}}>
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/>
+                      </svg>
+                   </div>
+                   <span className="ios-item-title">Preferred Language</span>
+                </div>
+                <div className="ios-item-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                   <span style={{ color: 'var(--ios-text-secondary)', fontSize: '0.95rem' }}>
+                      {userData?.preferredLanguage || "Hinglish"}
+                   </span>
+                   <svg viewBox="0 0 24 24" fill="currentColor" className="ios-chevron"><path d="M9.29 15.88L13.17 12 9.29 8.12c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l4.59 4.59c.39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0-.38-.39-.39-1.03 0-1.42z"/></svg>
+                </div>
              </div>
 
              <div className={`ios-list-item ios-nav-item ${selectedId === 6 ? 'active' : ''}`} onClick={() => navigateTo(6)}>

@@ -101,16 +101,24 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user.id || req.user._id; 
-    const { name, profile_picture, phone_number, age, selectedInterests, gender } = req.body;
 
     if (!userId) {
       return res.status(400).json({ message: "❌ User ID is missing!" });
     }
 
+    // Dynamic update object to support partial updates (e.g., when updating only preferredLanguage or city)
+    const updateFields = {};
+    const allowedFields = ["name", "profile_picture", "phone_number", "age", "selectedInterests", "gender", "city", "preferredLanguage"];
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updateFields[field] = req.body[field];
+      }
+    }
+
     // Update the user profile in the database
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { name, profile_picture, phone_number, age, selectedInterests, gender },
+      updateFields,
       { new: true, runValidators: true }
     );
 

@@ -58,6 +58,8 @@ const userSchema = new mongoose.Schema({
   chats: [{ type: mongoose.Schema.Types.ObjectId, ref: "Chat" }],
   ai_friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "AIFriend" }],
 
+  preferredLanguage: { type: String, default: "Hinglish" },
+
   // Push Notifications
   fcmToken: { type: String, default: "" },
   isMobileUser: { type: Boolean, default: false }

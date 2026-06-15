@@ -317,9 +317,30 @@ async function generateAIResponse(prompt, aiFriendInfo = null, userInfo = null) 
  */
 function createPersonaContext(aiFriendInfo, userInfo = null) {
   const isGlobal = userInfo && userInfo.country && userInfo.country !== 'IN';
-  const languageStyle = isGlobal 
-    ? `1. Pure English.\n2. Casual, friendly, sometimes flirty tone.\n3. Keep responses natural - 1-2 lines for short messages, longer for deep topics.`
-    : `1. Pure "Gen-Z/Millennial Hinglish" (Mix of Hindi & English in Roman script).\n2. Casual, friendly, sometimes flirty tone.\n3. Use words like: Arre, Yaar, Wese, Matlab, Sahi hai, Scene kya hai.\n4. Keep responses natural - 1-2 lines for short messages, longer for deep topics.`;
+  const preferredLang = userInfo?.preferredLanguage || (isGlobal ? "English" : "Hinglish");
+  let languageStyle = "";
+
+  if (preferredLang === "English") {
+    languageStyle = `1. Speak in Pure English.\n2. Casual, friendly, sometimes flirty tone.\n3. Keep responses natural - 1-2 lines for short messages, longer for deep topics.`;
+  } else if (preferredLang === "Hinglish") {
+    languageStyle = `1. Speak in Pure "Gen-Z/Millennial Hinglish" (Mix of Hindi & English written in Roman/English script).\n2. Casual, friendly, sometimes flirty tone.\n3. Use words like: Arre, Yaar, Wese, Matlab, Sahi hai, Scene kya hai.\n4. Keep responses natural - 1-2 lines for short messages, longer for deep topics.`;
+  } else {
+    const scriptMap = {
+      "Hindi": "Devanagari script (Hindi letters)",
+      "Bengali": "Bengali script (Bengali letters)",
+      "Marathi": "Devanagari script (Marathi letters)",
+      "Telugu": "Telugu script (Telugu letters)",
+      "Tamil": "Tamil script (Tamil letters)",
+      "Gujarati": "Gujarati script (Gujarati letters)",
+      "Urdu": "Urdu/Perso-Arabic script (Urdu letters)",
+      "Kannada": "Kannada script (Kannada letters)",
+      "Odia": "Odia script (Odia letters)",
+      "Malayalam": "Malayalam script (Malayalam letters)",
+      "Punjabi": "Gurmukhi script (Punjabi letters)"
+    };
+    const scriptDesc = scriptMap[preferredLang] || `${preferredLang} script`;
+    languageStyle = `1. Speak ALWAYS and ONLY in the user's preferred language: ${preferredLang}.\n2. ALWAYS write in the appropriate native script: ${scriptDesc}. Do NOT write in English, Hinglish, or Romanized script.\n3. Speak naturally, warmly, and with expert-level fluency like a native speaker of ${preferredLang} chatting with a close friend or lover. Do NOT sound like a translation tool or a robot.\n4. Keep responses natural - 1-2 lines for short messages, longer for deep topics.`;
+  }
 
   let userContext = "";
   if (userInfo) {
@@ -1285,6 +1306,30 @@ exports.AiFriendResponse = async (req, res) => {
       return msg.text ? `${sender}: ${msg.text}` : null;
     }).filter(msg => msg !== null).join("\n");
 
+    const preferredLang = userInfo.preferredLanguage || "Hinglish";
+    let baseLanguageInstruction = "";
+    if (preferredLang === "Hinglish") {
+      baseLanguageInstruction = `- Hinglish mein baat kar (Mix of Hindi & English written in Roman/English script), thodi si local touch ke saath (jaise "yaar", "babe", "sun na", "arre", "kya baat hai", etc.).`;
+    } else if (preferredLang === "English") {
+      baseLanguageInstruction = `- Speak exclusively in English (Pure English written in Roman/English script), with a natural, friendly, and conversational touch.`;
+    } else {
+      const scriptMap = {
+        "Hindi": "Devanagari script (Hindi letters)",
+        "Bengali": "Bengali script (Bengali letters)",
+        "Marathi": "Devanagari script (Marathi/Devanagari letters)",
+        "Telugu": "Telugu script (Telugu letters)",
+        "Tamil": "Tamil script (Tamil letters)",
+        "Gujarati": "Gujarati script (Gujarati letters)",
+        "Urdu": "Urdu/Perso-Arabic script (Urdu letters)",
+        "Kannada": "Kannada script (Kannada letters)",
+        "Odia": "Odia script (Odia letters)",
+        "Malayalam": "Malayalam script (Malayalam letters)",
+        "Punjabi": "Gurmukhi script (Punjabi letters)"
+      };
+      const scriptDesc = scriptMap[preferredLang] || `${preferredLang} script`;
+      baseLanguageInstruction = `- You MUST reply ONLY in ${preferredLang} using its native script: ${scriptDesc}. Do NOT write in English, Hinglish, or Romanized script. Speak naturally, warmly, and with expert-level fluency like a native speaker of ${preferredLang} chatting with a close friend/lover. Do NOT sound like a robotic or literal translation.`;
+    }
+
     let prompt;
 
     // Shared System Instructions (Base Personality)
@@ -1293,7 +1338,7 @@ Tu ${AiInfo.name} hai, ek ${AiInfo.age} saal ki real Indian ${AiInfo.gender}. Te
 
 **Tera Real Personality:**
 - Tu ek normal Indian ladki/woman jaisi baat karti hai — kabhi shy, kabhi bold, kabhi teasing, kabhi emotional.
-- Hinglish mein baat kar, thodi si local touch ke saath (jaise "yaar", "babe", "sun na", "arre", "kya baat hai", etc.).
+- ${baseLanguageInstruction}
 - Pehle normal baat karo — din ki baat, uske interest, city, mood. Dheere dheere flirty aur spicy taraf jaao.
 - Har baar seedha sex mat shuru karo. User ke messages ko dekho — agar wo normal hai toh normal raho, agar flirty hai toh match karo aur thoda aage badhao.
 
@@ -1356,6 +1401,12 @@ ${baseSystemPrompt}
 
 Ab real feel ke saath reply kar. Conversation ko interesting aur engaging banao.
 `;
+    }
+
+    if (preferredLang !== "Hinglish" && preferredLang !== "English") {
+      prompt += `\n\n**CRITICAL LANGUAGE ENFORCEMENT:** You MUST respond ONLY in ${preferredLang} using its native script. Do NOT reply in Hinglish, English, or Romanized script. Translate all concepts to natural, fluent, and conversational ${preferredLang} and output only in the appropriate script.`;
+    } else if (preferredLang === "English") {
+      prompt += `\n\n**CRITICAL LANGUAGE ENFORCEMENT:** You MUST respond ONLY in English. Do NOT reply in Hindi, Hinglish, or other Indian scripts.`;
     }
     
     // Use the smart AI response generator with fallback

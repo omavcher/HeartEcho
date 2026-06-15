@@ -37,6 +37,7 @@ function BioSection({ onBackSBTNSelect }) {
     ],
   };
 
+
   useEffect(() => {
     setToken(typeof window !== 'undefined' ? localStorage.getItem("token") : null);
   }, []);
@@ -96,11 +97,18 @@ function BioSection({ onBackSBTNSelect }) {
         profileImageUrl = cloudinaryRes.data.secure_url;
       }
 
-      await axios.put(
+      const response = await axios.put(
         `${api.Url}/user/update-profile`,
         { ...userData, profile_picture: profileImageUrl, selectedInterests },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
+      if (response.data && response.data.user) {
+        setUserData(response.data.user);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("userProfileData", JSON.stringify(response.data.user));
+        }
+      }
 
       setNotification({
         show: true,
@@ -120,19 +128,19 @@ function BioSection({ onBackSBTNSelect }) {
 
   return (
     <>
-      <header className="ios-profile-header">
+      <header className="profile-setting-header-new">
         <PopNoti
           message={notification.message}
           type={notification.type}
           isVisible={notification.show}
           onClose={() => setNotification({ ...notification, show: false })}
         />
-        <h2 className="ios-header-title">My Account</h2>
-        <button className="ios-back-btn" onClick={() => onBackSBTNSelect(true)}>
+        <button className="back-btn-new" onClick={() => onBackSBTNSelect(true)}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M4.99989 10.0001L4.99976 19L6.99976 19L6.99986 12.0001L17.1717 12L13.222 15.9498L14.6362 17.364L21.0001 11L14.6362 4.63605L13.222 6.05026L17.1717 10L4.99989 10.0001Z"></path>
+            <path d="M7.82843 10.9999H20V12.9999H7.82843L13.1924 18.3638L11.7782 19.778L4 11.9999L11.7782 4.22168L13.1924 5.63589L7.82843 10.9999Z"></path>
           </svg>
         </button>
+        <h2>My Account</h2>
       </header>
 
       <div className="ios-settings-container">

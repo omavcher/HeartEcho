@@ -5,8 +5,8 @@ import Link from 'next/link';
 import axios from 'axios';
 import Image from 'next/image';
 import api from '../config/api';
-import femaleFallback from '../../../femalePreAIFriend.json';
-import maleFallback from '../../../malePreAIFriend.json';
+import femaleFallback from '../femalePreAIFriend.json';
+import maleFallback from '../malePreAIFriend.json';
 import '../styles/HomeAiModels.css';
 
 export default function SEOPersonaList({ gender = 'female', limit = 10 }) {

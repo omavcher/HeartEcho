@@ -14,6 +14,7 @@ import SecuqureSection from './ProfileSetting/SecuqureSection';
 import LiveChatSection from './ProfileSetting/LiveChatSection';
 import FaqSection from './ProfileSetting/FaqSection';
 import TicketSection from './ProfileSetting/TicketSection';
+import LanguageSection from './ProfileSetting/LanguageSection';
 
 function ProfileSetting({ selectedSettingId, onBackSBTNSelect }) {
   const renderContent = () => {
@@ -42,6 +43,8 @@ function ProfileSetting({ selectedSettingId, onBackSBTNSelect }) {
         return <FaqSection onBackSBTNSelect={onBackSBTNSelect} />;
       case 12:
         return <TicketSection onBackSBTNSelect={onBackSBTNSelect} />;
+      case 13:
+        return <LanguageSection onBackSBTNSelect={onBackSBTNSelect} />;
       default:
         return <div className='profile-setting-cse4'>Select a setting to view details.</div>;
     }

@@ -99,7 +99,7 @@ async function generatePersonaResponse(prompt, personaContext, userInfo = null) 
     console.log("🔄 Generating persona response with OpenRouter...");
     
     // Choose model and tokens based on user subscription to optimize cost and efficiency
-    let model = "google/gemini-2.5-flash"; // Extremely low cost & fast for free users
+    let model = "x-ai/grok-4.3"; // Extremely low cost & fast for free users
     let max_tokens = 100;
     
     if (userInfo && userInfo.subscriptionTier) {
@@ -208,7 +208,7 @@ async function generatePersonaResponseFallback(prompt, personaContext) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash", // Truly lightweight and cheap fallback
+        model: "x-ai/grok-4.3", // Truly lightweight and cheap fallback
         messages: [
           {
             role: "system",
