@@ -62,7 +62,10 @@ const userSchema = new mongoose.Schema({
 
   // Push Notifications
   fcmToken: { type: String, default: "" },
-  isMobileUser: { type: Boolean, default: false }
+  isMobileUser: { type: Boolean, default: false },
+  
+  // Google Authentication
+  isGoogleUser: { type: Boolean, default: false }
 }, {
   timestamps: true
 });

@@ -1120,3 +1120,52 @@
     margin-top: 1rem;
   }
 }
+
+/* Forgot Password Page Custom Styling */
+.forgot-password-link-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -6px;
+  margin-bottom: 2px;
+  width: 100%;
+}
+
+.forgot-password-link {
+  font-size: 0.82rem;
+  color: var(--accent);
+  text-decoration: none;
+  transition: opacity 0.2s, color 0.2s;
+  font-weight: 500;
+}
+
+.forgot-password-link:hover {
+  opacity: 0.8;
+  color: var(--text-main);
+}
+
+.google-warning-box {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin: 1rem 0;
+  text-align: left;
+}
+
+.google-warning-box h4 {
+  color: #f87171;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.google-warning-box p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin: 0;
+}
+

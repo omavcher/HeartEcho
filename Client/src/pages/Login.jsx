@@ -443,6 +443,12 @@ function Login() {
               </span>
             </div>
 
+            <div className="forgot-password-link-container">
+              <Link href="/forgot-password" className="forgot-password-link">
+                Forgot Password?
+              </Link>
+            </div>
+
             <div className="sign-up-page-cons2">
               <button type="submit" className="otp-btn-singr" disabled={isLogin}>
                 {isLogin ? <span className="loader-signin"></span> : "Login"}

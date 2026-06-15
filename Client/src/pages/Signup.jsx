@@ -539,7 +539,8 @@ function Signup() {
           email: googleUserData.email,
           fullName: googleUserData.name,
           profilePicture: googleUserData.picture,
-          password: Math.random().toString(36).slice(-8)
+          password: Math.random().toString(36).slice(-8),
+          isGoogleUser: true
         });
       } else {
         res = await axios.post(`${api.Url}/auth/register`, {
@@ -703,7 +704,8 @@ function Signup() {
         email: googleUserData.email,
         fullName: googleUserData.name,
         profilePicture: googleUserData.picture,
-        password: Math.random().toString(36).slice(-8)
+        password: Math.random().toString(36).slice(-8),
+        isGoogleUser: true
       });
 
       if (isClient) {

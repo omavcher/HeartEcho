@@ -2,13 +2,22 @@ const { Resend } = require("resend");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-async function sendEmail(to, otp) {
+async function sendEmail(to, otp, type = "login") {
+    const isForgot = type === "forgot";
+    const subject = isForgot 
+        ? `${otp} is your HeartEcho password reset code` 
+        : `${otp} is your HeartEcho verification code`;
+    const heading = isForgot ? "Reset Your Password" : "Secure Login";
+    const bodyText = isForgot 
+        ? "You've requested to reset your password. Please use the following One-Time Password (OTP) to verify your identity and set a new password:"
+        : "You've requested to securely access your account. Please use the following One-Time Password (OTP) to complete your verification:";
+
     try {
         const { data, error } = await resend.emails.send({
             from: "HeartEcho <security@heartecho.in>", 
             to: [to],
             // UX trick: Putting the OTP first allows users to see the code directly from their phone's lock screen notification
-            subject: `${otp} is your HeartEcho verification code`,
+            subject: subject,
             html: `
             <!DOCTYPE html>
             <html lang="en">
@@ -25,16 +34,6 @@ async function sendEmail(to, otp) {
                         margin: 0;
                         padding: 40px 20px;
                         -webkit-text-size-adjust: 100%;
-                    }
-                    .container {
-                        max-width: 480px;
-                        margin: 0 auto;
-                        background-color: #0f0620;
-                        border: 1px solid rgba(233, 30, 140, 0.2);
-                        border-radius: 12px;
-                        padding: 40px 32px;
-                        text-align: center;
-                        box-shadow: 0 8px 32px rgba(233, 30, 140, 0.1);
                     }
                     .container {
                         max-width: 480px;
@@ -93,8 +92,8 @@ async function sendEmail(to, otp) {
             <body>
                 <div class="container">
                     <div class="logo">Heart<span>Echo</span></div>
-                    <h2>Secure Login</h2>
-                    <p>You've requested to securely access your account. Please use the following One-Time Password (OTP) to complete your verification:</p>
+                    <h2>${heading}</h2>
+                    <p>${bodyText}</p>
                     
                     <div class="otp-box">${otp}</div>
                     

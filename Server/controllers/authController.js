@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const sendEmail = require("../config/emailSender");
 exports.registerUser = async (req, res) => {
   try {
-    const { fullName, email, phone, password, gender, birth_date, interests, user_type ,twoFA ,profilePicture ,referralCode , subscribeNews ,termsAccepted , age , selectedInterests, country, city } = req.body;
+    const { fullName, email, phone, password, gender, birth_date, interests, user_type ,twoFA ,profilePicture ,referralCode , subscribeNews ,termsAccepted , age , selectedInterests, country, city, isGoogleUser } = req.body;
 
     // 1️⃣ Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -35,6 +35,7 @@ exports.registerUser = async (req, res) => {
       selectedInterests: formattedInterests, // ✅ Ensure it's properly formatted
       country: country || "IN",
       city: city || "",
+      isGoogleUser: !!isGoogleUser,
     });
 
     await newUser.save();
@@ -103,6 +104,12 @@ exports.googleLogin = async (req, res) => {
     const user = await User.findOne({ email });
     
     if (user) {
+      // Auto-migrate: If user logs in via Google but doesn't have isGoogleUser set, set it to true
+      if (!user.isGoogleUser) {
+        user.isGoogleUser = true;
+        await user.save();
+      }
+
       // User exists - proceed with login
       const token = jwt.sign({ id: user._id , email:user.email}, process.env.JWT_SECRET, { expiresIn: "30d" });
       return res.json({ 
@@ -170,6 +177,96 @@ exports.verifyOtp = (req, res) => {
         return res.status(400).json({ success: false, message: "Invalid OTP or expired" });
     }
 };
+
+const forgotPasswordOtpStorage = new Map();
+
+exports.sendForgotPasswordOtp = async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ success: false, message: "Email is required" });
+    }
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "No account found with this email address." });
+        }
+
+        if (user.isGoogleUser) {
+            return res.status(400).json({
+                success: false,
+                isGoogle: true,
+                message: "This account is linked with Google. Please log in using Google Login."
+            });
+        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        forgotPasswordOtpStorage.set(email, otp);
+
+        await sendEmail(email, otp, "forgot");
+
+        res.json({ success: true, message: "Verification OTP sent to your email!" });
+    } catch (error) {
+        console.error("sendForgotPasswordOtp error:", error);
+        res.status(500).json({ success: false, message: "Failed to send OTP", error: error.message });
+    }
+};
+
+exports.verifyForgotPasswordOtp = async (req, res) => {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+        return res.status(400).json({ success: false, message: "Email and OTP are required" });
+    }
+
+    const storedOtp = forgotPasswordOtpStorage.get(email);
+
+    if (storedOtp && storedOtp === otp) {
+        forgotPasswordOtpStorage.delete(email);
+        const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "15m" });
+        return res.json({ success: true, resetToken, message: "OTP verified successfully!" });
+    } else {
+        return res.status(400).json({ success: false, message: "Invalid OTP or expired." });
+    }
+};
+
+exports.resetPassword = async (req, res) => {
+    const { resetToken, newPassword } = req.body;
+
+    if (!resetToken || !newPassword) {
+        return res.status(400).json({ success: false, message: "Reset token and new password are required." });
+    }
+
+    if (newPassword.length < 8) {
+        return res.status(400).json({ success: false, message: "Password must be at least 8 characters long." });
+    }
+
+    try {
+        const decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
+        const email = decoded.email;
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        user.password = hashedPassword;
+        await user.save();
+
+        res.json({ success: true, message: "Password reset successful! You can now login with your new password." });
+    } catch (error) {
+        console.error("resetPassword error:", error);
+        if (error.name === "TokenExpiredError") {
+            return res.status(400).json({ success: false, message: "Password reset session expired. Please start over." });
+        }
+        res.status(500).json({ success: false, message: "Failed to reset password.", error: error.message });
+    }
+};
+
 
 
 const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");

@@ -45,6 +45,42 @@ const tierBasedRateLimiter = rateLimit({
   }
 });
 
+// Rate limiter for OTP requests based on IP (3 requests per 10 minutes)
+const otpIpLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes window
+  max: 3, // limit each IP to 3 requests per window
+  message: {
+    success: false,
+    message: "Too many OTP requests from this IP address. Please try again after 10 minutes."
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    return ipKeyGenerator(req);
+  }
+});
+
+// Rate limiter for OTP requests based on Email address (3 requests per 10 minutes)
+const otpEmailLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes window
+  max: 3, // limit each email to 3 requests per window
+  message: {
+    success: false,
+    message: "Too many OTP requests for this email address. Please try again after 10 minutes."
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    if (req.body && req.body.email) {
+      return req.body.email.toLowerCase().trim();
+    }
+    // Fallback to IP if no email is provided
+    return ipKeyGenerator(req);
+  }
+});
+
 module.exports = {
-  tierBasedRateLimiter
+  tierBasedRateLimiter,
+  otpIpLimiter,
+  otpEmailLimiter
 };
