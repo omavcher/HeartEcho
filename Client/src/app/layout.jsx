@@ -211,12 +211,7 @@ export default function RootLayout({ children }) {
         </Suspense>
         <ClientLayout>{children}</ClientLayout>
 
-        {/* Noscript for Meta Pixel */}
-        <noscript>
-          <img height="1" width="1" style={{ display: "none" }}
-            src="https://www.facebook.com/tr?id=1581868019707137&ev=PageView&noscript=1"
-          />
-        </noscript>
+
 <meta name="yandex-verification" content="f941558c4f5b4230" />
         {/* ── Google Analytics + Ads — afterInteractive (non-blocking) ── */}
         <Script
@@ -237,18 +232,7 @@ export default function RootLayout({ children }) {
           }}
         />
 
-        {/* ── Meta Pixel — lazyOnload (fires after page is interactive) ── */}
-        <Script
-          id="fb-pixel"
-          strategy="lazyOnload"
-          dangerouslySetInnerHTML={{
-            __html: `
-              !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init','1581868019707137');
-              fbq('track','PageView');
-            `,
-          }}
-        />
+
 
         {/* ── Google AdSense — lazyOnload ── */}
         <Script

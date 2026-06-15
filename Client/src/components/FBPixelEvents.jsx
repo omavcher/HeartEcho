@@ -17,7 +17,11 @@ export default function FBPixelEvents() {
         }
       } catch (e) {}
 
-      window.fbq('track', 'PageView');
+      // Only track PageView on the 3 payments/checkout related pathnames
+      const paymentPaths = ['/subscribe', '/thank-you'];
+      if (paymentPaths.includes(pathname)) {
+        window.fbq('track', 'PageView');
+      }
     }
   }, [pathname, searchParams]);
 
