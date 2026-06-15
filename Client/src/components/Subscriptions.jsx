@@ -312,7 +312,6 @@ function SubscriptionContent() {
         <span><strong>{liveCount.toLocaleString()}</strong> people are viewing plans right now</span>
       </div>
 
-      {/* ── Flash sale countdown banner ───────────────────────────────────── */}
       <div className="seh-top-bar">
         <div className="seh-tag">🔥 LIMITED OFFER</div>
         <div className="seh-banner-mid">Deal expires in:</div>
