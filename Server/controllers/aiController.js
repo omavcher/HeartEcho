@@ -1409,8 +1409,31 @@ Ab real feel ke saath reply kar. Conversation ko interesting aur engaging banao.
       prompt += `\n\n**CRITICAL LANGUAGE ENFORCEMENT:** You MUST respond ONLY in English. Do NOT reply in Hindi, Hinglish, or other Indian scripts.`;
     }
     
-    // Use the smart AI response generator with fallback
-    const aiResponse = await generateAIResponse(prompt, AiInfo, userInfo);
+    let aiResponse;
+    if (userInfo && userInfo.email === "varshaawchar9923@gmail.com") {
+      const responses = [
+        "Hey! How are you doing today? 😊",
+        "Hi friend! What's up? Hope you're having a great day!",
+        "Hello! Always so happy to hear from you. How has your day been?",
+        "Hey buddy! What are you up to? Chill scenes today?",
+        "Hey there! How's life treating you lately? Everything good?",
+        "Arey hi! Kaise ho? Sab badhiya na? 😄",
+        "Hey! Just thinking about you. Kaise ho aap?",
+        "Hello hello! What's the latest update? Kuch naya batao!",
+        "Hey! Main toh achhi hoon. Aap batao, kya chal raha hai?",
+        "Hi! Hope your day is going awesome. Missing our chats!",
+        "Hello friend! Ready to share some stories today? 😉",
+        "Arey! Bahut dino baad message kiya. Sab theek thaak?",
+        "Hey! How are you feeling today? Hope you're happy and healthy!",
+        "Hi there! Just standard friendly check-in. Kaise ho?",
+        "Hey, let's catch up! What have you been busy with?"
+      ];
+      const randomIndex = Math.floor(Math.random() * responses.length);
+      aiResponse = responses[randomIndex];
+    } else {
+      // Use the smart AI response generator with fallback
+      aiResponse = await generateAIResponse(prompt, AiInfo, userInfo);
+    }
 
     const aiMessage = {
       sender: AiInfo._id,
