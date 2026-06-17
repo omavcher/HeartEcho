@@ -401,6 +401,29 @@ exports.dashboardData = async (req, res) => {
                   as: "userDoc"
               } },
               { $unwind: { path: "$userDoc", preserveNullAndEmptyArrays: true } },
+              { $lookup: {
+                  from: "payments",
+                  localField: "_id",
+                  foreignField: "user",
+                  as: "userPayments"
+              } },
+              { $addFields: {
+                  userRevenue: {
+                      $sum: {
+                          $map: {
+                              input: "$userPayments",
+                              as: "p",
+                              in: {
+                                  $cond: [
+                                      { $eq: ["$$p.currency", "USD"] },
+                                      { $multiply: [{ $ifNull: ["$$p.rupees", 0] }, 83] },
+                                      { $ifNull: ["$$p.rupees", 0] }
+                                  ]
+                              }
+                          }
+                      }
+                  }
+              } },
               { $group: {
                   _id: { $toLower: "$cityName" },
                   cityName: { $first: "$cityName" },
@@ -416,10 +439,11 @@ exports.dashboardData = async (req, res) => {
                               0
                           ]
                       }
-                  }
+                  },
+                  revenue: { $sum: "$userRevenue" }
               } },
               { $sort: { count: -1 } },
-              { $limit: 50 }
+              { $limit: 1000 }
           ].filter(Boolean)),
 
           // 8. Calculate active subscriber splits (mobile vs. web) - total
@@ -750,6 +774,7 @@ exports.dashboardData = async (req, res) => {
           const lat = item.lat;
           const lon = item.lon;
           const paidCount = item.paidCount || 0;
+          const revenue = item.revenue || 0;
 
           if (isStateName(name) || name === "Unknown" || !name) {
               const geo = await getCityFromCoordinates(lat, lon);
@@ -767,6 +792,7 @@ exports.dashboardData = async (req, res) => {
               const prevCount = cityGroups[key].count;
               cityGroups[key].count += item.count;
               cityGroups[key].paidCount = (cityGroups[key].paidCount || 0) + paidCount;
+              cityGroups[key].revenue = (cityGroups[key].revenue || 0) + revenue;
               // Average coordinates of the grouped entries weighted by count
               cityGroups[key].lat = (cityGroups[key].lat * prevCount + lat * item.count) / cityGroups[key].count;
               cityGroups[key].lon = (cityGroups[key].lon * prevCount + lon * item.count) / cityGroups[key].count;
@@ -778,7 +804,8 @@ exports.dashboardData = async (req, res) => {
                   lat: lat,
                   lon: lon,
                   count: item.count,
-                  paidCount: paidCount
+                  paidCount: paidCount,
+                  revenue: revenue
               };
           }
       }

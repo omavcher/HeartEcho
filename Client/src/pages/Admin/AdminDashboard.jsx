@@ -7,7 +7,8 @@ import {
 } from "recharts";
 import {
   FaUsers, FaMoneyBillWave, FaEnvelope, FaChartLine, FaMobileAlt, FaDesktop, FaMapMarkerAlt,
-  FaCrown, FaFacebook, FaComments, FaHourglassHalf, FaEnvelopeOpenText
+  FaCrown, FaFacebook, FaComments, FaHourglassHalf, FaEnvelopeOpenText,
+  FaFileExcel, FaSearch, FaFilter, FaListUl
 } from "react-icons/fa";
 import { IoMdRefresh } from "react-icons/io";
 import api from "../../config/api";
@@ -336,6 +337,171 @@ const dashboardStyles = `
   border-top-color: #000 !important;
   border-bottom-color: #000 !important;
 }
+
+/* Custom Tabs Styling */
+.dash-tabs-x30sn {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  background: #0a0a0a;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid #1a1a1a;
+  width: fit-content;
+}
+.dash-tab-btn-x30sn {
+  background: transparent;
+  color: #888;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 20px;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dash-tab-btn-x30sn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.03);
+}
+.dash-tab-btn-x30sn.active {
+  color: #000;
+  background: #ff69b4;
+  box-shadow: 0 4px 12px rgba(255, 105, 180, 0.25);
+}
+
+/* Excel Style Table View */
+.excel-table-container-x30sn {
+  background: #0a0a0a;
+  border: 1px solid #222;
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+.excel-header-x30sn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.excel-title-x30sn {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+.excel-subtitle-x30sn {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #666;
+}
+.excel-filters-x30sn {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+  align-items: center;
+  width: 100%;
+}
+.excel-search-input-x30sn {
+  background: #111;
+  color: #fff;
+  border: 1px solid #222;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  outline: none;
+  width: 240px;
+  transition: border-color 0.2s;
+}
+.excel-search-input-x30sn:focus {
+  border-color: #ff69b4;
+}
+.excel-select-filter-x30sn {
+  background: #111;
+  color: #fff;
+  border: 1px solid #222;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  min-width: 160px;
+  transition: border-color 0.2s;
+}
+.excel-select-filter-x30sn:focus {
+  border-color: #ff69b4;
+}
+.excel-btn-export-x30sn {
+  background: #00ff88;
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.2s, transform 0.2s;
+  margin-left: auto;
+}
+.excel-btn-export-x30sn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.excel-table-wrapper-x30sn {
+  overflow-x: auto;
+  border: 1px solid #1e1e1e;
+  border-radius: 12px;
+}
+.excel-table-x30sn {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+.excel-table-x30sn th {
+  background: #111;
+  color: #888;
+  font-weight: 600;
+  padding: 14px 18px;
+  border-bottom: 1px solid #1e1e1e;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s, background 0.2s;
+}
+.excel-table-x30sn th:hover {
+  color: #fff;
+  background: #141414;
+}
+.excel-table-x30sn td {
+  padding: 14px 18px;
+  border-bottom: 1px solid #141414;
+  color: #e0e0e0;
+}
+.excel-table-x30sn tr:hover td {
+  background: #121212;
+  color: #fff;
+}
+.excel-table-x30sn tr:last-child td {
+  border-bottom: none;
+}
+.excel-sort-icon-x30sn {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  color: #ff69b4;
+}
 `;
 
 const AdminDashboard = () => {
@@ -367,6 +533,13 @@ const AdminDashboard = () => {
   const [conversionData, setConversionData] = useState([]);
   const [conversionType, setConversionType] = useState("daily");
   const [notification, setNotification] = useState({ show: false, message: "", type: "error" });
+
+  const [activeTab, setActiveTab] = useState("overview");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [minUsers, setMinUsers] = useState(0);
+  const [subscriberFilter, setSubscriberFilter] = useState("all");
+  const [sortField, setSortField] = useState("count");
+  const [sortDirection, setSortDirection] = useState("desc");
 
   // Stable reference for onClose — prevents PopNoti's useEffect from firing on every parent re-render
   const handleCloseNotification = useCallback(() => {
@@ -507,7 +680,8 @@ const AdminDashboard = () => {
               properties: {
                 cityName: city.cityName || 'Unknown',
                 count: city.count || 1,
-                paidCount: city.paidCount || 0
+                paidCount: city.paidCount || 0,
+                revenue: city.revenue || 0
               },
               geometry: {
                 type: 'Point',
@@ -614,8 +788,9 @@ const AdminDashboard = () => {
             map.getCanvas().style.cursor = 'pointer';
             
             const coordinates = e.features[0].geometry.coordinates.slice();
-            const { cityName, count, paidCount: rawPaidCount } = e.features[0].properties;
+            const { cityName, count, paidCount: rawPaidCount, revenue: rawRevenue } = e.features[0].properties;
             const paidCount = Number(rawPaidCount || 0);
+            const revenue = Number(rawRevenue || 0);
             
             while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
               coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
@@ -626,7 +801,7 @@ const AdminDashboard = () => {
                 <div style="color:#fff; padding: 4px;">
                   <div style="font-size:14px; font-weight:700; color:${paidCount > 0 ? '#ffd700' : '#ff69b4'}; margin-bottom:4px;">📍 ${cityName}</div>
                   <div style="font-size:13px; color:#ccc;">${count} active user${count > 1 ? 's' : ''} here</div>
-                  ${paidCount > 0 ? `<div style="font-size:12px; color:#ffd700; font-weight:600; margin-top:4px; display:flex; align-items:center; gap:4px;">👑 ${paidCount} Premium Subscriber${paidCount > 1 ? 's' : ''}</div>` : ''}
+                  ${paidCount > 0 ? `<div style="font-size:12px; color:#ffd700; font-weight:600; margin-top:4px; display:flex; align-items:center; gap:4px;">👑 ${paidCount} Premium Subscriber${paidCount > 1 ? 's' : ''} (₹${Math.round(revenue).toLocaleString()})</div>` : ''}
                 </div>
               `)
               .addTo(map);
@@ -704,6 +879,89 @@ const AdminDashboard = () => {
       peakHour = hr;
     }
   });
+
+  // Filter and sort statsData.userMapData for the Excel spreadsheet
+  const filteredCities = (statsData.userMapData || [])
+    .filter(c => {
+      const matchesSearch = !searchTerm || (c.cityName && c.cityName.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesMinUsers = c.count >= minUsers;
+      let matchesSubscriber = true;
+      if (subscriberFilter === "subscribers") {
+        matchesSubscriber = c.paidCount > 0;
+      } else if (subscriberFilter === "free") {
+        matchesSubscriber = c.paidCount === 0;
+      }
+      return matchesSearch && matchesMinUsers && matchesSubscriber;
+    })
+    .sort((a, b) => {
+      let aVal = a[sortField];
+      let bVal = b[sortField];
+
+      if (sortField === "conversion") {
+        aVal = a.count > 0 ? (a.paidCount / a.count) * 100 : 0;
+        bVal = b.count > 0 ? (b.paidCount / b.count) * 100 : 0;
+      } else if (sortField === "arpu") {
+        aVal = a.count > 0 ? (a.revenue || 0) / a.count : 0;
+        bVal = b.count > 0 ? (b.revenue || 0) / b.count : 0;
+      } else if (sortField === "cityName") {
+        aVal = aVal || "";
+        bVal = bVal || "";
+      } else {
+        aVal = aVal || 0;
+        bVal = bVal || 0;
+      }
+
+      if (typeof aVal === "string") {
+        return sortDirection === "asc" 
+          ? aVal.localeCompare(bVal)
+          : bVal.localeCompare(aVal);
+      } else {
+        return sortDirection === "asc"
+          ? aVal - bVal
+          : bVal - aVal;
+      }
+    });
+
+  const exportToCSV = () => {
+    const headers = ["City", "Country", "Active Users", "Premium Subscribers", "Conversion Rate (%)", "Total Revenue (INR)", "ARPU (INR)"];
+    const rows = filteredCities.map(c => [
+      c.cityName || "Unknown",
+      c.country || "Unknown",
+      c.count || 0,
+      c.paidCount || 0,
+      (c.count > 0 ? ((c.paidCount / c.count) * 100).toFixed(1) : "0.0") + "%",
+      Math.round(c.revenue || 0),
+      (c.count > 0 ? Math.round((c.revenue || 0) / c.count) : 0)
+    ]);
+    
+    const csvRows = [headers, ...rows];
+    const csvString = csvRows.map(row => 
+      row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(",")
+    ).join("\n");
+    
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `heartecho_cities_${timePeriod}_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("desc");
+    }
+  };
+
+  const renderSortIcon = (field) => {
+    if (sortField !== field) return null;
+    return <span className="excel-sort-icon-x30sn">{sortDirection === "asc" ? " ▲" : " ▼"}</span>;
+  };
 
   const getPeakHourLabel = (hr) => {
     const formattedHr = hr % 12 === 0 ? 12 : hr % 12;
@@ -831,6 +1089,24 @@ const AdminDashboard = () => {
                 <button className="dash-btn-x30sn" onClick={() => setRefresh(!refresh)}><IoMdRefresh /></button>
               </div>
             </div>
+
+            <div className="dash-tabs-x30sn">
+              <button 
+                className={`dash-tab-btn-x30sn ${activeTab === 'overview' ? 'active' : ''}`}
+                onClick={() => setActiveTab('overview')}
+              >
+                <FaChartLine /> Overview
+              </button>
+              <button 
+                className={`dash-tab-btn-x30sn ${activeTab === 'cities' ? 'active' : ''}`}
+                onClick={() => setActiveTab('cities')}
+              >
+                <FaListUl /> City Analytics
+              </button>
+            </div>
+
+            {activeTab === 'overview' ? (
+              <>
 
             {/* Stat Cards */}
             <div className="dash-grid-x30sn">
@@ -1079,7 +1355,7 @@ const AdminDashboard = () => {
                           <span style={{ fontSize: '11px', color: '#555' }}>{pct}% of active users</span>
                           {hasPaid && (
                             <span style={{ fontSize: '10px', color: '#ffd700', fontWeight: 'bold' }}>
-                              {city.paidCount} Paid
+                              {city.paidCount} Paid · ₹{Math.round(city.revenue || 0).toLocaleString()}
                             </span>
                           )}
                         </div>
@@ -1345,7 +1621,110 @@ const AdminDashboard = () => {
               </div>
             </div>
           </>
+        ) : (
+          <div className="excel-table-container-x30sn">
+            <div className="excel-header-x30sn">
+              <div>
+                <h3 className="excel-title-x30sn">City Density & Subscription Breakdown</h3>
+                <p className="excel-subtitle-x30sn">Detailed spreadsheet view of user statistics, premium conversions, and revenue by city</p>
+              </div>
+              <button className="excel-btn-export-x30sn" onClick={exportToCSV}>
+                <FaFileExcel /> Export CSV
+              </button>
+            </div>
+
+            {/* Filters */}
+            <div className="excel-filters-x30sn">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+                <FaSearch style={{ color: '#555', position: 'absolute', left: '12px' }} />
+                <input
+                  type="text"
+                  placeholder="Search city..."
+                  className="excel-search-input-x30sn"
+                  style={{ paddingLeft: '36px' }}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FaFilter style={{ color: '#555' }} />
+                <select
+                  className="excel-select-filter-x30sn"
+                  value={minUsers}
+                  onChange={(e) => setMinUsers(Number(e.target.value))}
+                >
+                  <option value={0}>All Traffic Levels</option>
+                  <option value={2}>≥ 2 Active Users</option>
+                  <option value={5}>≥ 5 Active Users</option>
+                  <option value={10}>≥ 10 Active Users</option>
+                </select>
+              </div>
+
+              <div>
+                <select
+                  className="excel-select-filter-x30sn"
+                  value={subscriberFilter}
+                  onChange={(e) => setSubscriberFilter(e.target.value)}
+                >
+                  <option value="all">All Subscription Statuses</option>
+                  <option value="subscribers">Has Premium Subscribers</option>
+                  <option value="free">No Subscribers (Free Only)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="excel-table-wrapper-x30sn">
+              <table className="excel-table-x30sn">
+                <thead>
+                  <tr>
+                    <th onClick={() => handleSort('cityName')}>City {renderSortIcon('cityName')}</th>
+                    <th onClick={() => handleSort('country')}>Country {renderSortIcon('country')}</th>
+                    <th onClick={() => handleSort('count')}>Active Users {renderSortIcon('count')}</th>
+                    <th onClick={() => handleSort('paidCount')}>Premium Subs {renderSortIcon('paidCount')}</th>
+                    <th onClick={() => handleSort('conversion')}>Conversion Rate {renderSortIcon('conversion')}</th>
+                    <th onClick={() => handleSort('revenue')}>Total Revenue {renderSortIcon('revenue')}</th>
+                    <th onClick={() => handleSort('arpu')}>ARPU {renderSortIcon('arpu')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCities.length > 0 ? (
+                    filteredCities.map((city, idx) => {
+                      const conversion = city.count > 0 ? ((city.paidCount / city.count) * 100).toFixed(1) : '0.0';
+                      const arpu = city.count > 0 ? Math.round((city.revenue || 0) / city.count) : 0;
+                      return (
+                        <tr key={idx}>
+                          <td style={{ fontWeight: city.paidCount > 0 ? '600' : 'normal', color: city.paidCount > 0 ? '#ffd700' : '#e0e0e0' }}>
+                            {city.cityName} {city.paidCount > 0 && '👑'}
+                          </td>
+                          <td style={{ color: '#888' }}>{city.country || 'N/A'}</td>
+                          <td>{city.count}</td>
+                          <td style={{ color: city.paidCount > 0 ? '#ffd700' : '#888' }}>{city.paidCount}</td>
+                          <td>{conversion}%</td>
+                          <td style={{ color: city.revenue > 0 ? '#00ff88' : '#888', fontWeight: city.revenue > 0 ? '600' : 'normal' }}>
+                            ₹{(city.revenue || 0).toLocaleString()}
+                          </td>
+                          <td style={{ color: arpu > 0 ? '#00b4d8' : '#888' }}>
+                            ₹{arpu.toLocaleString()}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={7} style={{ textAlign: 'center', color: '#666', padding: '40px 0' }}>
+                        No cities match the active filters.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         )}
+      </>
+    )}
       </div>
     </>
   );
