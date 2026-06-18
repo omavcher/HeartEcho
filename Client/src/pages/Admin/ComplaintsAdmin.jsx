@@ -802,7 +802,129 @@ const styles = `
     display: none;
   }
 }
+
+/* TABS SYSTEM */
+.cc-tabs-container {
+  padding: 0 32px 10px;
+  display: flex;
+}
+.cc-tabs-bar {
+  background: rgba(10, 10, 10, 0.5);
+  border: 1px solid #161616;
+  padding: 6px;
+  border-radius: 14px;
+  display: inline-flex;
+  gap: 8px;
+  backdrop-filter: blur(12px);
+}
+.cc-tab-link {
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #888;
+  background: transparent;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cc-tab-link:hover {
+  color: #eee;
+  background: rgba(255, 255, 255, 0.02);
+}
+.cc-tab-link.active {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(255, 105, 180, 0.12) 0%, rgba(218, 34, 255, 0.12) 100%);
+  border-color: rgba(255, 105, 180, 0.25);
+  box-shadow: 0 4px 15px rgba(255, 105, 180, 0.08);
+}
+
+/* AI REPORT BODY STYLES */
+.cc-ai-report-body {
+  background: rgba(244, 63, 94, 0.02);
+  border: 1px solid rgba(244, 63, 94, 0.1);
+  border-radius: 12px;
+  padding: 14px;
+  margin: 12px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cc-ai-report-badge {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #f43f5e;
+  background: rgba(244, 63, 94, 0.08);
+  border: 1px solid rgba(244, 63, 94, 0.15);
+  padding: 3px 8px;
+  border-radius: 6px;
+  align-self: flex-start;
+}
+.cc-ai-report-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  padding-bottom: 6px;
+}
+.cc-ai-report-field.msg-id {
+  border: none;
+  padding: 0;
+}
+.cc-ai-report-label {
+  color: #666;
+  font-weight: 600;
+}
+.cc-ai-report-value {
+  color: #eee;
+  font-weight: 500;
+}
+.cc-ai-report-value.highlight-pink {
+  color: #ff69b4;
+  font-weight: 700;
+}
+.cc-ai-report-value.highlight-red {
+  color: #f43f5e;
+  font-weight: 700;
+}
+.cc-ai-report-content-bubble {
+  background: rgba(10, 10, 10, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 4px;
+}
+.cc-ai-report-bubble-header {
+  font-size: 9px;
+  text-transform: uppercase;
+  color: #555;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+.cc-ai-report-bubble-text {
+  font-size: 13px;
+  color: #fff;
+  line-height: 1.5;
+  font-style: italic;
+  word-break: break-word;
+}
+.cc-ai-report-code {
+  font-family: monospace;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #a78bfa;
+  font-size: 11px;
+}
 `;
+
 
 // ── Build email HTML for preview iframe ──────────────────────
 const buildEmailHtml = (ticket, adminReply) => {
@@ -1040,8 +1162,12 @@ const EmailReplyDialog = ({ ticket, onClose, onSent, token }) => {
 
               {/* Complaint */}
               <div className="cc-complaint-preview">
-                <div className="cc-complaint-label">User's Support Ticket</div>
-                <div className="cc-complaint-text">"{ticket.issue}"</div>
+                <div className="cc-complaint-label">{ticket.issue?.includes("[AI Report]") ? "Flagged AI Report" : "User's Support Ticket"}</div>
+                {ticket.issue?.includes("[AI Report]") ? (
+                  <RenderIssueText text={ticket.issue} />
+                ) : (
+                  <div className="cc-complaint-text">"{ticket.issue}"</div>
+                )}
               </div>
 
               {/* AI Status */}
@@ -1105,9 +1231,126 @@ const EmailReplyDialog = ({ ticket, onClose, onSent, token }) => {
   );
 };
 
+// ── Helper to parse AI generated reports ──────────────────────
+const parseAiReport = (text) => {
+  if (!text) return { isReport: false, messageId: "", friend: "", content: "", reason: "", details: "" };
+  
+  let messageId = "";
+  let friend = "";
+  let content = "";
+  let reason = "";
+  let details = "";
+  
+  const getFieldValue = (fieldLabel, nextLabel) => {
+    const startIdx = text.indexOf(fieldLabel);
+    if (startIdx === -1) return "";
+    const valueStart = startIdx + fieldLabel.length;
+    let endIdx = text.length;
+    if (nextLabel) {
+      const nextIdx = text.indexOf(nextLabel, valueStart);
+      if (nextIdx !== -1) {
+        endIdx = nextIdx;
+      }
+    }
+    let val = text.substring(valueStart, endIdx).trim();
+    if (val.endsWith(",")) val = val.slice(0, -1).trim();
+    if (val.endsWith(".")) val = val.slice(0, -1).trim();
+    if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1).trim();
+    return val;
+  };
+
+  messageId = getFieldValue("Message ID:", "Friend:");
+  friend = getFieldValue("Friend:", "Content:");
+  content = getFieldValue("Content:", "Reason:");
+  reason = getFieldValue("Reason:", "Details:");
+  details = getFieldValue("Details:", null);
+
+  return {
+    isReport: text.includes("[AI Report]"),
+    messageId,
+    friend,
+    content,
+    reason,
+    details
+  };
+};
+
+const RenderIssueText = ({ text }) => {
+  if (!text) return null;
+  if (!text.includes("[AI Report]")) {
+    return <div className="cc-issue-text">"{text}"</div>;
+  }
+
+  const parsed = parseAiReport(text);
+
+  return (
+    <div className="cc-ai-report-body">
+      <div className="cc-ai-report-badge">AI Flagged Output</div>
+      
+      {parsed.friend && (
+        <div className="cc-ai-report-field">
+          <span className="cc-ai-report-label">Character:</span>
+          <span className="cc-ai-report-value highlight-pink">{parsed.friend}</span>
+        </div>
+      )}
+
+      {parsed.reason && (
+        <div className="cc-ai-report-field">
+          <span className="cc-ai-report-label">Reason:</span>
+          <span className="cc-ai-report-value highlight-red">{parsed.reason}</span>
+        </div>
+      )}
+
+      {parsed.content && (
+        <div className="cc-ai-report-content-bubble">
+          <div className="cc-ai-report-bubble-header">Flagged Message Content</div>
+          <div className="cc-ai-report-bubble-text">"{parsed.content}"</div>
+        </div>
+      )}
+
+      {parsed.messageId && (
+        <div className="cc-ai-report-field msg-id">
+          <span className="cc-ai-report-label">Msg ID:</span>
+          <code className="cc-ai-report-code">{parsed.messageId}</code>
+        </div>
+      )}
+
+      {parsed.details && parsed.details.trim() && (
+        <div className="cc-ai-report-field">
+          <span className="cc-ai-report-label">Details:</span>
+          <span className="cc-ai-report-value">{parsed.details}</span>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const RenderIssueTextTable = ({ text }) => {
+  if (!text) return null;
+  if (!text.includes("[AI Report]")) {
+    return <>{text}</>;
+  }
+
+  const parsed = parseAiReport(text);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', background: 'rgba(244, 63, 94, 0.08)', border: '1px solid rgba(244, 63, 94, 0.15)', color: '#f43f5e', textTransform: 'uppercase' }}>AI Report</span>
+        {parsed.friend && <span style={{ fontSize: '11px', color: '#ff69b4', fontWeight: 600 }}>{parsed.friend}</span>}
+        {parsed.reason && <span style={{ fontSize: '11px', color: '#f43f5e' }}>({parsed.reason})</span>}
+      </div>
+      <div style={{ fontSize: '13px', fontStyle: 'italic', color: '#fff', marginTop: '2px' }}>
+        "{parsed.content}"
+      </div>
+      {parsed.messageId && <div style={{ fontSize: '10px', color: '#555' }}>ID: {parsed.messageId}</div>}
+    </div>
+  );
+};
+
 // ── Main Component ────────────────────────────────────────────
 const ComplaintsAdmin = () => {
   const [tickets, setTickets] = useState([]);
+  const [activeTab, setActiveTab] = useState("complaints"); // "complaints" | "ai_reports"
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -1139,16 +1382,30 @@ const ComplaintsAdmin = () => {
     fetchTickets(); 
   }, [fetchTickets]);
 
+  const { userComplaints, aiReports } = useMemo(() => {
+    const complaints = [];
+    const reports = [];
+    tickets.forEach(t => {
+      if (t.issue && (t.issue.startsWith("[AI Report]") || t.issue.includes("[AI Report]"))) {
+        reports.push(t);
+      } else {
+        complaints.push(t);
+      }
+    });
+    return { userComplaints: complaints, aiReports: reports };
+  }, [tickets]);
+
   // --- CLIENT SIDE ADVANCED METRICS ---
   const stats = useMemo(() => {
-    const totalCount = tickets.length;
-    const pendingTickets = tickets.filter(t => t.status === "Pending");
+    const targetTickets = activeTab === "complaints" ? userComplaints : aiReports;
+    const totalCount = targetTickets.length;
+    const pendingTickets = targetTickets.filter(t => t.status === "Pending");
     const pendingCount = pendingTickets.length;
-    const resolvedCount = tickets.filter(t => t.status === "Resolved").length;
+    const resolvedCount = targetTickets.filter(t => t.status === "Resolved").length;
     const resolutionRate = totalCount > 0 ? (resolvedCount / totalCount) * 100 : 0;
     
     // VIP subscriber ticket ratio
-    const subTickets = tickets.filter(t => {
+    const subTickets = targetTickets.filter(t => {
       const tier = t.user?.subscriptionTier || t.user?.user_type || "";
       return tier === "subscriber" || tier === "monthly" || tier === "yearly" || tier === "yearly_pro";
     }).length;
@@ -1176,10 +1433,11 @@ const ComplaintsAdmin = () => {
       vipRatio,
       openAgeStr
     };
-  }, [tickets]);
+  }, [activeTab, userComplaints, aiReports]);
 
   const dailyTicketsData = useMemo(() => {
-    const dailyCounts = tickets.reduce((acc, t) => {
+    const targetTickets = activeTab === "complaints" ? userComplaints : aiReports;
+    const dailyCounts = targetTickets.reduce((acc, t) => {
       const date = new Date(t.date).toLocaleDateString();
       acc[date] = (acc[date] || 0) + 1;
       return acc;
@@ -1188,10 +1446,11 @@ const ComplaintsAdmin = () => {
       date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       tickets: count
     }));
-  }, [tickets]);
+  }, [activeTab, userComplaints, aiReports]);
 
   const filteredTickets = useMemo(() => {
-    return tickets.filter((t) => {
+    const targetTickets = activeTab === "complaints" ? userComplaints : aiReports;
+    return targetTickets.filter((t) => {
       const name = t.user?.name || "Unknown";
       const email = t.user?.email || "";
       const matchesSearch = (t.issue || "").toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -1200,7 +1459,7 @@ const ComplaintsAdmin = () => {
       const matchesStatus = filterStatus === "all" || t.status === filterStatus;
       return matchesSearch && matchesStatus;
     });
-  }, [tickets, searchTerm, filterStatus]);
+  }, [activeTab, userComplaints, aiReports, searchTerm, filterStatus]);
 
   const paginatedTickets = useMemo(() => {
     return filteredTickets.slice((currentPage - 1) * ticketsPerPage, currentPage * ticketsPerPage);
@@ -1209,7 +1468,7 @@ const ComplaintsAdmin = () => {
   const totalPages = Math.ceil(filteredTickets.length / ticketsPerPage);
 
   const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this complaint ticket?")) return;
+    if (!confirm("Are you sure you want to delete this ticket?")) return;
     try {
       const token = getToken();
       await axios.delete(`${api.Url}/admin/tickets/${id}`, { headers: { Authorization: `Bearer ${token}` } });
@@ -1267,6 +1526,24 @@ const ComplaintsAdmin = () => {
             <FaSync />
           </button>
         </header>
+
+        {/* TABS CONTAINER */}
+        <div className="cc-tabs-container">
+          <div className="cc-tabs-bar">
+            <button 
+              className={`cc-tab-link ${activeTab === "complaints" ? "active" : ""}`}
+              onClick={() => { setActiveTab("complaints"); setCurrentPage(1); }}
+            >
+              <FaTicketAlt /> User Complaints ({userComplaints.length})
+            </button>
+            <button 
+              className={`cc-tab-link ${activeTab === "ai_reports" ? "active" : ""}`}
+              onClick={() => { setActiveTab("ai_reports"); setCurrentPage(1); }}
+            >
+              <FaExclamationTriangle /> AI Reports ({aiReports.length})
+            </button>
+          </div>
+        </div>
 
         {/* STATS */}
         <div className="cc-stats-grid">
@@ -1401,7 +1678,7 @@ const ComplaintsAdmin = () => {
                     <span className={`cc-status-badge ${ticket.status?.toLowerCase()}`}>{ticket.status}</span>
                     <span style={{ fontSize: 11, color: '#555', fontWeight: 500 }}>{new Date(ticket.date).toLocaleDateString()}</span>
                   </div>
-                  <div className="cc-issue-text">"{ticket.issue}"</div>
+                  <RenderIssueText text={ticket.issue} />
                   
                   <div className="cc-user-box">
                     <div className="cc-ub-row border-bottom">
@@ -1476,8 +1753,8 @@ const ComplaintsAdmin = () => {
                           <span className="cc-user-email">{ticket.user?.email || "N/A"}</span>
                         </div>
                       </td>
-                      <td style={{ maxWidth: 300, wordBreak: 'break-word', fontWeight: 600, color: '#eee' }}>
-                        {ticket.issue}
+                      <td style={{ maxWidth: 350, wordBreak: 'break-word', fontWeight: 600, color: '#eee' }}>
+                        <RenderIssueTextTable text={ticket.issue} />
                       </td>
                       <td>
                         <span style={{ textTransform: 'capitalize', fontSize: 12, fontWeight: 700, color: '#ff69b4' }}>
