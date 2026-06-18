@@ -12,6 +12,19 @@ const { tierBasedRateLimiter } = require("../middleware/rateLimiter");
 // Track sent messages per chat to avoid repetition
 const chatMessageHistory = new Map();
 
+// ─── BOT MESSAGE COOLDOWN ──────────────────────────────────────────────────
+// Prevents the bot from spamming messages when the frontend calls too frequently.
+// Key: "userId:aiFriendId"  Value: timestamp of last bot message sent
+const botMessageCooldown = new Map();
+
+// Cooldown window in milliseconds (5 minutes = no new bot message within this period)
+const BOT_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
+// For brand-new chats use a shorter cooldown (30 seconds) so the greeting
+// can arrive quickly, but repeat calls within that window are still ignored.
+const NEW_CHAT_COOLDOWN_MS = 30 * 1000; // 30 seconds
+
+
 // Extract first name from full name
 function getFirstName(fullName) {
   if (!fullName) return "Friend";
@@ -19,8 +32,8 @@ function getFirstName(fullName) {
   return names[0];
 }
 
-// Get time-based replies for specific gender
-function getTimeBasedReplies(gender, firstName) {
+// Get time-based replies for specific gender and language
+function getTimeBasedReplies(gender, firstName, preferredLanguage) {
   const now = new Date();
   const hour = now.getHours();
   
@@ -33,29 +46,40 @@ function getTimeBasedReplies(gender, firstName) {
     timeSlot = "night";
   }
   
-  // Get replies based on gender and time slot
-  const timeReplies = gender === "female" 
-    ? femaleReplies[timeSlot] 
-    : maleReplies[timeSlot];
+  let timeReplies;
+  if (gender === "female") {
+    // Try user's preferred language, fall back to Hinglish
+    const langKey = preferredLanguage || "Hinglish";
+    const langData = femaleReplies[langKey] || femaleReplies["Hinglish"];
+    timeReplies = langData[timeSlot] || femaleReplies["Hinglish"][timeSlot];
+  } else {
+    timeReplies = maleReplies[timeSlot];
+  }
   
   // Replace {name.first} with actual first name
   return timeReplies.map(reply => reply.replace("{name.first}", firstName));
 }
 
-// Get regular replies for specific gender
-function getRegularReplies(gender, firstName) {
-  const regularReplies = gender === "female" 
-    ? femaleReplies.regular 
-    : maleReplies.regular;
+// Get regular replies for specific gender and language
+function getRegularReplies(gender, firstName, preferredLanguage) {
+  let regularReplies;
+  if (gender === "female") {
+    // Try user's preferred language, fall back to Hinglish
+    const langKey = preferredLanguage || "Hinglish";
+    const langData = femaleReplies[langKey] || femaleReplies["Hinglish"];
+    regularReplies = langData["regular"] || femaleReplies["Hinglish"]["regular"];
+  } else {
+    regularReplies = maleReplies.regular;
+  }
   
   // Replace {name.first} with actual first name
   return regularReplies.map(reply => reply.replace("{name.first}", firstName));
 }
 
-// Get random reply based on AI's gender
-function getRandomReply(gender, firstName) {
-  const timeBasedReplies = getTimeBasedReplies(gender, firstName);
-  const regularRepliesList = getRegularReplies(gender, firstName);
+// Get random reply based on AI's gender and user's preferred language
+function getRandomReply(gender, firstName, preferredLanguage) {
+  const timeBasedReplies = getTimeBasedReplies(gender, firstName, preferredLanguage);
+  const regularRepliesList = getRegularReplies(gender, firstName, preferredLanguage);
   
   // Combine time-based with regular replies (70% time-based, 30% regular)
   const allReplies = [...timeBasedReplies, ...regularRepliesList];
@@ -63,12 +87,12 @@ function getRandomReply(gender, firstName) {
 }
 
 // Get a reply that hasn't been sent recently in this chat
-function getFreshReply(chatId, gender, firstName) {
+function getFreshReply(chatId, gender, firstName, preferredLanguage) {
   const history = chatMessageHistory.get(chatId) || [];
   
   // Get time-based replies
-  const timeBasedReplies = getTimeBasedReplies(gender, firstName);
-  const regularRepliesList = getRegularReplies(gender, firstName);
+  const timeBasedReplies = getTimeBasedReplies(gender, firstName, preferredLanguage);
+  const regularRepliesList = getRegularReplies(gender, firstName, preferredLanguage);
   const allReplies = [...timeBasedReplies, ...regularRepliesList];
   
   // Filter out recently used replies
@@ -201,16 +225,72 @@ router.post("/bots-message", authMiddleware, tierBasedRateLimiter, async (req, r
     const aiGender = aiFriend.gender || "female"; // Default to female if not specified
     const aiName = aiFriend.name || "AI Friend";
     
-    // Get bot message
+    // Get user's preferred language (defaults to Hinglish)
+    const userPreferredLanguage = userProfile.preferredLanguage || "Hinglish";
+
+    // ─── COOLDOWN CHECK ──────────────────────────────────────────────────────
+    // If the frontend calls too frequently, we still respond with a real message
+    // (so the typing animation resolves correctly on both web & mobile) BUT we
+    // do NOT save it to the database — preventing message spam in the chat.
+    const cooldownKey = `${userId}:${aiFriendId}`;
+    const lastSentAt = botMessageCooldown.get(cooldownKey);
+    const now = new Date();
+    const cooldownWindow = isNewChat ? NEW_CHAT_COOLDOWN_MS : BOT_COOLDOWN_MS;
+
+    if (lastSentAt && (now.getTime() - lastSentAt) < cooldownWindow) {
+      const secondsLeft = Math.ceil((cooldownWindow - (now.getTime() - lastSentAt)) / 1000);
+      console.log(`[BOT][COOLDOWN] Throttled for user ${userId} / AI ${aiFriendId} — ${secondsLeft}s remaining. Returning reply without DB save.`);
+
+      // Generate a reply in-memory (no DB write) so typing animation resolves properly
+      const throttledReply = getFreshReply(chat._id.toString(), aiGender, userFirstName, userPreferredLanguage);
+
+      // Simulate natural typing delay (2–4 seconds) so the animation feels real
+      const typingDelay = Math.floor(Math.random() * 2000) + 2000; // 2000–4000 ms
+      await new Promise(resolve => setTimeout(resolve, typingDelay));
+
+      // Determine time of day for response shape
+      const throttledHour = now.getHours();
+      let throttledTimeOfDay = "morning";
+      if (throttledHour >= 12 && throttledHour < 18) throttledTimeOfDay = "afternoon";
+      if (throttledHour >= 18 || throttledHour < 5) throttledTimeOfDay = "night";
+
+      return res.json({
+        success: true,
+        skipped: true,           // internal flag — frontend ignores unknown fields
+        chat: chat,
+        messageCount: chat.messages.length,
+        botMessage: throttledReply,  // real message so animation & UI work correctly
+        aiFriend: {
+          _id: aiFriend._id,
+          name: aiName,
+          gender: aiGender,
+          type: senderModel
+        },
+        user: {
+          _id: userProfile._id,
+          firstName: userFirstName,
+          remainingQuota: userProfile.messageQuota - userProfile.messagesUsedToday
+        },
+        timestamp: now.toISOString(),
+        isNewChat: false,
+        timeOfDay: throttledTimeOfDay
+      });
+    }
+
+    // Record this send time BEFORE generating the message so rapid concurrent
+    // requests are also blocked (optimistic lock via in-memory map).
+    botMessageCooldown.set(cooldownKey, now.getTime());
+    // ────────────────────────────────────────────────────────────────────────
+
     let botMessage;
     
     if (isNewChat) {
       // For new chats, use a special greeting
-      const timeBasedReplies = getTimeBasedReplies(aiGender, userFirstName);
+      const timeBasedReplies = getTimeBasedReplies(aiGender, userFirstName, userPreferredLanguage);
       botMessage = timeBasedReplies[Math.floor(Math.random() * timeBasedReplies.length)];
     } else {
       // For existing chats, use the fresh reply system
-      botMessage = getFreshReply(chat._id.toString(), aiGender, userFirstName);
+      botMessage = getFreshReply(chat._id.toString(), aiGender, userFirstName, userPreferredLanguage);
     }
     
     // Create bot message object
@@ -248,12 +328,12 @@ router.post("/bots-message", authMiddleware, tierBasedRateLimiter, async (req, r
     // Update last activity timestamp in history tracking
     chatMessageHistory.set(chat._id.toString(), chatMessageHistory.get(chat._id.toString()) || []);
     
-    // Get current time for logging
-    const now = new Date();
+    // Get current time for logging (reuse `now` declared in the cooldown check above)
     const hour = now.getHours();
     let timeOfDay = "morning";
     if (hour >= 12 && hour < 18) timeOfDay = "afternoon";
     if (hour >= 18 || hour < 5) timeOfDay = "night";
+
     
     // Log the bot message
     console.log(`[BOT][${timeOfDay.toUpperCase()}] Chat: ${chat._id}, User: ${userProfile.name} (${userFirstName}), AI: ${aiName} (${aiGender}), Message: ${botMessage}, New Chat: ${isNewChat}`);
