@@ -4095,3 +4095,141 @@ exports.deleteFeedbackAdmin = async (req, res) => {
     });
   }
 };
+
+// ============================================================
+// AUTOMATED PUSH CAMPAIGN ADMINISTRATION
+// ============================================================
+
+exports.getAutoCampaigns = async (req, res) => {
+  try {
+    const AutoCampaign = require("../models/AutoCampaign");
+    const NotificationLog = require("../models/NotificationLog");
+
+    // Fetch campaigns
+    const campaigns = await AutoCampaign.find().sort({ createdAt: 1 }).lean();
+
+    // Aggregate statistics from NotificationLog grouped by campaignId
+    const stats = await NotificationLog.aggregate([
+      { $match: { campaignId: { $ne: null } } },
+      {
+        $group: {
+          _id: "$campaignId",
+          sent: { $sum: "$recipientsCount" },
+          opened: { $sum: "$opensCount" },
+          conversions: { $sum: "$conversionsCount" }
+        }
+      }
+    ]);
+
+    // Map stats back to campaigns
+    const enrichedCampaigns = campaigns.map(c => {
+      const campaignStats = stats.find(s => s._id.toString() === c._id.toString()) || {
+        sent: 0,
+        opened: 0,
+        conversions: 0
+      };
+      return {
+        ...c,
+        stats: campaignStats
+      };
+    });
+
+    res.status(200).json({ success: true, data: enrichedCampaigns });
+  } catch (error) {
+    console.error("Error fetching auto campaigns:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+exports.updateAutoCampaign = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, body, imageUrl, isActive, scheduledHour, aiEnabled, promptTemplate } = req.body;
+    const AutoCampaign = require("../models/AutoCampaign");
+
+    const updated = await AutoCampaign.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          title,
+          body,
+          imageUrl,
+          isActive,
+          scheduledHour: Number(scheduledHour),
+          aiEnabled: aiEnabled !== undefined ? aiEnabled : true,
+          promptTemplate: promptTemplate !== undefined ? promptTemplate : ""
+        }
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ success: false, message: "Campaign not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Campaign updated successfully", data: updated });
+  } catch (error) {
+    console.error("Error updating auto campaign:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+exports.triggerAutoCampaign = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const AutoCampaign = require("../models/AutoCampaign");
+    const { runCampaign } = require("../utils/autoNotificationRunner");
+
+    const campaign = await AutoCampaign.findById(id);
+    if (!campaign) {
+      return res.status(404).json({ success: false, message: "Campaign not found" });
+    }
+
+    console.log(`[Manual Trigger] Triggering auto campaign: ${campaign.campaignType} manually from admin panel...`);
+    const recipientsCount = await runCampaign(campaign);
+
+    res.status(200).json({
+      success: true,
+      message: `Campaign executed successfully. Sent to ${recipientsCount} users.`
+    });
+  } catch (error) {
+    console.error("Error manually triggering campaign:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+exports.generateAiCampaignPreview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userName = "Rahul" } = req.body;
+    const AutoCampaign = require("../models/AutoCampaign");
+    const { generateCampaignMessageWithAI } = require("../utils/autoNotificationRunner");
+
+    const campaign = await AutoCampaign.findById(id);
+    if (!campaign) {
+      return res.status(404).json({ success: false, message: "Campaign not found" });
+    }
+
+    console.log(`[Dynamic AI Preview] Requesting AI test message for user: ${userName} | Campaign: ${campaign.campaignType}`);
+    const aiResult = await generateCampaignMessageWithAI(campaign, userName);
+    
+    if (!aiResult) {
+      return res.status(200).json({
+        success: false,
+        message: "Model failed or rate-limited. Showing fallback rendering.",
+        data: {
+          title: campaign.title.replace(/{name}/g, userName),
+          body: campaign.body.replace(/{name}/g, userName)
+        }
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: aiResult
+    });
+  } catch (error) {
+    console.error("Error generating dynamic campaign preview:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};

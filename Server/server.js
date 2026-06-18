@@ -17,6 +17,10 @@ connectDB();
 const seedDefaultTemplates = require("./utils/seedTemplates");
 seedDefaultTemplates();
 
+// Seed default auto campaigns
+const seedAutoCampaigns = require("./utils/seedAutoCampaigns");
+seedAutoCampaigns();
+
 const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
@@ -96,6 +100,48 @@ cron.schedule(
     scheduled: true,
     timezone: "Asia/Kolkata",
   },
+);
+
+/**
+ * ✅ AUTOMATED PUSH NOTIFICATION CAMPAIGNS RUNNER
+ * Runs every hour at the top of the hour (0 * * * *)
+ */
+cron.schedule(
+  "0 * * * *",
+  async () => {
+    const istTime = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+    console.log(`\n🚀 [${istTime}] AUTOMATED: Running Auto Notification Campaigns`);
+    try {
+      const runner = require("./utils/autoNotificationRunner");
+      await runner.runHourlyCampaigns();
+    } catch (err) {
+      console.error("Error in auto notification runner:", err);
+    }
+  },
+  {
+    scheduled: true,
+    timezone: "Asia/Kolkata",
+  },
+);
+
+/**
+ * ✅ REAL-TIME PUSH NOTIFICATION TRIGGERS RUNNER
+ * Runs every minute (* * * * *)
+ */
+cron.schedule(
+  "* * * * *",
+  async () => {
+    try {
+      const runner = require("./utils/autoNotificationRunner");
+      await runner.runRealTimeTriggerCampaigns();
+    } catch (err) {
+      console.error("Error in real-time triggers runner:", err);
+    }
+  },
+  {
+    scheduled: true,
+    timezone: "Asia/Kolkata",
+  }
 );
 
 /**
@@ -549,6 +595,7 @@ app.listen(PORT, () => {
   console.log(`   01:00 IST - Expired subscription check`);
   console.log(`   02:00 IST - System health check`);
   console.log(`   * * * * * - Cron heartbeat (every minute)`);
+  console.log(`   0 * * * * - Hourly automated push campaigns runner`);
   console.log(`\n✅ All systems operational. Automation is 100% active.`);
   console.log(`=============================================\n`);
 });

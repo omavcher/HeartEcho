@@ -19,6 +19,20 @@ const notificationLogSchema = new mongoose.Schema({
       clickedAt: { type: Date, default: Date.now },
       platform: { type: String }
     }
+  ],
+
+  // Auto notification link
+  campaignId: { type: mongoose.Schema.Types.ObjectId, ref: "AutoCampaign", default: null },
+
+  // Conversion tracking (premium conversions)
+  conversionsCount: { type: Number, default: 0 },
+  conversions: [
+    {
+      user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      convertedAt: { type: Date, default: Date.now },
+      planType: { type: String },
+      amount: { type: Number }
+    }
   ]
 }, { timestamps: true });
 

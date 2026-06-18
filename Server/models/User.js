@@ -63,6 +63,12 @@ const userSchema = new mongoose.Schema({
   // Push Notifications
   fcmToken: { type: String, default: "" },
   isMobileUser: { type: Boolean, default: false },
+  receivedAutoNotifications: [
+    {
+      campaignType: { type: String },
+      sentAt: { type: Date, default: Date.now }
+    }
+  ],
   
   // Google Authentication
   isGoogleUser: { type: Boolean, default: false }

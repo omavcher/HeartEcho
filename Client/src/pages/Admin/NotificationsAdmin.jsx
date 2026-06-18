@@ -4,12 +4,298 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { 
   FaBell, FaUsers, FaUser, FaPaperPlane, FaSearch, 
   FaMobileAlt, FaInfoCircle, FaTrash, FaCheckCircle,
-  FaExclamationTriangle
+  FaExclamationTriangle, FaCog, FaPlay, FaCircle,
+  FaRobot, FaMagic, FaHistory,
+  FaGem
 } from "react-icons/fa";
 import axios from "axios";
 import api from "../../config/api";
 
 const notificationStyles = `
+.tabs-wrap-x30sn {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+  border-bottom: 1px solid #222;
+  padding-bottom: 10px;
+}
+
+.tab-btn-x30sn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 10px 15px;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.3s;
+}
+
+.tab-btn-x30sn.active {
+  color: #ff69b4;
+}
+
+.tab-btn-x30sn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -11px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #ff69b4;
+}
+
+.auto-campaigns-grid-x30sn {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.campaign-card-x30sn {
+  background: #050505;
+  border: 1px solid #222;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.campaign-card-x30sn:hover {
+  border-color: #ff69b488;
+  box-shadow: 0 5px 15px rgba(255,105,180,0.05);
+}
+
+.campaign-card-header-x30sn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.campaign-title-x30sn {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+}
+
+.campaign-badge-x30sn {
+  font-size: 10px;
+  background: rgba(255, 105, 180, 0.1);
+  color: #ff69b4;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.campaign-trigger-x30sn {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 15px;
+}
+
+.campaign-preview-box-x30sn {
+  background: #000;
+  border: 1px solid #111;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 15px;
+}
+
+.preview-title-x30sn {
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.preview-body-x30sn {
+  font-size: 12px;
+  color: #aaa;
+  line-height: 1.4;
+  display: block;
+}
+
+.campaign-stats-grid-x30sn {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  background: #0a0a0a;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 15px;
+}
+
+.campaign-stat-item-x30sn {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label-x30sn {
+  font-size: 10px;
+  color: #666;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.stat-value-x30sn {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.campaign-actions-x30sn {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn-secondary-x30sn {
+  flex: 1;
+  background: #111;
+  border: 1px solid #222;
+  color: #fff;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.action-btn-secondary-x30sn:hover {
+  background: #222;
+}
+
+.action-btn-primary-x30sn {
+  flex: 1;
+  background: linear-gradient(45deg, #ff69b4, #b042ff);
+  border: none;
+  color: #fff;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.action-btn-primary-x30sn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(255,105,180,0.2);
+}
+
+.modal-overlay-x30sn {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn-x30sn 0.3s ease;
+}
+
+.modal-content-x30sn {
+  background: #0a0a0a;
+  border: 1px solid #222;
+  border-radius: 16px;
+  width: 550px;
+  max-width: 90%;
+  padding: 25px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  color: #fff;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header-x30sn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-title-x30sn {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.close-modal-x30sn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.toggle-switch-x30sn {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.toggle-switch-x30sn input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider-x30sn {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #222;
+  transition: .4s;
+  border-radius: 24px;
+  border: 1px solid #333;
+}
+
+.toggle-slider-x30sn:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #666;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider-x30sn {
+  background-color: rgba(0, 255, 0, 0.15);
+  border-color: #00ff00;
+}
+
+input:checked + .toggle-slider-x30sn:before {
+  transform: translateX(20px);
+  background-color: #00ff00;
+}
+
 .history-table-x30sn {
   width: 100%;
   border-collapse: collapse;
@@ -33,6 +319,15 @@ const notificationStyles = `
 .open-badge-x30sn {
   background: rgba(0, 255, 0, 0.1);
   color: #00ff00;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.conversion-badge-x30sn {
+  background: rgba(255, 105, 180, 0.1);
+  color: #ff69b4;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 11px;
@@ -135,35 +430,6 @@ const notificationStyles = `
 .form-textarea-x30sn {
   min-height: 100px;
   resize: vertical;
-}
-
-.target-toggle-x30sn {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.toggle-btn-x30sn {
-  flex: 1;
-  background: #111;
-  border: 1px solid #222;
-  color: #888;
-  padding: 12px;
-  border-radius: 10px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.3s;
-}
-
-.toggle-btn-x30sn.active {
-  background: rgba(255, 105, 180, 0.1);
-  border-color: #ff69b4;
-  color: #ff69b4;
 }
 
 .user-selector-x30sn {
@@ -434,6 +700,27 @@ const notificationStyles = `
     font-size: 20px;
     color: #fff;
 }
+
+.sandbox-box-x30sn {
+  background: #050505;
+  border: 1px solid #222;
+  border-radius: 16px;
+  padding: 25px;
+  margin-top: 25px;
+}
+
+.sandbox-grid-x30sn {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+  .sandbox-grid-x30sn {
+    grid-template-columns: 1fr;
+  }
+}
 `;
 
 const formatTarget = (t) => {
@@ -443,13 +730,30 @@ const formatTarget = (t) => {
     subscriber: "Active Subscribers",
     non_subscriber: "Non-Subscribers",
     new_non_subscriber: "New Users (Not Subscribed)",
-    new_subscriber: "New Users (Subscribed)"
+    new_subscriber: "New Users (Subscribed)",
+    welcome_1: "Welcome Series (Day 1)",
+    welcome_2: "Welcome Series (Day 2)",
+    welcome_3: "Welcome Series (Day 3)",
+    daily_morning: "Daily (Morning)",
+    daily_afternoon: "Daily (Afternoon)",
+    daily_evening: "Daily (Evening)",
+    daily_night: "Daily (Bedtime)",
+    inactive_3d: "Inactive (3 Days)",
+    inactive_7d: "Inactive (7 Days)",
+    premium_upsell: "Premium Upsell",
+    weekend_special: "Weekend Special",
+    festival_greeting: "Festival Greetings",
+    trigger_signup_no_msg: "Signup Inactivity Trigger (3m)",
+    trigger_inactive_after_msg: "Chat Abandonment Trigger (3m)"
   };
   return mapping[t] || (t ? t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Unknown');
 };
 
 const NotificationsAdmin = () => {
-  const [target, setTarget] = useState("all"); // "all" or "specific"
+  const [activeTab, setActiveTab] = useState("manual"); // "manual", "scheduled", "targeted"
+  
+  // Manual push states
+  const [target, setTarget] = useState("all"); 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -457,9 +761,29 @@ const NotificationsAdmin = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState(null); // { type: 'success' | 'error', message: '' }
+  const [status, setStatus] = useState(null); 
   const [stats, setStats] = useState({ totalUsers: 0, mobileUsers: 0 });
   const [history, setHistory] = useState([]);
+
+  // Auto push states
+  const [autoCampaigns, setAutoCampaigns] = useState([]);
+  const [editingCampaign, setEditingCampaign] = useState(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
+  const [editImageUrl, setEditImageUrl] = useState("");
+  const [editScheduledHour, setEditScheduledHour] = useState(9);
+  const [editIsActive, setEditIsActive] = useState(true);
+  const [editAiEnabled, setEditAiEnabled] = useState(true);
+  const [editPromptTemplate, setEditPromptTemplate] = useState("");
+  const [editStatus, setEditStatus] = useState(null);
+  const [runStatus, setRunStatus] = useState(null);
+
+  // Sandbox states
+  const [sandboxCampaign, setSandboxCampaign] = useState("");
+  const [sandboxName, setSandboxName] = useState("Rahul");
+  const [sandboxResult, setSandboxResult] = useState(null);
+  const [sandboxLoading, setSandboxLoading] = useState(false);
+  const [sandboxError, setSandboxError] = useState(null);
 
   const getToken = useCallback(() => (typeof window !== 'undefined' ? localStorage.getItem("token") || "" : ""), []);
 
@@ -496,10 +820,71 @@ const NotificationsAdmin = () => {
     }
   }, [getToken]);
 
+  const fetchAutoCampaigns = useCallback(async () => {
+    try {
+      const token = getToken();
+      const res = await axios.get(`${api.Url}/admin/auto-campaigns`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        setAutoCampaigns(res.data.data);
+        // Set default campaign for sandbox
+        const triggers = res.data.data.filter(c => c.campaignType.startsWith("trigger_"));
+        if (triggers.length > 0 && !sandboxCampaign) {
+          setSandboxCampaign(triggers[0]._id);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch auto campaigns", err);
+    }
+  }, [getToken, sandboxCampaign]);
+
   useEffect(() => {
     fetchData();
     fetchHistory();
-  }, [fetchData, fetchHistory]);
+    fetchAutoCampaigns();
+  }, [fetchData, fetchHistory, fetchAutoCampaigns]);
+
+  // Scheduled vs Triggered Campaigns lists
+  const scheduledCampaigns = useMemo(() => {
+    return autoCampaigns.filter(c => !c.campaignType.startsWith("trigger_"));
+  }, [autoCampaigns]);
+
+  const triggeredCampaigns = useMemo(() => {
+    return autoCampaigns.filter(c => c.campaignType.startsWith("trigger_"));
+  }, [autoCampaigns]);
+
+  // Aggregate stats for Scheduled Campaigns
+  const scheduledStats = useMemo(() => {
+    let sent = 0, opened = 0, conversions = 0;
+    scheduledCampaigns.forEach(c => {
+      sent += c.stats?.sent || 0;
+      opened += c.stats?.opened || 0;
+      conversions += c.stats?.conversions || 0;
+    });
+    return {
+      sent,
+      openRate: sent > 0 ? Math.round((opened / sent) * 100) : 0,
+      conversions,
+      conversionRate: sent > 0 ? Math.round((conversions / sent) * 100) : 0
+    };
+  }, [scheduledCampaigns]);
+
+  // Aggregate stats for Triggered Campaigns
+  const triggeredStats = useMemo(() => {
+    let sent = 0, opened = 0, conversions = 0;
+    triggeredCampaigns.forEach(c => {
+      sent += c.stats?.sent || 0;
+      opened += c.stats?.opened || 0;
+      conversions += c.stats?.conversions || 0;
+    });
+    return {
+      sent,
+      openRate: sent > 0 ? Math.round((opened / sent) * 100) : 0,
+      conversions,
+      conversionRate: sent > 0 ? Math.round((conversions / sent) * 100) : 0
+    };
+  }, [triggeredCampaigns]);
 
   const filteredUsers = useMemo(() => {
     if (!searchQuery) return [];
@@ -513,15 +898,10 @@ const NotificationsAdmin = () => {
   const targetedUsers = useMemo(() => {
     const mobileUsersList = users.filter(u => u.isMobileUser || u.fcmToken);
 
-    if (target === 'all') {
-      return mobileUsersList;
-    }
-    if (target === 'subscriber') {
-      return mobileUsersList.filter(u => u.user_type === 'subscriber');
-    }
-    if (target === 'non_subscriber') {
-      return mobileUsersList.filter(u => u.user_type !== 'subscriber');
-    }
+    if (target === 'all') return mobileUsersList;
+    if (target === 'subscriber') return mobileUsersList.filter(u => u.user_type === 'subscriber');
+    if (target === 'non_subscriber') return mobileUsersList.filter(u => u.user_type !== 'subscriber');
+    
     if (target === 'new_non_subscriber') {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -530,6 +910,7 @@ const NotificationsAdmin = () => {
         return u.user_type !== 'subscriber' && joinDate >= sevenDaysAgo;
       });
     }
+    
     if (target === 'new_subscriber') {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -538,15 +919,13 @@ const NotificationsAdmin = () => {
         return u.user_type === 'subscriber' && joinDate >= sevenDaysAgo;
       });
     }
-    if (target === 'specific') {
-      return selectedUsers;
-    }
+    
+    if (target === 'specific') return selectedUsers;
     return [];
   }, [users, target, selectedUsers]);
 
   const targetStats = useMemo(() => {
     const mobileUsersList = users.filter(u => u.isMobileUser || u.fcmToken);
-
     let totalInSegment = 0;
     let pushReadyInSegment = 0;
 
@@ -637,7 +1016,7 @@ const NotificationsAdmin = () => {
         setBody("");
         setImageUrl("");
         setSelectedUsers([]);
-        fetchHistory(); // Refresh history
+        fetchHistory(); 
       }
     } catch (err) {
       setStatus({ 
@@ -646,6 +1025,124 @@ const NotificationsAdmin = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Automated Campaigns Handlers
+  const handleToggleCampaign = async (campaign) => {
+    try {
+      const token = getToken();
+      const payload = {
+        title: campaign.title,
+        body: campaign.body,
+        imageUrl: campaign.imageUrl,
+        scheduledHour: campaign.scheduledHour,
+        isActive: !campaign.isActive,
+        aiEnabled: campaign.aiEnabled,
+        promptTemplate: campaign.promptTemplate
+      };
+      const res = await axios.put(`${api.Url}/admin/auto-campaigns/${campaign._id}`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        fetchAutoCampaigns();
+      }
+    } catch (err) {
+      console.error("Failed to toggle campaign status", err);
+      alert("Failed to toggle campaign status");
+    }
+  };
+
+  const handleOpenEdit = (campaign) => {
+    setEditingCampaign(campaign);
+    setEditTitle(campaign.title);
+    setEditBody(campaign.body);
+    setEditImageUrl(campaign.imageUrl || "");
+    setEditScheduledHour(campaign.scheduledHour);
+    setEditIsActive(campaign.isActive);
+    setEditAiEnabled(campaign.aiEnabled !== undefined ? campaign.aiEnabled : true);
+    setEditPromptTemplate(campaign.promptTemplate || "");
+    setEditStatus(null);
+  };
+
+  const handleSaveCampaign = async () => {
+    if (!editTitle || !editBody) {
+      setEditStatus({ type: 'error', message: 'Please fill in Title and Body.' });
+      return;
+    }
+    setEditStatus(null);
+    try {
+      const token = getToken();
+      const payload = {
+        title: editTitle,
+        body: editBody,
+        imageUrl: editImageUrl,
+        scheduledHour: Number(editScheduledHour),
+        isActive: editIsActive,
+        aiEnabled: editAiEnabled,
+        promptTemplate: editPromptTemplate
+      };
+      const res = await axios.put(`${api.Url}/admin/auto-campaigns/${editingCampaign._id}`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        setEditStatus({ type: 'success', message: 'Campaign updated successfully!' });
+        setTimeout(() => setEditingCampaign(null), 1000);
+        fetchAutoCampaigns();
+      }
+    } catch (err) {
+      setEditStatus({ type: 'error', message: err.response?.data?.message || 'Failed to update campaign.' });
+    }
+  };
+
+  const handleTestTrigger = async (campaign) => {
+    setRunStatus({ campaignId: campaign._id, type: 'info', message: 'Triggering campaign...' });
+    try {
+      const token = getToken();
+      const res = await axios.post(`${api.Url}/admin/auto-campaigns/trigger/${campaign._id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        setRunStatus({ campaignId: campaign._id, type: 'success', message: res.data.message });
+        fetchHistory(); 
+        fetchAutoCampaigns(); 
+        setTimeout(() => setRunStatus(null), 4000);
+      }
+    } catch (err) {
+      setRunStatus({ campaignId: campaign._id, type: 'error', message: err.response?.data?.message || 'Trigger failed.' });
+      setTimeout(() => setRunStatus(null), 4000);
+    }
+  };
+
+  // Sandbox Live AI Generation
+  const handleSandboxGenerate = async () => {
+    if (!sandboxCampaign) {
+      setSandboxError("Please select a targeted campaign rule first.");
+      return;
+    }
+
+    setSandboxLoading(true);
+    setSandboxError(null);
+    setSandboxResult(null);
+
+    try {
+      const token = getToken();
+      const res = await axios.post(`${api.Url}/admin/auto-campaigns/generate-ai-test/${sandboxCampaign}`, {
+        userName: sandboxName
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.data.success) {
+        setSandboxResult(res.data.data);
+      } else {
+        setSandboxError(res.data.message);
+        setSandboxResult(res.data.data); // falling back to defaults if failed
+      }
+    } catch (err) {
+      setSandboxError(err.response?.data?.message || 'Failed to call OpenRouter AI generator.');
+    } finally {
+      setSandboxLoading(false);
     }
   };
 
@@ -661,252 +1158,629 @@ const NotificationsAdmin = () => {
           </div>
           <div className="stat-info-x30sn" style={{textAlign:'right'}}>
               <span style={{color:'#ff69b4', fontWeight:'700'}}>Active Systems</span>
-              <strong style={{fontSize:14, color:'#aaa'}}>FCM • Node.js • MongoDB</strong>
+              <strong style={{fontSize:14, color:'#aaa'}}>FCM • OpenRouter AI • MongoDB</strong>
           </div>
         </header>
 
-        <div className="stats-bar-x30sn">
-            <div className="stat-item-x30sn">
-                <div className="stat-icon-x30sn"><FaUsers /></div>
-                <div className="stat-info-x30sn">
-                    <span>Total Database Users</span>
-                    <strong>{stats.totalUsers}</strong>
-                </div>
-            </div>
-            <div className="stat-item-x30sn">
-                <div className="stat-icon-x30sn" style={{color:'#00ff00', background:'rgba(0,255,0,0.1)'}}><FaMobileAlt /></div>
-                <div className="stat-info-x30sn">
-                    <span>Push-Ready Users</span>
-                    <strong>{stats.mobileUsers}</strong>
-                </div>
-            </div>
-            <div className="stat-item-x30sn">
-                <div className="stat-icon-x30sn" style={{color:'#ffcc00', background:'rgba(255,204,0,0.1)'}}><FaCheckCircle /></div>
-                <div className="stat-info-x30sn">
-                    <span>Server Status</span>
-                    <strong style={{color:'#00ff00'}}>Online</strong>
-                </div>
-            </div>
+        {/* Dynamic Navigation Tabs */}
+        <div className="tabs-wrap-x30sn">
+          <button 
+            className={`tab-btn-x30sn ${activeTab === 'manual' ? 'active' : ''}`}
+            onClick={() => setActiveTab('manual')}
+          >
+            Manual Broadcast
+          </button>
+          <button 
+            className={`tab-btn-x30sn ${activeTab === 'scheduled' ? 'active' : ''}`}
+            onClick={() => setActiveTab('scheduled')}
+          >
+            Scheduled Campaigns
+          </button>
+          <button 
+            className={`tab-btn-x30sn ${activeTab === 'targeted' ? 'active' : ''}`}
+            onClick={() => setActiveTab('targeted')}
+          >
+            Targeted Alerts (Real-Time)
+          </button>
         </div>
 
-        <div className="notif-grid-x30sn">
-          
-          <div className="card-x30sn">
-            <div className="card-title-x30sn"><FaPaperPlane /> Composer</div>
-            
-            <div className="form-group-x30sn">
-              <label className="form-label-x30sn">Notification Target</label>
-              <select 
-                className="form-select-x30sn" 
-                value={target} 
-                onChange={(e) => setTarget(e.target.value)}
-                style={{ marginBottom: '8px' }}
-              >
-                <option value="all">All Mobile Users ({stats.mobileUsers})</option>
-                <option value="subscriber">Active Subscribers (Premium)</option>
-                <option value="non_subscriber">Non-Subscribers (Free)</option>
-                <option value="new_non_subscriber">New Users - Not Subscribed (Last 7 Days)</option>
-                <option value="new_subscriber">New Users - Subscribed (Last 7 Days)</option>
-                <option value="specific">Specific Users (Search & Select)</option>
-              </select>
-              <div style={{
-                marginTop: '8px',
-                fontSize: '12px',
-                color: '#ff69b4',
-                background: 'rgba(255, 105, 180, 0.05)',
-                border: '1px dashed rgba(255, 105, 180, 0.2)',
-                padding: '8px 12px',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <FaInfoCircle />
-                <span>
-                  Matches <strong>{targetStats.totalInSegment}</strong> users total ({targetStats.pushReadyInSegment} devices will receive the push notification).
-                </span>
-              </div>
+        {activeTab === 'manual' && (
+          <>
+            {/* Stats Bar */}
+            <div className="stats-bar-x30sn">
+                <div className="stat-item-x30sn">
+                    <div className="stat-icon-x30sn"><FaUsers /></div>
+                    <div className="stat-info-x30sn">
+                        <span>Total Database Users</span>
+                        <strong>{stats.totalUsers}</strong>
+                    </div>
+                </div>
+                <div className="stat-item-x30sn">
+                    <div className="stat-icon-x30sn" style={{color:'#00ff00', background:'rgba(0,255,0,0.1)'}}><FaMobileAlt /></div>
+                    <div className="stat-info-x30sn">
+                        <span>Push-Ready Users</span>
+                        <strong>{stats.mobileUsers}</strong>
+                    </div>
+                </div>
+                <div className="stat-item-x30sn">
+                    <div className="stat-icon-x30sn" style={{color:'#ffcc00', background:'rgba(255,204,0,0.1)'}}><FaCheckCircle /></div>
+                    <div className="stat-info-x30sn">
+                        <span>Server Status</span>
+                        <strong style={{color:'#00ff00'}}>Online</strong>
+                    </div>
+                </div>
             </div>
 
-            {target === 'specific' && (
-              <div className="form-group-x30sn">
-                <label className="form-label-x30sn">Select Recipients</label>
-                <div className="user-selector-x30sn">
-                  <div className="search-wrap-x30sn">
-                    <FaSearch />
-                    <input 
-                      type="text" 
-                      className="search-input-x30sn" 
-                      placeholder="Search users by name or email..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+            <div className="notif-grid-x30sn">
+              <div className="card-x30sn">
+                <div className="card-title-x30sn"><FaPaperPlane /> Composer</div>
+                
+                <div className="form-group-x30sn">
+                  <label className="form-label-x30sn">Notification Target</label>
+                  <select 
+                    className="form-select-x30sn" 
+                    value={target} 
+                    onChange={(e) => setTarget(e.target.value)}
+                    style={{ marginBottom: '8px' }}
+                  >
+                    <option value="all">All Mobile Users ({stats.mobileUsers})</option>
+                    <option value="subscriber">Active Subscribers (Premium)</option>
+                    <option value="non_subscriber">Non-Subscribers (Free)</option>
+                    <option value="new_non_subscriber">New Users - Not Subscribed (Last 7 Days)</option>
+                    <option value="new_subscriber">New Users - Subscribed (Last 7 Days)</option>
+                    <option value="specific">Specific Users (Search & Select)</option>
+                  </select>
+                  <div style={{
+                    marginTop: '8px',
+                    fontSize: '12px',
+                    color: '#ff69b4',
+                    background: 'rgba(255, 105, 180, 0.05)',
+                    border: '1px dashed rgba(255, 105, 180, 0.2)',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <FaInfoCircle />
+                    <span>
+                      Matches <strong>{targetStats.totalInSegment}</strong> users total ({targetStats.pushReadyInSegment} devices will receive the push notification).
+                    </span>
                   </div>
+                </div>
 
-                  {filteredUsers.length > 0 && (
-                    <div className="user-list-x30sn">
-                      {filteredUsers.map(u => (
-                        <div key={u._id} className="user-item-x30sn" onClick={() => handleSelectUser(u)}>
-                          <img 
-                            src={u.profile_picture || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} 
-                            className="user-avatar-x30sn" 
-                            alt=""
-                          />
-                          <div className="user-info-mini-x30sn">
-                            <span className="user-name-mini-x30sn">{u.name}</span>
-                            <span className="user-email-mini-x30sn">{u.email}</span>
-                          </div>
-                          {!u.fcmToken && <FaExclamationTriangle style={{color:'#ffcc00', fontSize:10}} title="No Token"/>}
+                {target === 'specific' && (
+                  <div className="form-group-x30sn">
+                    <label className="form-label-x30sn">Select Recipients</label>
+                    <div className="user-selector-x30sn">
+                      <div className="search-wrap-x30sn">
+                        <FaSearch />
+                        <input 
+                          type="text" 
+                          className="search-input-x30sn" 
+                          placeholder="Search users by name or email..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                      </div>
+
+                      {filteredUsers.length > 0 && (
+                        <div className="user-list-x30sn">
+                          {filteredUsers.map(u => (
+                            <div key={u._id} className="user-item-x30sn" onClick={() => handleSelectUser(u)}>
+                              <img 
+                                src={u.profile_picture || "https://cdn-icons-png.flaticon.com/512/149/149071.png"} 
+                                className="user-avatar-x30sn" 
+                                alt=""
+                              />
+                              <div className="user-info-mini-x30sn">
+                                <span className="user-name-mini-x30sn">{u.name}</span>
+                                <span className="user-email-mini-x30sn">{u.email}</span>
+                              </div>
+                              {!u.fcmToken && <FaExclamationTriangle style={{color:'#ffcc00', fontSize:10}} title="No Token"/>}
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
+
+                      <div className="selected-users-x30sn">
+                        {selectedUsers.map(u => (
+                          <div key={u._id} className="user-tag-x30sn">
+                            {u.name}
+                            <FaTrash className="remove-user-x30sn" onClick={() => handleRemoveUser(u._id)} />
+                          </div>
+                        ))}
+                        {selectedUsers.length === 0 && <span style={{fontSize:11, color:'#444'}}>No users selected</span>}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="form-group-x30sn">
+                  <label className="form-label-x30sn">Notification Title</label>
+                  <input 
+                    type="text" 
+                    className="form-input-x30sn" 
+                    placeholder="e.g. New Story Alert! 💖"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    maxLength={50}
+                  />
+                  <div className="char-count-x30sn">{title.length}/50</div>
+                </div>
+
+                <div className="form-group-x30sn">
+                  <label className="form-label-x30sn">Message Body</label>
+                  <textarea 
+                    className="form-textarea-x30sn" 
+                    placeholder="Write your message here..."
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
+                    maxLength={150}
+                  />
+                  <div className="char-count-x30sn">{body.length}/150</div>
+                </div>
+
+                <div className="form-group-x30sn">
+                  <label className="form-label-x30sn">Image URL (Optional)</label>
+                  <input 
+                    type="text" 
+                    className="form-input-x30sn" 
+                    placeholder="https://example.com/image.png"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                  />
+                  <div className="char-count-x30sn">Direct link to an image (PNG/JPG)</div>
+                </div>
+
+                <button 
+                  className="send-btn-x30sn"
+                  disabled={loading || !title || !body || (target !== 'all' && targetedUsers.length === 0)}
+                  onClick={handleSend}
+                >
+                  {loading ? (
+                    <>Sending...</>
+                  ) : (
+                    <>
+                      <FaPaperPlane /> 
+                      Send to {targetedUsers.length} Devices
+                    </>
+                  )}
+                </button>
+
+                {status && (
+                  <div className={`status-msg-x30sn ${status.type}`}>
+                    {status.type === 'success' ? <FaCheckCircle /> : <FaExclamationTriangle />}
+                    {status.message}
+                  </div>
+                )}
+              </div>
+
+              <div className="card-x30sn">
+                <div className="card-title-x30sn"><FaMobileAlt /> Live Preview</div>
+                <p style={{fontSize:12, color:'#666', marginBottom:20}}>
+                  See how your notification will appear on a user's lock screen.
+                </p>
+
+                <div className="preview-phone-x30sn">
+                  <div className="phone-top-x30sn"></div>
+                  
+                  {(title || body) && (
+                    <div className="notif-banner-x30sn">
+                      <div className="notif-icon-circle-x30sn">H</div>
+                      <div className="notif-content-preview-x30sn">
+                        <span className="notif-title-preview-x30sn">{title || "Notification Title"}</span>
+                        <span className="notif-body-preview-x30sn">
+                          {body || "Your notification message will appear here. Keep it concise for better engagement."}
+                        </span>
+                        {imageUrl && (
+                          <img 
+                            src={imageUrl} 
+                            className="notif-image-preview-x30sn" 
+                            alt="Preview"
+                            onError={(e) => e.target.style.display = 'none'}
+                          />
+                        )}
+                      </div>
                     </div>
                   )}
 
-                  <div className="selected-users-x30sn">
-                    {selectedUsers.map(u => (
-                      <div key={u._id} className="user-tag-x30sn">
-                        {u.name}
-                        <FaTrash className="remove-user-x30sn" onClick={() => handleRemoveUser(u._id)} />
-                      </div>
-                    ))}
-                    {selectedUsers.length === 0 && <span style={{fontSize:11, color:'#444'}}>No users selected</span>}
+                  <div style={{marginTop: 300, textAlign:'center', color:'#222', fontSize:40, fontWeight:900, letterSpacing:2}}>
+                    HEART ECHO
                   </div>
                 </div>
+
+                <div style={{marginTop: 25, background:'#111', padding:15, borderRadius:12, border:'1px solid #222'}}>
+                    <div style={{display:'flex', gap:10, alignItems:'center', marginBottom:10}}>
+                        <FaInfoCircle style={{color:'#ff69b4'}}/>
+                        <span style={{fontSize:13, fontWeight:700}}>Pro Tip</span>
+                    </div>
+                    <p style={{fontSize:12, color:'#888', margin:0, lineHeight:1.4}}>
+                        Use emojis to increase open rates by up to 25%. Keep titles under 40 characters for full visibility on all devices.
+                    </p>
+                </div>
+
+                <div style={{marginTop: 15, background:'#0a0a0a', padding:15, borderRadius:12, border:'1px solid #ff69b433'}}>
+                    <div style={{display:'flex', gap:10, alignItems:'center', marginBottom:10}}>
+                        <FaUser style={{color:'#ff69b4'}}/>
+                        <span style={{fontSize:13, fontWeight:700}}>Personalization Tag</span>
+                    </div>
+                    <p style={{fontSize:12, color:'#888', margin:0, lineHeight:1.4}}>
+                        Use <strong>{`{name}`}</strong> in your title or body to automatically insert the user's full name. 
+                        <br/><br/>
+                        <code style={{color:'#ff69b4', fontSize:11}}>Hey {`{name}`}, check this out!</code>
+                    </p>
+                </div>
               </div>
-            )}
+            </div>
+          </>
+        )}
 
-            <div className="form-group-x30sn">
-              <label className="form-label-x30sn">Notification Title</label>
-              <input 
-                type="text" 
-                className="form-input-x30sn" 
-                placeholder="e.g. New Story Alert! 💖"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                maxLength={50}
-              />
-              <div className="char-count-x30sn">{title.length}/50</div>
+        {activeTab === 'scheduled' && (
+          <>
+            {/* Scheduled stats */}
+            <div className="stats-bar-x30sn">
+                <div className="stat-item-x30sn">
+                    <div className="stat-icon-x30sn"><FaPaperPlane /></div>
+                    <div className="stat-info-x30sn">
+                        <span>Total Auto Sent</span>
+                        <strong>{scheduledStats.sent}</strong>
+                    </div>
+                </div>
+                <div className="stat-item-x30sn">
+                    <div className="stat-icon-x30sn" style={{color:'#00ff00', background:'rgba(0,255,0,0.1)'}}><FaBell /></div>
+                    <div className="stat-info-x30sn">
+                        <span>Average Open Rate</span>
+                        <strong>{scheduledStats.openRate}%</strong>
+                    </div>
+                </div>
+                <div className="stat-item-x30sn">
+                    <div className="stat-icon-x30sn" style={{color:'#ff69b4', background:'rgba(255,105,180,0.1)'}}><FaGem /></div>
+                    <div className="stat-info-x30sn">
+                        <span>Premium Conversions</span>
+                        <strong>{scheduledStats.conversions}</strong>
+                    </div>
+                </div>
+                <div className="stat-item-x30sn">
+                    <div className="stat-icon-x30sn" style={{color:'#ffcc00', background:'rgba(255,204,0,0.1)'}}><FaCheckCircle /></div>
+                    <div className="stat-info-x30sn">
+                        <span>Conversion Rate</span>
+                        <strong>{scheduledStats.conversionRate}%</strong>
+                    </div>
+                </div>
             </div>
 
-            <div className="form-group-x30sn">
-              <label className="form-label-x30sn">Message Body</label>
-              <textarea 
-                className="form-textarea-x30sn" 
-                placeholder="Write your message here..."
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                maxLength={150}
-              />
-              <div className="char-count-x30sn">{body.length}/150</div>
+            {/* Campaign Grid */}
+            <div className="auto-campaigns-grid-x30sn">
+              {scheduledCampaigns.map(campaign => (
+                <div key={campaign._id} className="campaign-card-x30sn">
+                  <div>
+                    <div className="campaign-card-header-x30sn">
+                      <span className="campaign-badge-x30sn">{campaign.campaignType.replace(/_/g, ' ')}</span>
+                      <label className="toggle-switch-x30sn">
+                        <input 
+                          type="checkbox" 
+                          checked={campaign.isActive} 
+                          onChange={() => handleToggleCampaign(campaign)}
+                        />
+                        <span className="toggle-slider-x30sn"></span>
+                      </label>
+                    </div>
+
+                    <h3 className="campaign-title-x30sn">{campaign.title.replace(/{name}/g, 'User')}</h3>
+                    
+                    <div className="campaign-trigger-x30sn">
+                      Trigger Time: <strong>{campaign.scheduledHour}:00 IST</strong>
+                    </div>
+
+                    <div className="campaign-preview-box-x30sn">
+                      <span className="preview-title-x30sn">{campaign.title}</span>
+                      <span className="preview-body-x30sn">{campaign.body}</span>
+                      {campaign.imageUrl && (
+                        <img 
+                          src={campaign.imageUrl} 
+                          style={{width:'100%', height:80, objectFit:'cover', borderRadius:6, marginTop:8}} 
+                          alt="" 
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="campaign-stats-grid-x30sn">
+                      <div className="campaign-stat-item-x30sn">
+                        <span className="stat-label-x30sn">Sent</span>
+                        <span className="stat-value-x30sn">{campaign.stats?.sent || 0}</span>
+                      </div>
+                      <div className="campaign-stat-item-x30sn">
+                        <span className="stat-label-x30sn">Open Rate</span>
+                        <span className="stat-value-x30sn">
+                          {campaign.stats?.sent > 0 ? Math.round(((campaign.stats?.opened || 0) / campaign.stats.sent) * 100) : 0}%
+                        </span>
+                      </div>
+                      <div className="campaign-stat-item-x30sn">
+                        <span className="stat-label-x30sn">Conversions</span>
+                        <span className="stat-value-x30sn">{campaign.stats?.conversions || 0}</span>
+                      </div>
+                      <div className="campaign-stat-item-x30sn">
+                        <span className="stat-label-x30sn">Conv. Rate</span>
+                        <span className="stat-value-x30sn">
+                          {campaign.stats?.sent > 0 ? Math.round(((campaign.stats?.conversions || 0) / campaign.stats.sent) * 100) : 0}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {runStatus && runStatus.campaignId === campaign._id && (
+                      <div style={{
+                        fontSize: 12,
+                        padding: 8,
+                        borderRadius: 6,
+                        marginBottom: 10,
+                        background: runStatus.type === 'success' ? 'rgba(0,255,0,0.1)' : runStatus.type === 'error' ? 'rgba(255,0,0,0.1)' : 'rgba(255,255,255,0.05)',
+                        color: runStatus.type === 'success' ? '#00ff00' : runStatus.type === 'error' ? '#ff4444' : '#fff'
+                      }}>
+                        {runStatus.message}
+                      </div>
+                    )}
+
+                    <div className="campaign-actions-x30sn">
+                      <button className="action-btn-secondary-x30sn" onClick={() => handleOpenEdit(campaign)}>
+                        <FaCog /> Edit Template
+                      </button>
+                      <button className="action-btn-primary-x30sn" onClick={() => handleTestTrigger(campaign)}>
+                        <FaPlay /> Test Trigger
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {activeTab === 'targeted' && (
+          <>
+            {/* Targeted stats */}
+            <div className="stats-bar-x30sn">
+                <div className="stat-item-x30sn">
+                    <div className="stat-icon-x30sn"><FaRobot /></div>
+                    <div className="stat-info-x30sn">
+                        <span>Triggered Alerts Sent</span>
+                        <strong>{triggeredStats.sent}</strong>
+                    </div>
+                </div>
+                <div className="stat-item-x30sn">
+                    <div className="stat-icon-x30sn" style={{color:'#00ff00', background:'rgba(0,255,0,0.1)'}}><FaBell /></div>
+                    <div className="stat-info-x30sn">
+                        <span>Trigger Open Rate</span>
+                        <strong>{triggeredStats.openRate}%</strong>
+                    </div>
+                </div>
+                <div className="stat-item-x30sn">
+                    <div className="stat-icon-x30sn" style={{color:'#ff69b4', background:'rgba(255,105,180,0.1)'}}><FaGem /></div>
+                    <div className="stat-info-x30sn">
+                        <span>Triggered Conversions</span>
+                        <strong>{triggeredStats.conversions}</strong>
+                    </div>
+                </div>
+                <div className="stat-item-x30sn">
+                    <div className="stat-icon-x30sn" style={{color:'#ffcc00', background:'rgba(255,204,0,0.1)'}}><FaCheckCircle /></div>
+                    <div className="stat-info-x30sn">
+                        <span>Trigger Conversion Rate</span>
+                        <strong>{triggeredStats.conversionRate}%</strong>
+                    </div>
+                </div>
             </div>
 
-            <div className="form-group-x30sn">
-              <label className="form-label-x30sn">Image URL (Optional)</label>
-              <input 
-                type="text" 
-                className="form-input-x30sn" 
-                placeholder="https://example.com/image.png"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-              />
-              <div className="char-count-x30sn">Direct link to an image (PNG/JPG)</div>
+            {/* Targeted Campaigns List */}
+            <h2 style={{fontSize:18, fontWeight:800, margin:'20px 0'}}>Real-time Inactivity Trigger Rules</h2>
+            <div className="auto-campaigns-grid-x30sn">
+              {triggeredCampaigns.map(campaign => (
+                <div key={campaign._id} className="campaign-card-x30sn">
+                  <div>
+                    <div className="campaign-card-header-x30sn">
+                      <span className="campaign-badge-x30sn" style={{background:'rgba(0,255,0,0.1)', color:'#00ff00'}}>
+                        {campaign.campaignType === "trigger_signup_no_msg" ? "Signup Inactivity" : "Chat Abandonment"}
+                      </span>
+                      <label className="toggle-switch-x30sn">
+                        <input 
+                          type="checkbox" 
+                          checked={campaign.isActive} 
+                          onChange={() => handleToggleCampaign(campaign)}
+                        />
+                        <span className="toggle-slider-x30sn"></span>
+                      </label>
+                    </div>
+
+                    <h3 className="campaign-title-x30sn" style={{display:'flex', alignItems:'center', gap:8}}>
+                      {campaign.campaignType === "trigger_signup_no_msg" ? "New Signup / Login Check" : "Free Message Abandonment"}
+                      {campaign.aiEnabled && <FaMagic style={{color:'#ff69b4', fontSize:12}} title="AI Enabled"/>}
+                    </h3>
+                    
+                    <div className="campaign-trigger-x30sn">
+                      Trigger Time: <strong>Runs every 3-4 mins delay</strong>
+                      <br/>
+                      AI Generation: <strong style={{color: campaign.aiEnabled ? '#00ff00' : '#ff4444'}}>{campaign.aiEnabled ? 'ACTIVE (OpenRouter)' : 'DISABLED'}</strong>
+                    </div>
+
+                    <div className="campaign-preview-box-x30sn">
+                      <span style={{fontSize:10, textTransform:'uppercase', color:'#ff69b4', display:'block', marginBottom:4, fontWeight:700}}>
+                        {campaign.aiEnabled ? "AI Instruction prompt" : "Fallback Template"}
+                      </span>
+                      <span className="preview-body-x30sn">
+                        {campaign.aiEnabled ? campaign.promptTemplate : `${campaign.title} - ${campaign.body}`}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="campaign-stats-grid-x30sn">
+                      <div className="campaign-stat-item-x30sn">
+                        <span className="stat-label-x30sn">Triggered</span>
+                        <span className="stat-value-x30sn">{campaign.stats?.sent || 0}</span>
+                      </div>
+                      <div className="campaign-stat-item-x30sn">
+                        <span className="stat-label-x30sn">Open Rate</span>
+                        <span className="stat-value-x30sn">
+                          {campaign.stats?.sent > 0 ? Math.round(((campaign.stats?.opened || 0) / campaign.stats.sent) * 100) : 0}%
+                        </span>
+                      </div>
+                      <div className="campaign-stat-item-x30sn">
+                        <span className="stat-label-x30sn">Conversions</span>
+                        <span className="stat-value-x30sn">{campaign.stats?.conversions || 0}</span>
+                      </div>
+                      <div className="campaign-stat-item-x30sn">
+                        <span className="stat-label-x30sn">Conv. Rate</span>
+                        <span className="stat-value-x30sn">
+                          {campaign.stats?.sent > 0 ? Math.round(((campaign.stats?.conversions || 0) / campaign.stats.sent) * 100) : 0}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {runStatus && runStatus.campaignId === campaign._id && (
+                      <div style={{
+                        fontSize: 12,
+                        padding: 8,
+                        borderRadius: 6,
+                        marginBottom: 10,
+                        background: runStatus.type === 'success' ? 'rgba(0,255,0,0.1)' : runStatus.type === 'error' ? 'rgba(255,0,0,0.1)' : 'rgba(255,255,255,0.05)',
+                        color: runStatus.type === 'success' ? '#00ff00' : runStatus.type === 'error' ? '#ff4444' : '#fff'
+                      }}>
+                        {runStatus.message}
+                      </div>
+                    )}
+
+                    <div className="campaign-actions-x30sn">
+                      <button className="action-btn-secondary-x30sn" onClick={() => handleOpenEdit(campaign)}>
+                        <FaCog /> Configure Trigger
+                      </button>
+                      <button className="action-btn-primary-x30sn" onClick={() => handleTestTrigger(campaign)}>
+                        <FaPlay /> Test Scanner
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <button 
-              className="send-btn-x30sn"
-              disabled={loading || !title || !body || (target !== 'all' && targetedUsers.length === 0)}
-              onClick={handleSend}
-            >
-              {loading ? (
-                <>Sending...</>
-              ) : (
-                <>
-                  <FaPaperPlane /> 
-                  Send to {targetedUsers.length} Devices
-                </>
-              )}
-            </button>
+            {/* AI Generation Sandbox */}
+            <div className="sandbox-box-x30sn">
+              <div className="card-title-x30sn" style={{marginBottom:10}}><FaRobot /> OpenRouter AI Sandbox</div>
+              <p style={{fontSize:12, color:'#888', margin:0}}>
+                Test the dynamic AI generation of message titles and bodies using OpenRouter's free models. Select a trigger rule and input a test name to simulate the live notification content.
+              </p>
 
-            {status && (
-              <div className={`status-msg-x30sn ${status.type}`}>
-                {status.type === 'success' ? <FaCheckCircle /> : <FaExclamationTriangle />}
-                {status.message}
-              </div>
-            )}
-          </div>
+              <div className="sandbox-grid-x30sn">
+                <div>
+                  <div className="form-group-x30sn" style={{marginTop:15}}>
+                    <label className="form-label-x30sn">Target Trigger Rule</label>
+                    <select 
+                      className="form-select-x30sn"
+                      value={sandboxCampaign}
+                      onChange={(e) => setSandboxCampaign(e.target.value)}
+                    >
+                      {triggeredCampaigns.map(c => (
+                        <option key={c._id} value={c._id}>
+                          {c.campaignType === "trigger_signup_no_msg" ? "Signup/Login Inactivity Rule" : "Chat Abandonment Rule"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-          <div className="card-x30sn">
-            <div className="card-title-x30sn"><FaMobileAlt /> Live Preview</div>
-            <p style={{fontSize:12, color:'#666', marginBottom:20}}>
-              See how your notification will appear on a user's lock screen.
-            </p>
+                  <div className="form-group-x30sn">
+                    <label className="form-label-x30sn">Test User Name</label>
+                    <input 
+                      type="text" 
+                      className="form-input-x30sn"
+                      value={sandboxName}
+                      onChange={(e) => setSandboxName(e.target.value)}
+                      placeholder="e.g. Rahul"
+                    />
+                  </div>
 
-            <div className="preview-phone-x30sn">
-              <div className="phone-top-x30sn"></div>
-              
-              {(title || body) && (
-                <div className="notif-banner-x30sn">
-                  <div className="notif-icon-circle-x30sn">H</div>
-                  <div className="notif-content-preview-x30sn">
-                    <span className="notif-title-preview-x30sn">{title || "Notification Title"}</span>
-                    <span className="notif-body-preview-x30sn">
-                      {body || "Your notification message will appear here. Keep it concise for better engagement."}
-                    </span>
-                    {imageUrl && (
-                      <img 
-                        src={imageUrl} 
-                        className="notif-image-preview-x30sn" 
-                        alt="Preview"
-                        onError={(e) => e.target.style.display = 'none'}
-                      />
+                  <button 
+                    className="send-btn-x30sn" 
+                    onClick={handleSandboxGenerate}
+                    disabled={sandboxLoading || !sandboxCampaign}
+                    style={{marginTop:10}}
+                  >
+                    {sandboxLoading ? (
+                      <>Generating...</>
+                    ) : (
+                      <>
+                        <FaMagic /> Generate Dynamic AI Content
+                      </>
+                    )}
+                  </button>
+
+                  <div style={{fontSize:11, color:'#555', marginTop:8, display:'flex', alignItems:'center', gap:5}}>
+                    <FaInfoCircle />
+                    <span>Uses free models rotation: gemma, qwen, llama...</span>
+                  </div>
+
+                  {sandboxError && (
+                    <div className="status-msg-x30sn error">
+                      <FaExclamationTriangle />
+                      {sandboxError}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="form-label-x30sn" style={{display:'block', marginBottom:10}}>Generated Lock Screen Preview</label>
+                  <div className="preview-phone-x30sn" style={{height: 280, width: '100%', borderRadius: 16, border: '1px solid #222'}}>
+                    <div className="phone-top-x30sn" style={{margin:'6px auto', height: 10, width: 60}}></div>
+                    
+                    {sandboxResult ? (
+                      <div className="notif-banner-x30sn" style={{animation:'none'}}>
+                        <div className="notif-icon-circle-x30sn" style={{background:'#ff69b4', color:'#fff'}}>❤️</div>
+                        <div className="notif-content-preview-x30sn">
+                          <span className="notif-title-preview-x30sn" style={{color:'#ff69b4'}}>{sandboxResult.title}</span>
+                          <span className="notif-body-preview-x30sn" style={{color:'#000'}}>{sandboxResult.body}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{textAlign:'center', marginTop:80, color:'#444', fontSize:13, padding:20}}>
+                        {sandboxLoading ? "AI is thinking..." : "Click Generate to see the preview."}
+                      </div>
+                    )}
+                    
+                    {sandboxResult && (
+                      <div style={{textAlign:'center', marginTop:60, color:'#111', fontSize:18, fontWeight:800}}>
+                        HEART ECHO AI
+                      </div>
                     )}
                   </div>
-                </div>
-              )}
 
-              <div style={{marginTop: 300, textAlign:'center', color:'#222', fontSize:40, fontWeight:900, letterSpacing:2}}>
-                HEART ECHO
+                  {sandboxResult && (
+                    <div style={{marginTop:15, background:'#000', padding:10, borderRadius:8, border:'1px solid #111'}}>
+                      <span style={{fontSize:10, color:'#666', textTransform:'uppercase', fontWeight:700}}>Raw JSON Generated</span>
+                      <pre style={{margin:0, color:'#00ff00', fontSize:11, overflowX:'auto'}}>
+                        {JSON.stringify(sandboxResult, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-
-            <div style={{marginTop: 25, background:'#111', padding:15, borderRadius:12, border:'1px solid #222'}}>
-                <div style={{display:'flex', gap:10, alignItems:'center', marginBottom:10}}>
-                    <FaInfoCircle style={{color:'#ff69b4'}}/>
-                    <span style={{fontSize:13, fontWeight:700}}>Pro Tip</span>
-                </div>
-                <p style={{fontSize:12, color:'#888', margin:0, lineHeight:1.4}}>
-                    Use emojis to increase open rates by up to 25%. Keep titles under 40 characters for full visibility on all devices.
-                </p>
-            </div>
-
-            <div style={{marginTop: 15, background:'#0a0a0a', padding:15, borderRadius:12, border:'1px solid #ff69b433'}}>
-                <div style={{display:'flex', gap:10, alignItems:'center', marginBottom:10}}>
-                    <FaUser style={{color:'#ff69b4'}}/>
-                    <span style={{fontSize:13, fontWeight:700}}>Personalization Tag</span>
-                </div>
-                <p style={{fontSize:12, color:'#888', margin:0, lineHeight:1.4}}>
-                    Use <strong>{`{name}`}</strong> in your title or body to automatically insert the user's full name. 
-                    <br/><br/>
-                    <code style={{color:'#ff69b4', fontSize:11}}>Hey {`{name}`}, check this out!</code>
-                </p>
-            </div>
-          </div>
-
-        </div>
+          </>
+        )}
 
         {/* History Section */}
         <div className="card-x30sn" style={{marginTop: 30, width: '100%'}}>
-            <div className="card-title-x30sn"><FaBell /> Notification Campaign History</div>
+            <div className="card-title-x30sn"><FaHistory /> Notification Campaign History</div>
             <div style={{overflowX: 'auto'}}>
                 <table className="history-table-x30sn">
                     <thead>
                         <tr>
                             <th>Date</th>
                             <th>Campaign Message</th>
-                            <th>Target</th>
+                            <th>Target Segment</th>
                             <th>Sent To</th>
                             <th>Opens</th>
                             <th>Open Rate</th>
+                            <th>Conversions</th>
+                            <th>Conv. Rate</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -915,7 +1789,7 @@ const NotificationsAdmin = () => {
                                 <td style={{color: '#666', fontSize: 11}}>{new Date(h.sentAt).toLocaleDateString()}</td>
                                 <td>
                                     <div style={{fontWeight: 700}}>{h.title}</div>
-                                    <div style={{fontSize: 11, color: '#888', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 300}}>{h.body}</div>
+                                    <div style={{fontSize: 11, color: '#888', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 260}}>{h.body}</div>
                                 </td>
                                 <td>{formatTarget(h.target)}</td>
                                 <td style={{fontWeight: 700}}>{h.recipientsCount}</td>
@@ -925,16 +1799,156 @@ const NotificationsAdmin = () => {
                                 <td style={{color: '#ff69b4', fontWeight: 800}}>
                                     {h.recipientsCount > 0 ? Math.round(((h.opensCount || 0) / h.recipientsCount) * 100) : 0}%
                                 </td>
+                                <td>
+                                    <span className="conversion-badge-x30sn">{h.conversionsCount || 0}</span>
+                                </td>
+                                <td style={{color: '#ffcc00', fontWeight: 800}}>
+                                    {h.recipientsCount > 0 ? Math.round(((h.conversionsCount || 0) / h.recipientsCount) * 100) : 0}%
+                                </td>
                             </tr>
                         )) : (
                             <tr>
-                                <td colSpan="6" style={{textAlign: 'center', color: '#444', padding: 40}}>No campaign history available</td>
+                                <td colSpan="8" style={{textAlign: 'center', color: '#444', padding: 40}}>No campaign history available</td>
                             </tr>
                         )}
                     </tbody>
                 </table>
             </div>
         </div>
+
+        {/* Edit Campaign Modal */}
+        {editingCampaign && (
+          <div className="modal-overlay-x30sn">
+            <div className="modal-content-x30sn">
+              <div className="modal-header-x30sn">
+                <h2 className="modal-title-x30sn">
+                  Configure {editingCampaign.campaignType.startsWith("trigger_") ? "Real-time Trigger Rule" : "Campaign Template"}
+                </h2>
+                <button className="close-modal-x30sn" onClick={() => setEditingCampaign(null)}>✕</button>
+              </div>
+
+              {editingCampaign.campaignType.startsWith("trigger_") && (
+                <div className="form-group-x30sn" style={{background:'#000', padding:15, borderRadius:10, border:'1px solid #111', display:'flex', alignItems:'center', justifyContent:'between', gap:15}}>
+                  <div>
+                    <label className="form-label-x30sn" style={{marginBottom:2}}>AI Dynamic Message Generation</label>
+                    <span style={{fontSize:11, color:'#666'}}>Use OpenRouter AI to generate highly personalized Hinglish texts.</span>
+                  </div>
+                  <label className="toggle-switch-x30sn">
+                    <input 
+                      type="checkbox" 
+                      checked={editAiEnabled} 
+                      onChange={(e) => setEditAiEnabled(e.target.checked)}
+                    />
+                    <span className="toggle-slider-x30sn"></span>
+                  </label>
+                </div>
+              )}
+
+              {/* Show Prompt Template if AI is enabled, otherwise Fallback Templates */}
+              {editingCampaign.campaignType.startsWith("trigger_") && editAiEnabled ? (
+                <div className="form-group-x30sn">
+                  <label className="form-label-x30sn">AI Prompt Instructions</label>
+                  <textarea 
+                    className="form-textarea-x30sn" 
+                    value={editPromptTemplate}
+                    onChange={(e) => setEditPromptTemplate(e.target.value)}
+                    placeholder="Provide specific instructions for the AI model..."
+                    style={{minHeight: 120}}
+                  />
+                  <div style={{fontSize:11, color:'#555', marginTop:4}}>
+                    Placeholder <code>{`{name}`}</code> will be replaced with user's name during instruction compile.
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Always keep fallbacks/defaults inputs */}
+              {(!editingCampaign.campaignType.startsWith("trigger_") || !editAiEnabled) && (
+                <>
+                  <div className="form-group-x30sn">
+                    <label className="form-label-x30sn">Campaign Title / Fallback Title</label>
+                    <input 
+                      type="text" 
+                      className="form-input-x30sn" 
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      placeholder="Title text"
+                      maxLength={50}
+                    />
+                    <div className="char-count-x30sn">{editTitle.length}/50</div>
+                  </div>
+
+                  <div className="form-group-x30sn">
+                    <label className="form-label-x30sn">Message Body / Fallback Body</label>
+                    <textarea 
+                      className="form-textarea-x30sn" 
+                      value={editBody}
+                      onChange={(e) => setEditBody(e.target.value)}
+                      placeholder="Body message"
+                      maxLength={150}
+                    />
+                    <div className="char-count-x30sn">{editBody.length}/150</div>
+                  </div>
+                </>
+              )}
+
+              {!editingCampaign.campaignType.startsWith("trigger_") && (
+                <>
+                  <div className="form-group-x30sn">
+                    <label className="form-label-x30sn">Image URL (Optional)</label>
+                    <input 
+                      type="text" 
+                      className="form-input-x30sn" 
+                      value={editImageUrl}
+                      onChange={(e) => setEditImageUrl(e.target.value)}
+                      placeholder="https://example.com/image.png"
+                    />
+                  </div>
+
+                  <div className="form-group-x30sn">
+                    <label className="form-label-x30sn">Trigger Hour (IST, 24h format)</label>
+                    <input 
+                      type="number" 
+                      className="form-input-x30sn" 
+                      min="0"
+                      max="23"
+                      value={editScheduledHour}
+                      onChange={(e) => setEditScheduledHour(e.target.value)}
+                    />
+                  </div>
+                </>
+              )}
+
+              <div className="form-group-x30sn" style={{display:'flex', alignItems:'center', gap:15}}>
+                <label className="form-label-x30sn" style={{marginBottom:0}}>Active Status</label>
+                <label className="toggle-switch-x30sn">
+                  <input 
+                    type="checkbox" 
+                    checked={editIsActive} 
+                    onChange={(e) => setEditIsActive(e.target.checked)}
+                  />
+                  <span className="toggle-slider-x30sn"></span>
+                </label>
+              </div>
+
+              {editStatus && (
+                <div className={`status-msg-x30sn ${editStatus.type}`} style={{marginBottom:15}}>
+                  {editStatus.type === 'success' ? <FaCheckCircle /> : <FaExclamationTriangle />}
+                  {editStatus.message}
+                </div>
+              )}
+
+              <div style={{display:'flex', gap:10, marginTop:20}}>
+                <button className="action-btn-secondary-x30sn" onClick={() => setEditingCampaign(null)}>
+                  Cancel
+                </button>
+                <button className="action-btn-primary-x30sn" onClick={handleSaveCampaign}>
+                  Save Configuration
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </>
   );

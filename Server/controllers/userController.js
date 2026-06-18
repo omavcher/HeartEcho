@@ -1253,6 +1253,14 @@ exports.razorpayWebhook = async (req, res) => {
           $push: { payment_history: payment._id },
         }
       );
+
+      // Attribute push notification conversion
+      try {
+        const { attributePremiumConversion } = require("../utils/notificationService");
+        await attributePremiumConversion(existingUser._id, subscriptionTier, rupeesNum);
+      } catch (err) {
+        console.error("Conversion attribution error in webhook:", err);
+      }
       
       // Referral Tracking
       if (existingUser.referredBy && rupeesNum >= 99) {
@@ -1382,6 +1390,14 @@ exports.updateSubscription = async (req, res) => {
       // Add to user's payment history
       user.payment_history.push(payment._id);
       await user.save();
+
+      // Attribute push notification conversion
+      try {
+        const { attributePremiumConversion } = require("../utils/notificationService");
+        await attributePremiumConversion(userId, durationType, paymentDetails.amount);
+      } catch (err) {
+        console.error("Conversion attribution error in updateSubscription:", err);
+      }
     }
 
     const updatedUser = await User.findById(userId).select("user_type subscriptionExpiry");
@@ -1467,6 +1483,14 @@ exports.upgradeSubscription = async (req, res) => {
       },
       { new: true }
     );
+
+    // Attribute push notification conversion
+    try {
+      const { attributePremiumConversion } = require("../utils/notificationService");
+      await attributePremiumConversion(userId, newTier, rupeesNum);
+    } catch (err) {
+      console.error("Conversion attribution error in upgradeSubscription:", err);
+    }
 
     // 💰 REFERRAL COMMISSION TRACKING FOR UPGRADES
     if (updatedUser.referredBy && rupeesNum >= 99) {

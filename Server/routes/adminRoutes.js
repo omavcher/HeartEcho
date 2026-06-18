@@ -89,6 +89,12 @@ router.post("/send-notification", authMiddleware, controller.sendCustomNotificat
 router.get("/notification-history", authMiddleware, controller.getNotificationHistory);
 router.get("/device-stats", authMiddleware, controller.getDeviceStats);
 
+// Automated Notification Campaigns
+router.get("/auto-campaigns", authMiddleware, controller.getAutoCampaigns);
+router.put("/auto-campaigns/:id", authMiddleware, controller.updateAutoCampaign);
+router.post("/auto-campaigns/trigger/:id", authMiddleware, controller.triggerAutoCampaign);
+router.post("/auto-campaigns/generate-ai-test/:id", authMiddleware, controller.generateAiCampaignPreview);
+
 // App Version Management
 router.get("/app-version", authMiddleware, controller.getAppVersionAdmin);
 router.post("/app-version", authMiddleware, controller.updateAppVersionAdmin);
