@@ -360,8 +360,6 @@ export default function RootLayout({ children }) {
         </Suspense>
         <ClientLayout>{children}</ClientLayout>
 
-
-<meta name="yandex-verification" content="dd39df4fc482a7c0" />
         {/* ── Google Analytics + Ads — afterInteractive (non-blocking) ── */}
         <Script
           strategy="afterInteractive"
