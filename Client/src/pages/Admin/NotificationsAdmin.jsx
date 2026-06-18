@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, Fragment } from "react";
 import { 
   FaBell, FaUsers, FaUser, FaPaperPlane, FaSearch, 
   FaMobileAlt, FaInfoCircle, FaTrash, FaCheckCircle,
@@ -332,6 +332,220 @@ input:checked + .toggle-slider-x30sn:before {
   border-radius: 4px;
   font-size: 11px;
   font-weight: 700;
+}
+
+.history-th-sortable-x30sn {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.history-th-sortable-x30sn:hover {
+  color: #fff !important;
+}
+
+.sort-icon-inline-x30sn {
+  margin-left: 5px;
+  font-size: 10px;
+}
+
+.history-filters-bar-x30sn {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  padding: 15px;
+  border-radius: 12px;
+}
+
+.filter-group-x30sn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-label-x30sn {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.history-stats-grid-x30sn {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.history-stat-card-x30sn {
+  background: linear-gradient(135deg, #070707 0%, #0c0c0c 100%);
+  border: 1px solid #222;
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.history-stat-card-x30sn:hover {
+  border-color: #ff69b455;
+  box-shadow: 0 4px 20px rgba(255, 105, 180, 0.03);
+  transform: translateY(-2px);
+}
+
+.stat-card-header-x30sn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.stat-card-icon-x30sn {
+  font-size: 16px;
+  color: #ff69b4;
+  background: rgba(255, 105, 180, 0.08);
+  padding: 8px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-card-label-x30sn {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.stat-card-value-x30sn {
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.stat-card-sub-x30sn {
+  font-size: 11px;
+  color: #555;
+  margin-top: 4px;
+}
+
+.history-row-x30sn {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.history-row-x30sn:hover {
+  background: #0d0d0d !important;
+}
+
+.history-row-expanded-x30sn {
+  background: #070707 !important;
+}
+
+.expanded-detail-row-x30sn {
+  background: #050505 !important;
+}
+
+.expanded-detail-card-x30sn {
+  padding: 20px;
+  border-left: 3px solid #ff69b4;
+  background: #000;
+  border-radius: 0 12px 12px 0;
+  margin: 5px 10px 15px 10px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+}
+
+.rate-badge-pill-x30sn {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.rate-badge-percentage-x30sn {
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.rate-bar-container-x30sn {
+  height: 4px;
+  background: #1a1a1a;
+  border-radius: 2px;
+  width: 60px;
+  overflow: hidden;
+}
+
+.rate-bar-fill-x30sn {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.pagination-container-x30sn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #222;
+}
+
+.pagination-info-x30sn {
+  font-size: 12px;
+  color: #666;
+}
+
+.pagination-controls-x30sn {
+  display: flex;
+  gap: 5px;
+}
+
+.pagination-btn-x30sn {
+  background: #111;
+  border: 1px solid #222;
+  color: #aaa;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pagination-btn-x30sn:hover:not(:disabled) {
+  background: #222;
+  color: #fff;
+  border-color: #444;
+}
+
+.pagination-btn-x30sn.active {
+  background: #ff69b4;
+  color: #fff;
+  border-color: #ff69b4;
+}
+
+.pagination-btn-x30sn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.truncate-text-x30sn {
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  color: #888;
 }
 
 .notif-root-x30sn {
@@ -765,6 +979,16 @@ const NotificationsAdmin = () => {
   const [stats, setStats] = useState({ totalUsers: 0, mobileUsers: 0 });
   const [history, setHistory] = useState([]);
 
+  // Campaign History control states
+  const [historySearch, setHistorySearch] = useState("");
+  const [historyTargetFilter, setHistoryTargetFilter] = useState("all");
+  const [historyTypeFilter, setHistoryTypeFilter] = useState("all"); // "all", "manual", "auto"
+  const [historySort, setHistorySort] = useState({ column: "sentAt", direction: "desc" });
+  const [historyLimit, setHistoryLimit] = useState(200);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyPageSize] = useState(10);
+  const [expandedRowId, setExpandedRowId] = useState(null);
+
   // Auto push states
   const [autoCampaigns, setAutoCampaigns] = useState([]);
   const [editingCampaign, setEditingCampaign] = useState(null);
@@ -806,10 +1030,10 @@ const NotificationsAdmin = () => {
     }
   }, [getToken]);
 
-  const fetchHistory = useCallback(async () => {
+  const fetchHistory = useCallback(async (limit = historyLimit) => {
     try {
       const token = getToken();
-      const res = await axios.get(`${api.Url}/admin/notification-history`, {
+      const res = await axios.get(`${api.Url}/admin/notification-history?limit=${limit}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.success) {
@@ -818,7 +1042,7 @@ const NotificationsAdmin = () => {
     } catch (err) {
       console.error("Failed to fetch history", err);
     }
-  }, [getToken]);
+  }, [getToken, historyLimit]);
 
   const fetchAutoCampaigns = useCallback(async () => {
     try {
@@ -841,9 +1065,12 @@ const NotificationsAdmin = () => {
 
   useEffect(() => {
     fetchData();
-    fetchHistory();
     fetchAutoCampaigns();
-  }, [fetchData, fetchHistory, fetchAutoCampaigns]);
+  }, [fetchData, fetchAutoCampaigns]);
+
+  useEffect(() => {
+    fetchHistory(historyLimit);
+  }, [fetchHistory, historyLimit]);
 
   // Scheduled vs Triggered Campaigns lists
   const scheduledCampaigns = useMemo(() => {
@@ -885,6 +1112,149 @@ const NotificationsAdmin = () => {
       conversionRate: sent > 0 ? Math.round((conversions / sent) * 100) : 0
     };
   }, [triggeredCampaigns]);
+
+  // Filtered & Sorted History
+  const processedHistory = useMemo(() => {
+    let result = [...history];
+
+    // 1. Search Filter
+    if (historySearch) {
+      const query = historySearch.toLowerCase();
+      result = result.filter(h => 
+        (h.title && h.title.toLowerCase().includes(query)) ||
+        (h.body && h.body.toLowerCase().includes(query)) ||
+        (h.target && h.target.toLowerCase().includes(query))
+      );
+    }
+
+    // 2. Segment Filter
+    if (historyTargetFilter !== "all") {
+      result = result.filter(h => h.target === historyTargetFilter);
+    }
+
+    // 3. Campaign Type Filter
+    if (historyTypeFilter === "manual") {
+      result = result.filter(h => !h.campaignId);
+    } else if (historyTypeFilter === "auto") {
+      result = result.filter(h => h.campaignId);
+    }
+
+    // 4. Client Side Sorting
+    if (historySort.column) {
+      const col = historySort.column;
+      const isAsc = historySort.direction === "asc";
+
+      result.sort((a, b) => {
+        let valA, valB;
+
+        if (col === "sentAt") {
+          valA = new Date(a.sentAt).getTime();
+          valB = new Date(b.sentAt).getTime();
+        } else if (col === "title") {
+          valA = (a.title || "").toLowerCase();
+          valB = (b.title || "").toLowerCase();
+        } else if (col === "target") {
+          valA = formatTarget(a.target).toLowerCase();
+          valB = formatTarget(b.target).toLowerCase();
+        } else if (col === "recipientsCount") {
+          valA = a.recipientsCount || 0;
+          valB = b.recipientsCount || 0;
+        } else if (col === "opensCount") {
+          valA = a.opensCount || 0;
+          valB = b.opensCount || 0;
+        } else if (col === "openRate") {
+          valA = a.recipientsCount > 0 ? (a.opensCount || 0) / a.recipientsCount : 0;
+          valB = b.recipientsCount > 0 ? (b.opensCount || 0) / b.recipientsCount : 0;
+        } else if (col === "conversionsCount") {
+          valA = a.conversionsCount || 0;
+          valB = b.conversionsCount || 0;
+        } else if (col === "conversionRate") {
+          valA = a.recipientsCount > 0 ? (a.conversionsCount || 0) / a.recipientsCount : 0;
+          valB = b.recipientsCount > 0 ? (b.conversionsCount || 0) / b.recipientsCount : 0;
+        } else {
+          valA = a[col];
+          valB = b[col];
+        }
+
+        if (valA < valB) return isAsc ? -1 : 1;
+        if (valA > valB) return isAsc ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [history, historySearch, historyTargetFilter, historyTypeFilter, historySort]);
+
+  // Campaign History Aggregate Stats
+  const historyStats = useMemo(() => {
+    let totalSent = 0;
+    let totalOpens = 0;
+    let totalConversions = 0;
+    let bestCampaign = null;
+    let maxConvRate = -1;
+
+    history.forEach(h => {
+      totalSent += h.recipientsCount || 0;
+      totalOpens += h.opensCount || 0;
+      totalConversions += h.conversionsCount || 0;
+
+      const convRate = h.recipientsCount > 0 ? (h.conversionsCount || 0) / h.recipientsCount : 0;
+      if (convRate > maxConvRate && h.recipientsCount > 0) {
+        maxConvRate = convRate;
+        bestCampaign = h;
+      }
+    });
+
+    // If no conversions, fallback to best open rate campaign
+    if (!bestCampaign && history.length > 0) {
+      let maxOpenRate = -1;
+      history.forEach(h => {
+        const openRate = h.recipientsCount > 0 ? (h.opensCount || 0) / h.recipientsCount : 0;
+        if (openRate > maxOpenRate && h.recipientsCount > 0) {
+          maxOpenRate = openRate;
+          bestCampaign = h;
+        }
+      });
+    }
+
+    return {
+      totalSent,
+      totalOpens,
+      avgOpenRate: totalSent > 0 ? Math.round((totalOpens / totalSent) * 100) : 0,
+      totalConversions,
+      avgConversionRate: totalSent > 0 ? Math.round((totalConversions / totalSent) * 100) : 0,
+      bestCampaign
+    };
+  }, [history]);
+
+  // Paginated History
+  const paginatedHistory = useMemo(() => {
+    const startIndex = (historyPage - 1) * historyPageSize;
+    return processedHistory.slice(startIndex, startIndex + historyPageSize);
+  }, [processedHistory, historyPage, historyPageSize]);
+
+  const totalPages = useMemo(() => {
+    return Math.ceil(processedHistory.length / historyPageSize);
+  }, [processedHistory, historyPageSize]);
+
+  // Reset page when filters or search change
+  useEffect(() => {
+    setHistoryPage(1);
+  }, [historySearch, historyTargetFilter, historyTypeFilter, historySort]);
+
+  const handleSort = (column) => {
+    setHistorySort(prev => {
+      if (prev.column === column) {
+        return { column, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { column, direction: "desc" };
+    });
+  };
+
+  const getSortIcon = (column) => {
+    if (historySort.column !== column) return " ↕";
+    return historySort.direction === "asc" ? " ▲" : " ▼";
+  };
 
   const filteredUsers = useMemo(() => {
     if (!searchQuery) return [];
@@ -1768,52 +2138,318 @@ const NotificationsAdmin = () => {
 
         {/* History Section */}
         <div className="card-x30sn" style={{marginTop: 30, width: '100%'}}>
-            <div className="card-title-x30sn"><FaHistory /> Notification Campaign History</div>
+            <div className="card-title-x30sn"><FaHistory /> Notification Campaign History Analytics</div>
+            
+            {/* Visual Stats Cards */}
+            <div className="history-stats-grid-x30sn">
+                <div className="history-stat-card-x30sn">
+                    <div className="stat-card-header-x30sn">
+                        <span className="stat-card-label-x30sn">Total Broadcasts</span>
+                        <div className="stat-card-icon-x30sn"><FaPaperPlane /></div>
+                    </div>
+                    <strong className="stat-card-value-x30sn">{historyStats.totalSent.toLocaleString()}</strong>
+                    <span className="stat-card-sub-x30sn">Across {history.length} logged batches</span>
+                </div>
+                <div className="history-stat-card-x30sn">
+                    <div className="stat-card-header-x30sn">
+                        <span className="stat-card-label-x30sn">Unique Opens</span>
+                        <div className="stat-card-icon-x30sn" style={{color:'#00ff00', background:'rgba(0,255,0,0.08)'}}><FaBell /></div>
+                    </div>
+                    <strong className="stat-card-value-x30sn">{historyStats.totalOpens.toLocaleString()}</strong>
+                    <span className="stat-card-sub-x30sn" style={{color:'#00ff00', fontWeight:'700'}}>Avg Open Rate: {historyStats.avgOpenRate}%</span>
+                </div>
+                <div className="history-stat-card-x30sn">
+                    <div className="stat-card-header-x30sn">
+                        <span className="stat-card-label-x30sn">Conversions</span>
+                        <div className="stat-card-icon-x30sn" style={{color:'#ff69b4', background:'rgba(255,105,180,0.08)'}}><FaGem /></div>
+                    </div>
+                    <strong className="stat-card-value-x30sn">{historyStats.totalConversions.toLocaleString()}</strong>
+                    <span className="stat-card-sub-x30sn" style={{color:'#ff69b4', fontWeight:'700'}}>Avg Conv. Rate: {historyStats.avgConversionRate}%</span>
+                </div>
+                <div className="history-stat-card-x30sn">
+                    <div className="stat-card-header-x30sn">
+                        <span className="stat-card-label-x30sn">Top Campaign</span>
+                        <div className="stat-card-icon-x30sn" style={{color:'#ffcc00', background:'rgba(255,204,0,0.08)'}}><FaMagic /></div>
+                    </div>
+                    <strong className="stat-card-value-x30sn" style={{fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%', display: 'block'}} title={historyStats.bestCampaign ? historyStats.bestCampaign.title : "N/A"}>
+                        {historyStats.bestCampaign ? historyStats.bestCampaign.title : "No Data"}
+                    </strong>
+                    <span className="stat-card-sub-x30sn">
+                        {historyStats.bestCampaign 
+                            ? `${formatTarget(historyStats.bestCampaign.target)} • Conv: ${historyStats.bestCampaign.conversionsCount || 0}`
+                            : "N/A"
+                        }
+                    </span>
+                </div>
+            </div>
+
+            {/* Filter controls panel */}
+            <div className="history-filters-bar-x30sn">
+                <div style={{display:'flex', gap:15, flexWrap:'wrap', flex: 1}}>
+                    {/* Search */}
+                    <div className="filter-group-x30sn" style={{minWidth: 220, flex: 1}}>
+                        <span className="filter-label-x30sn">Search</span>
+                        <input 
+                            type="text" 
+                            className="search-input-x30sn" 
+                            style={{padding: '8px 12px 8px 30px', margin: 0, width: '100%'}}
+                            placeholder="Search title, message, segment..."
+                            value={historySearch}
+                            onChange={(e) => setHistorySearch(e.target.value)}
+                        />
+                    </div>
+                    {/* Segment Filter */}
+                    <div className="filter-group-x30sn">
+                        <span className="filter-label-x30sn">Segment</span>
+                        <select 
+                            className="form-select-x30sn" 
+                            style={{padding: '8px 25px 8px 12px', width: 'auto'}}
+                            value={historyTargetFilter}
+                            onChange={(e) => setHistoryTargetFilter(e.target.value)}
+                        >
+                            <option value="all">All Segments</option>
+                            <option value="subscriber">Active Subscribers</option>
+                            <option value="non_subscriber">Non-Subscribers</option>
+                            <option value="new_non_subscriber">New Non-Subscribers</option>
+                            <option value="new_subscriber">New Subscribers</option>
+                            <option value="specific">Specific Users</option>
+                            <option value="welcome_1">Welcome (Day 1)</option>
+                            <option value="welcome_2">Welcome (Day 2)</option>
+                            <option value="welcome_3">Welcome (Day 3)</option>
+                            <option value="daily_morning">Daily (Morning)</option>
+                            <option value="daily_afternoon">Daily (Afternoon)</option>
+                            <option value="daily_evening">Daily (Evening)</option>
+                            <option value="daily_night">Daily (Bedtime)</option>
+                            <option value="inactive_3d">Inactive (3 Days)</option>
+                            <option value="inactive_7d">Inactive (7 Days)</option>
+                            <option value="premium_upsell">Premium Upsell</option>
+                            <option value="weekend_special">Weekend Special</option>
+                            <option value="festival_greeting">Festival Greetings</option>
+                            <option value="trigger_signup_no_msg">Signup Inactivity Trigger</option>
+                            <option value="trigger_inactive_after_msg">Chat Abandonment Trigger</option>
+                        </select>
+                    </div>
+                    {/* Type Filter */}
+                    <div className="filter-group-x30sn">
+                        <span className="filter-label-x30sn">Type</span>
+                        <select 
+                            className="form-select-x30sn" 
+                            style={{padding: '8px 25px 8px 12px', width: 'auto'}}
+                            value={historyTypeFilter}
+                            onChange={(e) => setHistoryTypeFilter(e.target.value)}
+                        >
+                            <option value="all">All Broadcasts</option>
+                            <option value="manual">Manual Broadcasts</option>
+                            <option value="auto">Automated Campaigns</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style={{display:'flex', gap:10, alignItems:'center', marginTop: 10, alignSelf: 'flex-end'}}>
+                    {/* Limit Selector */}
+                    <div className="filter-group-x30sn">
+                        <span className="filter-label-x30sn">Load Count</span>
+                        <select 
+                            className="form-select-x30sn" 
+                            style={{padding: '8px 25px 8px 12px', width: 'auto'}}
+                            value={historyLimit}
+                            onChange={(e) => setHistoryLimit(Number(e.target.value))}
+                        >
+                            <option value="20">Latest 20</option>
+                            <option value="50">Latest 50</option>
+                            <option value="100">Latest 100</option>
+                            <option value="200">Latest 200</option>
+                            <option value="500">Latest 500</option>
+                            <option value="1000">Latest 1000</option>
+                        </select>
+                    </div>
+                    <button 
+                        className="action-btn-secondary-x30sn"
+                        style={{padding: '8px 12px', height: '37px', minWidth: 'auto'}}
+                        onClick={() => fetchHistory(historyLimit)}
+                        title="Reload history data"
+                    >
+                        Refresh
+                    </button>
+                </div>
+            </div>
+
+            {/* Table */}
             <div style={{overflowX: 'auto'}}>
                 <table className="history-table-x30sn">
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>Campaign Message</th>
-                            <th>Target Segment</th>
-                            <th>Sent To</th>
-                            <th>Opens</th>
-                            <th>Open Rate</th>
-                            <th>Conversions</th>
-                            <th>Conv. Rate</th>
+                            <th className="history-th-sortable-x30sn" onClick={() => handleSort('sentAt')}>
+                                Date {getSortIcon('sentAt')}
+                            </th>
+                            <th className="history-th-sortable-x30sn" onClick={() => handleSort('title')}>
+                                Campaign Message {getSortIcon('title')}
+                            </th>
+                            <th className="history-th-sortable-x30sn" onClick={() => handleSort('target')}>
+                                Target Segment {getSortIcon('target')}
+                            </th>
+                            <th className="history-th-sortable-x30sn" onClick={() => handleSort('recipientsCount')} style={{textAlign:'center'}}>
+                                Sent To {getSortIcon('recipientsCount')}
+                            </th>
+                            <th className="history-th-sortable-x30sn" onClick={() => handleSort('opensCount')} style={{textAlign:'center'}}>
+                                Opens {getSortIcon('opensCount')}
+                            </th>
+                            <th className="history-th-sortable-x30sn" onClick={() => handleSort('openRate')} style={{textAlign:'center'}}>
+                                Open Rate {getSortIcon('openRate')}
+                            </th>
+                            <th className="history-th-sortable-x30sn" onClick={() => handleSort('conversionsCount')} style={{textAlign:'center'}}>
+                                Conversions {getSortIcon('conversionsCount')}
+                            </th>
+                            <th className="history-th-sortable-x30sn" onClick={() => handleSort('conversionRate')} style={{textAlign:'center'}}>
+                                Conv. Rate {getSortIcon('conversionRate')}
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
-                        {history.length > 0 ? history.map(h => (
-                            <tr key={h._id}>
-                                <td style={{color: '#666', fontSize: 11}}>{new Date(h.sentAt).toLocaleDateString()}</td>
-                                <td>
-                                    <div style={{fontWeight: 700}}>{h.title}</div>
-                                    <div style={{fontSize: 11, color: '#888', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 260}}>{h.body}</div>
-                                </td>
-                                <td>{formatTarget(h.target)}</td>
-                                <td style={{fontWeight: 700}}>{h.recipientsCount}</td>
-                                <td>
-                                    <span className="open-badge-x30sn">{h.opensCount || 0}</span>
-                                </td>
-                                <td style={{color: '#ff69b4', fontWeight: 800}}>
-                                    {h.recipientsCount > 0 ? Math.round(((h.opensCount || 0) / h.recipientsCount) * 100) : 0}%
-                                </td>
-                                <td>
-                                    <span className="conversion-badge-x30sn">{h.conversionsCount || 0}</span>
-                                </td>
-                                <td style={{color: '#ffcc00', fontWeight: 800}}>
-                                    {h.recipientsCount > 0 ? Math.round(((h.conversionsCount || 0) / h.recipientsCount) * 100) : 0}%
-                                </td>
-                            </tr>
-                        )) : (
+                        {paginatedHistory.length > 0 ? paginatedHistory.map(h => {
+                            const openRate = h.recipientsCount > 0 ? Math.round(((h.opensCount || 0) / h.recipientsCount) * 100) : 0;
+                            const convRate = h.recipientsCount > 0 ? Math.round(((h.conversionsCount || 0) / h.recipientsCount) * 100) : 0;
+                            const isExpanded = expandedRowId === h._id;
+                            
+                            return (
+                                <Fragment key={h._id}>
+                                    <tr 
+                                        className={`history-row-x30sn ${isExpanded ? 'history-row-expanded-x30sn' : ''}`}
+                                        onClick={() => setExpandedRowId(isExpanded ? null : h._id)}
+                                    >
+                                        <td style={{color: '#666', fontSize: 11}}>{new Date(h.sentAt).toLocaleDateString()}</td>
+                                        <td>
+                                            <div style={{fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6}}>
+                                                {h.campaignId ? <span className="campaign-badge-x30sn" style={{fontSize: 8, padding: '1px 4px', background: 'rgba(176,66,255,0.15)', color: '#b042ff'}}>AUTO</span> : <span className="campaign-badge-x30sn" style={{fontSize: 8, padding: '1px 4px', background: 'rgba(0,180,255,0.15)', color: '#00b4ff'}}>MANUAL</span>}
+                                                {h.title}
+                                            </div>
+                                            <div className="truncate-text-x30sn">{h.body}</div>
+                                        </td>
+                                        <td>{formatTarget(h.target)}</td>
+                                        <td style={{fontWeight: 700, textAlign:'center'}}>{h.recipientsCount}</td>
+                                        <td style={{textAlign:'center'}}>
+                                            <span className="open-badge-x30sn">{h.opensCount || 0}</span>
+                                        </td>
+                                        <td>
+                                            <div className="rate-badge-pill-x30sn" style={{alignItems:'center'}}>
+                                                <span className="rate-badge-percentage-x30sn" style={{color: '#ff69b4'}}>{openRate}%</span>
+                                                <div className="rate-bar-container-x30sn">
+                                                    <div className="rate-bar-fill-x30sn" style={{width: `${openRate}%`, background: '#ff69b4'}}></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style={{textAlign:'center'}}>
+                                            <span className="conversion-badge-x30sn">{h.conversionsCount || 0}</span>
+                                        </td>
+                                        <td>
+                                            <div className="rate-badge-pill-x30sn" style={{alignItems:'center'}}>
+                                                <span className="rate-badge-percentage-x30sn" style={{color: '#ffcc00'}}>{convRate}%</span>
+                                                <div className="rate-bar-container-x30sn">
+                                                    <div className="rate-bar-fill-x30sn" style={{width: `${convRate}%`, background: '#ffcc00'}}></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {isExpanded && (
+                                        <tr className="expanded-detail-row-x30sn">
+                                            <td colSpan="8">
+                                                <div className="expanded-detail-card-x30sn">
+                                                    <div style={{display:'flex', gap:20, flexWrap:'wrap'}}>
+                                                        <div style={{flex: 2, minWidth: 280}}>
+                                                            <span style={{fontSize: 10, color: '#666', textTransform: 'uppercase', fontWeight: 700, display: 'block', marginBottom: 5}}>Campaign ID / Reference</span>
+                                                            <code style={{color: '#aaa', fontSize: 12, display: 'block', marginBottom: 15}}>{h._id}</code>
+                                                            
+                                                            <span style={{fontSize: 10, color: '#666', textTransform: 'uppercase', fontWeight: 700, display: 'block', marginBottom: 5}}>Notification Title</span>
+                                                            <h4 style={{margin: '0 0 15px 0', fontSize: 15, fontWeight: 700, color: '#fff'}}>{h.title}</h4>
+                                                            
+                                                            <span style={{fontSize: 10, color: '#666', textTransform: 'uppercase', fontWeight: 700, display: 'block', marginBottom: 5}}>Message Body</span>
+                                                            <p style={{margin: '0 0 15px 0', fontSize: 13, color: '#ccc', whiteSpace: 'pre-wrap', lineHeight: 1.5}}>{h.body}</p>
+                                                            
+                                                            <div style={{display:'flex', gap:30, borderTop: '1px solid #111', paddingTop: 15, marginTop: 10}}>
+                                                                <div>
+                                                                    <span style={{fontSize: 10, color: '#666', textTransform: 'uppercase', fontWeight: 700, display: 'block'}}>Targeting</span>
+                                                                    <span style={{fontSize: 12, color: '#fff', fontWeight: 600}}>{formatTarget(h.target)}</span>
+                                                                </div>
+                                                                <div>
+                                                                    <span style={{fontSize: 10, color: '#666', textTransform: 'uppercase', fontWeight: 700, display: 'block'}}>Sent Time</span>
+                                                                    <span style={{fontSize: 12, color: '#fff'}}>{new Date(h.sentAt).toLocaleString()}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {h.imageUrl && (
+                                                            <div style={{flex: 1, minWidth: 150, display: 'flex', flexDirection: 'column'}}>
+                                                                <span style={{fontSize: 10, color: '#666', textTransform: 'uppercase', fontWeight: 700, display: 'block', marginBottom: 5}}>Campaign Image</span>
+                                                                <img 
+                                                                    src={h.imageUrl} 
+                                                                    style={{width: '100%', maxHeight: 150, objectFit: 'cover', borderRadius: 8, border: '1px solid #222'}} 
+                                                                    alt="Campaign Preview"
+                                                                    onError={(e) => e.target.style.display = 'none'}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </Fragment>
+                            );
+                        }) : (
                             <tr>
-                                <td colSpan="8" style={{textAlign: 'center', color: '#444', padding: 40}}>No campaign history available</td>
+                                <td colSpan="8" style={{textAlign: 'center', color: '#444', padding: 40}}>No matching campaign history found</td>
                             </tr>
                         )}
                     </tbody>
                 </table>
             </div>
+
+            {/* Pagination Footer */}
+            {totalPages > 1 && (
+                <div className="pagination-container-x30sn">
+                    <div className="pagination-info-x30sn">
+                        Showing {Math.min(processedHistory.length, (historyPage - 1) * historyPageSize + 1)} to {Math.min(processedHistory.length, historyPage * historyPageSize)} of {processedHistory.length} entries
+                    </div>
+                    <div className="pagination-controls-x30sn">
+                        <button 
+                            className="pagination-btn-x30sn"
+                            onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
+                            disabled={historyPage === 1}
+                        >
+                            Previous
+                        </button>
+                        
+                        {Array.from({ length: totalPages }).map((_, idx) => {
+                            const pageNum = idx + 1;
+                            // Limit page numbers shown if there are too many pages
+                            if (totalPages > 6 && Math.abs(historyPage - pageNum) > 2 && pageNum !== 1 && pageNum !== totalPages) {
+                                if (pageNum === 2 || pageNum === totalPages - 1) {
+                                    return <span key={pageNum} style={{color: '#444', padding: '6px 4px'}}>...</span>;
+                                }
+                                return null;
+                            }
+                            
+                            return (
+                                <button
+                                    key={pageNum}
+                                    className={`pagination-btn-x30sn ${historyPage === pageNum ? 'active' : ''}`}
+                                    onClick={() => setHistoryPage(pageNum)}
+                                >
+                                    {pageNum}
+                                </button>
+                            );
+                        })}
+                        
+                        <button 
+                            className="pagination-btn-x30sn"
+                            onClick={() => setHistoryPage(p => Math.min(totalPages, p + 1))}
+                            disabled={historyPage === totalPages}
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
 
         {/* Edit Campaign Modal */}

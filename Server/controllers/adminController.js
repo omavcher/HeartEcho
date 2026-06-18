@@ -3887,9 +3887,10 @@ exports.getPaymentAnalytics = async (req, res) => {
 
 exports.getNotificationHistory = async (req, res) => {
   try {
+    const limit = Math.min(Number(req.query.limit) || 200, 1000);
     const history = await NotificationLog.find()
       .sort({ sentAt: -1 })
-      .limit(20)
+      .limit(limit)
       .lean();
     
     res.json({ success: true, data: history });
