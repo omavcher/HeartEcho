@@ -36,6 +36,8 @@ function LiveCard({ model, index, onOpen }) {
             src={model.avatar}
             alt={model.name}
             className="alv-circle-img"
+            width={80}
+            height={80}
             loading="lazy"
             onError={e => { e.target.src = `https://ui-avatars.com/api/?name=${model.name}&background=cf4185&color=fff&size=128`; }}
           />

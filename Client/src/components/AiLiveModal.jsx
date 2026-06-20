@@ -344,6 +344,8 @@ export default function AiLiveModal({ model, onClose }) {
                 src={model.avatar}
                 alt={model.name}
                 className="alvm-fallback-img"
+                width={460}
+                height={818}
                 onError={e => { e.target.style.opacity = '0'; }}
               />
               {videoError && (
@@ -373,7 +375,7 @@ export default function AiLiveModal({ model, onClose }) {
             <div className="alvm-top-left">
               <div className="alvm-avatar-ring">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={model.avatar} alt={model.name} className="alvm-avatar-img" />
+                <img src={model.avatar} alt={model.name} className="alvm-avatar-img" width={40} height={40} />
               </div>
               <div className="alvm-top-meta">
                 <span className="alvm-model-name">{model.name}</span>

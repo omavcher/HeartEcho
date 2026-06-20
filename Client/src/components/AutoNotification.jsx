@@ -89,6 +89,8 @@ function AutoNotification() {
             src={notification.profile_img || notification.avatar_img} 
             alt="AI Profile" 
             className="android-avatar" 
+            width={48}
+            height={48}
           />
           <div className="android-text">
             <h4 className="android-title">{notification.name}</h4>
