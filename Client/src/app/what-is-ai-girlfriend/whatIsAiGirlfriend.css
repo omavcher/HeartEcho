@@ -1,0 +1,253 @@
+/* What is AI Girlfriend Landing Page Styling */
+.landing-root {
+  background-color: #000000;
+  color: #ffffff;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, sans-serif;
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 100px;
+  line-height: 1.6;
+}
+
+.landing-glow-1 {
+  position: absolute;
+  top: -100px;
+  left: 20%;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(206, 64, 133, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.landing-glow-2 {
+  position: absolute;
+  bottom: 20%;
+  right: -200px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(206, 64, 133, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.landing-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 80px 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Typography elements */
+.landing-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -1.5px;
+  margin-bottom: 24px;
+}
+
+.landing-lead {
+  font-size: 1.25rem;
+  color: #d1d5db;
+  line-height: 1.7;
+  margin-bottom: 40px;
+}
+
+/* Sections structure */
+.landing-section {
+  margin-top: 80px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 60px;
+}
+
+.landing-section-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.8px;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.landing-section-title svg {
+  color: #ce4085;
+}
+
+.landing-text {
+  color: #d1d5db;
+  font-size: 1.05rem;
+  margin-bottom: 24px;
+  line-height: 1.8;
+}
+
+/* Highlight box/Grid items */
+.landing-card {
+  background: rgba(10, 10, 10, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  padding: 30px;
+  margin: 30px 0;
+  backdrop-filter: blur(8px);
+}
+
+.landing-card-title {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 12px;
+}
+
+.landing-card-text {
+  color: #9ca3af;
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Key benefits table / comparison */
+.comparison-container {
+  overflow-x: auto;
+  margin: 30px 0;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.comparison-table th {
+  padding: 16px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.comparison-table td {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #d1d5db;
+  font-size: 0.95rem;
+}
+
+.comparison-table tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* FAQ style list */
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.faq-q-block {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 20px;
+}
+
+.faq-question {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.faq-answer {
+  color: #9ca3af;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Call to Action */
+.landing-cta {
+  background: linear-gradient(135deg, rgba(206, 64, 133, 0.1) 0%, rgba(10, 10, 10, 0.8) 100%);
+  border: 1px solid rgba(206, 64, 133, 0.2);
+  border-radius: 24px;
+  padding: 48px;
+  text-align: center;
+  margin-top: 80px;
+}
+
+.landing-cta-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.landing-cta-desc {
+  color: #d1d5db;
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.landing-cta-btn {
+  background: #ce4085;
+  color: #ffffff;
+  padding: 16px 40px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(206, 64, 133, 0.3);
+}
+
+.landing-cta-btn:hover {
+  background: #e05297;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(206, 64, 133, 0.5);
+}
+
+/* List with Icons */
+.landing-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.landing-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  color: #d1d5db;
+  font-size: 1.05rem;
+}
+
+.landing-list-item svg {
+  color: #ce4085;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .landing-title {
+    font-size: 2.75rem;
+  }
+  
+  .landing-section-title {
+    font-size: 1.85rem;
+  }
+  
+  .landing-cta {
+    padding: 30px 20px;
+  }
+  
+  .landing-cta-title {
+    font-size: 1.85rem;
+  }
+}

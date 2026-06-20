@@ -532,6 +532,7 @@ export default function Footer() {
             <ul className="seh-link-list">
               <li><Link href="/about">About</Link></li>
               <li><Link href="/contact">Contact</Link></li>
+              <li><Link href="/faq">FAQ</Link></li>
               <li><Link href="mailto:heartecho.help@gmail.com">Email</Link></li>
             </ul>
           </div>
@@ -542,6 +543,8 @@ export default function Footer() {
               <li><Link href="/hot-stories" className="seh-special-link">Stories</Link></li>
               <li><Link href="/subscribe" style={{color: '#ce4085', fontWeight: 'bold'}}>Join VIP</Link></li>
               <li><Link href="/reviews" style={{color: '#ffd60a', fontWeight: '600'}}>⭐ Reviews</Link></li>
+              <li><Link href="/features">Features</Link></li>
+              <li><Link href="/what-is-ai-girlfriend">AI Girlfriend Guide</Link></li>
               <li><Link href="/blog">Blog</Link></li>
             </ul>
           </div>

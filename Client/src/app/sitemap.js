@@ -54,6 +54,8 @@ export default async function sitemap() {
     '/about',
     '/contact',
     '/faq',
+    '/features',
+    '/what-is-ai-girlfriend',
     '/blog',
     '/reviews',
     '/subscribe',

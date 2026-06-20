@@ -4,18 +4,19 @@ export function getHomepageSchema() {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "HeartEcho",
-      "applicationCategory": "LifestyleApplication",
-      "operatingSystem": "Web",
-      "description": "HeartEcho is India's leading AI companion platform. Chat with 20+ Indian AI companion personas in Hindi, Hinglish, and English.",
+      "description": "AI Girlfriend Chat Application",
+      "applicationCategory": "Entertainment",
+      "url": "https://heartecho.in",
+      "operatingSystem": "Web, Android, iOS",
       "offers": {
         "@type": "Offer",
-        "price": "0",
+        "price": "Free, ₹499+",
         "priceCurrency": "INR"
       },
       "aggregateRating": {
         "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "ratingCount": "1250"
+        "ratingValue": "4.5",
+        "ratingCount": "800"
       }
     },
     {

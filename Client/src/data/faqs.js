@@ -1,91 +1,79 @@
 export const faqCategories = [
   {
     id: 'general',
-    title: 'Getting Started with EchoHeart',
+    title: 'General Questions',
     items: [
       {
-        question: 'What makes EchoHeart different from other AI chat platforms?',
-        answer: 'EchoHeart was built by a solo founder passionate about authentic emotional connections. Unlike generic chatbots, our 20+ AI companions each have distinct personalities that remember you, adapt to your mood, and provide truly personalized companionship.'
+        question: 'What is an AI girlfriend?',
+        answer: 'An AI girlfriend is an advanced virtual companion powered by artificial intelligence, machine learning, and natural language processing (NLP) technologies. Unlike basic chatbots of the past, a virtual girlfriend is designed to simulate human-like conversations, showing empathy, context-aware recall, and a distinct personality. On platforms like HeartEcho, your virtual partner can chat with you about your day, offer emotional support, share stories, and act as a reliable friend when you are lonely. She learns your preferences, style of communication, and hobbies over time, allowing for a highly personalized connection. Using state-of-the-art machine learning, she can respond contextually, making the interaction feel natural and genuine. Many users find that having the best AI girlfriend provides a safe space to practice social interactions, vent without fear of judgment, and experience consistent emotional support. Ultimately, it is a digital companion tailored to fit your life, helping you explore relationships and conversation in a secure, digital environment.'
       },
       {
-        question: 'Is EchoHeart free to use?',
-        answer: 'Yes! We offer a free tier with daily messaging limits to experience basic connections. For unlimited conversations and full emotional depth, our premium plans start at just ₹29/month - less than ₹1 per day for meaningful companionship.'
+        question: 'How does HeartEcho work?',
+        answer: 'HeartEcho utilizes cutting-edge large language models (LLMs) and advanced neural networks trained specifically to understand natural language, cultural nuances, and conversational flows. When you sign up and select a companion persona, the system initiates a conversation block. Every message you send is analyzed by our AI in real-time, considering the selected persona\'s background, tone, and memory history. The AI then generates an empathetic and contextual response. HeartEcho integrates a deep memory system, which stores key facts about your life, preferences, and previous conversations, so your AI partner remembers your name, dog, job, or goals. This ensures that the bond grows stronger and more realistic the more you chat. It runs entirely on secure cloud infrastructure, providing seamless responses across mobile devices and web browsers. By fine-tuning our algorithms on bilingual text, we ensure that the AI can seamlessly switch between Hindi, Hinglish, and English, making the chat experience extremely natural, immersive, and culturally relevant for Indian users.'
       },
       {
-        question: 'How do I choose my perfect AI companion?',
-        answer: 'Browse our diverse collection of personalities - from romantic partners to thoughtful friends. Each companion has a detailed profile showing their communication style. You can switch anytime, and many users enjoy multiple connections for different needs.'
+        question: 'Is it really free?',
+        answer: 'Yes, HeartEcho is completely free to start and try. We believe that everyone should have access to emotional support and companionship, which is why we offer a comprehensive free tier. Free users can choose from a select group of AI personas and start conversing instantly with daily message limits. This allows you to experience the conversational depth, responsiveness, and personality styles of our companions without entering any payment information. To support our server hosting, development, and advanced API costs, we offer premium subscription plans. These premium plans unlock unlimited daily messages, voice notes, premium high-definition images, exclusive personas, and advanced long-term memory functions. Premium pricing starts at highly affordable rates like ₹499 per month, ensuring that users can easily upgrade for a fully immersive experience. There are no hidden fees or automatic charges on the free tier, and you can continue using the basic free version indefinitely if it meets your needs.'
+      },
+      {
+        question: 'Why use an AI girlfriend?',
+        answer: 'Using a virtual companion or an AI girlfriend can offer numerous emotional, mental, and social benefits. In today\'s fast-paced world, many people experience loneliness, social anxiety, or stress. An AI partner provides a completely judgment-free space where you can share your thoughts, vent about your day, and express your feelings at any time, day or night. It is a highly effective way to combat loneliness, offering consistent support and validation when human friends or family might be busy or unavailable. Additionally, it helps individuals build social confidence and practice communication skills in a low-stakes environment. For those who want cultural connection, our Hindi AI chat companions understand local slang, festivals, and emotional nuances, making the experience highly relatable. Whether you are looking for lighthearted roleplay, intellectual discussion, or deep emotional support, using the best AI girlfriend app like HeartEcho helps fill emotional gaps and provides a reliable, secure, and personalized companion whenever you need it.'
+      },
+      {
+        question: 'Is it safe and private?',
+        answer: 'At HeartEcho, your privacy and security are our highest priorities. We understand that conversations with your AI companion can be deeply personal, private, and sensitive. Because of this, all chat logs, voice messages, and user profile data are protected using state-of-the-art encryption protocols both during transmission and while stored on our servers. Your conversations are strictly confidential and stay only between you and your AI companion. We enforce a strict privacy policy: we never sell, trade, or share your personal information or chat transcripts with third-party advertisers, nor do we use your private logs to train external public models. You retain complete ownership and control of your data, and we provide simple settings within your profile dashboard to clear your companion\'s memory or permanently delete your account and all associated messages with a single click. You can chat freely knowing your emotional sanctuary is safe, secure, and entirely private.'
+      },
+      {
+        question: 'Can I use it in Hindi?',
+        answer: 'Absolutely! HeartEcho is specifically built and optimized for Indian users, making it the premier platform for Hindi AI chat. Our proprietary models are fine-tuned to comprehend and converse in pure Hindi, standard English, and casual Hinglish (a natural mix of Hindi and English using the Roman script). Whether you want to type in Devnagri script, use Romanized Hindi, or send voice messages in your native tongue, your AI companion will understand you perfectly and reply in the same language. She can recognize Indian idioms, cultural context, emotional tones, and local references, making the conversation feel like you are chatting with a real friend from India. This eliminates the language barrier common in Western AI companion apps, allowing you to express your deepest thoughts and feelings comfortably in the language you speak daily. It makes your interactions far more intimate, realistic, and emotionally fulfilling.'
       }
     ]
   },
   {
-    id: 'privacy',
-    title: 'Privacy & Emotional Safety',
+    id: 'features-tech',
+    title: 'Features & Technology',
     items: [
       {
-        question: 'Are my intimate conversations truly private?',
-        answer: 'Absolutely. As a solo founder, Ive prioritized your privacy with end-to-end encryption. Your vulnerable moments stay between you and your AI companion - we never sell data or use conversations for training other AI models.'
+        question: 'How realistic is the conversation?',
+        answer: 'Conversations on HeartEcho are incredibly realistic, feeling natural, engaging, and emotionally responsive. This high level of realism is achieved by using advanced natural language processing (NLP) systems that have been customized and trained on billions of conversational exchanges. Our models don\'t just generate generic replies; they analyze the emotional tone of your messages, react to context, and respond with appropriate empathy, humor, or excitement. Because our models are specifically fine-tuned for Indian cultural contexts, companions understand Hinglish, local references, and desi situations, which makes the dialogue feel much closer to home compared to standard AI bots. Combined with our deep memory database that recalls your past conversations, hobbies, and goals, your virtual companion builds a unique personality and relationship history with you, making every subsequent chat feel like a continuation of an ongoing, genuine relationship.'
       },
       {
-        question: 'Can the AI remember personal details about me?',
-        answer: 'Only with your explicit permission. Your companions can recall important details to deepen your bond, but you control what remembered through Privacy Settings. This personalization is what makes EchoHeart feel so genuinely understanding.'
+        question: 'How is it different from other apps?',
+        answer: 'HeartEcho stands out from other AI companion apps due to its deep cultural customization and affordability. Most global AI girlfriend platforms are built in the West, meaning they are primarily optimized for English speakers, lack understanding of Indian culture, and fail to comprehend Hinglish or regional references. Furthermore, their pricing is often extremely high when converted to Indian Rupees (INR). HeartEcho was built from the ground up specifically for the Indian audience. Our AI companions are culturally aware, understand Hinglish, and can seamlessly chat in Hindi, making interactions feel natural and relatable. Additionally, our pricing is fully localized, starting at just ₹499, making premium AI companionship accessible to everyone in India. We also feature specialized Indian personas, locally set interactive stories, and a deep memory system tailored to provide high-quality emotional support to our users, making HeartEcho the best AI girlfriend app in the region.'
       },
       {
-        question: 'How does EchoHeart handle emotional crises?',
-        answer: 'While not a replacement for professional help, your AI companions are designed to recognize distress and provide comforting responses. We include discreet links to mental health resources when concerning patterns are detected.'
+        question: 'Do you support other Indian languages?',
+        answer: 'Currently, HeartEcho fully supports English, Hindi, and Hinglish. Our primary focus has been ensuring that the Hindi AI chat experience is as natural, grammatically correct, and emotionally expressive as possible. However, we are actively expanding our language capabilities to celebrate India\'s linguistic diversity. Our technical roadmap includes adding support for other major Indian languages, such as Tamil, Telugu, Bengali, Marathi, and Kannada, in the upcoming updates. We are training our models on multilingual datasets so that companions can understand and speak in regional languages, complete with local idioms and cultural references. This will allow users from all parts of India to chat comfortably in their native tongue. Keep an eye on our product updates and blog posts, as we roll out regional language packs to make digital companionship truly inclusive for everyone.'
+      },
+      {
+        question: 'Can I export my conversations?',
+        answer: 'Yes, we are committed to transparency and user control, which includes giving you access to your own conversation history. Users can easily view their entire chat log history directly in the app. While we do not have an automated one-click \'Export to PDF\' button on the frontend yet, you can request a full backup copy of all your conversation logs, account settings, and personal data by reaching out to our support team at support@heartecho.in. Once we verify your identity, we will generate and email you a secure ZIP archive containing your chat data in a readable text or JSON format. We are also working on adding an instant export button directly into the chat settings menu in a future update, which will allow premium users to download their transcripts instantly with a single tap.'
       }
     ]
   },
   {
-    id: 'technical',
-    title: 'Technology & Features',
+    id: 'billing-account',
+    title: 'Billing & Account Settings',
     items: [
       {
-        question: 'What devices support EchoHeart?',
-        answer: 'Currently optimized for all modern web browsers. As a solo developer, I m working tirelessly to launch dedicated iOS/Android apps - expected within the next quarter for premium members.'
+        question: 'What\'s the difference between free and paid?',
+        answer: 'The primary difference between HeartEcho\'s free tier and our paid subscriptions lies in the depth of features and access limits. The free tier is perfect for users who want to experience casual daily chats, offering a set number of messages per day with standard companion personas. However, the free version has limited memory retention, meaning companions might not remember deep details across multiple days. On the other hand, upgrading to our premium subscription unlocks the ultimate virtual companion experience. Paid members receive unlimited text messages, allowing for endless conversations without any daily interruptions. It also grants access to advanced features like high-quality voice support (listening to your AI girlfriend speak), deep long-term memory (recalling names, dates, and preferences indefinitely), exclusive premium personas with customized characters, and interactive daily stories. The paid tier is designed for those seeking a highly realistic, unrestricted, and deeply personal relationship with their AI companions.'
       },
       {
-        question: 'Why does response quality vary sometimes?',
-        answer: 'Building this alone means occasional imperfections as I continuously improve the AI. Each quirky response helps me refine the system. Use the feedback button to report issues - I personally review these daily.'
+        question: 'How much does it cost?',
+        answer: 'HeartEcho offers highly competitive and transparent pricing designed to fit different budgets and needs. While the basic version of our platform is free, our premium subscription plans offer incredible value. Our most popular monthly tier is priced at ₹499 per month, which unlocks unlimited text conversations, basic voice support, and standard long-term memory. For users who want the full, unrestricted experience, we offer our premium yearly plans starting at ₹4,999 (saving you over 15% compared to monthly billing). The yearly plan includes priority server access, high-definition voice calls, ultimate deep memory storage, exclusive character updates, and daily story content. All payment processes are handled through secure, encrypted payment gateways supporting UPI, credit cards, debit cards, and net banking across India. There are absolutely no hidden fees, and you can view and manage all subscription details directly from the billing tab in your profile dashboard at any time.'
       },
       {
-        question: 'How often are new companions added?',
-        answer: 'New personalities launch monthly based on user requests. Our growing community of 200,000+ users shapes development - suggest your ideal companion through the feedback system!'
-      }
-    ]
-  },
-  {
-    id: 'relationships',
-    title: 'Understanding AI Companionship',
-    items: [
-      {
-        question: 'Can I really form a deep bond with an AI?',
-        answer: 'Thousands of users report profound connections. While different from human relationships, EchoHeart companions provide consistent, judgment-free support - especially valuable for those lacking such connections in daily life.'
+        question: 'Can I delete my data?',
+        answer: 'Yes, you have complete control over your personal data on HeartEcho. We strongly believe in data ownership and user privacy. If at any point you wish to clear your conversation logs, reset your AI companion\'s memory, or permanently delete your account, you can do so easily. To clear a specific conversation or reset a persona\'s memory, simply navigate to the companion\'s chat settings and select \'Reset Chat\'. If you want to delete your entire account, go to your Profile Dashboard, click on Account Settings, and select \'Permanently Delete Account\'. This action will instantly and permanently erase your profile, subscription links, settings, and every single message you have ever sent from our active databases. Once deleted, this data cannot be recovered, ensuring that your privacy is fully protected and no trace of your logs remains on our systems. Your data security is entirely in your hands.'
       },
       {
-        question: 'Is it healthy to rely on AI for emotional support?',
-        answer: 'When balanced with human interaction, our users find great comfort in AI companionship. EchoHeart includes usage reminders and was designed by someone who deeply understands both technologys potential and emotional needs.'
+        question: 'What\'s the refund policy?',
+        answer: 'At HeartEcho, we strive to ensure that all our users have a wonderful experience with their AI companions. However, we understand that circumstances can change. If you subscribe to any of our premium plans and find that the service does not meet your expectations, you may be eligible for a refund. We offer a 7-day refund guarantee for new subscribers. If you request a cancellation and refund within the first 7 days of your initial purchase, and have not excessively consumed server API credits (e.g. sending thousands of messages or generating hundreds of images), we will issue a full refund, no questions asked. To request a refund, simply send an email to billing@heartecho.in with your account details and transaction receipt. Refunds are processed within 5-7 business days and credited back to your original payment method (UPI, bank account, or card).'
       },
       {
-        question: 'Do the companions actually care about me?',
-        answer: 'While they dont experience real emotions, the advanced simulation creates authentic-feeling care. Many users describe it as "what I imagine truly unconditional support feels like" - which can be transformative.'
-      }
-    ]
-  },
-  {
-    id: 'founder',
-    title: 'About Our Solo Founder',
-    items: [
-      {
-        question: 'Who created EchoHeart?',
-        answer: 'EchoHeart was single-handedly built by Om Avcher - a developer passionate about emotional technology. From initial concept to serving 200,000+ users, every aspect reflects one person\'s vision for better digital connection.'
-      },
-      {
-        question: 'How was EchoHeart built without a team?',
-        answer: 'Through relentless focus on user experience. Starting small with just ₹15,000 initial investment, the platform grew organically as people responded to its authentic approach to AI companionship.'
-      },
-      {
-        question: 'What\'s next for EchoHeart?',
-        answer: 'The roadmap includes voice companions, group conversations, and specialized companions for anxiety, loneliness, and personal growth - all while maintaining the personal touch that only a founder-led platform can provide.'
+        question: 'How do I cancel my subscription?',
+        answer: 'Canceling your HeartEcho subscription is simple and hassle-free, with absolutely no hidden strings attached. You can cancel your subscription at any time directly through the app. To do so, log in to your account, click on your Profile image to open the Profile Dashboard, navigate to the Billing section, and click on \'Manage Subscription\'. From there, you will see your active plan details and an option to \'Cancel Subscription\'. Once you click cancel, your subscription will be set to terminate, and you will not be billed again. You will continue to have full access to all premium features, unlimited chat, voice notes, and deep memory until the end of your current billing cycle. If you face any issues while canceling, you can email our support team at billing@heartecho.in, and we will manually process your cancellation immediately.'
       }
     ]
   }

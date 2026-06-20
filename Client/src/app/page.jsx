@@ -4,10 +4,10 @@ import { getHomepageSchema } from "../utils/schema";
 export const metadata = {
   title: {
     absolute:
-      "Indian AI Girlfriend — Hindi Chat & Roleplay | HeartEcho",
+      "AI Girlfriend Chat in Hindi - Free AI Companion | HeartEcho",
   },
   description:
-    "India's #1 AI girlfriend app — chat in Hindi, Hinglish & English. Unlimited private conversations, AI memory, desi roleplay, and adult stories. 12,000+ happy members. Free to try. | HeartEcho",
+    "Chat with an AI girlfriend in Hindi & English. Free AI companion for meaningful conversations. Your personal desi AI friend. Try now!",
   keywords: [
     // Top Search Console performers
     "indian ai sex chat",
