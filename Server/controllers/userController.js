@@ -889,6 +889,52 @@ exports.deleteMessage = async (req, res) => {
 
 
 
+// Local helper to attribute user-to-user referral commission
+async function processUserReferralPurchase(userId, rupeesNum, subscriptionTier) {
+  try {
+    const User = require("../models/User");
+    const UserReferral = require("../models/UserReferral");
+
+    const existingUser = await User.findById(userId);
+    if (!existingUser || !existingUser.referredByUser) return;
+
+    // Calculate commission
+    let commissionAmount = 0;
+    // Monthly (₹99) -> ₹10
+    // Premium Yearly (₹599) -> ₹75
+    // Ultimate Yearly (₹1499) -> ₹200
+    if (rupeesNum >= 1000 || subscriptionTier === 'yearly_pro') commissionAmount = 200;
+    else if (rupeesNum >= 400 || subscriptionTier === 'yearly') commissionAmount = 75;
+    else if (rupeesNum >= 99 || subscriptionTier === 'monthly') commissionAmount = 10;
+
+    if (commissionAmount > 0) {
+      const referral = await UserReferral.findOne({
+        referrer: existingUser.referredByUser,
+        referredUser: existingUser._id,
+        status: { $ne: 'invalid' }
+      });
+
+      if (referral) {
+        referral.status = 'premium';
+        referral.subscriptionPurchased = true;
+        referral.subscriptionCommissionAmount = (referral.subscriptionCommissionAmount || 0) + commissionAmount;
+        await referral.save();
+
+        // Update referrer's pending balance and counts
+        const referrer = await User.findById(existingUser.referredByUser);
+        if (referrer) {
+          referrer.pendingReferralBalance = parseFloat((referrer.pendingReferralBalance + commissionAmount).toFixed(2));
+          referrer.premiumReferralsCount += 1;
+          await referrer.save();
+        }
+        console.log(`[Referral Purchase] Credited ₹${commissionAmount} pending commission to referrer ${existingUser.referredByUser} from user ${userId}`);
+      }
+    }
+  } catch (err) {
+    console.error("❌ Error in processUserReferralPurchase helper:", err);
+  }
+}
+
 // Updated paymentSave function with your dark theme HTML
 exports.paymentSave = async (req, res) => {
   try {
@@ -999,6 +1045,9 @@ exports.paymentSave = async (req, res) => {
     } catch (campaignErr) {
       console.error("❌ Email campaign conversion tracking error:", campaignErr);
     }
+
+    // 💰 USER-TO-USER REFERRAL COMMISSION TRACKING
+    await processUserReferralPurchase(userId, rupeesNum, subscriptionTier);
 
     // 💰 REFERRAL COMMISSION TRACKING
     if (existingUser.referredBy && rupeesNum >= 99) {
@@ -1262,6 +1311,9 @@ exports.razorpayWebhook = async (req, res) => {
         console.error("Conversion attribution error in webhook:", err);
       }
       
+      // User-to-User Referral Tracking
+      await processUserReferralPurchase(existingUser._id, rupeesNum, subscriptionTier);
+      
       // Referral Tracking
       if (existingUser.referredBy && rupeesNum >= 99) {
         try {
@@ -1491,6 +1543,9 @@ exports.upgradeSubscription = async (req, res) => {
     } catch (err) {
       console.error("Conversion attribution error in upgradeSubscription:", err);
     }
+
+    // User-to-User Referral Tracking
+    await processUserReferralPurchase(userId, rupeesNum, newTier);
 
     // 💰 REFERRAL COMMISSION TRACKING FOR UPGRADES
     if (updatedUser.referredBy && rupeesNum >= 99) {

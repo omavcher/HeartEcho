@@ -741,6 +741,44 @@ async function deductMessageQuota(userInfo, mediaType = 'text') {
     
     console.log(`[Quota Deduction] ${userInfo.email} - Deducted ${quotaRequired}, Now used: ${userInfo.messagesUsedToday}/${userInfo.messageQuota}`);
     
+    // User-to-User Referral Stage 2 Active Bonus Trigger
+    if (userInfo.referredByUser) {
+      try {
+        const UserReferral = require("../models/UserReferral");
+        const User = require("../models/User");
+        
+        // Find referral record
+        const referral = await UserReferral.findOne({
+          referrer: userInfo.referredByUser,
+          referredUser: userInfo._id,
+          status: 'pending' // Only check if still pending
+        });
+
+        if (referral) {
+          // Increment message count
+          referral.referredUserMessagesCount += 1;
+          
+          // Check if message count is >= 10 AND account is active for 24+ hours
+          const hoursActive = (new Date() - new Date(referral.createdAt)) / (1000 * 60 * 60);
+          if (referral.referredUserMessagesCount >= 10 && hoursActive >= 24) {
+            referral.status = 'active';
+            referral.activeRewardClaimed = false; // Will be approved/claimed after 7 days
+            
+            // Add ₹3 reward to referrer's pending balance
+            const referrer = await User.findById(userInfo.referredByUser);
+            if (referrer) {
+              referrer.pendingReferralBalance = parseFloat((referrer.pendingReferralBalance + 3).toFixed(2));
+              referrer.activeReferralsCount += 1;
+              await referrer.save();
+            }
+          }
+          await referral.save();
+        }
+      } catch (refErr) {
+        console.error("❌ Error checking Stage 2 referral active bonus:", refErr);
+      }
+    }
+
     return { 
       success: true, 
       deducted: quotaRequired, 

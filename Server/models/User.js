@@ -52,6 +52,41 @@ const userSchema = new mongoose.Schema({
   referralSignupDate: { type: Date, default: null },
   hasUsedReferral: { type: Boolean, default: false },
 
+  // User-to-User Referral System
+  referredByUser: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  referralBalance: {
+    type: Number,
+    default: 0
+  },
+  pendingReferralBalance: {
+    type: Number,
+    default: 0
+  },
+  lifetimeReferralEarnings: {
+    type: Number,
+    default: 0
+  },
+  totalInvitesCount: {
+    type: Number,
+    default: 0
+  },
+  registeredReferralsCount: {
+    type: Number,
+    default: 0
+  },
+  activeReferralsCount: {
+    type: Number,
+    default: 0
+  },
+  premiumReferralsCount: {
+    type: Number,
+    default: 0
+  },
+
   payment_history: [{ type: mongoose.Schema.Types.ObjectId, ref: "Payment" }],
   login_details: [{ type: mongoose.Schema.Types.ObjectId, ref: "LoginDetail" }],
   tickets: [{ type: mongoose.Schema.Types.ObjectId, ref: "Ticket" }],
@@ -82,10 +117,31 @@ userSchema.pre('save', function(next) {
   next();
 });
 
+// Pre-save to generate referralCode if not present
+userSchema.pre('save', async function(next) {
+  if (!this.referralCode) {
+    let code;
+    let isUnique = false;
+    let attempts = 0;
+    const namePart = (this.name || "USER").replace(/[^a-zA-Z]/g, "").substring(0, 5).toUpperCase();
+    while (!isUnique && attempts < 5) {
+      const randomNum = Math.floor(1000 + Math.random() * 9000);
+      code = `${namePart}${randomNum}`;
+      const existing = await mongoose.model('User').findOne({ referralCode: code });
+      if (!existing) {
+        isUnique = true;
+      }
+      attempts++;
+    }
+    this.referralCode = code;
+  }
+  next();
+});
+
 // Pre-save middleware to ensure quota consistency
 userSchema.pre('save', function(next) {
-  // Ensure free users always have messageQuota of 5
-  if (this.user_type === 'free' && this.messageQuota !== 5) {
+  // Ensure free users have at least messageQuota of 5
+  if (this.user_type === 'free' && this.messageQuota < 5) {
     this.messageQuota = 5;
   }
   

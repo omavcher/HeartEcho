@@ -10,8 +10,8 @@ const referralCreatorSchema = new mongoose.Schema({
   platform: {
     type: String,
     required: true,
-    enum: ['instagram', 'youtube', 'tiktok', 'twitter', 'facebook', 'website', 'other'],
-    default: 'instagram'
+    enum: ['website','android', 'instagram', 'youtube', 'tiktok', 'twitter', 'facebook', 'website', 'other'],
+    default: 'website'
   },
   username: {
     type: String,

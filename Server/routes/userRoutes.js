@@ -2,6 +2,7 @@ const express = require("express");
 const controller = require("../controllers/userController");
 const authController = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
+const referralController = require("../controllers/referralController");
 
 const router = express.Router();
 
@@ -37,6 +38,17 @@ router.get("/subscription/status", authMiddleware, controller.getSubscriptionSta
 router.get("/plans", authMiddleware, controller.getSubscriptionPlans);
 router.post("/update", authMiddleware, controller.updateSubscription);
 router.post("/check-quota", authMiddleware, controller.checkMessageQuota);
+
+// User-to-User Referral Routes
+router.get("/referrals/dashboard", authMiddleware, referralController.getReferralDashboard);
+router.post("/referrals/withdraw", authMiddleware, referralController.requestWithdrawal);
+router.post("/referrals/convert", authMiddleware, referralController.convertRewardsToPremium);
+router.get("/referrals/leaderboard", referralController.getMonthlyLeaderboard);
+
+// Admin Referral Routes
+router.get("/admin/referrals/withdrawals", authMiddleware, referralController.adminGetWithdrawals);
+router.post("/admin/referrals/withdrawals/:id", authMiddleware, referralController.adminProcessWithdrawal);
+router.get("/admin/referrals/analytics", authMiddleware, referralController.adminGetAnalytics);
 
 // Upgrade routes (prorated billing)
 router.post("/payment/upgrade", authMiddleware, controller.upgradeSubscription);

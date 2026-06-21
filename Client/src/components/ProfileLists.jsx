@@ -402,7 +402,7 @@ function ProfileLists({ handleSettindSelection, onBackSBTNSelect, selectedId }) 
                 </div>
              </div>
 
-             <div className={`ios-list-item ios-nav-item ${selectedId === 6 ? 'active' : ''}`} onClick={() => navigateTo(6)}>
+              <div className={`ios-list-item ios-nav-item ${selectedId === 6 ? 'active' : ''}`} onClick={() => navigateTo(6)}>
                <div className="ios-item-left">
                   <div className="ios-icon-box" style={{background: '#ff9f0a'}}>
                      <svg viewBox="0 0 24 24" fill="currentColor">
@@ -412,6 +412,21 @@ function ProfileLists({ handleSettindSelection, onBackSBTNSelect, selectedId }) 
                   <span className="ios-item-title">Subscription & Billing</span>
                </div>
                <svg viewBox="0 0 24 24" fill="currentColor" className="ios-chevron"><path d="M9.29 15.88L13.17 12 9.29 8.12c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l4.59 4.59c.39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0-.38-.39-.39-1.03 0-1.42z"/></svg>
+             </div>
+
+             <div className={`ios-list-item ios-nav-item ${selectedId === 14 ? 'active' : ''}`} onClick={() => navigateTo(14)}>
+               <div className="ios-item-left">
+                  <div className="ios-icon-box" style={{background: 'linear-gradient(135deg, #ff2d55, #ff379b)'}}>
+                     <svg viewBox="0 0 24 24" fill="currentColor" style={{width: '18px', height: '18px'}}>
+                       <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/>
+                     </svg>
+                  </div>
+                  <span className="ios-item-title">Share & Earn</span>
+               </div>
+               <div className="ios-item-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ background: '#ff2d55', color: '#fff', fontSize: '0.72rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.2)', textShadow: '0 1px 2px rgba(0,0,0,0.5)', boxShadow: '0 0 10px rgba(255, 45, 85, 0.5)' }}>FREE ₹500</span>
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="ios-chevron"><path d="M9.29 15.88L13.17 12 9.29 8.12c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l4.59 4.59c.39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0-.38-.39-.39-1.03 0-1.42z"/></svg>
+               </div>
              </div>
           </div>
         </div>

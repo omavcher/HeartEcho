@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const sendEmail = require("../config/emailSender");
 exports.registerUser = async (req, res) => {
   try {
-    const { fullName, email, phone, password, gender, birth_date, interests, user_type ,twoFA ,profilePicture ,referralCode , subscribeNews ,termsAccepted , age , selectedInterests, country, city, isGoogleUser } = req.body;
+    const { fullName, email, phone, password, gender, birth_date, interests, user_type ,twoFA ,profilePicture ,referralCode , subscribeNews ,termsAccepted , age , selectedInterests, country, city, isGoogleUser, referredByCode } = req.body;
 
     // 1️⃣ Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -15,6 +15,30 @@ exports.registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const formattedInterests = Array.isArray(selectedInterests) ? selectedInterests : [];
+
+    // Find referrer if referredByCode is provided
+    let referrer = null;
+    let referralStatus = 'pending';
+    let invalidReason = '';
+
+    if (referredByCode) {
+      referrer = await User.findOne({ referralCode: { $regex: new RegExp(`^${referredByCode}$`, 'i') } });
+      if (referrer) {
+        // Check self-referral
+        if (referrer.email.toLowerCase() === email.toLowerCase()) {
+          referralStatus = 'invalid';
+          invalidReason = 'Self-referral';
+        }
+        
+        // Check disposable email domain
+        const disposableDomains = ['mailinator.com', 'yopmail.com', 'tempmail.com', 'temp-mail.org', '10minutemail.com', 'tempmailaddress.com'];
+        const emailDomain = email.split('@')[1]?.toLowerCase();
+        if (disposableDomains.includes(emailDomain)) {
+          referralStatus = 'invalid';
+          invalidReason = 'Disposable email domain';
+        }
+      }
+    }
 
     // 3️⃣ Create new user
     const newUser = new User({
@@ -38,7 +62,39 @@ exports.registerUser = async (req, res) => {
       isGoogleUser: !!isGoogleUser,
     });
 
+    if (referrer && referralStatus !== 'invalid') {
+      newUser.referredByUser = referrer._id;
+      newUser.referralSignupDate = new Date();
+      newUser.messageQuota = 5 + 50; // Give +50 free messages immediately to new user
+    }
+
     await newUser.save();
+
+    // Create UserReferral relationship log
+    if (referrer) {
+      const UserReferral = require("../models/UserReferral");
+      const clientIp = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+      const newReferral = new UserReferral({
+        referrer: referrer._id,
+        referredUser: newUser._id,
+        status: referralStatus,
+        signupRewardAmount: 2,
+        activeRewardAmount: 3,
+        ipAddress: clientIp,
+        deviceId: req.body.deviceId || '',
+        invalidReason: invalidReason
+      });
+      await newReferral.save();
+
+      // If valid, credit the referrer with ₹2 pending balance and increment stats
+      if (referralStatus !== 'invalid') {
+        referrer.pendingReferralBalance = parseFloat((referrer.pendingReferralBalance + 2).toFixed(2));
+        referrer.totalInvitesCount += 1;
+        referrer.registeredReferralsCount += 1;
+        await referrer.save();
+      }
+    }
 
     const token = jwt.sign({ id: newUser._id , email: newUser.email}, process.env.JWT_SECRET, { expiresIn: "30d" });
 

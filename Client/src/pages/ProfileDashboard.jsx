@@ -29,14 +29,73 @@ function ProfileDashboard() {
     }
   }, []);
 
-  // --- 2. Handlers ---
+  // --- 2. Deep Linking / Query Parameters parser ---
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const settingMap = {
+        'bio': 2,
+        'profile': 2,
+        'chat': 4,
+        'language': 13,
+        'billing': 6,
+        'subscription': 6,
+        'security': 7,
+        'logins': 9,
+        'tickets': 12,
+        'support': 12,
+        'share-earn': 14,
+        'referral': 14
+      };
+
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab') || params.get('setting');
+      
+      if (tabParam) {
+        const tabId = parseInt(tabParam, 10);
+        if (!isNaN(tabId)) {
+          setSelectedSettingId(tabId);
+          setShowDetailView(true);
+        } else {
+          const mappedId = settingMap[tabParam.toLowerCase()];
+          if (mappedId) {
+            setSelectedSettingId(mappedId);
+            setShowDetailView(true);
+          }
+        }
+      }
+    }
+  }, []);
+
+  // --- 3. Handlers ---
   const handleSettingSelection = (id) => {
     setSelectedSettingId(id);
     setShowDetailView(true); // Slide to detail view on mobile
+
+    if (typeof window !== 'undefined') {
+      const idToSettingMap = {
+        2: 'profile',
+        4: 'chat',
+        6: 'subscription',
+        7: 'security',
+        9: 'logins',
+        12: 'support',
+        13: 'language',
+        14: 'share-earn'
+      };
+      const settingName = idToSettingMap[id];
+      if (settingName) {
+        window.history.pushState(null, '', `?setting=${settingName}`);
+      } else {
+        window.history.pushState(null, '', `?tab=${id}`);
+      }
+    }
   };
 
   const handleBackToMenu = () => {
     setShowDetailView(false); // Slide back to list view on mobile
+    if (typeof window !== 'undefined') {
+      window.history.pushState(null, '', window.location.pathname);
+    }
   };
 
   return (
