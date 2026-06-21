@@ -1,5 +1,6 @@
 import url from "../data/url";
 import { blogPosts } from "../data/blogPosts";
+import { citiesList } from "../data/cities";
 import api from '../config/api';
 import axios from "axios";
 import fs from "fs";
@@ -73,13 +74,35 @@ export default async function sitemap() {
     priority: path === '/subscribe' || path === '/hot-stories' ? 0.95 : 0.8,
   }));
 
-  // 3. Priority 0.8 (blog posts)
+  // 3. Priority 0.8-0.85 (blog posts — new pillar posts get higher priority)
+  const pillarSlugs = [
+    'hindi-ai-chat-complete-guide-2026',
+    'ai-girlfriend-india-future-2026',
+    'desi-ai-companion-indian-culture-technology',
+    'heartecho-vs-character-ai-india-2026',
+    'what-is-ai-girlfriend-beginners-guide-india',
+    'loneliness-india-2026-ai-companion-solution',
+  ];
   const blogRoutes = blogPosts.map((post) => ({
     url: `${url}/blog/${post.slug}`,
-    lastModified: now,
+    lastModified: new Date(post.date || now),
     changeFrequency: 'monthly',
-    priority: 0.8,
+    priority: pillarSlugs.includes(post.slug) ? 0.85 : 0.8,
   }));
+
+  // 4. City pages — prioritised by real user data
+  const payingCities  = ['mumbai','pune','jabalpur','bangalore','bengaluru','kolkata','chennai','siliguri','bardhaman'];
+  const activeCities  = ['delhi','new-delhi','indore','bhopal','raipur','jaipur','meerut','ludhiana','moradabad','patna','gurgaon','gurugram','jodhpur','ahmedabad','chandigarh'];
+  const cityRoutes = citiesList.map((city) => {
+    const key = city.key.toLowerCase();
+    const priority = payingCities.includes(key) ? 0.95 : activeCities.includes(key) ? 0.90 : 0.75;
+    return {
+      url: `${url}/city/${city.key}`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority,
+    };
+  });
 
 
 
@@ -123,6 +146,7 @@ export default async function sitemap() {
     ...landingRoutes,
     ...otherStaticRoutes,
     ...blogRoutes,
+    ...cityRoutes,
     ...liveStoryRoutes,
     ...storyRoutes
   ];
@@ -138,12 +162,30 @@ ${allRoutes.map(route => `  <url>
   </url>`).join('\n')}
 </urlset>`;
 
-  // Write statically to public/sitemap.xml
+  // Write main sitemap.xml to public/
   try {
     const publicPath = path.join(process.cwd(), 'public', 'sitemap.xml');
     fs.writeFileSync(publicPath, xmlContent, 'utf8');
   } catch (err) {
     console.error("Failed to write static sitemap.xml to public folder:", err);
+  }
+
+  // Write secondary blog sitemap for faster blog indexing
+  const blogXmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${blogRoutes.map(route => `  <url>
+    <loc>${route.url}</loc>
+    <lastmod>${route.lastModified instanceof Date ? route.lastModified.toISOString().split('T')[0] : new Date(route.lastModified).toISOString().split('T')[0]}</lastmod>
+    <changefreq>${route.changeFrequency}</changefreq>
+    <priority>${route.priority.toFixed(1)}</priority>
+  </url>`).join('\n')}
+</urlset>`;
+
+  try {
+    const blogSitemapPath = path.join(process.cwd(), 'public', 'sitemap-blog.xml');
+    fs.writeFileSync(blogSitemapPath, blogXmlContent, 'utf8');
+  } catch (err) {
+    console.error("Failed to write sitemap-blog.xml:", err);
   }
 
   return allRoutes;

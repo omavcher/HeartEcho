@@ -34,9 +34,21 @@ const nextConfig = {
     optimizeCss: false, // set true only if critters pkg installed
   },
 
-  // ─── Long-lived cache headers for static assets ───────────────────
+  // ─── Security + Cache Headers ─────────────────────────────────────
   async headers() {
     return [
+      // ── Security headers on all routes (SEO trust signal) ──
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Frame-Options',          value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options',   value: 'nosniff' },
+          { key: 'Referrer-Policy',          value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy',       value: 'camera=(), microphone=(), geolocation=()' },
+          { key: 'Strict-Transport-Security',value: 'max-age=63072000; includeSubDomains; preload' },
+        ],
+      },
+      // ── Long-lived cache for static assets ──
       {
         source: '/(.*)\\.(jpg|jpeg|png|webp|avif|svg|gif|ico)',
         headers: [

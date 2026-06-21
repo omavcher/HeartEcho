@@ -4,12 +4,12 @@ import { getHomepageSchema } from "../utils/schema";
 export const metadata = {
   title: {
     absolute:
-      "AI Girlfriend Chat in Hindi - Free AI Companion | HeartEcho",
+      "AI Girlfriend Chat in Hindi & English | HeartEcho — Uncensored, Free",
   },
   description:
-    "Chat with an AI girlfriend in Hindi & English. Free AI companion for meaningful conversations. Your personal desi AI friend. Try now!",
+    "Chat with India's AI girlfriend in Hindi & English. Uncensored, private, judgment-free AI companion. Deep memory keeps your secrets. Desi roleplay, voice notes & emotional support. Try free today!",
   keywords: [
-    // Top Search Console performers
+    // ─ Top Search Console performers (BOFU — high-intent) ─
     "indian ai sex chat",
     "ai sex chat hindi",
     "hindi sex chat ai",
@@ -22,11 +22,14 @@ export const metadata = {
     "desi ai sex chat",
     "indian nsfw ai chat",
     "indian ai nsfw",
-    // Brand
+    // ─ Brand ─
     "HeartEcho",
     "HeartEcho AI",
     "heartecho.in",
-    // Core product
+    "HeartEcho login",
+    "HeartEcho free",
+    "HeartEcho premium",
+    // ─ Core product (MOFU) ─
     "AI girlfriend India",
     "virtual girlfriend Hindi",
     "AI companion India",
@@ -36,15 +39,49 @@ export const metadata = {
     "private AI chat India",
     "AI girlfriend deep memory",
     "Indian AI voice notes",
-    // Long-tail
+    "uncensored AI girlfriend",
+    "best AI girlfriend India",
+    "free AI girlfriend India",
+    "AI girlfriend with memory",
+    "emotional support AI India",
+    "desi AI girlfriend",
+    // ─ MOFU comparison ─
+    "character ai alternative india",
+    "replika alternative india",
+    "candy ai alternative india",
+    "heartecho vs character ai",
+    // ─ TOFU informational ─
+    "what is AI girlfriend",
+    "how to chat with AI girlfriend",
+    "how does AI girlfriend work",
+    "AI girlfriend vs real relationship",
+    "loneliness solution india",
+    "mental health AI india",
+    // ─ Hindi long-tail ─
+    "AI dost hindi mein",
+    "pyaar karne wali AI",
+    "AI se baat karo hindi",
+    "Hindi mein AI girlfriend",
+    "AI girlfriend hindi mein baat karo",
+    // ─ City-specific (BOFU local) ─
+    "AI girlfriend Mumbai",
+    "AI girlfriend Delhi",
+    "AI girlfriend Bengaluru",
+    "AI girlfriend Pune",
+    "AI girlfriend Kolkata",
+    "AI girlfriend Chennai",
+    "AI girlfriend Jabalpur",
+    "Delhi AI chat",
+    "Bangalore AI companion",
+    "best AI app for Indian men",
+    // ─ Long-tail question keywords ─
     "how to get an AI girlfriend in India",
     "best AI companion for lonely men India",
     "AI girlfriend that speaks Hindi",
-    "virtual relationship app India 2025",
+    "virtual relationship app India 2026",
     "AI girlfriend hindi mein",
-    "pyaar karne wali AI",
-    "AI dost app hindi",
-    "replika alternative for Indian users",
+    "can AI girlfriend actually love you",
+    "how much does AI girlfriend cost India",
   ],
   alternates: {
     canonical: "https://heartecho.in/",

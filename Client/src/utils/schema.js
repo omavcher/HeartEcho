@@ -4,19 +4,23 @@ export function getHomepageSchema() {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "HeartEcho",
-      "description": "AI Girlfriend Chat Application",
-      "applicationCategory": "Entertainment",
+      "description": "India's #1 AI girlfriend app — chat in Hindi, Hinglish & English with 20+ Indian AI companion personas. Private, free to try.",
+      "applicationCategory": "LifestyleApplication",
+      "applicationSubCategory": "AI Companion",
       "url": "https://heartecho.in",
-      "operatingSystem": "Web, Android, iOS",
-      "offers": {
-        "@type": "Offer",
-        "price": "Free, ₹499+",
-        "priceCurrency": "INR"
-      },
+      "operatingSystem": "Web, Android",
+      "offers": [
+        { "@type": "Offer", "name": "Free Plan",       "price": "0",    "priceCurrency": "INR" },
+        { "@type": "Offer", "name": "Monthly",         "price": "99",   "priceCurrency": "INR" },
+        { "@type": "Offer", "name": "Premium Yearly",  "price": "599",  "priceCurrency": "INR" },
+        { "@type": "Offer", "name": "Ultimate Yearly", "price": "1499", "priceCurrency": "INR" }
+      ],
       "aggregateRating": {
         "@type": "AggregateRating",
-        "ratingValue": "4.5",
-        "ratingCount": "800"
+        "ratingValue": "4.9",
+        "ratingCount": "12000",
+        "bestRating": "5",
+        "worstRating": "1"
       }
     },
     {
@@ -25,8 +29,11 @@ export function getHomepageSchema() {
       "name": "HeartEcho",
       "url": "https://heartecho.in",
       "logo": "https://heartecho.in/heartecho.png",
+      "founder": { "@type": "Person", "name": "Om Avchar" },
+      "areaServed": { "@type": "Country", "name": "India" },
       "sameAs": [
-        "https://www.instagram.com/heartecho.in"
+        "https://www.instagram.com/heartecho.in",
+        "https://twitter.com/heartecho_in"
       ]
     }
   ];

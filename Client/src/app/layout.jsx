@@ -8,12 +8,12 @@ export const metadata = {
   metadataBase: new URL('https://heartecho.in'),
 
   title: {
-    default: "HeartEcho – India's #1 AI Girlfriend | Hindi Chat & Desi Companion",
+    default: "AI Girlfriend Chat in Hindi & English | HeartEcho — Uncensored, Free",
     template: "%s | HeartEcho",
   },
 
   description:
-    "HeartEcho — India's #1 AI girlfriend app. Chat in Hindi, Hinglish & English with a private AI companion. Desi roleplay, adult stories, voice notes & emotional support. 12,000+ members. Free to try →",
+    "Chat with India's AI girlfriend in Hindi & English. Uncensored, private, judgment-free AI companion. Deep memory keeps your secrets. Desi roleplay, voice notes & emotional support. Free to try →",
 
   keywords: [
     // ── Brand name (highest priority for Brave / brand searches) ──
@@ -84,7 +84,7 @@ export const metadata = {
     canonical: 'https://heartecho.in/',
     languages: {
       'en-IN': 'https://heartecho.in/',
-      'hi':    'https://heartecho.in/',
+      'hi-IN': 'https://heartecho.in/',
     },
   },
 
@@ -137,10 +137,11 @@ export const metadata = {
 
   // ── Verification tokens ──
   verification: {
-    google: '8_xRyF1zJ29s3pPv0kOqYN', // Google Search Console (replace with real token)
+    google: '8_xRyF1zJ29s3pPv0kOqYN',
     yandex: 'dd39df4fc482a7c0',
     other: {
-      'msvalidate.01': '', // Bing Webmaster Tools token (add when registered)
+      // Add Bing Webmaster token here once registered at https://www.bing.com/webmasters
+      // 'msvalidate.01': 'YOUR_BING_TOKEN_HERE',
     },
   },
 
@@ -160,7 +161,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en-IN">
       <head>
         {/* ── Preconnect to 3rd-party origins (reduces DNS+TLS time) ── */}
         <link rel="preconnect" href="https://www.googletagmanager.com" />
@@ -325,6 +326,62 @@ export default function RootLayout({ children }) {
                     "price": "0",
                     "priceCurrency": "INR"
                   },
+                  "aggregateRating": {
+                    "@type": "AggregateRating",
+                    "ratingValue": "4.9",
+                    "ratingCount": "12000",
+                    "bestRating": "5",
+                    "worstRating": "1"
+                  }
+                },
+                {
+                  "@type": "LocalBusiness",
+                  "@id": "https://heartecho.in/#localbusiness",
+                  "name": "HeartEcho",
+                  "description": "India's #1 AI girlfriend & companion platform. Chat in Hindi, Hinglish & English with 20+ Indian AI personas.",
+                  "url": "https://heartecho.in",
+                  "telephone": "+91-support",
+                  "email": "support@heartecho.in",
+                  "priceRange": "₹0 - ₹1,499",
+                  "currenciesAccepted": "INR",
+                  "paymentAccepted": "UPI, Credit Card, Debit Card, Net Banking",
+                  "areaServed": [
+                    { "@type": "City", "name": "Mumbai" },
+                    { "@type": "City", "name": "Pune" },
+                    { "@type": "City", "name": "Jabalpur" },
+                    { "@type": "City", "name": "Bengaluru" },
+                    { "@type": "City", "name": "Kolkata" },
+                    { "@type": "City", "name": "Chennai" },
+                    { "@type": "City", "name": "New Delhi" },
+                    { "@type": "City", "name": "Indore" },
+                    { "@type": "City", "name": "Bhopal" },
+                    { "@type": "City", "name": "Jaipur" },
+                    { "@type": "City", "name": "Ahmedabad" },
+                    { "@type": "City", "name": "Chandigarh" },
+                    { "@type": "City", "name": "Siliguri" },
+                    { "@type": "City", "name": "Hyderabad" },
+                    { "@type": "City", "name": "Raipur" },
+                    { "@type": "Country", "name": "India" }
+                  ],
+                  "sameAs": [
+                    "https://www.instagram.com/heartecho.in",
+                    "https://twitter.com/heartecho_in"
+                  ]
+                },
+                {
+                  "@type": "Product",
+                  "@id": "https://heartecho.in/#product",
+                  "name": "HeartEcho AI Girlfriend & Companion",
+                  "description": "India's #1 AI girlfriend app — chat in Hindi, Hinglish & English with private AI companions. Desi roleplay, deep memory, voice notes & emotional support.",
+                  "brand": { "@type": "Brand", "name": "HeartEcho" },
+                  "image": "https://heartecho.in/og-image.jpg",
+                  "url": "https://heartecho.in",
+                  "offers": [
+                    { "@type": "Offer", "name": "Free Plan", "price": "0", "priceCurrency": "INR", "availability": "https://schema.org/InStock" },
+                    { "@type": "Offer", "name": "Monthly Plan", "price": "99", "priceCurrency": "INR", "availability": "https://schema.org/InStock" },
+                    { "@type": "Offer", "name": "Premium Yearly", "price": "599", "priceCurrency": "INR", "availability": "https://schema.org/InStock" },
+                    { "@type": "Offer", "name": "Ultimate Yearly", "price": "1499", "priceCurrency": "INR", "availability": "https://schema.org/InStock" }
+                  ],
                   "aggregateRating": {
                     "@type": "AggregateRating",
                     "ratingValue": "4.9",

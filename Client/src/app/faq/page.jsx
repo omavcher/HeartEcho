@@ -4,9 +4,13 @@ import Footer from '../../components/Footer';
 import { FaChevronDown, FaSearch } from 'react-icons/fa';
 
 export const metadata = {
-  title: "FAQ & Help Center",
-  description: "Find answers to common questions about HeartEcho AI. Learn how our virtual Indian AI companions work, our privacy policies, and billing details.",
-  keywords: ["HeartEcho AI FAQ", "AI companion help", "virtual girlfriend questions", "Indian AI chat support"],
+  title: "HeartEcho FAQ — AI Girlfriend Questions Answered | Hindi AI Chat Help",
+  description: "Got questions about HeartEcho? Find answers about Hindi AI girlfriend chat, privacy, pricing, how it works, and more. India's #1 AI companion — free to try.",
+  keywords: [
+    "HeartEcho FAQ", "AI girlfriend FAQ India", "hindi AI chat help", "AI companion questions",
+    "is AI girlfriend safe", "how to chat with AI girlfriend", "HeartEcho pricing",
+    "virtual girlfriend questions India", "AI girlfriend privacy", "free AI girlfriend India"
+  ],
   alternates: {
     canonical: 'https://heartecho.in/faq',
   }
@@ -46,7 +50,7 @@ export default function FAQPage() {
           {/* Header */}
           <header className="faq-header-x30sn">
             <span className="faq-badge-x30sn">Help Center</span>
-            <h1 className="faq-title-x30sn">Frequently Asked <span className="text-pink-x30sn">Questions</span></h1>
+            <h1 className="faq-title-x30sn">Frequently Asked <span className="text-pink-x30sn">Questions</span> About HeartEcho AI</h1>
             <p className="faq-subtitle-x30sn">Everything you need to know about the platform and billing.</p>
             
             {/* Search Bar (Visual Only) */}

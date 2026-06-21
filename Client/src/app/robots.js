@@ -6,6 +6,7 @@ export default function robots() {
     '/private',
     '/chatbox',
     '/profile',
+    '/user/',
     '/stories/edit',
     '/referral/*/dashboard',
     '/thank-you',
@@ -60,6 +61,7 @@ export default function robots() {
         userAgent: '*',
         allow: '/',
         disallow: disallowList,
+        crawlDelay: 1,
       },
       // Explicit full-allow for Brave Search bot
       {
@@ -74,7 +76,10 @@ export default function robots() {
         disallow: disallowList,
       })),
     ],
-    sitemap: 'https://heartecho.in/sitemap.xml',
+    sitemap: [
+      'https://heartecho.in/sitemap.xml',
+      'https://heartecho.in/sitemap-blog.xml',
+    ],
     host: 'https://heartecho.in',
   };
 }

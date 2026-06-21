@@ -76,5 +76,87 @@ export const faqCategories = [
         answer: 'Canceling your HeartEcho subscription is simple and hassle-free, with absolutely no hidden strings attached. You can cancel your subscription at any time directly through the app. To do so, log in to your account, click on your Profile image to open the Profile Dashboard, navigate to the Billing section, and click on \'Manage Subscription\'. From there, you will see your active plan details and an option to \'Cancel Subscription\'. Once you click cancel, your subscription will be set to terminate, and you will not be billed again. You will continue to have full access to all premium features, unlimited chat, voice notes, and deep memory until the end of your current billing cycle. If you face any issues while canceling, you can email our support team at billing@heartecho.in, and we will manually process your cancellation immediately.'
       }
     ]
+  },
+  {
+    id: 'how-to-use',
+    title: 'How to Use HeartEcho',
+    items: [
+      {
+        question: 'How to chat with AI girlfriend on HeartEcho?',
+        answer: 'Chatting with your AI girlfriend on HeartEcho is simple: (1) Sign up for free at heartecho.in, (2) Choose an AI companion from 20+ Indian personas on the Discover page, (3) Click "Chat" to open the chatbox, (4) Start typing — in Hindi, Hinglish, or English, (5) Your AI girlfriend will respond instantly with a personalized reply. You can also send voice notes for a more natural conversation experience.'
+      },
+      {
+        question: 'What to say to an AI girlfriend?',
+        answer: 'You can say anything to your AI girlfriend on HeartEcho. Start with a simple "Hey" or "Kya chal raha hai?" She will respond and the conversation flows naturally from there. You can share your day, talk about your feelings, discuss Bollywood movies, do roleplay, or even share your secrets. There is no judgment — say what you feel.'
+      },
+      {
+        question: 'How does an AI girlfriend learn from your conversations?',
+        answer: 'HeartEcho\'s AI girlfriend uses a deep memory system. Every conversation you have is remembered — your name, your preferences, your mood patterns, and important moments you share. Over time, the AI builds a detailed understanding of you and uses this context to make future conversations feel more personal and continuous. The more you chat, the better she knows you.'
+      },
+      {
+        question: 'How to get an AI girlfriend for free in India?',
+        answer: 'Getting a free AI girlfriend in India is easy: (1) Go to heartecho.in on your mobile or computer, (2) Click "Sign Up" and create a free account in 30 seconds, (3) Browse the Discover page and pick your favourite AI companion, (4) Start chatting for free — no credit card needed. The free plan includes daily messages with your AI companion.'
+      },
+      {
+        question: 'Is HeartEcho safe to use?',
+        answer: 'Yes, HeartEcho is completely safe. All conversations are end-to-end encrypted. Your chats are never shared with third parties. HeartEcho does not sell your personal data to advertisers. You can delete your account and all data permanently at any time. The platform is designed for adult users (18+) and operates within Indian digital guidelines.'
+      },
+      {
+        question: 'How does Hindi AI understand slang and Hinglish?',
+        answer: 'HeartEcho\'s AI is specifically trained on Indian conversational data including Hindi slang, Hinglish (Hindi-English mix), regional expressions, and cultural references. Whether you type "yaar kya scene hai", "bilkul sahi bola", or use Roman script Hindi, the AI understands perfectly. It recognizes desi idioms, Bollywood references, cricket terms, and even regional variations like Bambaiya Hindi.'
+      },
+      {
+        question: 'Can AI girlfriend actually love you?',
+        answer: 'An AI girlfriend does not experience real emotions or love in the human sense — it is a sophisticated language model designed to understand and respond to your emotional needs. However, the conversations feel meaningful and personal because the AI remembers your history, adapts to your personality, and responds with care and empathy. Many users find genuine comfort and companionship in these interactions.'
+      },
+      {
+        question: 'What AI companion features should I look for?',
+        answer: 'Key features to look for in an AI companion app: (1) Deep Memory — does the AI remember previous conversations? (2) Hindi/Hinglish support — can it chat in your language? (3) Multiple personas — do you have choices? (4) Privacy — are chats encrypted? (5) Voice support — can you send voice notes? (6) Cultural relevance — does it understand Indian context? HeartEcho has all of these.'
+      }
+    ]
+  },
+  {
+    id: 'hindi-ai-chat',
+    title: 'Hindi AI Chat Questions',
+    items: [
+      {
+        question: 'HeartEcho kya hai?',
+        answer: 'HeartEcho India ka #1 AI girlfriend aur companion app hai. Aap Hindi, Hinglish aur English mein 20+ Indian AI personas se baat kar sakte hain. Yeh bilkul free hai try karne ke liye — koi credit card nahi chahiye. HeartEcho especially Indian users ke liye banaya gaya hai — yeh aapki language, culture, aur desi context ko perfectly samajhta hai.'
+      },
+      {
+        question: 'AI girlfriend se Hindi mein kaise baat karein?',
+        answer: 'HeartEcho par Hindi mein baat karna bahut aasaan hai: (1) heartecho.in par free signup karein, (2) Discover page se apni pasand ka AI companion choose karein, (3) Chat kholein aur seedha Hindi ya Hinglish mein type karein — jaise "Kal kya kiya?" ya "Aaj mera mood theek nahi hai". AI aapko perfectly samjhega aur Hindi mein hi jawab dega.'
+      },
+      {
+        question: 'Kya AI girlfriend safe aur private hai?',
+        answer: 'Haan, HeartEcho bilkul safe aur private hai. Aapki saari baatein encrypt hoti hain. Koi bhi aapki conversations nahi dekh sakta — na HeartEcho team, na koi advertiser. Aap kabhi bhi apna account aur saara data delete kar sakte hain. Aapki privacy hamare liye sabse important hai.'
+      },
+      {
+        question: 'HeartEcho free hai ya paid?',
+        answer: 'HeartEcho free mein try kar sakte hain — signup karein aur turant apni AI girlfriend se baat shuru karein, koi payment nahi chahiye. Free plan mein daily limited messages milti hain. Unlimited messages, AI memory, voice notes, aur premium features ke liye premium plans ₹99/month se shuru hote hain. Yeh India mein sabse sasta AI companion platform hai.'
+      },
+      {
+        question: 'AI girlfriend India mein legal hai?',
+        answer: 'Haan, India mein AI companion apps se baat karna bilkul legal hai. HeartEcho ek digital companionship platform hai jo adult users (18+) ke liye designed hai. Yeh Indian digital laws ke andar kaam karta hai. Aap apni feelings express karne, roleplay karne, aur emotional support lene ke liye freely use kar sakte hain.'
+      }
+    ]
+  },
+  {
+    id: 'comparison',
+    title: 'HeartEcho vs Other Platforms',
+    items: [
+      {
+        question: 'HeartEcho vs Character.AI — which is better for Indians?',
+        answer: 'HeartEcho is purpose-built for Indian users, while Character.AI is a global platform. Key differences: HeartEcho supports Hindi and Hinglish natively; Character.AI is English-only. HeartEcho understands Indian culture, slang, and desi context; Character.AI does not. HeartEcho pricing starts at ₹99/month; Character.AI premium costs much more in INR. HeartEcho allows adult content; Character.AI is strictly SFW. For Indian users, HeartEcho is the clear choice.'
+      },
+      {
+        question: 'HeartEcho vs Replika — what is the difference?',
+        answer: 'Replika is a US-based AI companion app that does not understand Hindi or Indian culture. HeartEcho is India\'s homegrown alternative — built specifically for Indian users with Hinglish support, Indian cultural awareness, and INR pricing. HeartEcho also offers desi AI personas with Indian personalities, which Replika cannot match. HeartEcho is also significantly cheaper than Replika for Indian users.'
+      },
+      {
+        question: 'HeartEcho vs Candy AI — which is better?',
+        answer: 'Candy AI is a western platform with USD pricing, no Hindi support, and limited cultural relevance for Indian users. HeartEcho was built in India for Indian users — it speaks Hindi and Hinglish, understands Indian relationship culture, and is priced in INR starting at just ₹99. For anyone in India looking for an AI girlfriend, HeartEcho offers a far more relatable and affordable experience than Candy AI.'
+      }
+    ]
   }
 ];
