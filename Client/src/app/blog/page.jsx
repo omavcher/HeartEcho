@@ -106,7 +106,7 @@ export default function BlogPage() {
                 <Link href={`/blog/${post.slug}`} key={post.id} className="blg-card-x30sn">
                   <div className="blg-thumb-wrapper-x30sn">
                     <img 
-                      src={post.image || '/placeholder.jpg'} 
+                      src={post.image ? `${post.image}?v=2` : '/placeholder.jpg'} 
                       alt={post.title} 
                       className="blg-thumb-img-x30sn"
                       loading="lazy"

@@ -29,7 +29,7 @@ export async function generateMetadata({ params }) {
       description: post.excerpt,
       url: `https://heartecho.in/blog/${post.slug}`,
       type: "article",
-      images: [{ url: post.image, width: 1200, height: 630, alt: post.alt }],
+      images: [{ url: post.image ? `${post.image}?v=2` : '', width: 1200, height: 630, alt: post.alt }],
     },
     alternates: {
       canonical: `https://heartecho.in/blog/${post.slug}`,
@@ -61,7 +61,7 @@ export default async function BlogPost({ params }) {
     url: `https://heartecho.in/blog/${post.slug}`,
     headline: post.title,
     description: post.excerpt,
-    image: post.image,
+    image: post.image ? `${post.image}?v=2` : '',
     datePublished: post.date,
     authorName: post.author || "Om Awchar"
   });

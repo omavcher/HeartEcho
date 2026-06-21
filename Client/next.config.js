@@ -48,25 +48,6 @@ const nextConfig = {
           { key: 'Strict-Transport-Security',value: 'max-age=63072000; includeSubDomains; preload' },
         ],
       },
-      // ── Long-lived cache for static assets ──
-      {
-        source: '/(.*)\\.(jpg|jpeg|png|webp|avif|svg|gif|ico)',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-        ],
-      },
-      {
-        source: '/(.*)\\.(mp3|mp4|webm)',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=86400' },
-        ],
-      },
-      {
-        source: '/_next/static/(.*)',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-        ],
-      },
     ];
   },
 };

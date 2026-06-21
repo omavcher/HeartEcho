@@ -105,7 +105,7 @@ export default function BlogPostContent({ post }) {
             </header>
             
             <div className="bd-cinema-container-x30sn">
-              <img src={post.image} alt={post.alt || post.title} className="bd-cinema-image-x30sn" loading="eager" />
+              <img src={post.image ? `${post.image}?v=2` : ''} alt={post.alt || post.title} className="bd-cinema-image-x30sn" loading="eager" />
             </div>
 
             <article className="bd-article-body-x30sn">
@@ -141,7 +141,7 @@ export default function BlogPostContent({ post }) {
               .map(related => (
                 <Link key={related.id} href={`/blog/${related.slug}`} className="bd-sidebar-card-x30sn">
                   <div className="bd-sidebar-thumb-x30sn">
-                    <img src={related.image} alt={related.title} />
+                    <img src={related.image ? `${related.image}?v=2` : ''} alt={related.title} />
                   </div>
                   <div className="bd-sidebar-info-x30sn">
                     <h4 title={related.title}>{related.title}</h4>
