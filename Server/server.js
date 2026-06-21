@@ -22,6 +22,10 @@ const seedAutoCampaigns = require("./utils/seedAutoCampaigns");
 seedAutoCampaigns();
 
 const app = express();
+
+// Trust reverse proxy (e.g. Render, Cloudflare) to get real client IP for rate limiting
+app.set("trust proxy", 1);
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
