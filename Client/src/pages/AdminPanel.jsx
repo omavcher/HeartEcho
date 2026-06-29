@@ -7,13 +7,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { 
   FaUsers, FaRobot, FaExclamationCircle, FaBars, 
   FaTimes, FaChevronRight, FaUserPlus, FaGem, FaEnvelope,
-  FaMobileAlt, FaCommentAlt
+  FaMobileAlt, FaCommentAlt, FaCoins
 } from "react-icons/fa";
 import { MdHistoryEdu, MdDashboard, MdChat, MdPayment, MdAnalytics } from "react-icons/md";
 import "./AdminPanel.css";
 
 // Import your admin components
 import AdminDashboard from "./Admin/AdminDashboard.jsx";
+import UserOwnReferralsAdmin from "./Admin/UserOwnReferralsAdmin.jsx";
 import UsersAdmin from "./Admin/UsersAdmin.jsx";
 import AIFriendsAdmin from "./Admin/AIFriendsAdmin.jsx";
 import ComplaintsAdmin from "./Admin/ComplaintsAdmin.jsx";
@@ -77,6 +78,7 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
         { path: "/admin/users", label: "Users", icon: <FaUsers />, countKey: "users" },
         { path: "/admin/payment-activity", label: "Payment Activity", icon: <MdPayment />, countKey: "payments" },
         { path: "/admin/referral", label: "Referral Intelligence", icon: <FaUserPlus />, countKey: "referrals" },
+        { path: "/admin/userown-refrals", label: "User Referrals & Payouts", icon: <FaCoins /> },
         { path: "/admin/deleted-accounts", label: "Deleted Accounts", icon: <FaUsers />, countKey: "deletedAccounts" }
       ]
     },
@@ -219,6 +221,7 @@ const AdminPanel = () => {
       '/admin/ai-friends': <div className="content-wrapper-x30sn"><AIFriendsAdmin/></div>,
       '/admin/complaints': <div className="content-wrapper-x30sn"><ComplaintsAdmin /></div>,
       '/admin/referral': <div className="content-wrapper-x30sn"><ReferralAdmin /></div>,
+      '/admin/userown-refrals': <div className="content-wrapper-x30sn"><UserOwnReferralsAdmin /></div>,
       '/admin/create-story': <div className="content-wrapper-x30sn"><CreateStoryPage/></div>,
       '/admin/chats': <div className="content-wrapper-x30sn"><ChatsDataAdmin /></div>,
       '/admin/analytics': <div className="content-wrapper-x30sn"><TrackingAdmin /></div>,

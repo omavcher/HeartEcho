@@ -49,6 +49,10 @@ router.get("/referrals/leaderboard", referralController.getMonthlyLeaderboard);
 router.get("/admin/referrals/withdrawals", authMiddleware, referralController.adminGetWithdrawals);
 router.post("/admin/referrals/withdrawals/:id", authMiddleware, referralController.adminProcessWithdrawal);
 router.get("/admin/referrals/analytics", authMiddleware, referralController.adminGetAnalytics);
+router.get("/admin/referrals", authMiddleware, referralController.adminGetReferrals);
+router.post("/admin/referrals", authMiddleware, referralController.adminCreateReferral);
+router.put("/admin/referrals/:id", authMiddleware, referralController.adminUpdateReferral);
+router.delete("/admin/referrals/:id", authMiddleware, referralController.adminDeleteReferral);
 
 // Upgrade routes (prorated billing)
 router.post("/payment/upgrade", authMiddleware, controller.upgradeSubscription);

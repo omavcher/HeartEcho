@@ -33,6 +33,10 @@ const userReferralSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  commissionClaimed: {
+    type: Boolean,
+    default: false
+  },
   signupRewardAmount: {
     type: Number,
     default: 2

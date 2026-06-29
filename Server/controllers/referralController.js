@@ -422,3 +422,351 @@ exports.adminGetAnalytics = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+/**
+ * ADMIN: GET /api/v1/api/user/admin/referrals
+ * Paginated list of all user referrals with search and filter
+ */
+exports.adminGetReferrals = async (req, res) => {
+  try {
+    const adminUser = await User.findById(req.user.id);
+    if (!adminUser) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { page = 1, limit = 50, search = '', status = 'all' } = req.query;
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skipNum = (pageNum - 1) * limitNum;
+
+    let query = {};
+    if (status !== 'all') {
+      query.status = status;
+    }
+
+    if (search.trim()) {
+      const searchRegex = new RegExp(search.trim(), 'i');
+      const matchedUsers = await User.find({
+        $or: [
+          { name: searchRegex },
+          { email: searchRegex }
+        ]
+      }).select('_id');
+      const matchedUserIds = matchedUsers.map(u => u._id);
+
+      query.$or = [
+        { referrer: { $in: matchedUserIds } },
+        { referredUser: { $in: matchedUserIds } }
+      ];
+    }
+
+    const total = await UserReferral.countDocuments(query);
+    const referrals = await UserReferral.find(query)
+      .populate('referrer', 'name email referralBalance pendingReferralBalance lifetimeReferralEarnings')
+      .populate('referredUser', 'name email joinedAt')
+      .sort({ createdAt: -1 })
+      .skip(skipNum)
+      .limit(limitNum);
+
+    res.status(200).json({
+      success: true,
+      total,
+      page: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+      referrals
+    });
+  } catch (error) {
+    console.error('Error fetching referrals for admin:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * ADMIN: POST /api/v1/api/user/admin/referrals
+ * Manually create a user referral relationship
+ */
+exports.adminCreateReferral = async (req, res) => {
+  try {
+    const adminUser = await User.findById(req.user.id);
+    if (!adminUser) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const {
+      referrerEmail,
+      referredUserEmail,
+      status = 'pending',
+      signupRewardAmount = 2,
+      activeRewardAmount = 3,
+      subscriptionCommissionAmount = 0
+    } = req.body;
+
+    if (!referrerEmail || !referredUserEmail) {
+      return res.status(400).json({ success: false, message: 'Referrer and Referred user emails are required' });
+    }
+
+    const referrer = await User.findOne({ email: referrerEmail.trim().toLowerCase() });
+    const referredUser = await User.findOne({ email: referredUserEmail.trim().toLowerCase() });
+
+    if (!referrer || !referredUser) {
+      return res.status(404).json({ success: false, message: 'Referrer or Referred user not found' });
+    }
+
+    const existing = await UserReferral.findOne({ referrer: referrer._id, referredUser: referredUser._id });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'Referral relationship already exists between these users' });
+    }
+
+    const referral = new UserReferral({
+      referrer: referrer._id,
+      referredUser: referredUser._id,
+      status,
+      signupRewardAmount: Number(signupRewardAmount),
+      activeRewardAmount: Number(activeRewardAmount),
+      subscriptionCommissionAmount: Number(subscriptionCommissionAmount),
+      signupRewardClaimed: false,
+      activeRewardClaimed: false,
+      commissionClaimed: false
+    });
+
+    await referral.save();
+
+    // Recalculate stats and apply to referrer
+    if (status !== 'invalid') {
+      referrer.pendingReferralBalance = parseFloat((referrer.pendingReferralBalance + Number(signupRewardAmount)).toFixed(2));
+      
+      if (status === 'active' || status === 'premium') {
+        referrer.pendingReferralBalance = parseFloat((referrer.pendingReferralBalance + Number(activeRewardAmount)).toFixed(2));
+      }
+      if (status === 'premium' && Number(subscriptionCommissionAmount) > 0) {
+        referrer.pendingReferralBalance = parseFloat((referrer.pendingReferralBalance + Number(subscriptionCommissionAmount)).toFixed(2));
+      }
+    }
+
+    referrer.totalInvitesCount = await UserReferral.countDocuments({ referrer: referrer._id });
+    referrer.registeredReferralsCount = await UserReferral.countDocuments({ referrer: referrer._id, status: 'pending' });
+    referrer.activeReferralsCount = await UserReferral.countDocuments({ referrer: referrer._id, status: 'active' });
+    referrer.premiumReferralsCount = await UserReferral.countDocuments({ referrer: referrer._id, status: 'premium' });
+
+    await referrer.save();
+
+    if (!referredUser.referredByUser) {
+      referredUser.referredByUser = referrer._id;
+      referredUser.referralSignupDate = new Date();
+      await referredUser.save();
+    }
+
+    res.status(201).json({ success: true, message: 'Referral created successfully', referral });
+  } catch (error) {
+    console.error('Error creating referral:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * ADMIN: PUT /api/v1/api/user/admin/referrals/:id
+ * Update a user referral record (and adjusts referrer balances dynamically using delta)
+ */
+exports.adminUpdateReferral = async (req, res) => {
+  try {
+    const adminUser = await User.findById(req.user.id);
+    if (!adminUser) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { id } = req.params;
+    const {
+      status,
+      signupRewardClaimed,
+      activeRewardClaimed,
+      commissionClaimed,
+      signupRewardAmount,
+      activeRewardAmount,
+      subscriptionCommissionAmount,
+      invalidReason,
+      stage
+    } = req.body;
+
+    const referral = await UserReferral.findById(id);
+    if (!referral) {
+      return res.status(404).json({ success: false, message: 'Referral not found' });
+    }
+
+    const referrer = await User.findById(referral.referrer);
+    if (!referrer) {
+      return res.status(404).json({ success: false, message: 'Referrer user not found' });
+    }
+
+    const calculateStateRewards = (state) => {
+      let pending = 0;
+      let claimed = 0;
+
+      if (state.status !== 'invalid') {
+        if (state.signupRewardClaimed) {
+          claimed += state.signupRewardAmount;
+        } else {
+          pending += state.signupRewardAmount;
+        }
+
+        if (state.status === 'active' || state.status === 'premium') {
+          if (state.activeRewardClaimed) {
+            claimed += state.activeRewardAmount;
+          } else {
+            pending += state.activeRewardAmount;
+          }
+        }
+
+        if (state.subscriptionPurchased || state.status === 'premium') {
+          if (state.commissionClaimed) {
+            claimed += state.subscriptionCommissionAmount;
+          } else {
+            pending += state.subscriptionCommissionAmount;
+          }
+        }
+      }
+
+      return { pending, claimed };
+    };
+
+    const stateBefore = {
+      status: referral.status,
+      signupRewardClaimed: referral.signupRewardClaimed,
+      activeRewardClaimed: referral.activeRewardClaimed,
+      commissionClaimed: referral.commissionClaimed || false,
+      signupRewardAmount: referral.signupRewardAmount || 0,
+      activeRewardAmount: referral.activeRewardAmount || 0,
+      subscriptionCommissionAmount: referral.subscriptionCommissionAmount || 0,
+      subscriptionPurchased: referral.subscriptionPurchased || false
+    };
+
+    if (status !== undefined) referral.status = status;
+    if (signupRewardClaimed !== undefined) referral.signupRewardClaimed = signupRewardClaimed;
+    if (activeRewardClaimed !== undefined) referral.activeRewardClaimed = activeRewardClaimed;
+    if (commissionClaimed !== undefined) referral.commissionClaimed = commissionClaimed;
+    if (signupRewardAmount !== undefined) referral.signupRewardAmount = Number(signupRewardAmount);
+    if (activeRewardAmount !== undefined) referral.activeRewardAmount = Number(activeRewardAmount);
+    if (subscriptionCommissionAmount !== undefined) referral.subscriptionCommissionAmount = Number(subscriptionCommissionAmount);
+    if (invalidReason !== undefined) referral.invalidReason = invalidReason;
+    if (stage !== undefined) referral.stage = Number(stage);
+
+    if (referral.status === 'premium' || referral.subscriptionCommissionAmount > 0) {
+      referral.subscriptionPurchased = true;
+    } else {
+      referral.subscriptionPurchased = false;
+    }
+
+    const stateAfter = {
+      status: referral.status,
+      signupRewardClaimed: referral.signupRewardClaimed,
+      activeRewardClaimed: referral.activeRewardClaimed,
+      commissionClaimed: referral.commissionClaimed || false,
+      signupRewardAmount: referral.signupRewardAmount || 0,
+      activeRewardAmount: referral.activeRewardAmount || 0,
+      subscriptionCommissionAmount: referral.subscriptionCommissionAmount || 0,
+      subscriptionPurchased: referral.subscriptionPurchased
+    };
+
+    await referral.save();
+
+    const before = calculateStateRewards(stateBefore);
+    const after = calculateStateRewards(stateAfter);
+
+    const deltaPending = after.pending - before.pending;
+    const deltaClaimed = after.claimed - before.claimed;
+
+    referrer.pendingReferralBalance = Math.max(0, parseFloat((referrer.pendingReferralBalance + deltaPending).toFixed(2)));
+    referrer.referralBalance = Math.max(0, parseFloat((referrer.referralBalance + deltaClaimed).toFixed(2)));
+    referrer.lifetimeReferralEarnings = Math.max(0, parseFloat((referrer.lifetimeReferralEarnings + deltaClaimed).toFixed(2)));
+
+    referrer.totalInvitesCount = await UserReferral.countDocuments({ referrer: referrer._id });
+    referrer.registeredReferralsCount = await UserReferral.countDocuments({ referrer: referrer._id, status: 'pending' });
+    referrer.activeReferralsCount = await UserReferral.countDocuments({ referrer: referrer._id, status: 'active' });
+    referrer.premiumReferralsCount = await UserReferral.countDocuments({ referrer: referrer._id, status: 'premium' });
+
+    await referrer.save();
+
+    res.status(200).json({ success: true, message: 'Referral updated successfully', referral });
+  } catch (error) {
+    console.error('Error updating referral:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * ADMIN: DELETE /api/v1/api/user/admin/referrals/:id
+ * Delete a user referral relationship and adjusts referrer balance
+ */
+exports.adminDeleteReferral = async (req, res) => {
+  try {
+    const adminUser = await User.findById(req.user.id);
+    if (!adminUser) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { id } = req.params;
+
+    const referral = await UserReferral.findById(id);
+    if (!referral) {
+      return res.status(404).json({ success: false, message: 'Referral not found' });
+    }
+
+    const referrer = await User.findById(referral.referrer);
+    if (referrer) {
+      const calculateStateRewards = (state) => {
+        let pending = 0;
+        let claimed = 0;
+
+        if (state.status !== 'invalid') {
+          if (state.signupRewardClaimed) claimed += state.signupRewardAmount;
+          else pending += state.signupRewardAmount;
+
+          if (state.status === 'active' || state.status === 'premium') {
+            if (state.activeRewardClaimed) claimed += state.activeRewardAmount;
+            else pending += state.activeRewardAmount;
+          }
+
+          if (state.subscriptionPurchased || state.status === 'premium') {
+            if (state.commissionClaimed) claimed += state.subscriptionCommissionAmount;
+            else pending += state.subscriptionCommissionAmount;
+          }
+        }
+
+        return { pending, claimed };
+      };
+
+      const stateBefore = {
+        status: referral.status,
+        signupRewardClaimed: referral.signupRewardClaimed,
+        activeRewardClaimed: referral.activeRewardClaimed,
+        commissionClaimed: referral.commissionClaimed || false,
+        signupRewardAmount: referral.signupRewardAmount || 0,
+        activeRewardAmount: referral.activeRewardAmount || 0,
+        subscriptionCommissionAmount: referral.subscriptionCommissionAmount || 0,
+        subscriptionPurchased: referral.subscriptionPurchased || false
+      };
+
+      const before = calculateStateRewards(stateBefore);
+
+      referrer.pendingReferralBalance = Math.max(0, parseFloat((referrer.pendingReferralBalance - before.pending).toFixed(2)));
+      referrer.referralBalance = Math.max(0, parseFloat((referrer.referralBalance - before.claimed).toFixed(2)));
+      referrer.lifetimeReferralEarnings = Math.max(0, parseFloat((referrer.lifetimeReferralEarnings - before.claimed).toFixed(2)));
+      
+      await referrer.save();
+    }
+
+    await UserReferral.findByIdAndDelete(id);
+
+    if (referrer) {
+      referrer.totalInvitesCount = await UserReferral.countDocuments({ referrer: referrer._id });
+      referrer.registeredReferralsCount = await UserReferral.countDocuments({ referrer: referrer._id, status: 'pending' });
+      referrer.activeReferralsCount = await UserReferral.countDocuments({ referrer: referrer._id, status: 'active' });
+      referrer.premiumReferralsCount = await UserReferral.countDocuments({ referrer: referrer._id, status: 'premium' });
+      await referrer.save();
+    }
+
+    res.status(200).json({ success: true, message: 'Referral deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting referral:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
