@@ -2,6 +2,7 @@ const express = require("express");
 const controller = require("../controllers/adminController");
 const authMiddleware = require("../middleware/authMiddleware");
 const { verifyReferralCreator } = require("../utils/jwt");
+const referralController = require("../controllers/referralController");
 
 const router = express.Router();
 
@@ -103,6 +104,15 @@ router.post("/app-version", authMiddleware, controller.updateAppVersionAdmin);
 router.get("/feedbacks", authMiddleware, controller.getAllFeedbacksAdmin);
 router.put("/feedbacks/:id/toggle-live", authMiddleware, controller.toggleFeedbackLiveAdmin);
 router.delete("/feedbacks/:id", authMiddleware, controller.deleteFeedbackAdmin);
+
+// ========== USER OWN REFERRAL & PAYOUT ROUTES ==========
+router.get("/referrals/withdrawals", authMiddleware, referralController.adminGetWithdrawals);
+router.post("/referrals/withdrawals/:id", authMiddleware, referralController.adminProcessWithdrawal);
+router.get("/referrals/analytics", authMiddleware, referralController.adminGetAnalytics);
+router.get("/referrals", authMiddleware, referralController.adminGetReferrals);
+router.post("/referrals", authMiddleware, referralController.adminCreateReferral);
+router.put("/referrals/:id", authMiddleware, referralController.adminUpdateReferral);
+router.delete("/referrals/:id", authMiddleware, referralController.adminDeleteReferral);
 
 module.exports = router;
 
