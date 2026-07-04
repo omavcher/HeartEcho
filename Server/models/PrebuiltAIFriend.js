@@ -12,7 +12,8 @@ const prebuiltAIFriendSchema = new mongoose.Schema({
   avatar_img: { type: String },
   avatar_motion_video: { type: String }, // Added avatar motion video
   img_gallery: [{ type: String }], // Multiple images array
-  video_gallery: [{ type: String }] // Multiple videos array
+  video_gallery: [{ type: String }], // Multiple videos array
+  isPremium: { type: Boolean, default: false } // Restricted for premium customers
 });
 
 const PrebuiltAIFriend = mongoose.model("PrebuiltAIFriend", prebuiltAIFriendSchema);

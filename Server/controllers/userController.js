@@ -12,6 +12,7 @@ const axios = require("axios");
 const DeletedAccount = require("../models/DeletedAccount");
 const ReferralCreator = require("../models/ReferralCreator");
 const { getCityFromCoordinates } = require("../utils/geocoding");
+const jwt = require("jsonwebtoken");
 
 const determinePlatform = (req) => {
   if (req.body && (req.body.platform === "web" || req.body.platform === "mobile")) {
@@ -805,13 +806,57 @@ const shuffleArray = (array) => {
 exports.getAllPreAIFriends = async (req, res) => {
   try {
     const allFriends = await PrebuiltAIFriend.find().select('-video_gallery -img_gallery');
-    const shuffledFriends = shuffleArray(allFriends);
+    
+    // Optional JWT verification for personalization & subscription checks
+    let userInterests = [];
+    let isSubscriber = false;
+    const authHeader = req.header("Authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id).select("selectedInterests interests user_type subscriptionExpiry");
+        if (user) {
+          userInterests = user.selectedInterests || user.interests || [];
+          isSubscriber = user.isSubscriptionActive();
+        }
+      } catch (err) {
+        // Ignore invalid token and act as guest/non-premium
+      }
+    }
+
+    // Process friends: add isLocked, interestMatchCount, and matchedInterests fields
+    const processedFriends = allFriends.map(friend => {
+      const friendObj = friend.toObject();
+      
+      // Calculate overlapping interests
+      const companionInterests = friend.interests || [];
+      const matched = companionInterests.filter(interest => 
+        userInterests.some(userInt => userInt.toLowerCase().trim() === interest.toLowerCase().trim())
+      );
+      
+      friendObj.interestMatchCount = matched.length;
+      friendObj.matchedInterests = matched;
+      friendObj.isLocked = friend.isPremium && !isSubscriber;
+      
+      return friendObj;
+    });
+
+    // Fisher-Yates shuffle algorithm on processed list first
+    const shuffledFriends = shuffleArray(processedFriends);
+
+    // Sort by interestMatchCount descending to bubble matching interests to the top
+    shuffledFriends.sort((a, b) => {
+      const scoreA = a.interestMatchCount || 0;
+      const scoreB = b.interestMatchCount || 0;
+      return scoreB - scoreA;
+    });
 
     res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
 
     res.status(200).json({
       success: true,
-      message: "All AI Friends retrieved successfully in random order!",
+      message: "All AI Friends retrieved successfully with interest matching!",
       data: shuffledFriends,
     });
   } catch (error) {

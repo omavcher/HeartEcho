@@ -590,7 +590,8 @@ const AIFriendsAdmin = () => {
                     avatar_motion_video: "",
                     img_gallery: [],
                     video_gallery: [],
-                    isActive: true
+                    isActive: true,
+                    isPremium: false
                 })}>
                     <FaPlus /> Add New Companion
                 </button>
@@ -693,6 +694,11 @@ const AIFriendsAdmin = () => {
                         <span className={`fif-card-badge-x30sn ${friend.gender}`}>
                             {friend.gender}
                         </span>
+                        {friend.isPremium && (
+                            <span className="fif-card-badge-x30sn premium" style={{ position: 'absolute', top: '15px', left: '15px', right: 'auto', background: 'linear-gradient(135deg, #ffd700, #ff8c00)', color: '#000', borderColor: '#ffd700', fontWeight: 'bold' }}>
+                                ⭐ Premium
+                            </span>
+                        )}
                         <img 
                             src={friend.avatar_img || '/placeholder.png'} 
                             className="fif-card-avatar-x30sn" 
@@ -760,6 +766,16 @@ const AIFriendsAdmin = () => {
                             <div className="fif-form-group-x30sn">
                                 <label className="fif-label-x30sn">Age</label>
                                 <input className="fif-input-field-x30sn" type="number" value={editFriend.age} onChange={e => setEditFriend({...editFriend, age: e.target.value})} />
+                            </div>
+                            <div className="fif-form-group-x30sn" style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingLeft: '4px', alignSelf: 'center', marginTop: '16px' }}>
+                                <input 
+                                    type="checkbox" 
+                                    id="isPremium" 
+                                    checked={!!editFriend.isPremium} 
+                                    onChange={e => setEditFriend({...editFriend, isPremium: e.target.checked})} 
+                                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                />
+                                <label htmlFor="isPremium" className="fif-label-x30sn" style={{ margin: 0, cursor: 'pointer', fontWeight: '700', color: '#ffd700', position: 'static', background: 'none', border: 'none', textTransform: 'none', fontSize: '14px' }}>⭐ Premium Only</label>
                             </div>
                             <div className="fif-form-group-x30sn full">
                                 <label className="fif-label-x30sn">Interests (Comma Separated)</label>

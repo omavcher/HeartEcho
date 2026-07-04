@@ -1215,6 +1215,14 @@ exports.AiFriendResponse = async (req, res) => {
       return res.status(404).json({ message: "AI Friend not found." });
     }
 
+    // Check if AI companion is restricted to premium
+    if (AiInfo.isPremium && !userInfo.isSubscriptionActive()) {
+      return res.status(403).json({
+        success: false,
+        message: "This AI Companion is restricted to premium subscribers."
+      });
+    }
+
     // 🔑 IMPORTANT: chatId is actually aiFriendId
     const aiFriendId = chatId;
 
@@ -1550,6 +1558,24 @@ exports.AiFriendDetails = async (req, res) => {
       });
     }
 
+    // Check if AI companion is restricted to premium
+    if (AiInfo.isPremium) {
+      let isAuthorized = false;
+      if (req.user && req.user.id) {
+        const userInfo = await User.findById(req.user.id);
+        if (userInfo && userInfo.isSubscriptionActive()) {
+          isAuthorized = true;
+        }
+      }
+      if (!isAuthorized) {
+        return res.status(403).json({
+          success: false,
+          message: "This AI Companion is restricted to premium subscribers.",
+          isPremiumRestricted: true
+        });
+      }
+    }
+
     // Get video usage stats if available
     const videoStats = getVideoUsageStats(aiFriendId);
     
@@ -1596,7 +1622,7 @@ exports.AiFriendDetails = async (req, res) => {
       },
       accessInfo: {
         hasAccess: userHasAccess,
-        requiresSubscription: AiInfo.premium_only || false,
+        requiresSubscription: AiInfo.isPremium || false,
         isPrebuilt: senderModel === "PrebuiltAIFriend"
       },
       stats: {
@@ -1645,6 +1671,18 @@ exports.getChatByAiFriend = async (req, res) => {
         success: false, 
         message: "AI Friend not found" 
       });
+    }
+
+    // Check if AI companion is restricted to premium
+    if (aiFriend.isPremium) {
+      const userInfo = await User.findById(userId);
+      if (!userInfo || !userInfo.isSubscriptionActive()) {
+        return res.status(403).json({
+          success: false,
+          message: "This AI Companion is restricted to premium subscribers.",
+          isPremiumRestricted: true
+        });
+      }
     }
 
     // 2. Find the chat (using simple single ID structure)

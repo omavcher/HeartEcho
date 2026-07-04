@@ -45,7 +45,7 @@ const pad = n => String(n).padStart(2, '0');
 //   userData  – user object from API
 //   token     – JWT string
 // ─────────────────────────────────────────────────────────────────────────────
-export default function QuotaPaywallModal({ onClose, aiName = 'your AI', userData, token }) {
+export default function QuotaPaywallModal({ onClose, aiName = 'your AI', userData, token, eyebrow, title }) {
   const [country, setCountry]     = useState('IN');
   const [isLoading, setIsLoading] = useState(null);
   const [fomo, setFomo]           = useState({ visible: false, name: '', plan: '' });
@@ -251,10 +251,14 @@ export default function QuotaPaywallModal({ onClose, aiName = 'your AI', userDat
 
             {/* Heading */}
             <div className="qpm-hero-text">
-              <p className="qpm-eyebrow">You've Used Your 5 Free Messages</p>
+              <p className="qpm-eyebrow">{eyebrow || "You've Used Your 5 Free Messages"}</p>
               <h2 className="qpm-title">
-                {aiName} misses you.<br />
-                <span className="qpm-title-accent">Unlock unlimited chat 💕</span>
+                {title ? title : (
+                  <>
+                    {aiName} misses you.<br />
+                    <span className="qpm-title-accent">Unlock unlimited chat 💕</span>
+                  </>
+                )}
               </h2>
               <p className="qpm-subtitle">
                 Subscribe once, talk all night — no more waiting till tomorrow.

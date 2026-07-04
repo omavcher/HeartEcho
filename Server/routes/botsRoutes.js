@@ -163,6 +163,16 @@ router.post("/bots-message", authMiddleware, tierBasedRateLimiter, async (req, r
       });
     }
 
+    // Check premium restriction
+    if (senderModel === "PrebuiltAIFriend" && aiFriend.isPremium) {
+      if (!userProfile.isSubscriptionActive()) {
+        return res.status(403).json({
+          success: false,
+          message: "This AI Companion is restricted to premium subscribers."
+        });
+      }
+    }
+
     // ✅ Find chat using your EXACT logic from getChatByAiFriend
     let chat = await Chat.findOne({
       participants: userId,
@@ -431,6 +441,18 @@ router.get("/chat/:aiFriendId", authMiddleware, async (req, res) => {
     if (!aiFriend) {
       aiFriend = await PrebuiltAIFriend.findById(aiFriendId);
       senderModel = "PrebuiltAIFriend";
+    }
+
+    // Check premium restriction
+    if (senderModel === "PrebuiltAIFriend" && aiFriend && aiFriend.isPremium) {
+      const userProfile = await User.findById(userId);
+      if (!userProfile || !userProfile.isSubscriptionActive()) {
+        return res.status(403).json({
+          success: false,
+          message: "This AI Companion is restricted to premium subscribers.",
+          isPremiumRestricted: true
+        });
+      }
     }
 
     res.json({

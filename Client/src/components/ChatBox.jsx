@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import axios from "axios";
 import { 
   ArrowLeft, X, Send, Video, Image as ImageIcon, Info, Lock, Zap, 
-  Bot, Check, CheckCheck, Play, CreditCard, Phone
+  Bot, Check, CheckCheck, Play, CreditCard, Phone, Crown
 } from "lucide-react";
 import api from "../config/api";
 import { useRouter } from 'next/navigation';
@@ -134,6 +134,7 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
   const [upgradeInfo, setUpgradeInfo] = useState(null);
   const [showQuotaPaywall, setShowQuotaPaywall] = useState(false);
   const [quotaUserData, setQuotaUserData] = useState(null);
+  const [isPremiumLocked, setIsPremiumLocked] = useState(false);
   
   // Logic Flags
   const [isBotMessageEnabled, setIsBotMessageEnabled] = useState(true);
@@ -295,6 +296,10 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
 
     } catch (error) {
       console.error("Init Error:", error);
+      if (error.response?.status === 403) {
+        setIsPremiumLocked(true);
+        setShowQuotaPaywall(true);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -584,6 +589,13 @@ const CallPaywallModal = ({ tier, upgradeInfo, onClose, onUpgrade }) => {
           aiName={userProfile?.name}
           userData={quotaUserData}
           token={token}
+          eyebrow={isPremiumLocked ? "Premium Restricted Companion" : undefined}
+          title={isPremiumLocked ? (
+            <>
+              {userProfile?.name || 'This Companion'} is for subscribers only.<br />
+              <span className="qpm-title-accent">Join HeartEcho Premium 👑</span>
+            </>
+          ) : undefined}
         />
       )}
 
@@ -777,7 +789,7 @@ const CallPaywallModal = ({ tier, upgradeInfo, onClose, onUpgrade }) => {
           <button 
             className="icon-btn" 
             onClick={() => handleSendMessage("/photo Send me a photo")}
-            disabled={isTyping}
+            disabled={isTyping || isPremiumLocked}
             title="Request Photo (15 Tokens)"
           >
             <ImageIcon size={22} />
@@ -786,7 +798,7 @@ const CallPaywallModal = ({ tier, upgradeInfo, onClose, onUpgrade }) => {
           <button 
             className="icon-btn" 
             onClick={() => handleSendMessage("/video Send me a video")}
-            disabled={isTyping}
+            disabled={isTyping || isPremiumLocked}
             title="Request Video (20 Tokens)"
           >
             <Video size={22} />
@@ -799,18 +811,31 @@ const CallPaywallModal = ({ tier, upgradeInfo, onClose, onUpgrade }) => {
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={
-                isSubscribed 
-                  ? "Message..." 
-                  : remainingQuota > 0 
-                    ? "Type a message..." 
-                    : "Out of tokens"
+                isPremiumLocked
+                  ? "Premium companion only"
+                  : isSubscribed 
+                    ? "Message..." 
+                    : remainingQuota > 0 
+                      ? "Type a message..." 
+                      : "Out of tokens"
               }
-              disabled={isTyping || (!isSubscribed && remainingQuota <= 0)}
+              disabled={isTyping || (!isSubscribed && remainingQuota <= 0) || isPremiumLocked}
             />
           </div>
 
           {/* DYNAMIC BUTTON: Send or Subscribe */}
-          {!isSubscribed && remainingQuota <= 0 ? (
+          {isPremiumLocked ? (
+            <button 
+                className="send-btn active" 
+                style={{ background: 'linear-gradient(135deg, #ffd700, #ffa500)', color: 'black' }}
+                onClick={() => {
+                  setShowQuotaPaywall(true);
+                }}
+                title="Premium Companion Locked"
+            >
+                <Crown size={20} fill="black" />
+            </button>
+          ) : !isSubscribed && remainingQuota <= 0 ? (
             <button 
                 className="send-btn active" 
                 style={{ background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: 'black' }}

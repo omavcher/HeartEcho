@@ -403,8 +403,11 @@ function AIFriends() {
       return;
     }
 
+    const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
     axios
-      .get(`${api.Url}/user/get-pre-ai`)
+      .get(`${api.Url}/user/get-pre-ai`, { headers })
       .then((response) => {
         const models = response.data.data;
         setAiModels(models);
@@ -553,6 +556,48 @@ function AIFriends() {
               key={model._id}
             >
               <div className="portrait-ratio-wrapper-38f3a">
+                {model.isPremium && (
+                  <span className="ai-premium-badge-38f3a" style={{
+                    position: 'absolute',
+                    top: '12px',
+                    left: '12px',
+                    background: 'linear-gradient(135deg, #ffd700, #ffa500)',
+                    color: '#000',
+                    padding: '4px 8px',
+                    borderRadius: '12px',
+                    fontSize: '0.7rem',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    zIndex: 10,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
+                    👑 Premium
+                  </span>
+                )}
+                {model.interestMatchCount > 0 && (
+                  <span className="ai-interest-match-38f3a" style={{
+                    position: 'absolute',
+                    top: model.isPremium ? '42px' : '12px',
+                    left: '12px',
+                    background: 'rgba(206, 64, 133, 0.95)',
+                    color: '#fff',
+                    padding: '4px 8px',
+                    borderRadius: '12px',
+                    fontSize: '0.7rem',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    zIndex: 10,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.4)'
+                  }}>
+                    ✨ {model.interestMatchCount} {model.interestMatchCount === 1 ? 'Match' : 'Matches'}
+                  </span>
+                )}
                 <img 
                   src={model.avatar_img} 
                   alt={model.name}
@@ -575,6 +620,22 @@ function AIFriends() {
                     <h3>{model.name}</h3>
                     <span className="ai-relationship-38f3a">{model.relationship}</span>
                   </div>
+                  {model.matchedInterests && model.matchedInterests.length > 0 && (
+                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                      {model.matchedInterests.map((interest, idx) => (
+                        <span key={idx} style={{
+                          fontSize: '0.65rem',
+                          background: 'rgba(255, 255, 255, 0.15)',
+                          color: '#fff',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          fontWeight: '500'
+                        }}>
+                          #{interest}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   <p className="ai-short-description-38f3a">
                     {getShortDescription(model.description)}
                   </p>
