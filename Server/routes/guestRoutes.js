@@ -7,7 +7,6 @@ const router = express.Router();
 router.get("/details/:aiFriendId", controller.GuestAiFriendDetails);
 router.get("/chats/:aiFriendId", controller.GuestChatHistory);
 router.post("/:aiFriendId/send", tierBasedRateLimiter, controller.GuestSendResponse);
-router.post("/bots-message", tierBasedRateLimiter, controller.GuestBotAutoMessage);
 router.get("/chat-friends", controller.GuestChatFriends);
 
 module.exports = router;

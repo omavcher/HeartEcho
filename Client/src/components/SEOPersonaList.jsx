@@ -16,7 +16,9 @@ export default function SEOPersonaList({ gender = 'female', limit = 10 }) {
   useEffect(() => {
     async function loadCompanions() {
       try {
-        const response = await axios.get(`${api.Url}/user/get-pre-ai`);
+        const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await axios.get(`${api.Url}/user/get-pre-ai`, { headers });
         if (response.data && response.data.success && response.data.data) {
           setCompanions(response.data.data);
         } else {

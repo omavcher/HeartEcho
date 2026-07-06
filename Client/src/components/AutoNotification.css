@@ -1,167 +1,320 @@
+/* ============================================================
+   HeartEcho — Android-Style Notification Card
+   Looks like a real Android 14 notification (pill/glassmorphic)
+   ============================================================ */
+
 .android-notification-wrapper {
-    position: fixed;
-    top: 15px;
-    left: 50%;
-    transform: translateX(-50%); /* Centered at top like real Android notifications */
-    z-index: 10000;
-    width: 95%;
-    max-width: 400px;
-    pointer-events: none; /* Allows clicking things behind the wrapper */
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000000;
+  width: calc(100% - 24px);
+  max-width: 420px;
+  pointer-events: none;
+}
+
+/* Main Card */
+.android-notification-card {
+  pointer-events: auto;
+  background: rgba(20, 17, 28, 0.92);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 26px;
+  padding: 14px 16px 12px;
+  box-shadow:
+    0 0 0 1px rgba(207, 65, 133, 0.08),
+    0 16px 48px rgba(0, 0, 0, 0.65),
+    0 4px 16px rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Subtle tinted top-left glow */
+.android-notification-card::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  left: -30px;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(207, 65, 133, 0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.android-notification-card:hover {
+  transform: scale(1.01);
+  box-shadow:
+    0 0 0 1px rgba(207, 65, 133, 0.15),
+    0 20px 56px rgba(0, 0, 0, 0.7),
+    0 4px 16px rgba(207, 65, 133, 0.1);
+}
+
+.android-notification-card:active {
+  transform: scale(0.985);
+}
+
+/* Slide-in animation */
+.slide-in {
+  animation: notif-slide-in 0.5s cubic-bezier(0.22, 1.3, 0.36, 1) forwards;
+}
+
+/* Slide-out animation */
+.slide-out {
+  animation: notif-slide-out 0.4s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+/* ─── Header Row ─── */
+.android-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.app-info {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* Tiny App Icon */
+.app-icon-mini {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #cf4185, #ff6ba6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(207, 65, 133, 0.4);
+  overflow: hidden;
+}
+.app-icon-mini img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.app-name {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.1px;
+}
+
+.notif-dot-sep {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  display: inline-block;
+}
+
+.app-time {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Close Button */
+.android-close {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 12px;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+  line-height: 1;
+}
+.android-close:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+/* ─── Body Row ─── */
+.android-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* Avatar with pink ring */
+.android-avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.android-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(207, 65, 133, 0.5);
+  display: block;
+}
+
+/* Online indicator */
+.android-avatar-online {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid rgba(20, 17, 28, 0.95);
+}
+
+/* Text content */
+.android-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.android-title {
+  margin: 0 0 3px;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.1px;
+}
+
+.android-msg {
+  margin: 0;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ─── Action Buttons ─── */
+.android-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 13px;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.75);
+  padding: 7px 16px;
+  border-radius: 18px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.1px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, rgba(207, 65, 133, 0.2), rgba(255, 107, 166, 0.15));
+  border-color: rgba(207, 65, 133, 0.35);
+  color: #ff82b8;
+}
+
+.action-btn.primary:hover {
+  background: linear-gradient(135deg, rgba(207, 65, 133, 0.3), rgba(255, 107, 166, 0.25));
+  color: #ffb0d0;
+  box-shadow: 0 0 12px rgba(207, 65, 133, 0.25);
+}
+
+/* ─── Progress Bar ─── */
+.reading-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, #cf4185, #ff82b8);
+  border-radius: 0 0 26px 26px;
+  transform-origin: left center;
+  animation: notif-progress 10s linear forwards;
+  opacity: 0.7;
+}
+
+/* ─── Keyframes ─── */
+@keyframes notif-slide-in {
+  from {
+    transform: translateY(-115%) scale(0.88);
+    opacity: 0;
   }
-  
-  .android-notification-card {
-    pointer-events: auto;
-    background: rgba(28, 28, 30, 0.85); /* Semi-transparent Dark Grey */
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 28px; /* Android Modern Pill style */
-    padding: 16px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-    color: #ffffff;
-    cursor: pointer;
-    animation: androidDrop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  60% {
+    opacity: 1;
   }
-  
-  /* App Name/Header */
-  .android-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
   }
-  
-  .app-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+}
+
+@keyframes notif-slide-out {
+  from {
+    transform: translateY(0) scale(1);
+    opacity: 1;
   }
-  
-  .app-icon-mini {
-    font-size: 12px;
-    background: #ff2d55;
-    width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
+  to {
+    transform: translateY(-115%) scale(0.92);
+    opacity: 0;
   }
-  
-  .app-name {
-    font-size: 12px;
-    font-weight: 500;
-    color: #a1a1a6;
-    text-transform: lowercase;
-  }
-  
-  .android-close {
-    background: none;
-    border: none;
-    color: #a1a1a6;
-    font-size: 14px;
-    cursor: pointer;
-  }
-  
-  /* Body */
-  .android-body {
-    display: flex;
-    align-items: flex-start;
-    gap: 15px;
-  }
-  
-  .android-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-  
-  .android-text {
-    flex: 1;
-  }
-  
-  .android-title {
-    margin: 0;
-    font-size: 15px;
-    font-weight: 600;
-    color: #ffffff;
-  }
-  
-  .android-msg {
-    margin: 2px 0 0;
-    font-size: 14px;
-    color: #d1d1d6;
-    line-height: 1.4;
-  }
-  
-  /* Actions */
-  .android-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-    padding-left: 63px; /* Align buttons with the text, not the avatar */
-  }
-  
-  .action-btn {
-    background: rgba(255, 255, 255, 0.08);
-    border: none;
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  
-  .action-btn.primary {
-    color: #0a84ff; /* Android Blue link color */
-    background: rgba(10, 132, 255, 0.1);
-  }
-  
-  .action-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-  }
-  
-  /* Dropdown Animation */
-  @keyframes androidDrop {
-    from {
-      transform: translateY(-120%);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-  
-  /* Responsive */
-  @media (max-width: 480px) {
-    .android-notification-wrapper {
-      top: 10px;
-      width: 92%;
-    }
-    
-    .android-actions {
-      padding-left: 0;
-      justify-content: flex-end;
-    }
+}
+
+@keyframes notif-progress {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 480px) {
+  .android-notification-wrapper {
+    top: 10px;
+    width: calc(100% - 16px);
   }
 
-  
-  /* Smooth Slide out */
-  .slide-out {
-    animation: androidExit 0.4s ease-in forwards;
+  .android-notification-card {
+    padding: 12px 14px 10px;
+    border-radius: 22px;
   }
-  
-  @keyframes androidExit {
-    from {
-      transform: translateY(0);
-      opacity: 1;
-    }
-    to {
-      transform: translateY(-150%);
-      opacity: 0;
-    }
+
+  .android-avatar {
+    width: 40px;
+    height: 40px;
   }
+
+  .android-title {
+    font-size: 14px;
+  }
+
+  .android-msg {
+    font-size: 13px;
+  }
+}

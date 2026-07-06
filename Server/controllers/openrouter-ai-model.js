@@ -19,13 +19,17 @@ async function generateAIResponse(prompt, options = {}) {
 
     console.log("🔄 Calling OpenRouter API...");
     
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000); // 25s timeout
+
     const response = await fetch(OPENROUTER_API_URL, {
       method: "POST",
+      signal: controller.signal,
       headers: {
         "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": process.env.APP_URL || "https://your-app.com",
-        "X-Title": process.env.APP_NAME || "AI Friend App"
+        "HTTP-Referer": "https://www.heartecho.in",
+        "X-Title": "HeartEcho AI"
       },
       body: JSON.stringify({
         model: options.model || DEFAULT_MODEL,
@@ -42,9 +46,11 @@ async function generateAIResponse(prompt, options = {}) {
         max_tokens: options.maxTokens || 500,
         temperature: options.temperature || 0.7,
         top_p: options.topP || 0.9,
-        reasoning: { enabled: options.reasoning || false }
+        frequency_penalty: 0.2,
+        presence_penalty: 0.1
       })
     });
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -117,13 +123,17 @@ async function generatePersonaResponse(prompt, personaContext, userInfo = null) 
     
     console.log(`🧠 Selected Model: ${model} | Max Tokens: ${max_tokens} | Tier: ${userInfo ? userInfo.subscriptionTier : 'free'}`);
     
+    const controller2 = new AbortController();
+    const timeoutId2 = setTimeout(() => controller2.abort(), 25000); // 25s timeout
+
     const response = await fetch(OPENROUTER_API_URL, {
       method: "POST",
+      signal: controller2.signal,
       headers: {
         "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
         "HTTP-Referer": "https://www.heartecho.in",
-        "X-Title": process.env.APP_NAME || "HeartEcho Ai"
+        "X-Title": "HeartEcho AI"
       },
       body: JSON.stringify({
         model: model,
@@ -138,12 +148,13 @@ async function generatePersonaResponse(prompt, personaContext, userInfo = null) 
           }
         ],
         max_tokens: max_tokens,
-        temperature: 0.85, // Slightly higher for more creative responses
+        temperature: 0.85,
         top_p: 0.95,
         frequency_penalty: 0.2,
         presence_penalty: 0.1
       })
     });
+    clearTimeout(timeoutId2);
 
     if (!response.ok) {
       const errorText = await response.text();

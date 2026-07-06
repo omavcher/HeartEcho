@@ -16,9 +16,16 @@ const chatSchema = new mongoose.Schema({
 
       mediaType: {
         type: String,
-        enum: ["text", "image", "video", "audio"],
+        enum: ["text", "image", "video", "audio", "gift", "date"],
         default: "text"
       },
+      giftData: {
+        giftId: String,
+        name: String,
+        price: Number,
+        xp: Number
+      },
+      dateType: String,
       imgUrl: String,
       videoUrl: String,
       thumbnailUrl: String,
@@ -81,6 +88,49 @@ const chatSchema = new mongoose.Schema({
 
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+
+  // Relationship Progression Economy
+  streakCount: { type: Number, default: 0 },
+  lastMessageDate: { type: Date },
+  currentEmotion: { type: String, enum: ["Happy", "Sad", "Romantic", "Angry", "Busy", "Sleepy"], default: "Happy" },
+  lastEmotionChange: { type: Date, default: Date.now },
+  personality: { type: String, default: "Flirty" },
+  relationshipXP: { type: Number, default: 0 },
+  relationshipLevel: { type: Number, default: 1 }, // 1: Stranger, 2: Friend, etc.
+  giftsSent: [
+    {
+      giftId: { type: String, required: true },
+      name: { type: String, required: true },
+      sentAt: { type: Date, default: Date.now }
+    }
+  ],
+  datesCompleted: [
+    {
+      dateType: { type: String, required: true },
+      completedAt: { type: Date, default: Date.now }
+    }
+  ],
+  aiMemory: {
+    birthday: { type: String, default: "" },
+    job: { type: String, default: "" },
+    favoriteFood: { type: String, default: "" },
+    pet: { type: String, default: "" },
+    mom: { type: String, default: "" },
+    dream: { type: String, default: "" },
+    nickname: { type: String, default: "" },
+    fear: { type: String, default: "" },
+    anniversary: { type: String, default: "" },
+    favoriteColor: { type: String, default: "" }
+  },
+  stagesUnlocked: {
+    stranger: { type: Date, default: Date.now },
+    friend: { type: Date },
+    close_friend: { type: Date },
+    crush: { type: Date },
+    dating: { type: Date },
+    partner: { type: Date },
+    soulmate: { type: Date }
+  },
 
   isActive: { type: Boolean, default: true },
   archived: { type: Boolean, default: false }

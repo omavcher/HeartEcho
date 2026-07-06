@@ -175,25 +175,3 @@ exports.GuestSendResponse = async (req, res) => {
   }
 };
 
-exports.GuestBotAutoMessage = async (req, res) => {
-  try {
-    const { aiFriendId } = req.body;
-    const guestId = req.header("Guest-Id"); // Though bot might not send Guest-Id always
-    let AiInfo = await AIFriend.findById(aiFriendId);
-    if (!AiInfo) AiInfo = await PrebuiltAIFriend.findById(aiFriendId);
-
-    const botMessageContexts = [
-      "Kya kar rahe ho?", 
-      "Hello! Kaise ho?", 
-      "Yaad aa rahi thi tumhari!", 
-      "Aaj ka din kaisa gaya?"
-    ];
-    let bMsg = botMessageContexts[Math.floor(Math.random() * botMessageContexts.length)];
-    
-    // Auto message doesn't count towards the 2 message limit usually, or does it? user said "user can chat with wirhout sign up or login only 2 message" meaning user messages.
-    
-    res.status(200).json({ success: true, botMessage: bMsg });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};

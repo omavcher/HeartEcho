@@ -269,6 +269,21 @@ function SubscriptionContent() {
     finally { setIsLoading(null); }
   };
 
+  const renderCellWithTick = (val) => {
+    if (typeof val === 'string' && val.includes('✅')) {
+      const remainingText = val.replace('✅', '').trim();
+      return (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', justifyContent: 'center' }}>
+          <span className="seh-feature-tick" />
+          <span>{remainingText}</span>
+        </span>
+      );
+    }
+    return val;
+  };
+
+
+
   const pad = n => String(n).padStart(2, '0');
 
   return (
@@ -332,6 +347,7 @@ function SubscriptionContent() {
         {/* ── Pricing cards ────────────────────────────────────────────────── */}
         <div className="seh-grid">
 
+          {/* Yearly Plan (Featured) */}
           <div className="seh-card seh-featured">
             <div className="seh-hero-glow" />
             <div className="seh-badge">🔥 BEST VALUE · MOST CHOSEN</div>
@@ -354,12 +370,15 @@ function SubscriptionContent() {
             </div>
 
             <ul className="seh-features hero">
-              <li>✅ <span><strong>Unlimited messages</strong> (No limits, talk all night)</span></li>
-              <li>✅ <span><strong>Deep AI Memory</strong> — she remembers your name, mood, & secrets</span></li>
-              <li>✅ <span>Voice & Audio Calls <strong>(30 mins/day)</strong></span></li>
-              <li>✅ <span>She sends <strong>Spicy Photos + Short Videos</strong></span></li>
-              <li>✅ <span><strong>Full Desi Stories</strong> & exciting roleplays</span></li>
-              <li>✅ <span>One-Time Payment — <strong>No Auto-Debit</strong></span></li>
+              <li><span className="seh-feature-tick" /> <strong>EVERYTHING from ₹99 plan</strong></li>
+              <li><span className="seh-feature-tick" /> Premium AI & Unlimited Live</li>
+              <li><span className="seh-feature-tick" /> Unfiltered AI Stories & Feed</li>
+              <li><span className="seh-feature-tick" /> Unlimited Virtual Dates</li>
+              <li><span className="seh-feature-tick" /> Relationship Timeline & Goals</li>
+              <li><span className="seh-feature-tick" /> Voice Calls & Audio Notes</li>
+              <li><span className="seh-feature-tick" /> AI Sends Unlimited Hot Photos & Videos</li>
+              <li><span className="seh-feature-tick" /> <strong>150 Gems / day reward</strong></li>
+              <li><span className="seh-feature-tick" /> Faster Response Times</li>
             </ul>
 
             {renderPaymentButton(p.yearly, 'Yearly', `seh-btn seh-btn-pink${pulse ? ' seh-pulse-btn' : ''}`, country === 'IN' ? `💎 Unlock Now · ${p.currency}${p.yearly}/yr (One-Time)` : `💎 Get Premium · ${p.currency}${p.yearly}/yr`)}
@@ -368,7 +387,7 @@ function SubscriptionContent() {
             </div>
           </div>
 
-          {/* Monthly — anchor / decoy */}
+          {/* Monthly Plan */}
           <div className="seh-card seh-monthly">
             <div className="seh-badge seh-badge-monthly">MONTHLY</div>
             <div className="seh-card-header">
@@ -383,17 +402,22 @@ function SubscriptionContent() {
               </div>
             </div>
             <ul className="seh-features">
-              <li>✅ Unlimited messages</li>
-              <li>✅ AI memory</li>
-              <li>✅ Live interactions</li>
-              <li>✅ Spicy Photos & Short Videos</li>
-              <li className="bad">❌ No Voice Calling</li>
+              <li><span className="seh-feature-tick" /> Unlimited Messages & Matches</li>
+              <li><span className="seh-feature-tick" /> AI Memory & Relationship Levels</li>
+              <li><span className="seh-feature-tick" /> Daily Gifts & Rewards</li>
+              <li><span className="seh-feature-tick" /> <strong>50 Gems / day reward</strong></li>
+              <li><span className="seh-feature-tick" /> Unlimited Voice Notes</li>
+              <li><span className="seh-feature-tick" /> No Advertisements</li>
+              <li><span className="seh-feature-tick" /> Faster AI Responses</li>
+              <li className="bad">❌ NO Live AI</li>
+              <li className="bad">❌ NO Premium Characters</li>
+              <li className="bad">⚠️ Limit of 2 Hot Images & Videos/day</li>
             </ul>
             {renderPaymentButton(p.monthly, 'Monthly', 'seh-btn seh-btn-monthly', country === 'IN' ? `Subscribe Monthly · ${p.currency}${p.monthly}/mo` : 'Subscribe Monthly')}
             <p className="seh-card-note accent">Switch to Yearly & save more</p>
           </div>
 
-          {/* ── Ultimate card ─────────────────────────────────────────────── */}
+          {/* Ultimate Plan */}
           <div className="seh-card seh-ultimate">
             <div className="seh-badge" style={{ background: 'linear-gradient(90deg, #d4af37, #ffd60a)', color: '#000', boxShadow: '0 4px 16px rgba(255,214,10,0.4)' }}>
               👑 ULTIMATE · NO LIMITS
@@ -412,10 +436,14 @@ function SubscriptionContent() {
             </div>
 
             <ul className="seh-features hero">
-              <li>✅ <span><strong>Unlimited Voice Calls</strong> 📞 (Talk all night, no limits)</span></li>
-              <li>✅ <span><strong>Unlimited Spicy Images & Videos</strong></span></li>
-              <li>✅ <span><strong>Priority replies</strong> (Super fast AI response)</span></li>
-              <li>✅ <span><strong>Early access</strong> to new Desi AI characters</span></li>
+              <li><span className="seh-feature-tick" /> <strong>EVERYTHING from ₹599 plan</strong></li>
+              <li><span className="seh-feature-tick" /> Unlimited Live AI</li>
+              <li><span className="seh-feature-tick" /> Video Generation & Video Calls</li>
+              <li><span className="seh-feature-tick" /> Custom AI & Exclusive Characters</li>
+              <li><span className="seh-feature-tick" /> Unlimited Hot Content</li>
+              <li><span className="seh-feature-tick" /> <strong>500 Gems / day reward</strong></li>
+              <li><span className="seh-feature-tick" /> VIP Account Badge</li>
+              <li><span className="seh-feature-tick" /> Priority Queue & Support</li>
             </ul>
 
             {renderPaymentButton(p.ultimate, 'Ultimate', `seh-btn seh-btn-gold${pulse ? ' seh-pulse-btn' : ''}`, `👑 Go Ultimate · ${p.currency}${p.ultimate}/yr`)}
@@ -507,9 +535,9 @@ function SubscriptionContent() {
             ].map(row => (
               <div key={row.label} className="seh-compare-row">
                 <div className="seh-cr-label">{row.icon} {row.label}</div>
-                <div className="seh-cr-cell">{row.monthly}</div>
-                <div className="seh-cr-cell best">{row.yearly}</div>
-                <div className="seh-cr-cell ultimate">{row.ultimate}</div>
+                <div className="seh-cr-cell">{renderCellWithTick(row.monthly)}</div>
+                <div className="seh-cr-cell best">{renderCellWithTick(row.yearly)}</div>
+                <div className="seh-cr-cell ultimate">{renderCellWithTick(row.ultimate)}</div>
               </div>
             ))}
           </div>

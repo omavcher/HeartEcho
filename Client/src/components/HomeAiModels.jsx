@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import axios from "axios";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -10,7 +11,6 @@ import "../styles/HomeAiModels.css";
 import api from "../config/api";
 
 function HomeAiModels() {
-  const [activeTab, setActiveTab] = useState("girls");
   const [aiModels, setAiModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -18,8 +18,9 @@ function HomeAiModels() {
 
   useEffect(() => {
     const fetchAiModels = async () => {
-      const CACHE_KEY = 'ham_models';
-      const CACHE_TIME_KEY = 'ham_models_time';
+      const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
+      const CACHE_KEY = `ham_models_${token ? 'user' : 'guest'}`;
+      const CACHE_TIME_KEY = `ham_models_time_${token ? 'user' : 'guest'}`;
       const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
       try {
@@ -33,7 +34,8 @@ function HomeAiModels() {
           return;
         }
 
-        const response = await axios.get(`${api.Url}/user/get-pre-ai`);
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await axios.get(`${api.Url}/user/get-pre-ai`, { headers });
         const models = response.data.data;
         setAiModels(models);
         sessionStorage.setItem(CACHE_KEY, JSON.stringify(models));
@@ -49,18 +51,14 @@ function HomeAiModels() {
     fetchAiModels();
   }, []);
 
-  const getRandomModels = (models, count) => {
-    return [...models]
-  };
-  
-  const filteredModels = getRandomModels(
-    aiModels.filter((model) =>
-      activeTab === "girls" ? model.gender === "female" : model.gender === "male"
-    ),
-    10
-  );
 
-  const handleModelClick = (modelId) => {
+  const filteredModels = aiModels.slice(0, 10);
+
+  const handleModelClick = (modelId, isLocked) => {
+    if (isLocked) {
+      router.push('/subscribe');
+      return;
+    }
     router.push(`/chatbox?chatId=${modelId}`);
   };
 
@@ -72,30 +70,13 @@ function HomeAiModels() {
   return (
     <section className="ai-models-container-d32ud">
       <div className="section-header-d32ud">
-  
-        
-        <div className="gender-toggle-d32ud" data-active={activeTab}>
-          <button
-            className={`toggle-option-d32ud ${activeTab === "girls" ? "active-d32ud" : ""}`}
-            onClick={() => setActiveTab("girls")}
-            aria-label="Show female AI companions"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path d="M11 15.9339C7.33064 15.445 4.5 12.3031 4.5 8.5C4.5 4.35786 7.85786 1 12 1C16.1421 1 19.5 4.35786 19.5 8.5C19.5 12.3031 16.6694 15.445 13 15.9339V18H18V20H13V24H11V20H6V18H11V15.9339ZM12 14C15.0376 14 17.5 11.5376 17.5 8.5C17.5 5.46243 15.0376 3 12 3C8.96243 3 6.5 5.46243 6.5 8.5C6.5 11.5376 8.96243 14 12 14Z"></path>
-            </svg>
-            Female
-          </button>
-          <button
-            className={`toggle-option-d32ud ${activeTab === "boys" ? "active-d32ud" : ""}`}
-            onClick={() => setActiveTab("boys")}
-            aria-label="Show male AI companions"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path d="M15.0491 8.53666L18.5858 5H14V3H22V11H20V6.41421L16.4633 9.95088C17.4274 11.2127 18 12.7895 18 14.5C18 18.6421 14.6421 22 10.5 22C6.35786 22 3 18.6421 3 14.5C3 10.3579 6.35786 7 10.5 7C12.2105 7 13.7873 7.57264 15.0491 8.53666ZM10.5 20C13.5376 20 16 17.5376 16 14.5C16 11.4624 13.5376 9 10.5 9C7.46243 9 5 11.4624 5 14.5C5 17.5376 7.46243 20 10.5 20Z"></path>
-            </svg>
-            Male
-          </button>
-        </div>
+        <h2 className="explore-title-d32ud">Explore AI Personas</h2>
+        <Link href="/discover" className="view-more-link-d32ud">
+          <span>View More</span>
+          <svg className="arrow-icon-d32ud" viewBox="0 0 24 24" width="16" height="16">
+            <path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+          </svg>
+        </Link>
       </div>
 
       {loading ? (
@@ -148,7 +129,7 @@ function HomeAiModels() {
             <div 
               className="model-card-d32ud" 
               key={model._id}
-              onClick={() => handleModelClick(model._id)}
+              onClick={() => handleModelClick(model._id, model.isLocked)}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && handleModelClick(model._id)}
@@ -173,9 +154,19 @@ function HomeAiModels() {
                     </span>
                   </div>
                   <div className="model-badge-d32ud">
-                    {index < 3 && (
-                      <span className={`popular-tag-d32ud ${index === 0 ? 'top-choice-d32ud' : ''}`}>
-                        {index === 0 ? '🌟 Top Choice' : '⭐ Popular'}
+                    {model.isLocked && (
+                      <span className="premium-lock-tag-d32ud">
+                        🔒 Premium
+                      </span>
+                    )}
+                    {!model.isLocked && model.badge === "top_choice" && (
+                      <span className="popular-tag-d32ud top-choice-d32ud">
+                        🌟 Top Choice
+                      </span>
+                    )}
+                    {!model.isLocked && model.badge === "popular" && (
+                      <span className="popular-tag-d32ud">
+                        ⭐ Popular
                       </span>
                     )}
                   </div>

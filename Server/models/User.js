@@ -92,8 +92,19 @@ const userSchema = new mongoose.Schema({
   tickets: [{ type: mongoose.Schema.Types.ObjectId, ref: "Ticket" }],
   chats: [{ type: mongoose.Schema.Types.ObjectId, ref: "Chat" }],
   ai_friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "AIFriend" }],
+  
+  // Economy & Discover Swipes System
+  gems: { type: Number, default: 0 },
+  lastLoginDate: { type: Date },
+  loginStreak: { type: Number, default: 0 },
+  likedAIs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PrebuiltAIFriend' }],
+  skippedAIs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PrebuiltAIFriend' }],
+  matchedAIs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PrebuiltAIFriend' }],
+  superLikedAIs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PrebuiltAIFriend' }],
+  dailyGemsClaimedDate: { type: Date },
 
   preferredLanguage: { type: String, default: "Hinglish" },
+  relationshipMemory: { type: String, default: "" },
 
   // Push Notifications
   fcmToken: { type: String, default: "" },

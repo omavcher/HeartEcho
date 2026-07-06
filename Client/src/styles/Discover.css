@@ -1,133 +1,815 @@
 /* ══════════════════════════════════════════════════════════
-   Discover.css  —  Premium dark design
+   Discover.css  —  Tinder Swipe UI & Match Animations
    ══════════════════════════════════════════════════════════ */
 
 :root {
   --dsc-bg:        #000000;
-  --dsc-pink:      #ce4085;
-  --dsc-pink-lt:   #ff85c2;
-  --dsc-pink-dim:  rgba(206,64,133,0.12);
-  --dsc-border:    rgba(255,255,255,0.08);
+  --dsc-pink:      #cf4185;
+  --dsc-pink-glow: rgba(207, 65, 133, 0.35);
+  --dsc-purple:    #8b5cf6;
+  --dsc-purple-glow: rgba(139, 92, 246, 0.4);
+  --dsc-green:     #10b981;
+  --dsc-green-glow: rgba(16, 185, 129, 0.4);
+  --dsc-border:    rgba(255,255,255,0.06);
   --dsc-text:      #ffffff;
-  --dsc-muted:     #888;
-  --dsc-glass:     rgba(255,255,255,0.04);
-  --dsc-gold:      linear-gradient(135deg, #FFD700, #FFA500, #B8860B);
+  --dsc-muted:     #8e8e93;
+  --dsc-card-bg:   #0d0d0e;
+  --dsc-gold:      linear-gradient(135deg, #FFD700, #FFA500);
   --font-main:     'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-*, *::before, *::after { box-sizing: border-box; }
-
-/* ── Page root ─────────────────────────────────────────── */
 .discover-container {
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   background-color: var(--dsc-bg);
   color: var(--dsc-text);
   font-family: var(--font-main);
-  padding-bottom: 110px; /* mobile nav space */
+  overflow: hidden;
+  position: relative;
 }
 
-/* ── Sticky header ─────────────────────────────────────── */
+/* Sticky Header */
 .discover-header {
-  width: 100%;
-  height: 64px;
+  flex-shrink: 0;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(0,0,0,0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  padding: 0 20px;
+  z-index: 50;
+  background: rgba(9, 9, 11, 0.9);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--dsc-border);
 }
 
 .discover-header h1 {
-  font-size: 1.55rem;
+  font-size: 1.4rem;
   font-weight: 800;
-  letter-spacing: -0.5px;
   margin: 0;
-  background: linear-gradient(135deg, #fff 40%, #ce4085);
+  background: linear-gradient(135deg, #fff 40%, var(--dsc-pink));
   -webkit-background-clip: text;
-  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* ── Gold premium button ───────────────────────────────── */
-.premium-gold-btn {
-  background: var(--dsc-gold);
-  color: #000;
-  text-decoration: none;
-  padding: 9px 18px;
-  border-radius: 50px;
-  font-weight: 700;
-  font-size: 0.82rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 16px rgba(255,215,0,0.25);
-  white-space: nowrap;
-}
-
-.premium-gold-btn:hover {
-  transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 8px 24px rgba(255,215,0,0.4);
-}
-
-.premium-gold-btn svg { width:16px; height:16px; }
-
-/* ── Content wrapper ───────────────────────────────────── */
-.discover-content-wrapper {
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
+/* Main Swipe Area */
+.discover-swipe-wrapper {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0;
-  padding: 0 0 2rem;
-}
-
-/* Hero banner wrapper — add some side padding and breathing room */
-.discover-content-wrapper > section:first-child {
-  padding: 28px 20px 0;
-}
-
-.ai-models-section-container {
+  align-items: center;
+  justify-content: center;
+  position: relative;
   width: 100%;
-  padding: 0;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 16px 20px 24px;
 }
 
-/* ── Modal backdrop ────────────────────────────────────── */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(8px);
-  z-index: 999;
+/* Cards Deck Container */
+.cards-deck-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9/16;
+  max-height: 70vh;
+  perspective: 1000px;
+}
+
+/* Individual Card */
+.swipe-card {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--dsc-card-bg);
+  border: 1px solid var(--dsc-border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  cursor: grab;
+  touch-action: none;
+}
+
+.swipe-card:active {
+  cursor: grabbing;
+}
+
+/* Card Media */
+.card-media-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #09090b;
+}
+
+.card-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* Bottom shadow overlay */
+.card-media-wrapper::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0,0,0,0.5) 40%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Floating Info Overlay */
+.card-info-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 20px;
+  z-index: 2;
+  color: white;
+  pointer-events: none;
+}
+
+.profile-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.profile-title h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.profile-title .age {
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.verif-badge {
+  color: #10b981;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.work-location {
+  display: flex;
+  gap: 12px;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 12px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.work-location div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bio-quote {
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0 0 14px 0;
+  font-style: italic;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.tag-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tag-badge {
+  font-size: 0.72rem;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(4px);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Floating Card Badges */
+.card-floating-badge {
+  position: absolute;
+  top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 50px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  z-index: 5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.online-badge {
+  left: 14px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.online-indicator {
+  width: 7px;
+  height: 7px;
+  background: #10b981;
+  border-radius: 50%;
+}
+
+.match-stat-badge {
+  left: 14px;
+  background: var(--dsc-pink);
+  color: white;
+}
+
+.premium-badge {
+  left: 14px;
+  background: var(--dsc-gold);
+  color: black;
+}
+
+.info-detail-btn {
+  right: 14px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
-.modal-content {
-  width: 90%;
-  max-width: 440px;
-  background: #0d0d0d;
+/* Drag Action Stamps Overlay */
+.stamp {
+  position: absolute;
+  top: 40px;
+  padding: 6px 16px;
+  border: 4px solid;
+  border-radius: 8px;
+  text-transform: uppercase;
+  font-weight: 900;
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+  z-index: 10;
+  transform: rotate(-12deg);
+}
+
+.stamp.like {
+  right: 30px;
+  border-color: var(--dsc-green);
+  color: var(--dsc-green);
+  box-shadow: 0 0 15px var(--dsc-green-glow);
+}
+
+.stamp.nope {
+  left: 30px;
+  border-color: var(--dsc-pink);
+  color: var(--dsc-pink);
+  box-shadow: 0 0 15px var(--dsc-pink-glow);
+  transform: rotate(12deg);
+}
+
+.stamp.super {
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%) rotate(0deg);
+  border-color: var(--dsc-purple);
+  color: var(--dsc-purple);
+  box-shadow: 0 0 15px var(--dsc-purple-glow);
+}
+
+/* Bottom Action Buttons */
+.discover-actions-bar {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 380px;
+  margin-top: 20px;
+}
+
+.btn-circle {
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: var(--dsc-card-bg);
   border: 1px solid var(--dsc-border);
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(206,64,133,0.1);
+  color: white;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
 }
 
-/* ── Responsive ────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .discover-header { padding: 0 16px; height: 56px; }
-  .discover-header h1 { font-size: 1.3rem; }
-  .premium-gold-btn { padding: 7px 13px; font-size: 0.78rem; }
-  .discover-content-wrapper > section:first-child { padding: 16px 12px 0; }
+.btn-circle:hover {
+  transform: scale(1.08);
+}
+
+.btn-circle:active {
+  transform: scale(0.95);
+}
+
+.btn-sm {
+  width: 44px;
+  height: 44px;
+}
+
+.btn-lg {
+  width: 58px;
+  height: 58px;
+}
+
+.btn-rewind {
+  border-color: rgba(234, 179, 8, 0.3);
+  color: rgb(234, 179, 8);
+}
+.btn-rewind:hover {
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.2);
+}
+
+.btn-pass {
+  border-color: rgba(239, 68, 68, 0.3);
+  color: rgb(239, 68, 68);
+  font-size: 24px;
+}
+.btn-pass:hover {
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
+}
+
+.btn-superlike {
+  border-color: rgba(168, 85, 247, 0.3);
+  color: rgb(168, 85, 247);
+}
+.btn-superlike:hover {
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+}
+
+.btn-like {
+  border-color: rgba(236, 72, 153, 0.3);
+  color: rgb(236, 72, 153);
+}
+.btn-like:hover {
+  box-shadow: 0 0 18px rgba(236, 72, 153, 0.3);
+}
+
+.btn-chat {
+  border-color: rgba(99, 102, 241, 0.3);
+  color: rgb(99, 102, 241);
+}
+.btn-chat:hover {
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
+}
+
+/* Empty State / Deck Exhausted */
+.deck-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+  color: var(--dsc-muted);
+  padding: 40px;
+}
+
+.deck-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+
+.deck-empty-state h3 {
+  font-size: 1.3rem;
+  color: white;
+  margin: 0 0 8px 0;
+}
+
+.deck-empty-state p {
+  font-size: 0.88rem;
+  line-height: 1.4;
+  margin: 0 0 24px 0;
+}
+
+.recycle-btn {
+  background: var(--dsc-gold);
+  color: black;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+  transition: transform 0.2s;
+}
+
+.recycle-btn:active {
+  transform: scale(0.95);
+}
+
+/* ==========================================
+   TINDER IT'S A MATCH CELEBRATION MODAL
+   ========================================== */
+
+.match-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: #000000;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 24px;
+}
+
+.match-modal-content {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 10;
+}
+
+/* Confetti Layer */
+.confetti-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Step 1 & 2 animations: Neon Title */
+.match-neon-title {
+  font-family: 'Great Vibes', 'Playball', 'Pacifico', cursive, sans-serif;
+  font-size: 3.5rem;
+  color: #fff;
+  margin: 0 0 40px;
+  text-shadow: 
+    0 0 5px #fff,
+    0 0 10px #fff,
+    0 0 20px #ff007f,
+    0 0 30px #ff007f,
+    0 0 40px #ff007f;
+  animation: neon-glow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes neon-glow {
+  from {
+    text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #ff007f, 0 0 20px #ff007f;
+  }
+  to {
+    text-shadow: 0 0 7px #fff, 0 0 15px #ff007f, 0 0 25px #ff007f, 0 0 35px #ff007f, 0 0 50px #ff007f;
+  }
+}
+
+/* Step 3: Heart Avatars Layout */
+.match-avatars-stage {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.match-circle-frame {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid var(--dsc-pink);
+  overflow: hidden;
+  box-shadow: 0 0 25px var(--dsc-pink-glow);
+  position: absolute;
+}
+
+.match-circle-frame.left-avatar {
+  left: calc(50% - 130px);
+  animation: slide-left-in 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.match-circle-frame.right-avatar {
+  right: calc(50% - 130px);
+  animation: slide-right-in 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.match-circle-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.match-center-heart {
+  position: absolute;
+  z-index: 5;
+  width: 50px;
+  height: 50px;
+  background: var(--dsc-pink);
+  border-radius: 50%;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px var(--dsc-pink-glow);
+  animation: heart-pop 0.6s 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) both, heart-beat 1.4s 1.4s infinite;
+}
+
+@keyframes slide-left-in {
+  0% { transform: translateX(-150px) scale(0.5); opacity: 0; }
+  100% { transform: translateX(45px) scale(1); opacity: 1; }
+}
+
+@keyframes slide-right-in {
+  0% { transform: translateX(150px) scale(0.5); opacity: 0; }
+  100% { transform: translateX(-45px) scale(1); opacity: 1; }
+}
+
+@keyframes heart-pop {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes heart-beat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+/* Match description */
+.match-subtitle {
+  font-size: 1.15rem;
+  color: white;
+  margin-bottom: 8px;
+}
+
+.match-tagline {
+  font-size: 0.9rem;
+  color: var(--dsc-muted);
+  margin-bottom: 32px;
+  line-height: 1.4;
+  padding: 0 24px;
+}
+
+/* Match actions */
+.match-action-btns {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 24px;
+}
+
+.match-primary-btn {
+  background: linear-gradient(135deg, #ec4899, #be185d);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.match-primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(236, 72, 153, 0.5);
+}
+
+.match-secondary-btn {
+  background: transparent;
+  color: white;
+  border: 1px solid var(--dsc-border);
+  padding: 14px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.match-secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ══════════════════════════════════════════════════════════
+   SKELETON CARDS LOADING
+   ══════════════════════════════════════════════════════════ */
+.discover-skeleton-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.discover-skeleton-card {
+  width: 100%;
+  aspect-ratio: 9/16;
+  max-height: 70vh;
+  border-radius: 24px;
+  background: var(--dsc-card-bg);
+  border: 1px solid var(--dsc-border);
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.skeleton-image-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #111112;
+}
+
+.skeleton-info-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 20px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
+}
+
+.skeleton-bar {
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.skeleton-bar.title-bar {
+  width: 60%;
+  height: 24px;
+}
+
+.skeleton-bar.subtitle-bar {
+  width: 40%;
+  height: 16px;
+}
+
+.skeleton-tags-row {
+  display: flex;
+  gap: 8px;
+}
+
+.skeleton-tag {
+  width: 60px;
+  height: 20px;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Shimmer Animation */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.04) 20%,
+    rgba(255, 255, 255, 0.08) 60%,
+    transparent 100%
+  );
+  animation: shimmer-load 1.6s infinite;
+}
+
+@keyframes shimmer-load {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-loading-text {
+  margin-top: 20px;
+  font-size: 0.95rem;
+  color: var(--dsc-muted);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN (MOBILE & DESKTOP LAPTOP BREAKPOINTS)
+   ══════════════════════════════════════════════════════════ */
+
+/* For Mobile screens (matching the Flutter app style) */
+@media (max-width: 767px) {
+  .discover-swipe-wrapper {
+    max-width: 100%;
+    height: calc(100vh - 60px);
+    padding: 10px 14px 16px;
+    justify-content: space-between;
+  }
+  
+  .cards-deck-container {
+    max-height: 68vh;
+  }
+
+  .swipe-card {
+    border-radius: 20px;
+  }
+  
+  .profile-title h2 {
+    font-size: 1.6rem;
+  }
+
+  .discover-actions-bar {
+    margin-top: 10px;
+    padding: 0 10px;
+  }
+
+  .btn-lg {
+    width: 52px;
+    height: 52px;
+  }
+  
+  .btn-sm {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* For wider screens (Laptops / Desktops) */
+@media (min-width: 768px) {
+  .discover-swipe-wrapper {
+    max-width: 800px;
+    flex-direction: row;
+    gap: 40px;
+    padding: 40px;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+    margin-top: 40px;
+    margin-bottom: 40px;
+  }
+
+  .cards-deck-container {
+    width: 380px;
+    height: 580px;
+    max-height: none;
+    aspect-ratio: auto;
+  }
+
+  /* Place action bar on the right side of the card deck for desktop, rather than below it! */
+  .discover-actions-bar {
+    flex-direction: column;
+    height: 380px;
+    width: 80px;
+    gap: 16px;
+    margin-top: 0;
+  }
+
+  .btn-circle {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
 }

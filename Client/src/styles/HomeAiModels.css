@@ -35,10 +35,54 @@
 }
 
 .section-header-d32ud {
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 2.5rem;
   position: relative;
   animation: fadeInUp-d32ud 0.8s var(--ease-out-quad-d32ud) both;
+  width: 100%;
+}
+
+.explore-title-d32ud {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0;
+  background: linear-gradient(90deg, var(--text-color-d32ud), var(--primary-light-d32ud));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: "Montserrat", sans-serif;
+  letter-spacing: -0.5px;
+}
+
+.view-more-link-d32ud {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary-light-d32ud);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: all 0.3s var(--ease-ios-d32ud);
+  padding: 8px 16px;
+  border-radius: 50px;
+  background: rgba(207, 65, 133, 0.1);
+  border: 1px solid rgba(207, 65, 133, 0.2);
+}
+
+.view-more-link-d32ud:hover {
+  background: rgba(207, 65, 133, 0.2);
+  transform: translateX(2px);
+  color: white;
+  border-color: var(--primary-light-d32ud);
+}
+
+.arrow-icon-d32ud {
+  transition: transform 0.3s var(--ease-ios-d32ud);
+}
+
+.view-more-link-d32ud:hover .arrow-icon-d32ud {
+  transform: translateX(2px);
 }
 
 @keyframes fadeInUp-d32ud {
@@ -337,6 +381,25 @@
   background: linear-gradient(135deg, #ffd700, #ff9500);
   color: #000;
   box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.premium-lock-tag-d32ud {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffd700, #ff9500);
+  color: #000;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+  transition: all 0.3s var(--ease-ios-d32ud);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.premium-lock-tag-d32ud:hover {
+  transform: scale(1.05) rotate(2deg);
 }
 
 .popular-tag-d32ud:hover {

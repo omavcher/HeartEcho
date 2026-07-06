@@ -357,7 +357,17 @@
 .seh-features li.dim  { color: rgba(255,255,255,0.45); }
 .seh-features li.bad  { color: rgba(255,255,255,0.28); }
 .seh-features.hero li { color: rgba(255,255,255,0.9); font-size: 0.93rem; }
-.seh-features.hero li strong { color: #fff; }
+.seh-feature-tick {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url('/tick-front-premium.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
 
 /* ── Card notes ──────────────────────────────────────────────── */
 .seh-card-note {

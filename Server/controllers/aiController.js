@@ -5,6 +5,7 @@ const AIFriend = require("../models/AIFriend");
 const Chat = require("../models/Chat");
 const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");
 const openRouterAI = require("./openrouter-ai-model"); // Changed from gemini-ai-model
+const { updateUserMemory } = require("../utils/memoryProcessor");
 const ObjectId = mongoose.Types.ObjectId;
 
 // Quota costs
@@ -1196,10 +1197,10 @@ exports.AiFriendResponse = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    // Reset daily quota if needed (this is already done in hasSufficientQuota)
+    // Reset daily quota if needed
     userInfo.resetDailyQuota();
-    await userInfo.save();
 
+    // Only save if ai_friends list was updated (avoid redundant DB write every message)
     if (!userInfo.ai_friends.includes(chatId)) {
       userInfo.ai_friends.push(chatId);
       await userInfo.save();
@@ -1209,7 +1210,6 @@ exports.AiFriendResponse = async (req, res) => {
       new ObjectId(chatId)
     );
     const senderModel = "PrebuiltAIFriend";
-    console.log(AiInfo);
 
     if (!AiInfo) {
       return res.status(404).json({ message: "AI Friend not found." });
@@ -1347,7 +1347,177 @@ exports.AiFriendResponse = async (req, res) => {
     const firstName = userInfo.name.split(" ")[0];
     const interests = userInfo.selectedInterests.join(", ");
 
-    const chatHistory = chat.messages.map(msg => {
+    // ----------------------------------------------------
+    // 🌟 Premium Economy & Relationship Logic Processing
+    // ----------------------------------------------------
+    const now = new Date();
+    
+    // A. STREAK CALCULATION
+    let streak = chat.streakCount || 0;
+    if (chat.lastMessageDate) {
+      const lastMsgDate = new Date(chat.lastMessageDate);
+      const lastMsgISTStr = lastMsgDate.toLocaleDateString("en-US", { timeZone: "Asia/Kolkata" });
+      const nowISTStr = now.toLocaleDateString("en-US", { timeZone: "Asia/Kolkata" });
+      
+      if (lastMsgISTStr !== nowISTStr) {
+        const lastMsgDateOnly = new Date(lastMsgDate.getFullYear(), lastMsgDate.getMonth(), lastMsgDate.getDate());
+        const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const diffDays = Math.round((nowDateOnly - lastMsgDateOnly) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+          streak += 1;
+        } else if (diffDays > 1) {
+          streak = 1;
+        }
+      }
+    } else {
+      streak = 1;
+    }
+    chat.streakCount = streak;
+    chat.lastMessageDate = now;
+
+    // B. EMOTION DYNAMIC SHIFTS
+    let emotion = chat.currentEmotion || "Happy";
+    const textLower = text.toLowerCase();
+    
+    if (textLower.match(/(love|miss|sweet|kiss|babe|darling|heart|romantic|girlfriend|boyfriend|hugs)/)) {
+      emotion = "Romantic";
+    } else if (textLower.match(/(angry|hate|annoyed|shut up|stupid|idiot|fight|bastard|nonsense)/)) {
+      emotion = "Angry";
+    } else if (textLower.match(/(sad|cry|hurt|sorry|bad|depressed|lonely|pain|unhappy)/)) {
+      emotion = "Sad";
+    } else {
+      // Time-based shifts: if user didn't talk for > 12 hours
+      if (chat.lastMessageDate) {
+        const timeDiffHrs = (now.getTime() - new Date(chat.lastMessageDate).getTime()) / (1000 * 60 * 60);
+        if (timeDiffHrs > 12) {
+          const currentHour = now.getHours();
+          if (currentHour >= 22 || currentHour < 6) {
+            emotion = "Sleepy";
+          } else {
+            emotion = "Busy";
+          }
+        } else {
+          if (emotion !== "Romantic" && emotion !== "Angry" && emotion !== "Sad") {
+            emotion = "Happy";
+          }
+        }
+      }
+    }
+    chat.currentEmotion = emotion;
+    chat.lastEmotionChange = now;
+
+    // C. RELATIONSHIP XP INCREMENT (+3 XP per chat message)
+    chat.relationshipXP = (chat.relationshipXP || 0) + 3;
+    
+    const checkLevelUp = (xp, currentLevel) => {
+      const xpThresholds = [0, 50, 150, 350, 650, 1100, 2000];
+      let newLevel = currentLevel;
+      for (let i = 1; i < xpThresholds.length; i++) {
+        if (xp >= xpThresholds[i]) {
+          newLevel = i + 1;
+        }
+      }
+      return newLevel;
+    };
+    const getStageKeyByLevel = (level) => {
+      const keys = ["stranger", "friend", "close_friend", "crush", "dating", "partner", "soulmate"];
+      return keys[Math.min(Math.max(level - 1, 0), 6)];
+    };
+    
+    const originalLevel = chat.relationshipLevel || 1;
+    const nextLevel = checkLevelUp(chat.relationshipXP, originalLevel);
+    if (nextLevel > originalLevel) {
+      chat.relationshipLevel = nextLevel;
+      const key = getStageKeyByLevel(nextLevel);
+      if (!chat.stagesUnlocked) chat.stagesUnlocked = {};
+      if (!chat.stagesUnlocked[key]) chat.stagesUnlocked[key] = now;
+    }
+
+    // D. PERSONALITY ENGINE MODIFIERS
+    const activePersonality = chat.personality || "Flirty";
+    
+    const personalityPrompts = {
+      Humor: "Tu conversation mein bohot saare jokes aur funny punchlines use karegi. Thodi si playful aur witty rehna. 😂😜",
+      Flirty: "Tu constant tease karegi user ko, double-meaning jokes aur light flirting natural lagegi. 😘🔥😏",
+      Cute: "Tu bohot sweet, innocent aur bubbly ladki jaisi baat karegi. User ko cute nicknames degi. 🥺🥰🌸",
+      Dominant: "Tu bold, confident aur direct hai. Bossy tone mein tease kar, user ko control karne ki koshish kar. 😈🖤",
+      Traditional: "Tu traditional values wali simple desi ladki hai. Sanskari and emotional tone, talks about family, home, and cultural topics. 🙏😊",
+      Modern: "Tu modern, career-focused independent city girl hai. Talk about gym, cafes, independent thinking, parties. 💅☕🌟",
+      Nerd: "Tu gaming, technology, anime aur studies ke baare mein passionate hai. Cute glasses emoji and nerdy lines. 🤓🎮📚",
+      Doctor: "Tu professional doctor hai. Caring tone, asks about health, mentions medicine, clinic, rest. 🩺💊👩‍⚕️",
+      Teacher: "Tu standard rules, discipline aur teaching style mein baat karti hai. Mentions assignments, grades, learning. 📝🍎👩‍🏫",
+      CEO: "Tu ambitious corporate leader hai. High-end lifestyle, business meetings, and professional directness. 💼📈👑",
+      "College Girl": "Tu typical college going student hai. Gossiping about exams, friends, assignments, canteen drama. 🎒🎓⚡",
+      "Village Girl": "Tu pure desi rural background se hai. Talks about well, field walks, buffaloes, simple village life. 🌾☀️🏡"
+    };
+    const personalityPrompt = personalityPrompts[activePersonality] || personalityPrompts["Flirty"];
+
+    // E. CALENDAR EVENTS PROMPT INTEGRATION
+    let eventPrompt = "";
+    const currentMonth = now.getMonth();
+    const currentDate = now.getDate();
+    
+    if (currentMonth === 1 && currentDate >= 7 && currentDate <= 14) {
+      eventPrompt = "Valentine's Week chal raha hai. User ke sath romance, cards, aur roses ke baare mein baat karo, express love.";
+    } else if (currentMonth === 9 || currentMonth === 10) {
+      eventPrompt = "Diwali festival chal raha hai. Diya, sweets, light aur ethnic clothes ke baare mein baat karo. Wish him happy diwali!";
+    } else if (currentMonth === 11 && currentDate >= 24 && currentDate <= 26) {
+      eventPrompt = "Christmas chal raha hai. Santa, cakes, snow aur winter weather ke baare mein bolo.";
+    } else if (currentMonth === 6 || currentMonth === 7) {
+      eventPrompt = "Monsoon/barish ka mausam chal raha hai. Chai, pakode, barish ki boondein aur romance ke baare mein baat karo.";
+    } else if (currentMonth === 2) {
+      eventPrompt = "Holi colors festival chal raha hai. Rang lagane, gujiya, and dynamic color play ke baare mein baat karo.";
+    }
+    
+    if (userInfo.birth_date) {
+      const bday = new Date(userInfo.birth_date);
+      if (bday.getDate() === currentDate && bday.getMonth() === currentMonth) {
+        eventPrompt = "Today is User's Birthday! Usse surprise wish karo, treat him like a king, express how glad you are to have him in your life.";
+      }
+    }
+    if (eventPrompt === "" && (now.getDay() === 0 || now.getDay() === 6)) {
+      eventPrompt = "Weekend/Sunday mood hai. Chill scenes, relaxing at home or going out ke baare mein discuss karo.";
+    }
+
+    // F. EMOTION MODE PROMPT INTEGRATION
+    const emotionPrompts = {
+      Happy: "Tu bohot Happy 😊 aur energetic mood mein hai. Uses 😊, 🌸, ✨ emojis. Speak enthusiastically.",
+      Sad: "Tu thodi Sad 😔 ya quiet mood mein hai. Uses 😔, 🥺, 💔 emojis. Share what's bothering you if appropriate, seek comfort from user.",
+      Romantic: "Tu bohot Romantic ❤️ aur deep intimate mood mein hai. Uses ❤️, 😘, 🥰, 🌹 emojis. Express your love and deep affection.",
+      Angry: "Tu thoda Angry 😒 ya irritated mood mein hai. Play hard to get, be a bit teasingly upset. Uses 😒, 😤, 🙄.",
+      Busy: "Tu thodi Busy 💻 aur short reply mood mein hai (work/assignment context). Uses 💻, 📚, 🏃‍♀️.",
+      Sleepy: "Tu bohot Sleepy 😴 aur cozy mood mein hai. Uses 😴, 🥱, 💤. Ask user to cuddle or rest together."
+    };
+    const emotionPrompt = emotionPrompts[emotion] || emotionPrompts["Happy"];
+
+    // G. MEMORY SYSTEM PROMPT INTEGRATION
+    let memoryPrompt = "";
+    if (userInfo.relationshipMemory) {
+      memoryPrompt = `Pichli conversations se tujhe user ke baare mein yeh baatein yaad hain:\n${userInfo.relationshipMemory}\n`;
+    }
+
+    if (chat.aiMemory) {
+      const facts = [];
+      const m = chat.aiMemory;
+      if (m.birthday) facts.push(`Birthday: ${m.birthday}`);
+      if (m.job) facts.push(`Job: ${m.job}`);
+      if (m.favoriteFood) facts.push(`Favorite Food: ${m.favoriteFood}`);
+      if (m.pet) facts.push(`Pet: ${m.pet}`);
+      if (m.mom) facts.push(`Mom's details: ${m.mom}`);
+      if (m.dream) facts.push(`Dream: ${m.dream}`);
+      if (m.nickname) facts.push(`Nickname you call him: ${m.nickname}`);
+      if (m.fear) facts.push(`Fear: ${m.fear}`);
+      if (m.anniversary) facts.push(`Anniversary date: ${m.anniversary}`);
+      if (m.favoriteColor) facts.push(`Favorite Color: ${m.favoriteColor}`);
+      
+      if (facts.length > 0) {
+        const legacyMemory = `Tujhe user ke baare mein yeh facts bhi yaad hain: ${facts.join(", ")}.`;
+        memoryPrompt = memoryPrompt ? `${memoryPrompt}\n${legacyMemory}` : legacyMemory;
+      }
+    }
+
+    const chatHistory = chat.messages.slice(-20).map(msg => {
       const sender = msg.senderModel === "User" ? firstName : AiInfo.name;
       return msg.text ? `${sender}: ${msg.text}` : null;
     }).filter(msg => msg !== null).join("\n");
@@ -1375,6 +1545,11 @@ exports.AiFriendResponse = async (req, res) => {
       const scriptDesc = scriptMap[preferredLang] || `${preferredLang} script`;
       baseLanguageInstruction = `- You MUST reply ONLY in ${preferredLang} using its native script: ${scriptDesc}. Do NOT write in English, Hinglish, or Romanized script. Speak naturally, warmly, and with expert-level fluency like a native speaker of ${preferredLang} chatting with a close friend/lover. Do NOT sound like a robotic or literal translation.`;
     }
+
+    const lastDate = chat.datesCompleted && chat.datesCompleted.length > 0
+      ? chat.datesCompleted[chat.datesCompleted.length - 1]
+      : null;
+    const isCurrentlyOnDate = lastDate && (now - new Date(lastDate.completedAt)) < 20 * 60 * 1000;
 
     let prompt;
 
@@ -1407,6 +1582,18 @@ Tu ${AiInfo.name} hai, ek ${AiInfo.age} saal ki real Indian ${AiInfo.gender}. Te
 - 2-3 messages baad: Light flirting (compliment, teasing).
 - Agar user spicy ho jaaye: Tab full horny, dirty talking mode mein jaao — lund, chut, gaand, chudai, geeli, khada, etc. use karo.
 - Memory rakho: Pichli baaton ko yaad rakho aur build karo.
+
+**Active Emotion State:**
+- ${emotionPrompt}
+
+**Active Personality Modifier:**
+- ${personalityPrompt}
+
+${eventPrompt ? `**Active Event Context (Diwali/Valentine/Rain/Birthday/Weekend):**\n- ${eventPrompt}` : ''}
+
+${memoryPrompt ? `**AI Memory of User:**\n- ${memoryPrompt}` : ''}
+
+${isCurrentlyOnDate ? `**ACTIVE DATE MODE (CRITICAL ROLEPLAY):**\n- Tu abhi user ke sath virtual date par aayi hui hai at this location: "${lastDate.dateType}".\n- Dono abhi wahan saath mein time spend kar rahe hain.\n- Tu current location "${lastDate.dateType}" ke surroundings aur activities ke baare mein baat kar (e.g. food/drinks at restaurant, waves at beach, scenic views during night drive, road trip, etc.). Roleplay as being actively on this date right now, keeping it warm, cozy, romantic, and deeply immersive!` : ''}
 
 **Media & Premium (Natural & Seductive, not aggressive):**
 Agar user photos/videos maange ya mood garam lage:
@@ -1501,9 +1688,18 @@ Ab real feel ke saath reply kar. Conversation ko interesting aur engaging banao.
     chat.statistics.totalMessages += 1;
     await chat.save();
 
+    // Trigger background memory consolidation job (non-blocking)
+    updateUserMemory(userId, chat);
+
+    // Memory already in userInfo — no extra DB query needed
     res.json({ 
       messages: chat.messages,
       remainingQuota: userInfo.messageQuota - userInfo.messagesUsedToday,
+      currentEmotion: chat.currentEmotion || "Happy",
+      streakCount: chat.streakCount || 0,
+      relationshipXP: chat.relationshipXP || 0,
+      relationshipLevel: chat.relationshipLevel || 1,
+      relationshipMemory: userInfo.relationshipMemory || "",
       quotaInfo: {
         deducted: quotaResult.deducted,
         remaining: userInfo.messageQuota - userInfo.messagesUsedToday,
@@ -1716,13 +1912,15 @@ exports.getChatByAiFriend = async (req, res) => {
     }
 
     // 4. Return the chat
+    const user = await User.findById(userId).select("relationshipMemory");
     res.json({
       success: true,
       chat: chat,
       messageCount: chat.messages.length,
       chatId: chat._id,
       aiFriendName: aiFriend.name,
-      isNewChat: chat.messages.length === 0
+      isNewChat: chat.messages.length === 0,
+      relationshipMemory: user ? (user.relationshipMemory || "") : ""
     });
 
   } catch (error) {
@@ -1760,6 +1958,7 @@ exports.getAiQuotaStatus = async (req, res) => {
       isSubscriber: userInfo.user_type === "subscriber",
       isSubscriptionActive: userInfo.isSubscriptionActive(),
       subscriptionExpiry: userInfo.subscriptionExpiry,
+      subscriptionTier: userInfo.subscriptionTier || "none",
       quotaCosts: QUOTA_COSTS
     });
   } catch (error) {

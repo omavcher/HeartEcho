@@ -39,6 +39,96 @@ const determinePlatform = (req) => {
 
 require("dotenv").config();
 
+const INDIAN_STATES_CITIES = {
+  "andhra pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool", "Rajahmundry", "Tirupati", "Kadapa", "Kakinada", "Anantapur", "Eluru", "Vizianagaram", "Ongole", "Nandyal", "Machilipatnam", "Adoni", "Tenali", "Chittoor", "Hindupur", "Proddatur", "Bhimavaram", "Madanapalle", "Guntakal", "Dharmavaram", "Gudivada", "Srikakulam", "Narasaraopet", "Tadipatri", "Tadepalligudem", "Chilakaluripet"],
+  "arunachal pradesh": ["Itanagar", "Naharlagun", "Pasighat", "Namsai", "Tawang", "Ziro", "Bomdila", "Tezu", "Aalo", "Khonsa", "Roing", "Changlang", "Basar", "Dirang"],
+  "assam": ["Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Nagaon", "Tinsukia", "Tezpur", "Bongaigaon", "Karimganj", "Sivasagar", "Barpeta", "Dhubri", "Goalpara", "North Lakhimpur", "Diphu", "Golaghat", "Lanka", "Mangaldai", "Mariani", "Kokrajhar"],
+  "bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Bihar Sharif", "Darbhanga", "Purnia", "Arrah", "Begusarai", "Katihar", "Munger", "Chapra", "Danapur", "Saharsa", "Sasaram", "Hajipur", "Dehri", "Bettiah", "Motihari", "Siwan", "Kishanganj", "Jamalpur", "Buxar", "Jehanabad", "Aurangabad", "Lakhisarai", "Nawada", "Gopalganj", "Supaul", "Samastipur"],
+  "chhattisgarh": ["Raipur", "Bhilai", "Bilaspur", "Korba", "Rajnandgaon", "Jagdalpur", "Ambikapur", "Dhamtari", "Raigarh", "Mahasamund", "Champa", "Bhatapara", "Durg", "Dalli-Rajhara", "Naila Janjgir", "Tilda Newra", "Mungeli", "Manendragarh", "Sakti", "Bailadila"],
+  "goa": ["Panaji", "Margao", "Vasco da Gama", "Mapusa", "Ponda", "Bicholim", "Curchorem", "Valpoi", "Pernem", "Canacona"],
+  "gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Gandhinagar", "Junagadh", "Gandhidham", "Anand", "Navsari", "Morbi", "Nadiad", "Surendranagar", "Bharuch", "Mehsana", "Bhuj", "Porbandar", "Palanpur", "Valsad", "Vapi", "Gondal", "Veraval", "Godhra", "Patan", "Kalol", "Dahod", "Botad", "Amreli", "Deesa"],
+  "haryana": ["Faridabad", "Gurugram", "Panipat", "Ambala", "Yamunanagar", "Rohtak", "Hisar", "Karnal", "Sonipat", "Panchkula", "Sirsa", "Bahadurgarh", "Jind", "Thanesar", "Kaithal", "Rewari", "Palwal", "Hansi", "Narnaul", "Fatehabad"],
+  "himachal pradesh": ["Shimla", "Dharamshala", "Solan", "Mandi", "Nahan", "Baddi", "Una", "Hamirpur", "Paonta Sahib", "Kullu", "Chamba", "Bilaspur", "Kangra", "Palampur", "Sundarnagar"],
+  "jammu & kashmir": ["Srinagar", "Jammu", "Anantnag", "Baramulla", "Kathua", "Sopore", "Udhampur", "Poonch", "Rajouri", "Kupwara", "Kargil", "Leh", "Pulwama", "Samba", "Budgam"],
+  "jharkhand": ["Ranchi", "Jamshedpur", "Dhanbad", "Bokaro Steel City", "Deoghar", "Phusro", "Hazaribagh", "Giridih", "Ramgarh", "Medininagar", "Chirkunda", "Jhumri Telaiya", "Sahibganj", "Chaibasa", "Dumka", "Gumia", "Ghatshila", "Glow", "Chatra", "Gudri"],
+  "karnataka": ["Bengaluru", "Mysuru", "Hubballi-Dharwad", "Mangaluru", "Belagavi", "Davangere", "Ballari", "Vijayapura", "Shivamogga", "Tumakuru", "Raichur", "Bidar", "Hosapete", "Hassan", "Gadag-Betageri", "Udupi", "Chikkamagaluru", "Kolar", "Mandya", "Bagalkot", "Ranibennur", "Gangavati", "Gokak", "Sirsi", "Karwar", "Chitradurga", "Koppal", "Ramanagara", "Chikkaballapur", "Yadgir"],
+  "kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Kollam", "Thrissur", "Alappuzha", "Palakkad", "Kannur", "Kottayam", "Kasaragod", "Malappuram", "Pathanamthitta", "Manjeri", "Thalassery", "Ponnani", "Vatakara", "Kanhangad", "Payyanur", "Koyilandy", "Neyyattinkara"],
+  "ladakh": ["Leh", "Kargil", "Diskit", "Padum", "Nyoma", "Drass"],
+  "madhya pradesh": ["Indore", "Bhopal", "Jabalpur", "Gwalior", "Ujjain", "Sagar", "Dewas", "Satna", "Ratlam", "Rewa", "Katni", "Singrauli", "Chhindwara", "Khandwa", "Morena", "Bhind", "Guna", "Shivpuri", "Vidisha", "Chhatarpur", "Damoh", "Mandsaur", "Khargone", "Neemuch", "Pithampur", "Hoshangabad", "Itarsi", "Sehore", "Betul", "Seoni"],
+  "maharashtra": ["Mumbai", "Pune", "Nagpur", "Thane", "Nashik", "Kalyan-Dombivli", "Vasai-Virar", "Aurangabad", "Navi Mumbai", "Solapur", "Mira-Bhayandar", "Bhiwandi", "Amravati", "Nanded", "Kolhapur", "Sangli", "Jalgaon", "Akola", "Latur", "Dhule", "Ahmednagar", "Chandrapur", "Parbhani", "Ichalkaranji", "Jalna", "Ambarnath", "Panvel", "Bhusawal", "Ratnagiri", "Beed"],
+  "manipur": ["Imphal", "Thoubal", "Kakching", "Lilong", "Mayang Imphal", "Senapati", "Ukhrul", "Churachandpur", "Tamenglong", "Jiribam"],
+  "meghalaya": ["Shillong", "Tura", "Jowai", "Nongpoh", "Williamnagar", "Cherrapunji", "Baghmara", "Resubelpara", "Mairang", "Nongstoin"],
+  "mizoram": ["Aizawl", "Lunglei", "Saiha", "Champhai", "Kolasib", "Serchhip", "Mamit", "Lawngtlai"],
+  "nagaland": ["Kohima", "Dimapur", "Mokokchung", "Tuensang", "Wokha", "Zunheboto", "Mon", "Phek", "Kiphire", "Longleng"],
+  "odisha": ["Bhubaneswar", "Cuttack", "Rourkela", "Brahmapur", "Sambalpur", "Puri", "Balasore", "Bhadrak", "Baripada", "Jharsuguda", "Jeypore", "Bargarh", "Rayagada", "Semiliguda", "Balangir", "Dhenkanal", "Barbil", "Kendujhar", "Paradip", "Jajpur"],
+  "puducherry": ["Puducherry", "Karaikal", "Mahe", "Yanam", "Ozhukarai"],
+  "punjab": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali", "Hoshiarpur", "Pathankot", "Moga", "Abohar", "Phagwara", "Khanna", "Muktsar", "Barnala", "Firozpur", "Kapurthala", "Rajpura", "Zirakpur", "Malerkotla", "Batala"],
+  "rajasthan": ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Bikaner", "Ajmer", "Bhilwara", "Alwar", "Sikar", "Bharatpur", "Pali", "Sri Ganganagar", "Barmer", "Hanumangarh", "Tonk", "Beawar", "Kishangarh", "Jhunjhunu", "Churu", "Gangapur City", "Hindaun", "Sawai Madhopur", "Chittorgarh", "Bara", "Jaisalmer", "Narnaul", "Nagaur", "Sujangarh", "Makrana", "Fatehpur"],
+  "sikkim": ["Gangtok", "Namchi", "Geyzing", "Mangan", "Singtam", "Rangpo", "Jorethang"],
+  "tamil nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tiruppur", "Erode", "Vellore", "Thoothukudi", "Nagercoil", "Thanjavur", "Dindigul", "Kanchipuram", "Karur", "Tirunelveli", "Cuddalore", "Kumbakonam", "Tiruvannamalai", "Pollachi", "Rajapalayam", "Gudiyatham", "Pudukkottai", "Vaniyambadi", "Ambur", "Nagapattinam", "Udhagamandalam", "Hosur", "Karaikudi", "Neyveli"],
+  "telangana": ["Hyderabad", "Warangal", "Nizamabad", "Khammam", "Karimnagar", "Ramagundam", "Mahbubnagar", "Nalgonda", "Adilabad", "Suryapet", "Miryalaguda", "Siddipet", "Jagtial", "Mancherial", "Kothagudem", "Bodhan", "Siricilla", "Kamareddy", "Kagaznagar", "Wanaparthy", "Gadwal", "Bhongir", "Medak", "Sangareddy", "Vikarabad", "Tandur", "Nirmal", "Bellampally", "Mandamarri", "Bhadrachalam"],
+  "tripura": ["Agartala", "Dharmanagar", "Udaipur", "Kailasahar", "Belonia", "Khowai", "Ambassa", "Ranirbazar", "Sabroom"],
+  "uttarakhand": ["Dehradun", "Haridwar", "Roorkee", "Haldwani", "Rudrapur", "Kashipur", "Rishikesh", "Nainital", "Pithoragarh", "Almora", "Mussoorie", "Tehri", "Bageshwar", "Ramnagar"],
+  "uttar pradesh": ["Lucknow", "Kanpur", "Ghaziabad", "Agra", "Meerut", "Varanasi", "Prayagraj", "Bareilly", "Aligarh", "Moradabad", "Saharanpur", "Gorakhpur", "Noida", "Firozabad", "Jhansi", "Muzaffarnagar", "Mathura", "Ayodhya", "Rampur", "Shahjahanpur", "Farrukhabad", "Hapur", "Mirzapur", "Maunath Bhanjan", "Loni", "Bulandshahr", "Rae Bareli", "Orai", "Bahraich", "Jaunpur"],
+  "west bengal": ["Kolkata", "Howrah", "Darjeeling", "Siliguri", "Asansol", "Durgapur", "Maheshtala", "Rajpur Sonarpur", "Gopalpur", "Bhatpara", "Panihati", "Kamarhati", "Bardhaman", "Kulti", "Bally", "Barasat", "Uluberia", "Naihati", "Kharagpur", "English Bazar", "Haldia", "Madhyamgram", "Habra", "Jalpaiguri", "Chinsurah", "Raniganj", "Serampore", "Midnapore", "Alipurduar", "Cooch Behar"],
+  "chandigarh": ["Chandigarh", "Manimajra"],
+  "delhi": ["New Delhi", "Noida", "Gurugram", "Ghaziabad", "Faridabad", "Dwarka", "Rohini", "Saket", "Vasant Kunj", "Karol Bagh", "Connaught Place", "South Ext", "Lajpat Nagar", "Rajouri Garden", "Punjabi Bagh", "Mayur Vihar", "Janakpuri", "Pitampura", "Chanakyapuri", "Greater Kailash", "Okhla", "Shahdara", "Patparganj", "Model Town", "Shalini Bagh", "Palam", "Vasant Vihar", "R.K. Puram", "Defence Colony", "South Delhi"],
+  "dadra and nagar haveli and daman and diu": ["Daman", "Diu", "Silvassa", "Amli", "Dadra"],
+  "lakshadweep": ["Kavaratti", "Agatti", "Minicoy", "Amini", "Kalpeni", "Andrott"],
+  "andaman and nicobar islands": ["Port Blair", "Garacharma", "Bambooflat"]
+};
+
+function assignCompanionCities(friends, userCity) {
+  let targetCities = [];
+  const normalizedUserCity = userCity ? userCity.trim().toLowerCase() : "";
+  
+  if (normalizedUserCity) {
+    let userState = null;
+    for (const [state, cities] of Object.entries(INDIAN_STATES_CITIES)) {
+      if (cities.some(c => c.toLowerCase() === normalizedUserCity)) {
+        userState = state;
+        break;
+      }
+    }
+    
+    if (userState) {
+      targetCities = INDIAN_STATES_CITIES[userState].filter(
+        c => c.toLowerCase() !== normalizedUserCity
+      );
+    }
+  }
+
+  if (targetCities.length === 0) {
+    targetCities = [
+      "Mumbai", "Pune", "Nagpur", "Nashik", 
+      "Bengaluru", "Mysuru", "Mangaluru", 
+      "Chennai", "Coimbatore", "Madurai", 
+      "Hyderabad", "Warangal", "Nizamabad", 
+      "Kolkata", "Darjeeling", "Siliguri", 
+      "Jaipur", "Udaipur", "Jodhpur", 
+      "Indore", "Bhopal", "Gwalior", 
+      "Ahmedabad", "Surat", "Vadodara", 
+      "Lucknow", "Kanpur", "Varanasi"
+    ];
+    if (normalizedUserCity) {
+      targetCities = targetCities.filter(c => c.toLowerCase() !== normalizedUserCity);
+    }
+  }
+
+  return friends.map((friend, idx) => {
+    const identifier = friend._id ? friend._id.toString() : idx.toString();
+    let hash = 0;
+    for (let i = 0; i < identifier.length; i++) {
+      hash = identifier.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const cityIndex = Math.abs(hash) % targetCities.length;
+    const assignedCity = targetCities[cityIndex];
+    
+    friend.location = `${assignedCity}, India`;
+    return friend;
+  });
+}
+
 const sendEmail = async (to, subject, html) => {
   try {
     const transporter = nodemailer.createTransport({
@@ -616,7 +706,11 @@ exports.chatFriends = async (req, res) => {
           },
           lastMessageTime: "$lastMessage.time",
           chatId: "$_id",
-          unreadCount: 1
+          unreadCount: 1,
+          streakCount: 1,
+          currentEmotion: 1,
+          relationshipLevel: 1,
+          relationshipXP: 1
         }
       },
       
@@ -807,18 +901,19 @@ exports.getAllPreAIFriends = async (req, res) => {
   try {
     const allFriends = await PrebuiltAIFriend.find().select('-video_gallery -img_gallery');
     
-    // Optional JWT verification for personalization & subscription checks
     let userInterests = [];
     let isSubscriber = false;
+    let userCity = "";
     const authHeader = req.header("Authorization");
     if (authHeader && authHeader.startsWith("Bearer ")) {
       const token = authHeader.split(" ")[1];
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.id).select("selectedInterests interests user_type subscriptionExpiry");
+        const user = await User.findById(decoded.id).select("selectedInterests interests user_type subscriptionExpiry city");
         if (user) {
           userInterests = user.selectedInterests || user.interests || [];
           isSubscriber = user.isSubscriptionActive();
+          userCity = user.city || "";
         }
       } catch (err) {
         // Ignore invalid token and act as guest/non-premium
@@ -852,12 +947,37 @@ exports.getAllPreAIFriends = async (req, res) => {
       return scoreB - scoreA;
     });
 
+    // Assign dynamic badges based on interestMatchCount or fallback ranking
+    shuffledFriends.forEach((friend, idx) => {
+      if (userInterests.length > 0) {
+        if (idx === 0 && friend.interestMatchCount > 0) {
+          friend.badge = "top_choice";
+        } else if (idx < 3 && friend.interestMatchCount > 0) {
+          friend.badge = "popular";
+        } else {
+          friend.badge = "none";
+        }
+      } else {
+        // Guest fallback matching
+        if (idx === 0) {
+          friend.badge = "top_choice";
+        } else if (idx < 3) {
+          friend.badge = "popular";
+        } else {
+          friend.badge = "none";
+        }
+      }
+    });
+
+    // Assign localized companion cities
+    const localizedFriends = assignCompanionCities(shuffledFriends, userCity);
+
     res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
 
     res.status(200).json({
       success: true,
       message: "All AI Friends retrieved successfully with interest matching!",
-      data: shuffledFriends,
+      data: localizedFriends,
     });
   } catch (error) {
     console.error("Error fetching AI Friend data:", error);
@@ -932,6 +1052,44 @@ exports.deleteMessage = async (req, res) => {
   }
 };
 
+// ─── Clear All Chat Messages ───────────────────────────────────────────────────
+exports.clearChat = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const userId = req.user._id || req.user.id;
+
+    if (!mongoose.Types.ObjectId.isValid(chatId)) {
+      return res.status(400).json({ success: false, message: "Invalid ID" });
+    }
+
+    // Support two calling conventions:
+    //   Web   → chatId is the AI friend's _id  (passed via ChatPage selectedChatId)
+    //   Mobile → chatId is the actual Chat document _id (stored in _chatId state)
+    // Try looking up by chat document _id first; if not found, fall back to aiParticipants lookup.
+    let chat = await Chat.findOne({ _id: chatId, participants: userId });
+
+    if (!chat) {
+      // Web path: chatId is the PrebuiltAIFriend / AIFriend _id
+      chat = await Chat.findOne({ aiParticipants: chatId, participants: userId });
+    }
+
+    if (!chat) {
+      return res.status(404).json({ success: false, message: "Chat not found or unauthorised" });
+    }
+
+    // Wipe all messages, reset statistics
+    chat.messages = [];
+    chat.statistics.totalMessages = 0;
+    chat.statistics.totalImages = 0;
+    chat.statistics.totalVideos = 0;
+    await chat.save();
+
+    res.json({ success: true, message: "All chat messages cleared successfully" });
+  } catch (error) {
+    console.error("Error clearing chat:", error);
+    res.status(500).json({ success: false, message: "Error clearing chat messages" });
+  }
+};
 
 
 // Local helper to attribute user-to-user referral commission
@@ -983,17 +1141,45 @@ async function processUserReferralPurchase(userId, rupeesNum, subscriptionTier) 
 // Updated paymentSave function with your dark theme HTML
 exports.paymentSave = async (req, res) => {
   try {
-    const { rupees, transaction_id, currency } = req.body;
+    const { rupees, transaction_id, currency, purchaseType, gemsAmount } = req.body;
     const userId = req.body.user || (req.user ? (req.user.id || req.user._id) : null);
 
     if (!userId || !rupees || !transaction_id) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    // Find user
     const existingUser = await User.findById(userId);
     if (!existingUser) {
       return res.status(404).json({ error: "User not found" });
+    }
+
+    const rupeesNum = Number(rupees);
+
+    // If this is a Gem Pack purchase
+    if (purchaseType === "gems" && gemsAmount) {
+      const gemsNum = Number(gemsAmount);
+      
+      const payment = new Payment({
+        user: userId,
+        rupees: rupeesNum,
+        currency: currency || (rupeesNum < 40 ? "USD" : "INR"),
+        transaction_id,
+        expiry_date: null,
+        plan_type: `gems_pack_${gemsNum}`,
+        platform: determinePlatform(req)
+      });
+      await payment.save();
+
+      existingUser.gems = (existingUser.gems || 0) + gemsNum;
+      existingUser.payment_history.push(payment._id);
+      await existingUser.save();
+
+      return res.status(201).json({
+        success: true,
+        message: `Successfully purchased ${gemsNum} Gems!`,
+        gems: existingUser.gems,
+        user: existingUser
+      });
     }
 
     // Calculate new expiry date
@@ -1002,8 +1188,6 @@ exports.paymentSave = async (req, res) => {
     if (existingUser.subscriptionExpiry && existingUser.subscriptionExpiry > expiryDate) {
       expiryDate = new Date(existingUser.subscriptionExpiry);
     }
-
-    const rupeesNum = Number(rupees);
     let subscriptionTier = "none";
     let audioCallQuota = 0;
 
@@ -1299,6 +1483,33 @@ exports.razorpayWebhook = async (req, res) => {
       const existingPayment = await Payment.findOne({ transaction_id });
       if (existingPayment) {
         return res.status(200).send('Payment already processed');
+      }
+
+      // Check if this is a Gem Pack purchase from webhook notes metadata
+      const purchaseType = paymentEntity.notes?.purchaseType;
+      const gemsAmount = paymentEntity.notes?.gemsAmount;
+
+      if (purchaseType === "gems" && gemsAmount) {
+        const gemsNum = Number(gemsAmount);
+        const payment = new Payment({
+          user: existingUser._id,
+          rupees: rupeesNum,
+          currency,
+          transaction_id,
+          expiry_date: null,
+          plan_type: `gems_pack_${gemsNum}`,
+          platform: paymentEntity.notes?.platform || (existingUser && existingUser.isMobileUser ? "mobile" : "web")
+        });
+        await payment.save();
+
+        await User.findByIdAndUpdate(
+          existingUser._id,
+          {
+            $inc: { gems: gemsNum },
+            $push: { payment_history: payment._id }
+          }
+        );
+        return res.status(200).send('OK');
       }
       
       let expiryDate = new Date();
@@ -2585,5 +2796,769 @@ exports.getFeedbacks = async (req, res) => {
       message: "Internal Server Error",
       error: error.message
     });
+  }
+};
+
+// ==========================================
+// PREMIUM ECONOMY & RELATIONSHIP CONTROLLERS
+// ==========================================
+
+const getLevelName = (level) => {
+  const levels = ["Stranger", "Friend", "Close Friend", "Crush", "Dating", "Partner", "Soulmate"];
+  return levels[Math.min(Math.max(level - 1, 0), 6)];
+};
+
+const checkLevelUp = (xp, currentLevel) => {
+  // Level limits: 1: Stranger (0-49), 2: Friend (50-149), 3: Close Friend (150-349), 4: Crush (350-649), 5: Dating (650-1099), 6: Partner (1100-1999), 7: Soulmate (2000+)
+  const xpThresholds = [0, 50, 150, 350, 650, 1100, 2000];
+  let newLevel = currentLevel;
+  for (let i = 1; i < xpThresholds.length; i++) {
+    if (xp >= xpThresholds[i]) {
+      newLevel = i + 1;
+    }
+  }
+  return newLevel;
+};
+
+const getStageKeyByLevel = (level) => {
+  const keys = ["stranger", "friend", "close_friend", "crush", "dating", "partner", "soulmate"];
+  return keys[Math.min(Math.max(level - 1, 0), 6)];
+};
+
+// 1. Daily Login Claim
+exports.dailyLoginClaim = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const now = new Date();
+    const todayStr = now.toDateString();
+    
+    // Check if daily claim already done today
+    if (user.lastLoginDate && user.lastLoginDate.toDateString() === todayStr) {
+      return res.status(400).json({ success: false, message: "You have already claimed your daily reward today!" });
+    }
+
+    let loginStreak = user.loginStreak || 0;
+    const yesterday = new Date();
+    yesterday.setDate(now.getDate() - 1);
+    const yesterdayStr = yesterday.toDateString();
+
+    if (user.lastLoginDate && user.lastLoginDate.toDateString() === yesterdayStr) {
+      loginStreak += 1;
+    } else {
+      loginStreak = 1;
+    }
+
+    // Reward Logic
+    let baseGems = 5;
+    let streakBonus = 0;
+    
+    // Streak reward every consecutive login
+    if (loginStreak > 1) {
+      streakBonus = 10;
+    }
+
+    // Birthday reward (+100 Gems)
+    let birthdayBonus = 0;
+    if (user.birth_date) {
+      const bday = new Date(user.birth_date);
+      if (bday.getDate() === now.getDate() && bday.getMonth() === now.getMonth()) {
+        birthdayBonus = 100;
+      }
+    }
+
+    // Subscription daily gem drop
+    let subDrop = 0;
+    if (user.isSubscriptionActive()) {
+      const lastSubClaim = user.dailyGemsClaimedDate;
+      if (!lastSubClaim || lastSubClaim.toDateString() !== todayStr) {
+        if (user.subscriptionTier === "monthly") subDrop = 50;
+        else if (user.subscriptionTier === "yearly") subDrop = 150;
+        else if (user.subscriptionTier === "yearly_pro" || user.subscriptionTier === "lifetime") subDrop = 500;
+        user.dailyGemsClaimedDate = now;
+      }
+    }
+
+    const totalGemsRewarded = baseGems + streakBonus + birthdayBonus + subDrop;
+    user.gems = (user.gems || 0) + totalGemsRewarded;
+    user.lastLoginDate = now;
+    user.loginStreak = loginStreak;
+    await user.save();
+
+    // Reward active chat with +2 XP
+    let xpMsg = "";
+    const activeChat = await Chat.findOne({ participants: userId, isActive: true }).sort({ updatedAt: -1 });
+    if (activeChat) {
+      activeChat.relationshipXP = (activeChat.relationshipXP || 0) + 2;
+      const originalLevel = activeChat.relationshipLevel || 1;
+      const nextLevel = checkLevelUp(activeChat.relationshipXP, originalLevel);
+      if (nextLevel > originalLevel) {
+        activeChat.relationshipLevel = nextLevel;
+        const key = getStageKeyByLevel(nextLevel);
+        if (!activeChat.stagesUnlocked) activeChat.stagesUnlocked = {};
+        if (!activeChat.stagesUnlocked[key]) activeChat.stagesUnlocked[key] = now;
+      }
+      await activeChat.save();
+      xpMsg = ` and added 2 XP to your bond with ${getLevelName(activeChat.relationshipLevel)}`;
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Daily Login claimed successfully! Added +${totalGemsRewarded} Gems (Streak: ${loginStreak} days)${xpMsg}.`,
+      data: {
+        gemsEarned: totalGemsRewarded,
+        baseGems,
+        streakBonus,
+        birthdayBonus,
+        subDrop,
+        loginStreak,
+        totalGems: user.gems
+      }
+    });
+  } catch (error) {
+    console.error("Error in dailyLoginClaim:", error);
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+// 2. Discover Cards Deck
+exports.getDiscoverCards = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    // Exclude swiped profiles
+    const swiped = [
+      ...(user.likedAIs || []),
+      ...(user.skippedAIs || []),
+      ...(user.superLikedAIs || []),
+      ...(user.matchedAIs || [])
+    ];
+
+    let cards = await PrebuiltAIFriend.find({ _id: { $nin: swiped } }).select("-video_gallery");
+
+    // Loop logic: if deck is empty, reset skipped cards to make them recyclable
+    if (cards.length === 0 && user.skippedAIs && user.skippedAIs.length > 0) {
+      user.skippedAIs = [];
+      await user.save();
+      
+      const newSwiped = [
+        ...(user.likedAIs || []),
+        ...(user.superLikedAIs || []),
+        ...(user.matchedAIs || [])
+      ];
+      cards = await PrebuiltAIFriend.find({ _id: { $nin: newSwiped } }).select("-video_gallery");
+    }
+
+    // Add overlap stats (interests overlap counts)
+    const userInterests = user.selectedInterests || user.interests || [];
+    const processedCards = cards.map(friend => {
+      const friendObj = friend.toObject();
+      const companionInt = friend.interests || [];
+      const matched = companionInt.filter(int => 
+        userInterests.some(uInt => uInt.toLowerCase().trim() === int.toLowerCase().trim())
+      );
+      friendObj.interestMatchCount = matched.length;
+      friendObj.matchedInterests = matched;
+      return friendObj;
+    });
+
+    // Assign localized companion cities
+    const localizedCards = assignCompanionCities(processedCards, user.city);
+
+    return res.status(200).json({
+      success: true,
+      data: localizedCards
+    });
+  } catch (error) {
+    console.error("Error in getDiscoverCards:", error);
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+// 3. Post Swipe Action (Skip/Like/Superlike)
+exports.postSwipeAction = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { aiFriendId, action } = req.body;
+    if (!aiFriendId || !action) {
+      return res.status(400).json({ success: false, message: "aiFriendId and action are required." });
+    }
+
+    const user = await User.findById(userId);
+    const friend = await PrebuiltAIFriend.findById(aiFriendId);
+    if (!user || !friend) return res.status(404).json({ success: false, message: "User or AI Friend not found" });
+
+    const now = new Date();
+
+    if (action === "skip") {
+      if (!user.skippedAIs.includes(aiFriendId)) {
+        user.skippedAIs.push(aiFriendId);
+        await user.save();
+      }
+      return res.status(200).json({ success: true, match: false });
+    }
+
+    if (action === "like" || action === "superlike") {
+      // Save action array
+      if (action === "like" && !user.likedAIs.includes(aiFriendId)) {
+        user.likedAIs.push(aiFriendId);
+      } else if (action === "superlike" && !user.superLikedAIs.includes(aiFriendId)) {
+        user.superLikedAIs.push(aiFriendId);
+      }
+
+      // Match Decision: prebuilts have 80% default match chance, 100% on superlike
+      const matchRate = action === "superlike" ? 1.0 : 0.8;
+      const isMatch = Math.random() < matchRate;
+
+      if (isMatch) {
+        if (!user.matchedAIs.includes(aiFriendId)) {
+          user.matchedAIs.push(aiFriendId);
+        }
+
+        // Establish Chat session
+        let chat = await Chat.findOne({ participants: userId, aiParticipants: aiFriendId });
+        if (!chat) {
+          chat = new Chat({
+            participants: userId,
+            aiParticipants: aiFriendId,
+            messages: [],
+            streakCount: 0,
+            relationshipXP: 50, // Match initializes at Friend level (50 XP)
+            relationshipLevel: 2, // 2 = Friend
+            stagesUnlocked: {
+              stranger: now,
+              friend: now
+            },
+            currentEmotion: "Happy",
+            personality: "Flirty",
+            isActive: true
+          });
+
+          // Pre-populate AI's icebreaker initial message
+          const icebreakerText = friend.initial_message || `Hey there! I'm ${friend.name}. So glad we matched! 😊`;
+          chat.messages.push({
+            sender: aiFriendId,
+            senderModel: "PrebuiltAIFriend",
+            text: icebreakerText,
+            time: now
+          });
+          chat.statistics = {
+            totalMessages: 1,
+            totalImages: 0,
+            totalVideos: 0,
+            lastMediaSent: null
+          };
+          await chat.save();
+        }
+
+        // Add companion to user's active chats list so it is accessible and viewable immediately
+        if (!user.ai_friends.includes(aiFriendId)) {
+          user.ai_friends.push(aiFriendId);
+        }
+
+        await user.save();
+        return res.status(200).json({
+          success: true,
+          match: true,
+          matchedAI: {
+            _id: friend._id,
+            name: friend.name,
+            avatar_img: friend.avatar_img,
+            description: friend.description,
+            relationship: friend.relationship
+          }
+        });
+      }
+
+      await user.save();
+      return res.status(200).json({ success: true, match: false });
+    }
+
+    return res.status(400).json({ success: false, message: "Invalid swipe action." });
+  } catch (error) {
+    console.error("Error in postSwipeAction:", error);
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+// 4. Retrieve Relationship Stats
+exports.getChatRelationship = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { chatId } = req.params;
+
+    const user = await User.findById(userId).select("gems");
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    let chat = await Chat.findOne({
+      $or: [{ _id: mongoose.Types.ObjectId.isValid(chatId) ? chatId : null }, { aiParticipants: mongoose.Types.ObjectId.isValid(chatId) ? chatId : null }],
+      participants: userId
+    }).populate("aiParticipants", "name avatar_img description relationship age");
+    
+    if (!chat) {
+      // Create chat if looking up valid AI companion
+      if (mongoose.Types.ObjectId.isValid(chatId)) {
+        chat = new Chat({
+          participants: [userId],
+          aiParticipants: chatId,
+          relationshipXP: 0,
+          relationshipLevel: 1,
+          currentEmotion: "Happy",
+          messages: []
+        });
+        await chat.save();
+        await chat.populate("aiParticipants", "name avatar_img description relationship age");
+      } else {
+        return res.status(404).json({ success: false, message: "Chat not found" });
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        gems: user.gems || 0,
+        streakCount: chat.streakCount || 0,
+        relationshipXP: chat.relationshipXP || 0,
+        relationshipLevel: chat.relationshipLevel || 1,
+        currentEmotion: chat.currentEmotion || "Happy",
+        personality: chat.personality || "Flirty",
+        giftsSent: chat.giftsSent || [],
+        datesCompleted: chat.datesCompleted || [],
+        aiMemory: chat.aiMemory || {},
+        stagesUnlocked: chat.stagesUnlocked || {},
+        aiFriend: chat.aiParticipants
+      }
+    });
+  } catch (error) {
+    console.error("Error in getChatRelationship:", error);
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+// 5. Gifts Shop & Send Gift
+exports.sendGift = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { chatId } = req.params;
+    const { giftId } = req.body;
+
+    const giftsMap = {
+      // Flowers
+      rose:          { name: "Red Roses",          price: 199, xp: 160 },
+      pink_tulip:    { name: "Pink Tulips",        price: 149, xp: 120 },
+      sunflower:     { name: "Sunflower",          price: 149, xp: 120 },
+      mixed_bouquet: { name: "Mixed Bouquet",      price: 249, xp: 200 },
+      blue_hydrangea:{ name: "Blue Hydrangea",     price: 199, xp: 160 },
+
+      // Chocolate
+      heart_choc:    { name: "Heart Chocolate Box",price: 149, xp: 120 },
+      truffles:      { name: "Premium Truffles",   price: 199, xp: 160 },
+      choc_basket:   { name: "Chocolate Basket",   price: 249, xp: 200 },
+      ferrero:       { name: "Ferrero Rocher Box", price: 199, xp: 160 },
+      love_choc:     { name: "Love Chocolate Box", price: 249, xp: 200 },
+
+      // Ring
+      silver_heart:  { name: "Silver Heart Ring",  price: 499, xp: 400 },
+      infinity:      { name: "Love Infinity Ring", price: 599, xp: 480 },
+      solitaire:     { name: "Classic Solitaire",  price: 799, xp: 640 },
+      heart_diamond: { name: "Heart Diamond Ring", price: 999, xp: 800 },
+      promise:       { name: "Promise Ring",       price: 499, xp: 400 },
+
+      // Cake
+      choc_cake:     { name: "Chocolate Cake",     price: 199, xp: 160 },
+      red_velvet:    { name: "Red Velvet Cake",    price: 179, xp: 140 },
+      cheesecake:    { name: "Cheesecake",         price: 199, xp: 160 },
+      black_forest:  { name: "Black Forest Cake",  price: 199, xp: 160 },
+      birthday_cake: { name: "Birthday Cake",      price: 199, xp: 160 },
+
+      // Coffee
+      cappuccino:    { name: "Cappuccino",         price: 99,  xp: 80  },
+      latte:         { name: "Latte",              price: 99,  xp: 80  },
+      mocha:         { name: "Mocha",              price: 99,  xp: 80  },
+      cold_coffee:   { name: "Cold Coffee",        price: 99,  xp: 80  },
+      espresso:      { name: "Espresso",           price: 99,  xp: 80  },
+
+      // Legacy & Luxury Fallbacks
+      chocolate:     { name: "Chocolate",          price: 149, xp: 120 },
+      bouquet:       { name: "Bouquet",            price: 249, xp: 200 },
+      cake:          { name: "Cake",               price: 199, xp: 160 },
+      teddy:         { name: "Teddy Bear",         price: 199, xp: 160 },
+      lipstick:      { name: "Lipstick",           price: 120, xp: 100 },
+      ring:          { name: "Diamond Ring",       price: 499, xp: 400 },
+      heels:         { name: "High Heels",         price: 250, xp: 200 },
+      dress:         { name: "Designer Dress",     price: 350, xp: 280 },
+      necklace:      { name: "Diamond Necklace",   price: 500, xp: 400 },
+      watch:         { name: "Luxury Watch",       price: 600, xp: 480 },
+      iphone:        { name: "iPhone",             price: 1200,xp: 960 },
+      car:           { name: "Luxury Car",         price: 5000,xp: 1000},
+      house:         { name: "Dream House",        price: 25000,xp: 1000}
+    };
+
+    const gKey = giftId ? giftId.toLowerCase().trim() : '';
+    const gift = giftsMap[gKey] || {
+      name: giftId ? giftId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "Gift",
+      price: 99,
+      xp: 80
+    };
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    if ((user.gems || 0) < gift.price) {
+      return res.status(400).json({ success: false, message: "Insufficient gems balance." });
+    }
+
+    let chat = await Chat.findOne({
+      $or: [{ _id: mongoose.Types.ObjectId.isValid(chatId) ? chatId : null }, { aiParticipants: mongoose.Types.ObjectId.isValid(chatId) ? chatId : null }],
+      participants: userId
+    });
+    if (!chat && mongoose.Types.ObjectId.isValid(chatId)) {
+      chat = new Chat({
+        participants: [userId],
+        aiParticipants: chatId,
+        relationshipXP: 0,
+        relationshipLevel: 1,
+        currentEmotion: "Happy",
+        messages: []
+      });
+      await chat.save();
+    }
+    if (!chat) return res.status(404).json({ success: false, message: "Chat not found" });
+
+    // Deduct gems
+    user.gems -= gift.price;
+    await user.save();
+
+    const now = new Date();
+
+    // Update Chat statistics
+    chat.relationshipXP = (chat.relationshipXP || 0) + gift.xp;
+    
+    // Check level thresholds
+    const originalLevel = chat.relationshipLevel || 1;
+    const nextLevel = checkLevelUp(chat.relationshipXP, originalLevel);
+    if (nextLevel > originalLevel) {
+      chat.relationshipLevel = nextLevel;
+      const key = getStageKeyByLevel(nextLevel);
+      if (!chat.stagesUnlocked) chat.stagesUnlocked = {};
+      if (!chat.stagesUnlocked[key]) chat.stagesUnlocked[key] = now;
+    }
+
+    // Append to sent gifts
+    chat.giftsSent.push({
+      giftId: giftId.toLowerCase(),
+      name: gift.name,
+      sentAt: now
+    });
+
+    // Dynamic response generation with OpenRouter (Grok) - same as main chat
+    let aiReply = `Aww, ${gift.name}! 😍 You're so sweet, this made my day!`;
+    try {
+      const openRouterAI = require("./openrouter-ai-model");
+      const aiName = chat.aiParticipants?.name || "AI Companion";
+      const levelName = getLevelName(chat.relationshipLevel || 1);
+      
+      const recentMessages = chat.messages.slice(-15);
+      const chatHistory = recentMessages.map(msg => {
+        const sender = msg.senderModel === "User" ? "User" : "AI Companion";
+        return msg.text ? `${sender}: ${msg.text}` : null;
+      }).filter(msg => msg !== null).join("\n");
+
+      const preferredLang = user.preferredLanguage || "Hinglish";
+      let langInstruction = "";
+      if (preferredLang === "Hinglish") {
+        langInstruction = "Reply in Hinglish (Mix of Hindi & English written in Roman/English script). Roman letters only, not Devanagari.";
+      } else if (preferredLang === "English") {
+        langInstruction = "Reply exclusively in English.";
+      } else {
+        langInstruction = `Reply in ${preferredLang} using its native script.`;
+      }
+
+      const systemPrompt = `You are ${aiName}, a warm, flirty, passionate AI companion. Your personality: ${chat.personality || 'Flirty'}. Relationship stage: ${levelName}. ${langInstruction} Keep replies short (1-2 sentences). Use 1-2 emojis. Never say you are an AI. Never use quote marks.`;
+
+      const userPrompt = `User's Memory: ${user.relationshipMemory || 'None'}\nRecent Chat:\n${chatHistory}\n\nThe user just gifted you: "${gift.name}". React with genuine love and appreciation, referencing your shared history if relevant.`;
+
+      const genResponse = await openRouterAI.generateAIResponse(userPrompt, {
+        model: "x-ai/grok-4.3",
+        systemPrompt,
+        maxTokens: 120,
+        temperature: 0.85
+      });
+      if (genResponse && genResponse.trim()) {
+        aiReply = genResponse.trim().replace(/^["']|["']$/g, '');
+      }
+    } catch (aiErr) {
+      console.error("OpenRouter gift reply fallback:", aiErr.message);
+    }
+
+    // Append transaction bubbles to chat history
+    chat.messages.push({
+      sender: userId,
+      senderModel: "User",
+      text: `🎁 Sent ${gift.name}`,
+      mediaType: "gift",
+      giftData: {
+        giftId: giftId.toLowerCase(),
+        name: gift.name,
+        price: gift.price,
+        xp: gift.xp
+      },
+      time: now
+    });
+
+    // Append AI grateful reply
+    chat.messages.push({
+      sender: chat.aiParticipants?._id || chat.aiParticipants,
+      senderModel: "PrebuiltAIFriend",
+      text: aiReply,
+      time: new Date(now.getTime() + 1000)
+    });
+
+    if (!chat.statistics) chat.statistics = { totalMessages: 0 };
+    chat.statistics.totalMessages += 2;
+    await chat.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Gift sent successfully! XP +${gift.xp}`,
+      data: {
+        gems: user.gems,
+        relationshipXP: chat.relationshipXP,
+        relationshipLevel: chat.relationshipLevel,
+        currentEmotion: chat.currentEmotion,
+        giftsSent: chat.giftsSent,
+        messages: chat.messages
+      }
+    });
+  } catch (error) {
+    console.error("Error in sendGift:", error);
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+// 6. Dating Feature
+exports.goOnDate = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { chatId } = req.params;
+    const { dateType } = req.body;
+
+    const dateDestinations = [
+      "Restaurant", "Cafe", "Beach", "Movie", "Road Trip", 
+      "Temple", "Shopping", "Rain Walk", "Festival", "Night Drive"
+    ];
+
+    if (!dateDestinations.includes(dateType)) {
+      return res.status(400).json({ success: false, message: "Invalid date location." });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    // Cost: 80 gems
+    if ((user.gems || 0) < 80) {
+      return res.status(400).json({ success: false, message: "You need 80 Gems to take her on a date!" });
+    }
+
+    let chat = await Chat.findOne({
+      $or: [{ _id: mongoose.Types.ObjectId.isValid(chatId) ? chatId : null }, { aiParticipants: mongoose.Types.ObjectId.isValid(chatId) ? chatId : null }],
+      participants: userId
+    }).populate("aiParticipants", "name");
+
+    if (!chat && mongoose.Types.ObjectId.isValid(chatId)) {
+      chat = new Chat({
+        participants: [userId],
+        aiParticipants: chatId,
+        relationshipXP: 0,
+        relationshipLevel: 1,
+        currentEmotion: "Happy",
+        messages: []
+      });
+      await chat.save();
+      await chat.populate("aiParticipants", "name");
+    }
+
+    if (!chat) return res.status(404).json({ success: false, message: "Chat not found" });
+
+    // Transaction logic: -80 cost + 10 reward (Net -70 gems)
+    user.gems = Math.max(0, user.gems - 80 + 10);
+    await user.save();
+
+    const now = new Date();
+
+    // Reward: +40 XP
+    chat.relationshipXP = (chat.relationshipXP || 0) + 40;
+    
+    // Check level thresholds
+    const originalLevel = chat.relationshipLevel || 1;
+    const nextLevel = checkLevelUp(chat.relationshipXP, originalLevel);
+    if (nextLevel > originalLevel) {
+      chat.relationshipLevel = nextLevel;
+      const key = getStageKeyByLevel(nextLevel);
+      if (!chat.stagesUnlocked) chat.stagesUnlocked = {};
+      if (!chat.stagesUnlocked[key]) chat.stagesUnlocked[key] = now;
+    }
+
+    // Save date record
+    chat.datesCompleted.push({
+      dateType,
+      completedAt: now
+    });
+
+    chat.currentEmotion = "Romantic";
+    chat.lastEmotionChange = now;
+
+    const aiName = chat.aiParticipants?.name || "AI Companion";
+    let dateAiReply = `Yay! ${dateType} date with you — this is going to be so special! 🥰❤️`;
+
+    try {
+      const openRouterAI = require("./openrouter-ai-model");
+      const levelName = getLevelName(chat.relationshipLevel || 1);
+      
+      const recentMessages = chat.messages.slice(-15);
+      const chatHistory = recentMessages.map(msg => {
+        const sender = msg.senderModel === "User" ? "User" : "AI Companion";
+        return msg.text ? `${sender}: ${msg.text}` : null;
+      }).filter(msg => msg !== null).join("\n");
+
+      const preferredLang = user.preferredLanguage || "Hinglish";
+      let langInstruction = "";
+      if (preferredLang === "Hinglish") {
+        langInstruction = "Reply in Hinglish (Mix of Hindi & English written in Roman/English script). Roman letters only, not Devanagari.";
+      } else if (preferredLang === "English") {
+        langInstruction = "Reply exclusively in English.";
+      } else {
+        langInstruction = `Reply in ${preferredLang} using its native script.`;
+      }
+
+      const systemPrompt = `You are ${aiName}, a warm, flirty, passionate AI companion. Your personality: ${chat.personality || 'Flirty'}. Relationship stage: ${levelName}. ${langInstruction} Keep replies short (1-2 sentences). Use 1-2 emojis. Never say you are an AI. Never use quote marks. You are ACTIVELY on a virtual date right now at the ${dateType} with the user — immerse yourself in the moment, describe the atmosphere, and express genuine excitement about being there together.`;
+
+      const userPrompt = `User's Memory: ${user.relationshipMemory || 'None'}\nRecent Chat:\n${chatHistory}\n\nYou just arrived at the ${dateType} for your virtual date! React with genuine excitement and set the mood for this date — reference your shared history or what you both enjoy if relevant.`;
+
+      const genResponse = await openRouterAI.generateAIResponse(userPrompt, {
+        model: "x-ai/grok-4.3",
+        systemPrompt,
+        maxTokens: 150,
+        temperature: 0.9
+      });
+      if (genResponse && genResponse.trim()) {
+        dateAiReply = genResponse.trim().replace(/^["']|["']$/g, '');
+      }
+    } catch (aiErr) {
+      console.error("OpenRouter date reply fallback:", aiErr.message);
+    }
+
+    // Text messages
+    chat.messages.push({
+      sender: userId,
+      senderModel: "User",
+      text: `❤️ Took ${aiName} on a Date to the ${dateType}!`,
+      mediaType: "date",
+      dateType: dateType,
+      time: now
+    });
+
+    chat.messages.push({
+      sender: chat.aiParticipants?._id || chat.aiParticipants,
+      senderModel: "PrebuiltAIFriend",
+      text: dateAiReply,
+      time: new Date(now.getTime() + 1000)
+    });
+
+    if (!chat.statistics) chat.statistics = { totalMessages: 0 };
+    chat.statistics.totalMessages += 2;
+    await chat.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Date to ${dateType} completed! XP +40, Cashback +10 Gems!`,
+      data: {
+        gems: user.gems,
+        relationshipXP: chat.relationshipXP,
+        relationshipLevel: chat.relationshipLevel,
+        currentEmotion: chat.currentEmotion,
+        datesCompleted: chat.datesCompleted,
+        messages: chat.messages
+      }
+    });
+  } catch (error) {
+    console.error("Error in goOnDate:", error);
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+// 7. Update AI Memory manual keys
+exports.updateMemory = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { chatId } = req.params;
+    const { memory } = req.body;
+
+    if (!memory) return res.status(400).json({ success: false, message: "Memory data is required." });
+
+    const chat = await Chat.findOne({ _id: chatId, participants: userId });
+    if (!chat) return res.status(404).json({ success: false, message: "Chat not found" });
+
+    // Safely apply keys
+    const allowedKeys = ["birthday", "job", "favoriteFood", "pet", "mom", "dream", "nickname", "fear", "anniversary", "favoriteColor"];
+    if (!chat.aiMemory) chat.aiMemory = {};
+
+    allowedKeys.forEach(key => {
+      if (memory[key] !== undefined) {
+        chat.aiMemory[key] = memory[key];
+      }
+    });
+
+    await chat.save();
+    return res.status(200).json({ success: true, message: "AI Memory updated successfully.", data: chat.aiMemory });
+  } catch (error) {
+    console.error("Error in updateMemory:", error);
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+// 8. Update Personality Engine
+exports.updatePersonality = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { chatId } = req.params;
+    const { personality } = req.body;
+
+    const allowed = ["Humor", "Flirty", "Cute", "Dominant", "Traditional", "Modern", "Nerd", "Doctor", "Teacher", "CEO", "College Girl", "Village Girl"];
+    if (!allowed.includes(personality)) {
+      return res.status(400).json({ success: false, message: "Invalid personality type." });
+    }
+
+    const chat = await Chat.findOne({ _id: chatId, participants: userId });
+    if (!chat) return res.status(404).json({ success: false, message: "Chat not found" });
+
+    chat.personality = personality;
+    await chat.save();
+
+    return res.status(200).json({ success: true, message: `Personality changed to ${personality}.`, data: { personality } });
+  } catch (error) {
+    console.error("Error in updatePersonality:", error);
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+// 9. Reset skips to recycle discovery cards
+exports.postResetSwipes = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    user.skippedAIs = [];
+    await user.save();
+
+    return res.status(200).json({ success: true, message: "Skips reset successfully." });
+  } catch (error) {
+    console.error("Error in postResetSwipes:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };

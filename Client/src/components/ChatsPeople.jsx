@@ -2,11 +2,9 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import axios from "axios";
-import { Search, Crown, MessageSquare, X, Check, CheckCheck } from "lucide-react";
+import { Search, Crown, MessageSquare, X } from "lucide-react";
 import api from "../config/api";
 
-
-// --- MOCK NOTIFICATION COMPONENT ---
 const PopNoti = ({ message, type, isVisible, onClose }) => {
   if (!isVisible) return null;
   return (
@@ -17,407 +15,234 @@ const PopNoti = ({ message, type, isVisible, onClose }) => {
   );
 };
 
-// --- MAIN COMPONENT ---
+// Relationship levels mapped by XP
+const RELATION_LEVELS = [
+  { min: 0,    max: 49,       label: 'Stranger',    emoji: '👋', color: '#888888', ring: 'rgba(136,136,136,0.45)' },
+  { min: 50,   max: 149,      label: 'Friend',      emoji: '😊', color: '#4fc3f7', ring: 'rgba(79,195,247,0.5)'  },
+  { min: 150,  max: 349,      label: 'Close Friend', emoji: '🤗', color: '#81c784', ring: 'rgba(129,199,132,0.5)' },
+  { min: 350,  max: 649,      label: 'Crush',       emoji: '😍', color: '#ffb74d', ring: 'rgba(255,183,77,0.55)' },
+  { min: 650,  max: 1099,     label: 'Dating',      emoji: '❤️', color: '#f06292', ring: 'rgba(240,98,146,0.6)'  },
+  { min: 1100, max: 1999,     label: 'Partner',     emoji: '💑', color: '#cf4185', ring: 'rgba(207,65,133,0.7)'  },
+  { min: 2000, max: Infinity, label: 'Soulmate',    emoji: '👑', color: '#ffd700', ring: 'rgba(255,215,0,0.75)'  },
+];
+const getRelation = (xp = 0) => RELATION_LEVELS.find(r => xp >= r.min && xp <= r.max) || RELATION_LEVELS[0];
+const EMOTION_EMOJI = { Happy: '😊', Sad: '😔', Romantic: '🥰', Angry: '😒', Busy: '💻', Sleepy: '😴' };
+
 const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refreshTrigger }) => {
-  // --- STATE ---
   const [chats, setChats] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Auth & Prefs
   const [token, setToken] = useState(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
 
-  // Simulation State
-  const autoTriggerCount = useRef(0); 
-  const MAX_AUTO_TRIGGERS = 5;
 
-  // --- 1. INITIAL SETUP & LOAD STORAGE ---
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedToken = localStorage.getItem("token");
-      setToken(storedToken);
-
-      // Load Subscription
-      const subscriptionData = localStorage.getItem('subscribed');
-      if (subscriptionData) {
-        try {
-          const parsedData = JSON.parse(subscriptionData);
-          if (parsedData.isSubscribed === true || parsedData.userType === 'subscriber') {
-            setIsSubscribed(true);
-          }
-        } catch (error) { console.error(error); }
-      }
+      setToken(localStorage.getItem("token"));
+      try {
+        const sub = JSON.parse(localStorage.getItem('subscribed') || '{}');
+        if (sub.isSubscribed || sub.userType === 'subscriber') setIsSubscribed(true);
+      } catch {}
     }
   }, []);
 
-  // --- 2. FETCH CHATS ---
   const fetchChats = async () => {
     try {
       if (chats.length === 0) setIsLoading(true);
-      
       let res;
       if (token) {
-        res = await axios.get(`${api.Url}/user/chat-friends`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        res = await axios.get(`${api.Url}/user/chat-friends`, { headers: { Authorization: `Bearer ${token}` } });
       } else {
-        let guestId = localStorage.getItem("Guest-Id");
-        if (guestId) {
-          res = await axios.get(`${api.Url}/guest/chat-friends`, {
-            headers: { "Guest-Id": guestId },
-          });
-        }
+        const guestId = localStorage.getItem("Guest-Id");
+        if (guestId) res = await axios.get(`${api.Url}/guest/chat-friends`, { headers: { "Guest-Id": guestId } });
       }
-
-      if (res && res.data) {
-        const chatData = Array.isArray(res.data) ? res.data : [];
-        setChats(chatData);
-      }
-    } catch (error) {
-      console.error("Error fetching chats:", error);
-    } finally {
-      setIsLoading(false);
-    }
+      if (res?.data) setChats(Array.isArray(res.data) ? res.data : []);
+    } catch (err) { console.error("Error fetching chats:", err); }
+    finally { setIsLoading(false); }
   };
 
-  useEffect(() => {
-    fetchChats();
-  }, [token, refreshTrigger]);
+  useEffect(() => { fetchChats(); }, [token, refreshTrigger]);
 
-
-  // --- 3. HANDLE CLICK (MARK AS READ) ---
   const handleChatClick = async (chatId, rawChatId) => {
     const targetId = rawChatId || chatId;
-    
-    // 1. Navigation
     onChatSelect(targetId);
     onBackBTNSelect(false);
-
-    // 2. Real Read Logic: API Call to mark messages as read
     if (token && chatId) {
       try {
-        await axios.post(`${api.Url}/user/chats/${chatId}/read`, {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        // Optimistically update the UI by resetting unreadCount to 0
-        setChats(prevChats => 
-          prevChats.map(chat => 
-            (chat.chatId === targetId || chat._id === targetId || chat.chatId === chatId) 
-              ? { ...chat, unreadCount: 0 } 
-              : chat
-          )
-        );
-      } catch (error) {
-        console.error("Error marking chat as read:", error);
-      }
+        await axios.post(`${api.Url}/user/chats/${chatId}/read`, {}, { headers: { Authorization: `Bearer ${token}` } });
+        setChats(prev => prev.map(c =>
+          (c.chatId === targetId || c._id === targetId || c.chatId === chatId) ? { ...c, unreadCount: 0 } : c
+        ));
+      } catch (err) { console.error("Error marking read:", err); }
     }
   };
 
-  const handleStoryChatStart = (characterId) => {
-    handleChatClick(null, characterId);
-  };
 
 
-  // --- 4. REALISM SIMULATION (Background Messages) ---
-  useEffect(() => {
-    if (!token || chats.length === 0) return;
-
-    const simulateIncomingActivity = () => {
-      if (autoTriggerCount.current >= MAX_AUTO_TRIGGERS) return;
-
-      // Random delay 8s - 25s
-      const delay = Math.floor(Math.random() * (25000 - 8000 + 1) + 8000);
-
-      const timeoutId = setTimeout(async () => {
-        if (autoTriggerCount.current >= MAX_AUTO_TRIGGERS) return;
-
-        const randomFriendIndex = Math.floor(Math.random() * chats.length);
-        const randomFriend = chats[randomFriendIndex];
-
-        if (randomFriend && randomFriend._id) {
-          try {
-            await axios.post(`${api.Url}/bots/bots-message`, 
-              { aiFriendId: randomFriend._id }, 
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-            autoTriggerCount.current += 1;
-            fetchChats(); // Refresh to show the new message (Badge will appear!)
-          } catch (error) {
-            console.error("Simulation failed:", error);
-          }
-        }
-        simulateIncomingActivity();
-      }, delay);
-
-      return timeoutId;
-    };
-
-    const timer = simulateIncomingActivity();
-    return () => clearTimeout(timer);
-  }, [token, chats.length]);
-
-
-  // --- 5. RENDER PREPARATION ---
   const processedChats = useMemo(() => {
-    let result = chats;
-
-    // Filter
-    if (searchTerm) {
-      result = chats.filter(chat => 
-        chat.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Sort: Unread first, then Time
-    return result.sort((a, b) => {
-      const isUnreadA = (a.unreadCount > 0);
-      const isUnreadB = (b.unreadCount > 0);
-      const timeA = new Date(a.lastMessageTime || 0).getTime();
-      const timeB = new Date(b.lastMessageTime || 0).getTime();
-
-      // Logic: Unread chats go to top
-      if (isUnreadA && !isUnreadB) return -1;
-      if (!isUnreadA && isUnreadB) return 1;
-
-      // Fallback: Sort by time descending
-      return timeB - timeA;
+    const result = searchTerm
+      ? chats.filter(c => c.name?.toLowerCase().includes(searchTerm.toLowerCase()))
+      : chats;
+    return [...result].sort((a, b) => {
+      const ua = (a.unreadCount || 0) > 0, ub = (b.unreadCount || 0) > 0;
+      if (ua && !ub) return -1;
+      if (!ua && ub) return 1;
+      return new Date(b.lastMessageTime || 0) - new Date(a.lastMessageTime || 0);
     });
   }, [chats, searchTerm]);
 
-  // Helpers
-  const formatTime = (timestamp) => {
-    if (!timestamp) return "";
+  const formatTime = (ts) => {
+    if (!ts) return "";
     try {
-      const now = new Date();
-      const messageDate = new Date(timestamp);
-      const diffDays = Math.floor((now - messageDate) / (1000 * 60 * 60 * 24));
-      
-      if (diffDays === 0) return messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      else if (diffDays === 1) return 'Yesterday';
-      else if (diffDays < 7) return messageDate.toLocaleDateString([], { weekday: 'short' });
-      else return messageDate.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: '2-digit' });
-    } catch (error) { return ""; }
+      const now = new Date(), d = new Date(ts);
+      const days = Math.floor((now - d) / 86400000);
+      if (days === 0) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      if (days === 1) return 'Yesterday';
+      if (days < 7) return d.toLocaleDateString([], { weekday: 'short' });
+      return d.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: '2-digit' });
+    } catch { return ""; }
   };
 
-  const formatMessagePreview = (message) => {
-    if (!message) return "";
-    if (message.includes("[image]")) return "📷 Photo";
-    if (message.includes("[video]")) return "🎥 Video";
-    return message.length > 35 ? message.substring(0, 35) + '...' : message;
+  const fmtPreview = (msg) => {
+    if (!msg) return "Say hello! 👋";
+    if (msg.includes("[image]")) return "📷 Photo";
+    if (msg.includes("[video]")) return "🎥 Video";
+    if (msg.startsWith("🎁")) return msg.slice(0, 28) + (msg.length > 28 ? '…' : '');
+    return msg.length > 38 ? msg.slice(0, 38) + '…' : msg;
   };
 
   return (
-    <div className="chats-people-container">
+    <div style={{ width: '100%', height: '100dvh', background: '#0a0a0d', color: '#fff', display: 'flex', flexDirection: 'column', fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif', overflow: 'hidden' }}>
       <style>{`
-        :root {
-          --bg-dark: #050505;
-          --bg-card: #121212;
-          --primary: #cf4185;
-          --text-main: #ffffff;
-          --text-muted: #a1a1a1;
-          --glass-bg: rgba(18, 18, 18, 0.95);
-          --glass-border: rgba(255, 255, 255, 0.08);
-          --online: #25D366;
-          --unread-bg: #cf4185;
-        }
-
-        .chats-people-container {
-          width: 100%;
-          height: 100vh;
-          height: 100dvh;
-          background-color: var(--bg-dark);
-          color: var(--text-main);
-          display: flex;
-          flex-direction: column;
-          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-          overflow: hidden;
-        }
-
-        /* Header */
-        .chats-header {
-          flex-shrink: 0;
-          padding: 15px 16px;
-          background: var(--glass-bg);
-          border-bottom: 1px solid var(--glass-border);
-          display: flex; justify-content: space-between; align-items: center;
-          z-index: 20;
-        }
-        .chats-header h1 { font-size: 1.4rem; font-weight: 700; margin: 0; color: #fff; letter-spacing: -0.5px; }
-        .premium-btn {
-          display: flex; align-items: center; gap: 6px; padding: 6px 12px;
-          background: rgba(207, 65, 133, 0.15); color: var(--primary);
-          border: 1px solid var(--primary); border-radius: 20px;
-          font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
-        }
-        .premium-btn:hover { background: rgba(207, 65, 133, 0.25); }
-
-        /* Status Stories Wrapper */
-        .status-section-wrapper { flex-shrink: 0; background: var(--bg-dark); }
-
-        /* Search */
-        .search-container { flex-shrink: 0; padding: 10px 16px; background: var(--bg-dark); }
-        .search-input-wrapper {
-          position: relative; display: flex; align-items: center;
-          background-color: #1a1a1a; border-radius: 12px; padding: 0 12px;
-          border: 1px solid transparent; transition: border-color 0.2s;
-        }
-        .search-input-wrapper:focus-within { border-color: var(--primary); }
-        .search-icon { color: #666; width: 18px; height: 18px; }
-        .search-input-wrapper input {
-          width: 100%; padding: 12px 10px; border: none; background: transparent;
-          color: var(--text-main); font-size: 1rem; outline: none;
-        }
-
-        /* List */
-        .chats-list-container { 
-          flex-grow: 1; overflow-y: auto; overflow-x: hidden; 
-          padding-bottom: 80px; 
-          -webkit-overflow-scrolling: touch;
-        }
-
-        .chat-item {
-          display: flex; align-items: center; padding: 12px 16px; gap: 15px;
-          cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);
-          transition: background 0.2s;
-        }
-        .chat-item:active { background-color: rgba(255,255,255,0.05); }
-        
-        /* Light highlight for unread chats */
-        .chat-item.unread { background-color: rgba(207, 65, 133, 0.05); }
-
-        /* Avatar */
-        .avatar-wrapper { position: relative; flex-shrink: 0; }
-        .avatar-container {
-          width: 54px; height: 54px; border-radius: 50%; overflow: hidden;
-          background: #222; border: 2px solid var(--bg-dark);
-        }
-        .user-avatar { width: 100%; height: 100%; object-fit: cover; }
-        .online-badge {
-          position: absolute; bottom: 2px; right: 2px;
-          width: 12px; height: 12px; background-color: var(--online);
-          border-radius: 50%; border: 2px solid var(--bg-dark); z-index: 2;
-        }
-        
-        /* Content */
-        .chat-content { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-        .top-row { display: flex; justify-content: space-between; align-items: center; }
-        .user-name { font-size: 1.05rem; font-weight: 600; color: #fff; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .message-time { font-size: 0.75rem; color: #666; white-space: nowrap; font-weight: 500; }
-        .chat-item.unread .message-time { color: var(--primary); }
-
-        .bottom-row { display: flex; justify-content: space-between; align-items: center; }
-        .message-text { font-size: 0.9rem; color: #888; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85%; }
-        .chat-item.unread .message-text { color: #fff; font-weight: 600; }
-
-        .unread-badge { 
-          background: var(--unread-bg); color: white; font-size: 0.7rem; font-weight: 700; 
-          min-width: 20px; height: 20px; border-radius: 10px; display: flex; 
-          align-items: center; justify-content: center; padding: 0 6px; flex-shrink: 0;
-          box-shadow: 0 2px 5px rgba(207, 65, 133, 0.4);
-        }
-
-        /* Skeleton */
-        .loading-skeleton { padding: 16px; display: flex; flex-direction: column; gap: 20px; }
-        .chat-item-skeleton { display: flex; align-items: center; gap: 15px; }
-        .avatar-skeleton { width: 54px; height: 54px; border-radius: 50%; background: rgba(255,255,255,0.05); animation: pulse 1.5s infinite; }
-        .content-skeleton { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-        .line-skeleton { height: 12px; background: rgba(255,255,255,0.05); border-radius: 4px; animation: pulse 1.5s infinite; }
-        .w-60 { width: 60%; } .w-40 { width: 40%; }
-        
-        .empty-state { height: 50vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; opacity: 0.7; }
-        .empty-state-icon { margin-bottom: 10px; opacity: 0.5; }
-
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .cp-scroll::-webkit-scrollbar { width: 0; }
+        @keyframes cpPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .cp-skel { animation: cpPulse 1.5s infinite; background: rgba(255,255,255,0.06); border-radius: 8px; }
+        .cp-row { transition: background 0.15s; cursor: pointer; }
+        .cp-row:active { background: rgba(207,65,133,0.09) !important; }
       `}</style>
-      
-      <PopNoti
-        message={notification.message}
-        type={notification.type}
-        isVisible={notification.show}
-        onClose={() => setNotification({ ...notification, show: false })}
-      />
 
-      <header className="chats-header">
-        <h1>Chats</h1>
+      <PopNoti {...notification} isVisible={notification.show} onClose={() => setNotification(n => ({ ...n, show: false }))} />
+
+      {/* ── Header ── */}
+      <div style={{ flexShrink: 0, padding: '16px 18px 12px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.5px', background: 'linear-gradient(90deg,#fff 55%,#cf4185)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Chats</h1>
+          <p style={{ margin: '1px 0 0', fontSize: '0.68rem', color: 'rgba(255,255,255,0.32)', fontWeight: 500 }}>Your AI companions 💕</p>
+        </div>
         {!isSubscribed && (
-          <button 
-            className='premium-btn' 
-            onClick={() => window.location.href = '/subscribe'}
-          >
-            <Crown size={14} />
-            <span>Premium</span>
+          <button onClick={() => window.location.href = '/subscribe'} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 13px', background: 'rgba(207,65,133,0.12)', color: '#cf4185', border: '1px solid rgba(207,65,133,0.38)', borderRadius: 20, fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>
+            <Crown size={13} /> Premium
           </button>
         )}
-      </header>
+      </div>
 
-
-
-      <div className="search-container">
-        <div className="search-input-wrapper">
-          <Search className="search-icon" />
+      {/* ── Search ── */}
+      <div style={{ flexShrink: 0, padding: '10px 16px', background: '#0a0a0d' }}>
+        <div style={{ display: 'flex', alignItems: 'center', background: '#141417', borderRadius: 14, padding: '0 14px', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <Search size={16} color="#555" />
           <input
-            type="text"
-            placeholder="Search"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            type="text" placeholder="Search companions…" value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            style={{ flex: 1, padding: '11px 10px', border: 'none', background: 'transparent', color: '#fff', fontSize: '0.95rem', outline: 'none' }}
           />
         </div>
       </div>
 
-      <div className="chats-list-container">
+      {/* ── List ── */}
+      <div className="cp-scroll" style={{ flexGrow: 1, overflowY: 'auto', paddingBottom: 90 }}>
         {isLoading ? (
-          <div className="loading-skeleton">
-            {[...Array(6)].map((_, index) => (
-              <div key={index} className="chat-item-skeleton">
-                <div className="avatar-skeleton"></div>
-                <div className="content-skeleton">
-                  <div className="line-skeleton w-40"></div>
-                  <div className="line-skeleton w-60"></div>
+          <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {[...Array(6)].map((_, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div className="cp-skel" style={{ width: 50, height: 64, borderRadius: 14, flexShrink: 0 }} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div className="cp-skel" style={{ height: 12, width: '45%' }} />
+                  <div className="cp-skel" style={{ height: 10, width: '28%', opacity: 0.7 }} />
+                  <div className="cp-skel" style={{ height: 10, width: '65%', opacity: 0.5 }} />
                 </div>
               </div>
             ))}
           </div>
         ) : processedChats.length > 0 ? (
-          processedChats.map((chat) => {
-            // Setup true unread count from API
-            const displayCount = chat.unreadCount || 0;
-            const isUnread = displayCount > 0;
+          processedChats.map(chat => {
+            const unread = chat.unreadCount || 0;
+            const isUnread = unread > 0;
+            const xp = chat.relationshipXP || 0;
+            const rel = getRelation(xp);
+            const emotionEmoji = EMOTION_EMOJI[chat.currentEmotion] || '😊';
 
             return (
               <div
                 key={chat._id}
-                className={`chat-item ${isUnread ? 'unread' : ''}`}
+                className="cp-row"
                 onClick={() => handleChatClick(chat.chatId, chat._id)}
+                style={{
+                  display: 'flex', alignItems: 'center', padding: '12px 16px', gap: 14,
+                  background: isUnread ? 'rgba(207,65,133,0.055)' : 'transparent',
+                  borderBottom: '1px solid rgba(255,255,255,0.028)',
+                }}
               >
-                <div className="avatar-wrapper">
-                  <div className="avatar-container">
-                    <img 
-                      src={chat.avatar || "/default-avatar.png"} 
-                      alt={chat.name} 
-                      className="user-avatar"
-                      onError={(e) => { e.target.src = "/default-avatar.png"; }}
+                {/* Avatar + glow ring – portrait rectangle fits 9:16 images */}
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <div style={{
+                    width: 50, height: 64, borderRadius: 14, padding: 2,
+                    background: `linear-gradient(155deg, ${rel.color} 0%, rgba(0,0,0,0.5) 100%)`,
+                    boxShadow: `0 0 ${isUnread ? 18 : 9}px ${rel.ring}`,
+                  }}>
+                    <img
+                      src={chat.avatar || "/default-avatar.png"} alt={chat.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center', borderRadius: 12, border: '2px solid #0a0a0d', display: 'block' }}
+                      onError={e => { e.target.src = "/default-avatar.png"; }}
                     />
                   </div>
-                  {chat.isOnline && <span className="online-badge"></span>}
+                  {chat.isOnline && (
+                    <span style={{ position: 'absolute', bottom: 2, right: 2, width: 11, height: 11, background: '#25D366', borderRadius: '50%', border: '2px solid #0a0a0d', zIndex: 2 }} />
+                  )}
                 </div>
-                
-                <div className="chat-content">
-                  <div className="top-row">
-                    <h3 className="user-name">{chat.name}</h3>
-                    <span className="message-time">{formatTime(chat.lastMessageTime)}</span>
+
+                {/* Content */}
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {/* Row 1 – name + time */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '1rem', fontWeight: isUnread ? 800 : 600, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '62%' }}>
+                      {chat.name} {emotionEmoji}
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+                      {chat.streakCount > 0 && (
+                        <span style={{ fontSize: '0.7rem', color: '#ff9900', fontWeight: 700 }}>🔥{chat.streakCount}</span>
+                      )}
+                      <span style={{ fontSize: '0.7rem', color: isUnread ? '#cf4185' : '#555', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                        {formatTime(chat.lastMessageTime)}
+                      </span>
+                    </div>
                   </div>
-                  
-                  <div className="bottom-row">
-                    <p className="message-text">
-                      {formatMessagePreview(chat.lastMessage)}
+
+                  {/* Row 2 – relationship status pill */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 3,
+                      fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.04em',
+                      padding: '2px 8px', borderRadius: 20,
+                      background: `${rel.color}18`,
+                      border: `1px solid ${rel.color}44`,
+                      color: rel.color, flexShrink: 0
+                    }}>
+                      {rel.emoji} {rel.label}
+                    </span>
+                    {xp > 0 && (
+                      <span style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.28)', fontWeight: 600 }}>{xp} XP</span>
+                    )}
+                  </div>
+
+                  {/* Row 3 – preview + badge */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <p style={{ margin: 0, fontSize: '0.82rem', color: isUnread ? 'rgba(255,255,255,0.8)' : '#5a5a6a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '80%', fontWeight: isUnread ? 600 : 400 }}>
+                      {fmtPreview(chat.lastMessage)}
                     </p>
-                    
                     {isUnread && (
-                      <span className="unread-badge">
-                        {displayCount > 99 ? '99+' : displayCount}
+                      <span style={{ background: '#cf4185', color: '#fff', fontSize: '0.68rem', fontWeight: 800, minWidth: 20, height: 20, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 6px', flexShrink: 0, boxShadow: '0 2px 8px rgba(207,65,133,0.5)' }}>
+                        {unread > 99 ? '99+' : unread}
                       </span>
                     )}
                   </div>
@@ -426,10 +251,10 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
             );
           })
         ) : (
-          <div className="empty-state">
-            <MessageSquare size={48} className="empty-state-icon" />
-            <h3>No conversations yet</h3>
-            <p>Start chatting with an AI friend!</p>
+          <div style={{ height: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#555' }}>
+            <MessageSquare size={46} style={{ opacity: 0.25, marginBottom: 10 }} />
+            <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>No conversations yet</h3>
+            <p style={{ margin: '6px 0 0', fontSize: '0.82rem', color: '#444' }}>Start chatting with an AI companion!</p>
           </div>
         )}
       </div>

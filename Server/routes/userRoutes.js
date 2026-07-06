@@ -28,6 +28,18 @@ router.post("/chats/:chatId/read", authMiddleware, controller.markChatAsRead );
 router.get("/get-pre-ai", controller.getAllPreAIFriends );
 router.post("/voice-waitlist", controller.joinVoiceWaitlist );
 router.get("/get-chat-data", authMiddleware, controller.getChatData );
+
+// Economy & Relationships System Routes
+router.post("/daily-login", authMiddleware, controller.dailyLoginClaim);
+router.get("/discover/cards", authMiddleware, controller.getDiscoverCards);
+router.post("/discover/swipe", authMiddleware, controller.postSwipeAction);
+router.post("/discover/reset", authMiddleware, controller.postResetSwipes);
+router.get("/chats/:chatId/relationship", authMiddleware, controller.getChatRelationship);
+router.post("/chats/:chatId/gifts", authMiddleware, controller.sendGift);
+router.post("/chats/:chatId/dates", authMiddleware, controller.goOnDate);
+router.put("/chats/:chatId/memory", authMiddleware, controller.updateMemory);
+router.post("/chats/:chatId/personality", authMiddleware, controller.updatePersonality);
+router.post("/chats/:chatId/clear", authMiddleware, controller.clearChat);
 router.delete("/chats/:chatId/messages/:messageId", authMiddleware, controller.deleteMessage );
 router.post('/payment/save', authMiddleware , controller.paymentSave);
 router.post('/webhook/razorpay', express.raw({type: 'application/json'}), controller.razorpayWebhook);
