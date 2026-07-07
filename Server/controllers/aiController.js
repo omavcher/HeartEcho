@@ -1197,6 +1197,41 @@ exports.AiFriendResponse = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
+    // If it is a call log message, save it immediately and return without quota check/Gemini call!
+    if (text.startsWith("[Call Log]")) {
+      let chat = await Chat.findOne({
+        participants: userId,
+        aiParticipants: chatId,
+        isActive: true
+      });
+      if (!chat) {
+        let AiInfo = await PrebuiltAIFriend.findById(chatId);
+        if (!AiInfo) {
+          AiInfo = await AIFriend.findById(chatId);
+        }
+        if (!AiInfo) {
+          return res.status(404).json({ message: "AI Friend not found." });
+        }
+        chat = new Chat({
+          participants: [userId],
+          aiParticipants: [AiInfo._id],
+          messages: [],
+          isActive: true
+        });
+      }
+
+      const userMessage = {
+        sender: userId,
+        senderModel: "User",
+        text,
+        time: new Date(),
+      };
+      chat.messages.push(userMessage);
+      chat.statistics.totalMessages = (chat.statistics.totalMessages || 0) + 1;
+      await chat.save();
+      return res.json({ messages: chat.messages });
+    }
+
     // Reset daily quota if needed
     userInfo.resetDailyQuota();
 
