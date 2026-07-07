@@ -1606,7 +1606,7 @@ exports.getPaymentData = async (req, res) => {
 
     // Fetch user details with payment info
     const user = await User.findById(userId)
-      .select("name profile_picture subscriptionExpiry")
+      .select("name profile_picture subscriptionExpiry subscriptionTier user_type")
       .populate("payment_history"); // Correct reference
 
     if (!user) {
@@ -1625,6 +1625,8 @@ exports.getPaymentData = async (req, res) => {
       name: user.name,
       profilePicture: user.profile_picture || "", // Default if no profile picture
       nextSubscriptionDate,
+      subscriptionTier: user.subscriptionTier || "none",
+      userType: user.user_type || "free",
       paymentHistory: payments,
     });
   } catch (error) {
