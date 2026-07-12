@@ -716,3 +716,20 @@ html {
   outline: 2px solid var(--primary-light-d32ud);
   outline-offset: 2px;
 }
+
+/* Infinite Scroll Sentinel */
+.infinite-scroll-sentinel-d32ud {
+  opacity: 0.8;
+  animation: pulse-sentinel-d32ud 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse-sentinel-d32ud {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+}

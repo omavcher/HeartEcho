@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
@@ -14,6 +14,8 @@ function HomeAiModels() {
   const [aiModels, setAiModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [visibleCount, setVisibleCount] = useState(10);
+  const sentinelRef = useRef(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -51,8 +53,31 @@ function HomeAiModels() {
     fetchAiModels();
   }, []);
 
+  useEffect(() => {
+    if (loading || error || aiModels.length === 0) return;
 
-  const filteredModels = aiModels.slice(0, 10);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => Math.min(prev + 10, aiModels.length));
+        }
+      },
+      { rootMargin: "150px" }
+    );
+
+    const currentSentinel = sentinelRef.current;
+    if (currentSentinel) {
+      observer.observe(currentSentinel);
+    }
+
+    return () => {
+      if (currentSentinel) {
+        observer.unobserve(currentSentinel);
+      }
+    };
+  }, [loading, error, aiModels.length]);
+
+  const filteredModels = aiModels.slice(0, visibleCount);
 
   const handleModelClick = (modelId, isLocked) => {
     if (isLocked) {
@@ -124,65 +149,73 @@ function HomeAiModels() {
           </button>
         </div>
       ) : (
-        <div className="models-grid-d32ud">
-          {filteredModels.map((model, index) => (
-            <div 
-              className="model-card-d32ud" 
-              key={model._id}
-              onClick={() => handleModelClick(model._id, model.isLocked)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && handleModelClick(model._id)}
-              style={{ animationDelay: `${index * 0.05}s` }}
-            >
-              <div className="portrait-ratio-wrapper-d32ud">
-                <div className="model-image-container-d32ud">
-                  <Image 
-                    src={model.avatar_img} 
-                    alt={model.name}
-                    width={270}
-                    height={480}
-                    className="model-image-d32ud portrait-image-d32ud image-visible-d32ud"
-                   priority={index < 2}
-                   loading={index < 2 ? 'eager' : 'lazy'}
-                  />
-                  
-                  <div className="model-overlay-d32ud">
-                    <span className="model-age-d32ud">{model.age}</span>
-                    <span className="model-gender-d32ud">
-                      {model.gender === 'female' ? '♀' : '♂'}
-                    </span>
-                  </div>
-                  <div className="model-badge-d32ud">
-                    {model.isLocked && (
-                      <span className="premium-lock-tag-d32ud">
-                        🔒 Premium
+        <>
+          <div className="models-grid-d32ud">
+            {filteredModels.map((model, index) => (
+              <div 
+                className="model-card-d32ud" 
+                key={model._id}
+                onClick={() => handleModelClick(model._id, model.isLocked)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleModelClick(model._id)}
+                style={{ animationDelay: `${index * 0.05}s` }}
+              >
+                <div className="portrait-ratio-wrapper-d32ud">
+                  <div className="model-image-container-d32ud">
+                    <Image 
+                      src={model.avatar_img} 
+                      alt={model.name}
+                      width={270}
+                      height={480}
+                      className="model-image-d32ud portrait-image-d32ud image-visible-d32ud"
+                     priority={index < 2}
+                     loading={index < 2 ? 'eager' : 'lazy'}
+                    />
+                    
+                    <div className="model-overlay-d32ud">
+                      <span className="model-age-d32ud">{model.age}</span>
+                      <span className="model-gender-d32ud">
+                        {model.gender === 'female' ? '♀' : '♂'}
                       </span>
-                    )}
-                    {!model.isLocked && model.badge === "top_choice" && (
-                      <span className="popular-tag-d32ud top-choice-d32ud">
-                        🌟 Top Choice
-                      </span>
-                    )}
-                    {!model.isLocked && model.badge === "popular" && (
-                      <span className="popular-tag-d32ud">
-                        ⭐ Popular
-                      </span>
-                    )}
-                  </div>
-                  
-                  {/* Modern floating info at bottom */}
-                  <div className="model-floating-info-d32ud">
-                    <h3 className="model-name-d32ud">{model.name}</h3>
-                    <p className="model-short-description-d32ud">
-                      {getShortDescription(model.description)}
-                    </p>
+                    </div>
+                    <div className="model-badge-d32ud">
+                      {model.isLocked && (
+                        <span className="premium-lock-tag-d32ud">
+                          🔒 Premium
+                        </span>
+                      )}
+                      {!model.isLocked && model.badge === "top_choice" && (
+                        <span className="popular-tag-d32ud top-choice-d32ud">
+                          🌟 Top Choice
+                        </span>
+                      )}
+                      {!model.isLocked && model.badge === "popular" && (
+                        <span className="popular-tag-d32ud">
+                          ⭐ Popular
+                        </span>
+                      )}
+                    </div>
+                    
+                    {/* Modern floating info at bottom */}
+                    <div className="model-floating-info-d32ud">
+                      <h3 className="model-name-d32ud">{model.name}</h3>
+                      <p className="model-short-description-d32ud">
+                        {getShortDescription(model.description)}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
+            ))}
+          </div>
+          {visibleCount < aiModels.length && (
+            <div ref={sentinelRef} className="infinite-scroll-sentinel-d32ud" style={{ height: '30px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px 0' }}>
+              {/* Optional: a subtle premium loading animation or text */}
+              <span style={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.9rem', letterSpacing: '1px' }}>Loading more companions...</span>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </section>
   );
