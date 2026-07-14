@@ -27,35 +27,47 @@ async function updateUserMemory(userId, chat) {
 
     console.log(`[MemoryProcessor] Running background memory consolidation job for user ${userId} (messages: ${chat.messages.length})`);
 
-    // 3. Format last 30 messages
+    // 3. Format last 30 messages — trim AI messages to keep memory extraction payload lean
     const recentMessages = chat.messages.slice(-30);
     const conversationHistory = recentMessages
       .map(m => {
-        const sender = m.senderModel === "User" || m.sender === "me" || m.sender === "guest" ? "User" : "AI Companion";
-        return `${sender}: ${m.text || ""}`;
+        const sender = m.senderModel === "User" || m.sender === "me" || m.sender === "guest" ? "User" : "AI";
+        const text = (m.text || "").trim();
+        if (!text) return null;
+        // Trim AI messages to 120 chars to avoid huge conversation payloads
+        const trimmed = sender === "AI" && text.length > 120 ? text.substring(0, 120) + '...' : text;
+        return `${sender}: ${trimmed}`;
       })
+      .filter(Boolean)
       .join("\n");
 
-    const systemPrompt = `You are an expert relationship memory assistant for HeartEcho.
-Your task is to analyze the recent conversation between the User and their AI companion, and update the User's memory.
-Identify and extract important facts about the User. This includes:
-- User's name, age, gender, location/city (if mentioned)
-- User's likes, dislikes, favorite foods, hobbies, interests, job/studies
-- Specific personal context (e.g., details about their girlfriend/boyfriend, family members, friends, or life events)
-- Key relationship status or feelings expressed.
+    const systemPrompt = `You are a memory extraction assistant for HeartEcho AI companion app.
+Analyze the conversation and extract key facts about the USER ONLY.
 
-Combine these details with any existing memory context provided below:
-Existing memory: "${user.relationshipMemory || 'None'}"
+EXISTING MEMORY:
+${user.relationshipMemory || 'None'}
 
-Write a concise, natural summary of the User in a few short paragraphs. Keep it brief and focused only on the most important facts. Do NOT return intro, explanation or conversational fillers, just the consolidated facts summary.`;
+OUTPUT FORMAT (STRICT):
+- Output ONLY a bullet list. Max 8 bullets. Each bullet max 10 words.
+- Format: "• [fact]"
+- Example bullets:
+  • Name: Om, age 21, from Pune
+  • Works at: college student, DBATU
+  • Likes: pizza, gaming, cricket
+  • Nickname he uses: Baby
+  • Currently: preparing for exams
+  • Mood/feelings: lonely, wants companionship
+- Merge and update any overlapping facts from existing memory.
+- Do NOT include greetings, explanations, or AI companion details.
+- Only output the bullet list, nothing else.`;
 
     const requestBody = {
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: `Here is the recent conversation history:\n${conversationHistory}\n\nPlease generate the updated consolidated memory now.` }
+        { role: "user", content: `Conversation:\n${conversationHistory}\n\nExtract memory bullets now.` }
       ],
-      max_tokens: 300,
-      temperature: 0.7
+      max_tokens: 150,
+      temperature: 0.4
     };
 
     const apiKey = process.env.OPENROUTER_API_KEY;

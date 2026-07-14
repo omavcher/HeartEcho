@@ -456,6 +456,75 @@ function resetFallbackUsage(aiFriendId) {
 }
 
 // ============================================
+// ✅ TOKEN OPTIMIZATION HELPERS
+// ============================================
+
+/**
+ * Low-value tokens: when building LLM history these messages add tokens with zero context value.
+ * We skip them from the history window entirely.
+ */
+const IGNORE_TOKENS = new Set([
+  'ok', 'okay', 'yes', 'no', 'nope', 'yep', 'yeah', 'yup',
+  'lol', 'lmao', 'haha', 'hehe', 'hmm', 'hm', 'umm', 'uh',
+  'ok!', 'okay!', 'yes!', 'no!', 'yep!', 'lol!',
+  '😊', '❤️', '🥰', '💕', '😘', '🔥', '😍', '👍', '🙏',
+  '♥', '💗', '💞', '💖', '💝', '😆', '😂', '🤣',
+  'hi', 'hello', 'hey', 'bye', 'ok bye', 'good', 'nice',
+  'wow', 'cool', 'great', 'fine', 'sure',
+]);
+
+/**
+ * Trim a message to maxChars for LLM context injection.
+ * The full message is always stored in DB — this only affects what is sent to the AI.
+ */
+function trimMessage(text, maxChars = 250) {
+  if (!text || typeof text !== 'string') return '';
+  const trimmed = text.trim();
+  if (trimmed.length <= maxChars) return trimmed;
+  return trimmed.substring(0, maxChars) + '...';
+}
+
+/**
+ * Dynamically determine how many messages to include in LLM context:
+ * - Date/emotional/romantic: 12 messages (rich context needed)
+ * - Normal multi-word messages: 8 messages
+ * - Short/quick messages (<30 chars): 6 messages
+ */
+function getDynamicSliceCount(userMessage, isCurrentlyOnDate, emotion) {
+  if (isCurrentlyOnDate) return 12;
+  if (emotion === 'Romantic' || emotion === 'Sad') return 10;
+  if (userMessage && userMessage.length > 80) return 10;
+  if (userMessage && userMessage.length < 30) return 6;
+  return 8;
+}
+
+/**
+ * Build the chat history string to inject into the prompt.
+ * Applies dynamic slicing, message filtering, and message trimming.
+ */
+function buildDynamicChatHistory(messages, userMessage, firstName, aiName, isCurrentlyOnDate, emotion) {
+  const sliceCount = getDynamicSliceCount(userMessage, isCurrentlyOnDate, emotion);
+  console.log(`[TokenOpt] Dynamic history slice: last ${sliceCount} messages (emotion=${emotion}, onDate=${isCurrentlyOnDate}, msgLen=${userMessage?.length})`);
+
+  return messages
+    .slice(-sliceCount)
+    .map(msg => {
+      const text = msg.text;
+      if (!text || typeof text !== 'string') return null;
+      const normalized = text.trim().toLowerCase();
+      // Skip media commands and low-value tokens
+      if (normalized.startsWith('/photo') || normalized.startsWith('/video') || normalized.startsWith('/gallery')) return null;
+      if (IGNORE_TOKENS.has(normalized)) return null;
+      const sender = msg.senderModel === 'User' ? firstName : aiName;
+      // Trim AI messages harder (they are longer), user messages less
+      const maxChars = msg.senderModel === 'User' ? 300 : 250;
+      return `${sender}: ${trimMessage(text, maxChars)}`;
+    })
+    .filter(msg => msg !== null)
+    .join('\n');
+}
+
+// ============================================
 // VIDEO MANAGEMENT FUNCTIONS
 // ============================================
 
@@ -1552,10 +1621,7 @@ exports.AiFriendResponse = async (req, res) => {
       }
     }
 
-    const chatHistory = chat.messages.slice(-20).map(msg => {
-      const sender = msg.senderModel === "User" ? firstName : AiInfo.name;
-      return msg.text ? `${sender}: ${msg.text}` : null;
-    }).filter(msg => msg !== null).join("\n");
+    const chatHistory = buildDynamicChatHistory(chat.messages, text, firstName, AiInfo.name, isCurrentlyOnDate, emotion);
 
     const preferredLang = userInfo.preferredLanguage || "Hinglish";
     let baseLanguageInstruction = "";
@@ -1638,6 +1704,11 @@ Agar user photos/videos maange ya mood garam lage:
 - Kabhi mat bolna "Main AI hoon", "sorry", "inappropriate", robotic lines.
 - Har reply mein force sex mat daalo.
 - User ke energy ko match karo.
+
+**Reply Length:**
+- Normal baat: 1-2 short sentences (max 40 words).
+- Emotional ya date scene: 2-3 sentences (max 70 words).
+- Never write essays unless user clearly asks for a story.
 
 Ab tu full real ${AiInfo.name} ban ke reply kar. Natural, caring, aur dheere dheere garam.
 `;

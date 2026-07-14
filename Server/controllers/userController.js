@@ -3264,10 +3264,12 @@ exports.sendGift = async (req, res) => {
       const aiName = chat.aiParticipants?.name || "AI Companion";
       const levelName = getLevelName(chat.relationshipLevel || 1);
       
-      const recentMessages = chat.messages.slice(-15);
+      const recentMessages = chat.messages.slice(-8);
       const chatHistory = recentMessages.map(msg => {
         const sender = msg.senderModel === "User" ? "User" : "AI Companion";
-        return msg.text ? `${sender}: ${msg.text}` : null;
+        const maxChars = msg.senderModel === "User" ? 300 : 250;
+        const text = msg.text ? (msg.text.length > maxChars ? msg.text.substring(0, maxChars) + '...' : msg.text) : null;
+        return text ? `${sender}: ${text}` : null;
       }).filter(msg => msg !== null).join("\n");
 
       const preferredLang = user.preferredLanguage || "Hinglish";
@@ -3421,10 +3423,12 @@ exports.goOnDate = async (req, res) => {
       const openRouterAI = require("./openrouter-ai-model");
       const levelName = getLevelName(chat.relationshipLevel || 1);
       
-      const recentMessages = chat.messages.slice(-15);
+      const recentMessages = chat.messages.slice(-8);
       const chatHistory = recentMessages.map(msg => {
         const sender = msg.senderModel === "User" ? "User" : "AI Companion";
-        return msg.text ? `${sender}: ${msg.text}` : null;
+        const maxChars = msg.senderModel === "User" ? 300 : 250;
+        const text = msg.text ? (msg.text.length > maxChars ? msg.text.substring(0, maxChars) + '...' : msg.text) : null;
+        return text ? `${sender}: ${text}` : null;
       }).filter(msg => msg !== null).join("\n");
 
       const preferredLang = user.preferredLanguage || "Hinglish";
