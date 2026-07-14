@@ -1621,7 +1621,6 @@ exports.AiFriendResponse = async (req, res) => {
       }
     }
 
-    const chatHistory = buildDynamicChatHistory(chat.messages, text, firstName, AiInfo.name, isCurrentlyOnDate, emotion);
 
     const preferredLang = userInfo.preferredLanguage || "Hinglish";
     let baseLanguageInstruction = "";
@@ -1651,6 +1650,8 @@ exports.AiFriendResponse = async (req, res) => {
       ? chat.datesCompleted[chat.datesCompleted.length - 1]
       : null;
     const isCurrentlyOnDate = lastDate && (now - new Date(lastDate.completedAt)) < 20 * 60 * 1000;
+
+    const chatHistory = buildDynamicChatHistory(chat.messages, text, firstName, AiInfo.name, isCurrentlyOnDate, emotion);
 
     let prompt;
 
