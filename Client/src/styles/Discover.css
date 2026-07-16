@@ -31,6 +31,15 @@
   position: relative;
 }
 
+/* Fix layout wrapping height to avoid body scrolling and overlay issues on mobile */
+@media screen and (max-width: 1024px) {
+  .main-content-wrapper:has(.discover-container) {
+    padding-bottom: 0 !important;
+    height: 100dvh;
+    overflow: hidden;
+  }
+}
+
 /* Sticky Header */
 .discover-header {
   flex-shrink: 0;
@@ -769,13 +778,18 @@
 @media (max-width: 767px) {
   .discover-swipe-wrapper {
     max-width: 100%;
-    height: calc(100vh - 60px);
-    padding: 10px 14px 16px;
+    flex: none;
+    height: calc(100dvh - 60px - 86px - env(safe-area-inset-bottom, 0px));
+    padding: 10px 14px 10px;
     justify-content: space-between;
   }
   
   .cards-deck-container {
-    max-height: 68vh;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    max-height: none;
+    aspect-ratio: auto;
   }
 
   .swipe-card {
