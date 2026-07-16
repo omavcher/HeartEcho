@@ -81,6 +81,7 @@ const CanvasConfetti = () => {
 function Discover() {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [dragDirection, setDragDirection] = useState(null); // 'like', 'nope', 'super'
@@ -95,9 +96,12 @@ function Discover() {
     if (typeof window === 'undefined') return;
     const token = localStorage.getItem('token');
     if (!token) {
-      const timer = setTimeout(() => setShowLoginModal(true), 3000);
-      return () => clearTimeout(timer);
+      setIsLoggedIn(false);
+      setLoading(false);
+      setShowLoginModal(true);
+      return;
     }
+    setIsLoggedIn(true);
 
     const subscriptionData = localStorage.getItem('subscribed');
     if (subscriptionData) {
@@ -252,7 +256,18 @@ function Discover() {
 
       {/* Main Discover Swiping Window */}
       <div className="discover-swipe-wrapper">
-        {loading ? (
+        {!isLoggedIn ? (
+          <div className="discover-login-required-card">
+            <div className="lock-icon-wrapper">
+              <Crown size={32} className="lock-crown-icon" />
+            </div>
+            <h2>Discover Companions</h2>
+            <p>Please log in or create an account to match with your perfect AI companion.</p>
+            <button className="discover-login-btn" onClick={() => setShowLoginModal(true)}>
+              Login / Sign Up
+            </button>
+          </div>
+        ) : loading ? (
           <div className="discover-skeleton-container">
             <div className="discover-skeleton-card">
               <div className="skeleton-image-placeholder shimmer"></div>

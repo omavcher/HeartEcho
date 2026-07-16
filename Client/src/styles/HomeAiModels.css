@@ -68,6 +68,8 @@
   border-radius: 50px;
   background: rgba(207, 65, 133, 0.1);
   border: 1px solid rgba(207, 65, 133, 0.2);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .view-more-link-d32ud:hover {
@@ -565,7 +567,22 @@
 }
 
 @media (max-width: 768px) {
+  .ai-models-container-d32ud {
+    padding: 0 1.1rem;
+  }
+  
+  .section-header-d32ud {
+    margin-bottom: 1.5rem;
+  }
+  
+  .explore-title-d32ud {
+    font-size: 1.5rem;
+    line-height: 1.25;
+  }
 
+  .view-more-link-d32ud {
+    display: none;
+  }
   
   .section-title-d32ud {
     font-size: 2rem;
@@ -608,6 +625,14 @@
 }
 
 @media (max-width: 480px) {
+  .section-header-d32ud {
+    margin-bottom: 1.25rem;
+  }
+
+  .explore-title-d32ud {
+    font-size: 1.3rem;
+  }
+
   .section-title-d32ud {
     font-size: 1.8rem;
   }

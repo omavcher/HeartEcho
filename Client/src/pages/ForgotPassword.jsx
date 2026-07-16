@@ -6,6 +6,7 @@ import { jwtDecode } from 'jwt-decode';
 import { useRouter } from 'next/navigation';
 import '../styles/Signup.css';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { ArrowLeft, Mail, Shield, Lock, Send, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import PopNoti from '../components/PopNoti';
 import api from '../config/api';
@@ -225,13 +226,273 @@ function ForgotPassword() {
   }
 
   return (
-    <div className="signup-container">
+    <div className="signup-container forgot-password-page-wrapper">
       <PopNoti
         message={notification.message}
         type={notification.type}
         isVisible={notification.show}
         onClose={() => setNotification({ ...notification, show: false })}
       />
+
+      {/* Mobile-only view */}
+      <div className="mobile-only-forgot-password-layout">
+        {/* Header bar */}
+        <div className="mobile-nav-bar">
+          <button className="mobile-back-btn" onClick={() => router.back()}>
+            <ArrowLeft size={20} color="#cf4185" />
+          </button>
+          <div className="mobile-logo-con">
+            <img src="/heartechor.png" alt="Logo" className="mobile-logo-img" />
+            <span className="mobile-logo-text">HEARTECHO</span>
+          </div>
+        </div>
+
+        {/* Header content section (title & love letter) */}
+        <div className="mobile-header-section">
+          <div className="mobile-header-text">
+            {step === 1 && (
+              <>
+                <h2>Forgot Password? 🔒</h2>
+                <p>No worries! Enter your registered email address and we'll send you a 6-digit OTP to reset your password. 💗</p>
+              </>
+            )}
+            {step === 2 && (
+              <>
+                <h2>Verify OTP 🔑</h2>
+                <p>Enter the 6-digit verification code sent to your registered email address <span className="highlight-email">{email}</span>. 💗</p>
+              </>
+            )}
+            {step === 3 && (
+              <>
+                <h2>Reset Password 🔒</h2>
+                <p>Create a secure, strong new password for your HeartEcho account to secure your chats. 💗</p>
+              </>
+            )}
+          </div>
+          <div className="mobile-header-image-wrapper">
+            <img src="/forgetpass_love_latter.png" alt="Love Letter" className="love-letter-img" />
+          </div>
+        </div>
+
+        {/* Step-specific Form Card */}
+        <div className="mobile-form-card">
+          {isGoogleAccount ? (
+            <div className="mobile-form-inner">
+              <div className="card-icon-header">
+                <Lock size={22} color="#cf4185" />
+              </div>
+              <h3>Google Link</h3>
+              <p className="card-sub-desc">This email is registered using Google Sign-In. You do not need a password to log in.</p>
+              
+              <div className="mobile-google-btn-wrapper">
+                <GoogleOAuthProvider clientId={googleClientId}>
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => setNotification({ show: true, message: "Google Login Failed!", type: "error" })}
+                    theme="filled_black"
+                    size="large"
+                    shape="rectangular"
+                    width="100%"
+                    text="continue_with"
+                  />
+                </GoogleOAuthProvider>
+              </div>
+              
+              <button 
+                type="button" 
+                onClick={() => setIsGoogleAccount(false)}
+                className="mobile-back-to-email-btn"
+              >
+                Back to Forgot Password
+              </button>
+            </div>
+          ) : step === 1 ? (
+            <form onSubmit={handleEmailSubmit} className="mobile-form-inner">
+              <div className="card-icon-header">
+                <Mail size={22} color="#cf4185" />
+              </div>
+              <h3>Email Address</h3>
+              <p className="card-sub-desc">Enter the email address associated with your HeartEcho account</p>
+
+              <div className="mobile-input-wrapper">
+                <Mail size={18} className="input-inner-icon" />
+                <input
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <button type="submit" className="mobile-submit-btn" disabled={isLoading}>
+                {isLoading ? <span className="loader-signin"></span> : (
+                  <>
+                    <Send size={16} />
+                    <span>Send OTP</span>
+                  </>
+                )}
+              </button>
+
+              <div className="card-security-footnote">
+                <Shield size={13} color="#10b981" />
+                <span>We'll never share your email with anyone.</span>
+              </div>
+            </form>
+          ) : step === 2 ? (
+            <form onSubmit={handleOtpVerify} className="mobile-form-inner">
+              <div className="card-icon-header">
+                <Shield size={22} color="#cf4185" />
+              </div>
+              <h3>Verify OTP</h3>
+              <p className="card-sub-desc">Enter the 6-digit code sent to your email address</p>
+
+              <div className="mobile-otp-inputs-row">
+                {otp.map((digit, index) => (
+                  <input
+                    key={index}
+                    type="text"
+                    maxLength={1}
+                    value={digit}
+                    ref={(el) => (inputRefs.current[index] = el)}
+                    onChange={(e) => handleChangeOtp(index, e)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    className="mobile-otp-input-box"
+                    disabled={isLoading}
+                  />
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className="mobile-resend-btn"
+                onClick={handleResendOtp}
+                disabled={timer > 0 || isLoading}
+              >
+                {timer > 0 ? `Resend OTP in ${timer}s` : "Resend OTP"}
+              </button>
+
+              <div className="mobile-double-btns-row">
+                <button 
+                  type="button" 
+                  onClick={() => { setStep(1); setOtp(["", "", "", "", "", ""]); }}
+                  disabled={isLoading}
+                  className="mobile-secondary-action-btn"
+                >
+                  Back
+                </button>
+                <button type="submit" className="mobile-primary-action-btn" disabled={isLoading}>
+                  {isLoading ? <span className="loader-signin"></span> : "Verify OTP"}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handlePasswordReset} className="mobile-form-inner">
+              <div className="card-icon-header">
+                <Lock size={22} color="#cf4185" />
+              </div>
+              <h3>Reset Password</h3>
+              <p className="card-sub-desc">Create a secure, strong new password for your account</p>
+
+              <div className="mobile-input-wrapper">
+                <Lock size={18} className="input-inner-icon" />
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  placeholder="New Password (min 8 chars)"
+                  value={passwords.newPassword}
+                  onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
+                  required
+                  disabled={isLoading}
+                />
+                <span className="mobile-eye-toggle" onClick={() => setShowNewPassword(!showNewPassword)}>
+                  {showNewPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                </span>
+              </div>
+
+              <div className="mobile-input-wrapper">
+                <Lock size={18} className="input-inner-icon" />
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  value={passwords.confirmPassword}
+                  onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })}
+                  required
+                  disabled={isLoading}
+                />
+                <span className="mobile-eye-toggle" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                  {showConfirmPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                </span>
+              </div>
+
+              <button type="submit" className="mobile-submit-btn" disabled={isLoading}>
+                {isLoading ? <span className="loader-signin"></span> : "Reset Password"}
+              </button>
+            </form>
+          )}
+        </div>
+
+        {/* Stepper info card (What happens next?) */}
+        <div className="mobile-stepper-card">
+          <div className="mobile-stepper-title-row">
+            <span className="stepper-title-line"></span>
+            <div className="stepper-title-text-con">
+              <Sparkles size={12} color="#cf4185" />
+              <span>What happens next?</span>
+              <Sparkles size={12} color="#cf4185" />
+            </div>
+            <span className="stepper-title-line"></span>
+          </div>
+
+          <div className="mobile-stepper-columns">
+            <div className={`mobile-stepper-col ${step >= 1 ? 'active' : ''}`}>
+              <div className="stepper-circle-icon-wrapper">
+                <Mail size={18} />
+                <span className="stepper-number-badge">1</span>
+              </div>
+              <h4>Check Email</h4>
+              <p>We'll send a 6-digit OTP to your email address.</p>
+            </div>
+
+            <div className={`mobile-stepper-col ${step >= 2 ? 'active' : ''}`}>
+              <div className="stepper-circle-icon-wrapper">
+                <Shield size={18} />
+                <span className="stepper-number-badge">2</span>
+              </div>
+              <h4>Verify OTP</h4>
+              <p>Enter the OTP to verify your identity.</p>
+            </div>
+
+            <div className={`mobile-stepper-col ${step >= 3 ? 'active' : ''}`}>
+              <div className="stepper-circle-icon-wrapper">
+                <Lock size={18} />
+                <span className="stepper-number-badge">3</span>
+              </div>
+              <h4>Reset Password</h4>
+              <p>Create a new password and secure your account.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom card: Remember password? */}
+        <div className="mobile-bottom-redirect-card">
+          <div className="bottom-redirect-left-content">
+            <div className="sparkles-container">
+              <Sparkles size={14} color="#cf4185" />
+            </div>
+            <div className="bottom-redirect-text-block">
+              <span className="redirect-question">Remember your password?</span>
+              <Link href="/login" className="redirect-action-link">
+                <span>Login Now</span>
+                <span className="redirect-arrow">→</span>
+              </Link>
+            </div>
+          </div>
+          <div className="bottom-redirect-right-image">
+            <img src="/forget_pass_login.png" alt="Girl Silhouette" className="girl-silhouette-img" />
+          </div>
+        </div>
+      </div>
 
       <div className="signup-left">
         <div className="signup-sidebar">

@@ -10,6 +10,16 @@ import Image from "next/image";
 import "../styles/HomeAiModels.css";
 import api from "../config/api";
 
+const shuffleArray = (array) => {
+  if (!array || !Array.isArray(array)) return [];
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 function HomeAiModels() {
   const [aiModels, setAiModels] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +41,8 @@ function HomeAiModels() {
         const now = Date.now();
 
         if (cached && cachedTime && (now - parseInt(cachedTime)) < CACHE_TTL) {
-          setAiModels(JSON.parse(cached));
+          const parsedModels = JSON.parse(cached);
+          setAiModels(shuffleArray(parsedModels));
           setLoading(false);
           return;
         }
@@ -39,9 +50,9 @@ function HomeAiModels() {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const response = await axios.get(`${api.Url}/user/get-pre-ai`, { headers });
         const models = response.data.data;
-        setAiModels(models);
         sessionStorage.setItem(CACHE_KEY, JSON.stringify(models));
         sessionStorage.setItem(CACHE_TIME_KEY, now.toString());
+        setAiModels(shuffleArray(models));
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to load AI models. Please try again.");

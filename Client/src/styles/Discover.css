@@ -54,6 +54,31 @@
   -webkit-text-fill-color: transparent;
 }
 
+.premium-gold-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--dsc-gold);
+  color: #000000 !important;
+  text-decoration: none !important;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 50px;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+}
+
+.premium-gold-btn:hover {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+  text-decoration: none !important;
+}
+
+.premium-gold-btn svg {
+  flex-shrink: 0;
+}
+
 /* Main Swipe Area */
 .discover-swipe-wrapper {
   flex: 1;
@@ -812,4 +837,100 @@
   .btn-circle {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   }
+}
+
+/* Auth Lock Screen styling */
+.discover-login-required-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 30px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  max-width: 360px;
+  width: 90%;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  animation: discoverFadeInUp 0.6s ease-out both;
+}
+
+.lock-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(207, 65, 133, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  border: 1px solid rgba(207, 65, 133, 0.25);
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+.lock-crown-icon {
+  color: var(--dsc-pink);
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(207, 65, 133, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px 6px rgba(207, 65, 133, 0.4);
+    transform: scale(1.05);
+  }
+}
+
+@keyframes discoverFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.discover-login-required-card h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #fff 60%, var(--dsc-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.discover-login-required-card p {
+  font-size: 0.92rem;
+  color: var(--dsc-muted);
+  line-height: 1.5;
+  margin-bottom: 30px;
+}
+
+.discover-login-btn {
+  width: 100%;
+  padding: 14px 28px;
+  border-radius: 50px;
+  background: linear-gradient(135deg, var(--dsc-pink), #ff7eb3);
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(207, 65, 133, 0.35);
+}
+
+.discover-login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(207, 65, 133, 0.55);
+}
+
+.discover-login-btn:active {
+  transform: translateY(0);
 }

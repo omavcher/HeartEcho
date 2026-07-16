@@ -6,6 +6,7 @@ import { jwtDecode } from 'jwt-decode';
 import { useRouter } from 'next/navigation';
 import '../styles/Signup.css';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { ArrowLeft, Mail, Shield, Lock, Heart } from 'lucide-react';
 import Link from 'next/link';
 import PopNoti from '../components/PopNoti';
 import api from '../config/api';
@@ -326,13 +327,187 @@ function Login() {
   }
 
   return (
-    <div className="signup-container">
+    <div className="signup-container login-page-wrapper">
       <PopNoti
         message={notification.message}
         type={notification.type}
         isVisible={notification.show}
         onClose={() => setNotification({ ...notification, show: false })}
       />
+
+      {/* Mobile-only view */}
+      <div className="mobile-only-login-layout">
+        {/* Header bar */}
+        <div className="mobile-nav-bar">
+          <button className="mobile-back-btn" onClick={() => router.back()}>
+            <ArrowLeft size={20} color="#cf4185" />
+          </button>
+          <div className="mobile-logo-con">
+            <img src="/heartechor.png" alt="Logo" className="mobile-logo-img" />
+            <span className="mobile-logo-text">HEARTECHO</span>
+          </div>
+        </div>
+
+        {/* Header content section (title & girl silhouette with heart) */}
+        <div className="mobile-header-section">
+          <div className="mobile-header-text">
+            <h2>Welcome Back ✨</h2>
+            <p>Login to continue your journey and connect with your AI companion 💗</p>
+          </div>
+          <div className="mobile-header-image-wrapper login-girl-wrapper">
+            <img src="/forget_pass_login.png" alt="Girl Silhouette" className="login-girl-img" />
+            <div className="login-girl-heart">
+              <Heart size={20} fill="#cf4185" color="#cf4185" />
+            </div>
+          </div>
+        </div>
+
+        {/* Google OAuth Login Button */}
+        <div className="mobile-google-login-container">
+          <div className="mobile-custom-google-btn-wrapper">
+            <button className="mobile-custom-google-btn" type="button">
+              <div className="google-icon-box">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" />
+              </div>
+              <span>Continue with Google</span>
+            </button>
+            <div className="real-google-btn-overlay">
+              <GoogleOAuthProvider clientId={googleClientId}>
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleFailure}
+                  theme="filled_black"
+                  size="large"
+                  shape="rectangular"
+                  width="100%"
+                />
+              </GoogleOAuthProvider>
+            </div>
+          </div>
+        </div>
+
+        {/* Separator */}
+        <div className="mobile-login-separator">
+          <span className="separator-line"></span>
+          <span>or</span>
+          <span className="separator-line"></span>
+        </div>
+
+        {/* Login Form Box */}
+        <form onSubmit={handleSubmit} className="mobile-login-form">
+          {/* Email input field box */}
+          <div className="mobile-field-box">
+            <label className="field-box-label">Email Address / Username</label>
+            <div className="field-box-input-wrapper">
+              <Mail size={18} color="#cf4185" />
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter your email or username"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                disabled={isLogin}
+              />
+            </div>
+          </div>
+
+          {/* Password input field box */}
+          <div className="mobile-field-box">
+            <label className="field-box-label">Password</label>
+            <div className="field-box-input-wrapper">
+              <Lock size={18} color="#cf4185" />
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                disabled={isLogin}
+              />
+              <span className="password-eye-toggle" onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+              </span>
+            </div>
+          </div>
+
+          {/* Remember me & Forgot Password row */}
+          <div className="mobile-login-options-row">
+            <label className="remember-me-checkbox-label">
+              <input 
+                type="checkbox" 
+                name="rememberMe" 
+                defaultChecked 
+                className="remember-me-checkbox"
+              />
+              <span className="checkbox-custom-box"></span>
+              <span className="checkbox-text">Remember me</span>
+            </label>
+            <Link href="/forgot-password" className="mobile-forgot-link">
+              Forgot Password?
+            </Link>
+          </div>
+
+          {/* Submit button */}
+          <button type="submit" className="mobile-login-submit-btn" disabled={isLogin}>
+            {isLogin ? <span className="loader-signin"></span> : (
+              <>
+                <span>Login ✨</span>
+              </>
+            )}
+          </button>
+        </form>
+
+        {/* Register Now redirect */}
+        <div className="mobile-login-redirect-footer">
+          <p>
+            Don't have an account?{" "}
+            <Link href="/signup" className="register-now-link">
+              Register Now
+            </Link>
+          </p>
+        </div>
+
+        {/* 3-column trust layout */}
+        <div className="mobile-trust-card">
+          <div className="mobile-trust-column">
+            <div className="trust-icon-con">
+              <Shield size={18} color="#cf4185" />
+            </div>
+            <h4>100% Secure</h4>
+            <p>Your data is safe with us</p>
+          </div>
+
+          <div className="mobile-trust-column">
+            <div className="trust-icon-con">
+              <Lock size={18} color="#cf4185" />
+            </div>
+            <h4>Private & Safe</h4>
+            <p>We respect your privacy</p>
+          </div>
+
+          <div className="mobile-trust-column">
+            <div className="trust-icon-con">
+              <Heart size={18} color="#cf4185" />
+            </div>
+            <h4>Meaningful Connections</h4>
+            <p>Built for real conversations</p>
+          </div>
+        </div>
+
+        {/* Trusted by thousands signature */}
+        <div className="mobile-trusted-signature">
+          <div className="signature-text-row">
+            <span className="leaf-decor left">🌿</span>
+            <span>Trusted by Thousands</span>
+            <span className="leaf-decor right">🌿</span>
+          </div>
+          <div className="signature-heart-con">
+            <Heart size={12} fill="#cf4185" color="#cf4185" />
+          </div>
+        </div>
+      </div>
 
       <div className="signup-left">
         <div className="signup-sidebar">

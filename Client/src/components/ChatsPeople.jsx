@@ -120,6 +120,25 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
         .cp-skel { animation: cpPulse 1.5s infinite; background: rgba(255,255,255,0.06); border-radius: 8px; }
         .cp-row { transition: background 0.15s; cursor: pointer; }
         .cp-row:active { background: rgba(207,65,133,0.09) !important; }
+        .chats-premium-badge {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 6px 12px;
+          background: linear-gradient(135deg, #FFD700, #FFA500);
+          color: #000000 !important;
+          border: none;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 800;
+          cursor: pointer;
+          box-shadow: 0 4px 10px rgba(255, 215, 0, 0.2);
+          transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .chats-premium-badge:hover {
+          transform: scale(1.04) translateY(-1px);
+          box-shadow: 0 6px 16px rgba(255, 215, 0, 0.4);
+        }
       `}</style>
 
       <PopNoti {...notification} isVisible={notification.show} onClose={() => setNotification(n => ({ ...n, show: false }))} />
@@ -131,8 +150,8 @@ const ChatsPeople = ({ onChatSelect = () => {}, onBackBTNSelect = () => {}, refr
           <p style={{ margin: '1px 0 0', fontSize: '0.68rem', color: 'rgba(255,255,255,0.32)', fontWeight: 500 }}>Your AI companions 💕</p>
         </div>
         {!isSubscribed && (
-          <button onClick={() => window.location.href = '/subscribe'} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 13px', background: 'rgba(207,65,133,0.12)', color: '#cf4185', border: '1px solid rgba(207,65,133,0.38)', borderRadius: 20, fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>
-            <Crown size={13} /> Premium
+          <button onClick={() => window.location.href = '/subscribe'} className="chats-premium-badge">
+            <Crown size={12} style={{ fill: 'currentColor' }} /> <span>Premium</span>
           </button>
         )}
       </div>

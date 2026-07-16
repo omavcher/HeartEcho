@@ -5,6 +5,7 @@ import '../styles/Signup.css';
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css"; 
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { ArrowLeft, Mail, Shield, Lock, Heart, User, Camera, Calendar, Users, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import PopNoti from '../components/PopNoti';
 import api from '../config/api';
@@ -971,13 +972,462 @@ function Signup() {
   }
 
   return (
-    <div className='signup-container'>
+    <div className='signup-container signup-page-wrapper'>
       <PopNoti
         message={notification.message}
         type={notification.type}
         isVisible={notification.show}
         onClose={() => setNotification({ ...notification, show: false })}
       />
+
+      {/* Mobile-only view */}
+      <div className="mobile-only-signup-layout">
+        {/* Header bar */}
+        <div className="mobile-nav-bar">
+          <button className="mobile-back-btn" onClick={() => router.back()}>
+            <ArrowLeft size={20} color="#cf4185" />
+          </button>
+          <div className="mobile-logo-con">
+            <img src="/heartechor.png" alt="Logo" className="mobile-logo-img" />
+            <span className="mobile-logo-text">HEARTECHO</span>
+          </div>
+        </div>
+
+        {/* Header content section (title & girl silhouette) */}
+        <div className="mobile-header-section">
+          <div className="mobile-header-text">
+            {step === 1 && (
+              <>
+                <h2>Create Your Account ✨</h2>
+                <p>Join HeartEcho and start your journey to meaningful connections 💗</p>
+              </>
+            )}
+            {step === 2 && (
+              <>
+                <h2>Security & Safety 🔒</h2>
+                <p>Choose a secure password and enable 2FA protection for your account. 💗</p>
+              </>
+            )}
+            {step === 3 && (
+              <>
+                <h2>Personalization 👤</h2>
+                <p>Tell us a bit about yourself so we can customize your experience. 💗</p>
+              </>
+            )}
+            {step === 4 && (
+              <>
+                <h2>Interests & Referral 🎨</h2>
+                <p>Select what you love and enter a referral code if you have one. 💗</p>
+              </>
+            )}
+          </div>
+          <div className="mobile-header-image-wrapper login-girl-wrapper">
+            <img src="/forget_pass_login.png" alt="Girl Silhouette" className="login-girl-img" />
+            <div className="login-girl-heart">
+              <Heart size={20} fill="#cf4185" color="#cf4185" />
+            </div>
+          </div>
+        </div>
+
+        {/* Step-specific Form Content */}
+        {isGoogleSignup ? (
+          <div className="mobile-form-inner-google">
+            {/* If Google signup step is active */}
+            {renderGoogleSignupStep()}
+          </div>
+        ) : (
+          <div className="mobile-signup-steps-container">
+            {step === 1 && (
+              <div className="mobile-step-content">
+                {/* Google Sign-in */}
+                <div className="mobile-google-login-container">
+                  <div className="mobile-custom-google-btn-wrapper">
+                    <button className="mobile-custom-google-btn" type="button">
+                      <div className="google-icon-box">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" />
+                      </div>
+                      <span>Continue with Google</span>
+                    </button>
+                    <div className="real-google-btn-overlay">
+                      <GoogleOAuthProvider clientId={googleClientId}>
+                        <GoogleLogin
+                          onSuccess={handleGoogleSuccess}
+                          onError={handleGoogleFailure}
+                          theme="filled_black"
+                          size="large"
+                          shape="rectangular"
+                          width="100%"
+                        />
+                      </GoogleOAuthProvider>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Separator */}
+                <div className="mobile-login-separator">
+                  <span className="separator-line"></span>
+                  <span>or</span>
+                  <span className="separator-line"></span>
+                </div>
+
+                {/* Step 1 Inputs */}
+                <div className="mobile-field-box">
+                  <label className="field-box-label">Full Name</label>
+                  <div className="field-box-input-wrapper">
+                    <User size={18} color="#cf4185" />
+                    <input
+                      type="text"
+                      name="fullName"
+                      placeholder="Enter your name"
+                      value={formData.fullName}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="mobile-field-box">
+                  <label className="field-box-label">Email Address</label>
+                  <div className="field-box-input-wrapper email-input-row">
+                    <Mail size={18} color="#cf4185" />
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="Enter your email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      disabled={isOtpVerified}
+                      required
+                    />
+                    <button 
+                      type="button"
+                      className="mobile-send-otp-inline-btn" 
+                      onClick={sendOtp} 
+                      disabled={isSendingOtp || otpSent}
+                    >
+                      {isSendingOtp ? <span className="loader-signin"></span> : "Send"}
+                    </button>
+                  </div>
+                </div>
+
+                {otpSent && (
+                  <div className="mobile-otp-section">
+                    {!isOtpVerified && (
+                      <button 
+                        type="button"
+                        className="mobile-resend-otp-btn" 
+                        onClick={sendOtp} 
+                        disabled={otpSent && timer > 0}
+                      >
+                        {otpSent && timer > 0 ? `Resend OTP in ${timer}s` : "Resend OTP"}
+                      </button>
+                    )}
+                    <div className="mobile-otp-inputs-row">
+                      {otp.map((digit, index) => (
+                        <input
+                          key={index}
+                          ref={(el) => (inputRefs.current[index] = el)}
+                          type="text"
+                          maxLength="1"
+                          className="mobile-otp-input-box"
+                          value={digit}
+                          onChange={(e) => handleChangeOtp(index, e)}
+                          onKeyDown={(e) => handleKeyDown(index, e)}
+                        />
+                      ))}
+                    </div>
+                    <button 
+                      type="button"
+                      className="mobile-verify-otp-btn" 
+                      onClick={verifyOtp} 
+                      disabled={isVerifyingOtp}
+                    >
+                      {isVerifyingOtp ? <span className="loader-signin"></span> : "Verify OTP"}
+                    </button>
+                  </div>
+                )}
+
+                <div className="mobile-field-box phone-input-box">
+                  <label className="field-box-label">Mobile Number</label>
+                  <PhoneInput
+                    defaultCountry="IN"
+                    placeholder="Enter phone number"
+                    value={formData.phone}
+                    onChange={(value) => setFormData({ ...formData, phone: value })}
+                  />
+                </div>
+
+                <div className="mobile-action-buttons-row">
+                  <button type="button" className="mobile-primary-action-btn single-btn" onClick={nextStep}>
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="mobile-step-content">
+                {/* Step 2 Inputs */}
+                <div className="mobile-field-box">
+                  <label className="field-box-label">Password</label>
+                  <div className="field-box-input-wrapper">
+                    <Lock size={18} color="#cf4185" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      placeholder="Create a password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
+                    />
+                    <span className="password-eye-toggle" onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mobile-field-box">
+                  <label className="field-box-label">Confirm Password</label>
+                  <div className="field-box-input-wrapper">
+                    <Lock size={18} color="#cf4185" />
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      placeholder="Confirm your password"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      required
+                    />
+                    <span className="password-eye-toggle" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                      {showConfirmPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mobile-checkbox-field-row">
+                  <label className="remember-me-checkbox-label">
+                    <input 
+                      type="checkbox" 
+                      name="twoFA" 
+                      checked={formData.twoFA}
+                      onChange={handleChange} 
+                      className="remember-me-checkbox"
+                    />
+                    <span className="checkbox-custom-box"></span>
+                    <span className="checkbox-text">Enable 2FA Security</span>
+                  </label>
+                </div>
+
+                <div className="mobile-double-btns-row">
+                  <button type="button" className="mobile-secondary-action-btn" onClick={prevStep}>
+                    Back
+                  </button>
+                  <button type="button" className="mobile-primary-action-btn" onClick={nextStep}>
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="mobile-step-content">
+                {/* Step 3 Inputs */}
+                <div className="mobile-upload-box-field">
+                  <label className="field-box-label">Profile Picture</label>
+                  <div className="mobile-upload-container">
+                    {isUploading ? (
+                      <div className="loader-signin"></div>
+                    ) : (
+                      formData.profilePicture ? (
+                        <img src={formData.profilePicture} alt="Profile" className="mobile-uploaded-img" />
+                      ) : (
+                        <div className="upload-placeholder">
+                          <Camera size={28} color="rgba(255, 255, 255, 0.4)" />
+                          <span>Upload Image</span>
+                        </div>
+                      )
+                    )}
+                    <input 
+                      type="file" 
+                      onChange={handleProfilePictureChange} 
+                      style={{ position: "absolute", opacity: 0, width: "100%", height: "100%", left: 0, top: 0, cursor: "pointer" }} 
+                    />
+                  </div>
+                </div>
+
+                <div className="mobile-field-box">
+                  <label className="field-box-label">Age</label>
+                  <div className="field-box-input-wrapper">
+                    <Calendar size={18} color="#cf4185" />
+                    <input
+                      type="number"
+                      name="age"
+                      placeholder="Age"
+                      value={formData.age}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="mobile-field-box">
+                  <label className="field-box-label">Gender</label>
+                  <div className="field-box-input-wrapper">
+                    <Users size={18} color="#cf4185" />
+                    <select name="gender" value={formData.gender} onChange={handleChange} className="mobile-select-dropdown">
+                      <option value="">Select Gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mobile-double-btns-row">
+                  <button type="button" className="mobile-secondary-action-btn" onClick={prevStep}>
+                    Back
+                  </button>
+                  <button type="button" className="mobile-primary-action-btn" onClick={nextStep}>
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {step === 4 && (
+              <div className="mobile-step-content">
+                {/* Step 4 Inputs */}
+                <div className="mobile-interests-section">
+                  <h4>Interests</h4>
+                  <p>Choose several options that interest you</p>
+                  
+                  <div className="mobile-interests-grid">
+                    {options.interests.map(({ id, label, img }) => (
+                      <div 
+                        key={id} 
+                        className={`mobile-interest-card ${formData.selectedInterests.includes(id) ? 'selected' : ''}`} 
+                        onClick={() => handleInterestSelect(id)}
+                      >
+                        <img src={img} alt={label} className="interest-emoji" />
+                        <span>{label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mobile-field-box">
+                  <label className="field-box-label">Referral Code</label>
+                  <div className="field-box-input-wrapper">
+                    <Sparkles size={18} color="#cf4185" />
+                    <input
+                      type="text"
+                      name="referralCode"
+                      placeholder="Referral Code"
+                      value={formData.referralCode}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  {formData.referralCode && isClient && (
+                    <small className="referral-note">
+                      Using referral code from: {localStorage.getItem('referralSource') || 'direct link'}
+                    </small>
+                  )}
+                </div>
+
+                <div className="mobile-checkboxes-block">
+                  <div className="mobile-checkbox-field-row">
+                    <label className="remember-me-checkbox-label">
+                      <input 
+                        type="checkbox" 
+                        name="termsAccepted" 
+                        checked={formData.termsAccepted}
+                        onChange={handleChange} 
+                        className="remember-me-checkbox"
+                        required
+                      />
+                      <span className="checkbox-custom-box"></span>
+                      <span className="checkbox-text">I agree to the Terms of Service & Privacy Policy</span>
+                    </label>
+                  </div>
+
+                  <div className="mobile-checkbox-field-row">
+                    <label className="remember-me-checkbox-label">
+                      <input 
+                        type="checkbox" 
+                        name="subscribeNews" 
+                        checked={formData.subscribeNews}
+                        onChange={handleChange} 
+                        className="remember-me-checkbox"
+                      />
+                      <span className="checkbox-custom-box"></span>
+                      <span className="checkbox-text">Subscribe to News & Updates</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="mobile-double-btns-row">
+                  <button type="button" className="mobile-secondary-action-btn" onClick={prevStep}>
+                    Back
+                  </button>
+                  <button type="button" className="mobile-primary-action-btn" onClick={handleSubmit} disabled={isSignup}>
+                    {isSignup ? <span className="loader-signin"></span> : "Create Account ✨"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Already have an account? Login Link */}
+        <div className="mobile-login-redirect-footer">
+          <p>
+            Already have an account?{" "}
+            <Link href="/login" className="register-now-link">
+              Login Now
+            </Link>
+          </p>
+        </div>
+
+        {/* 3-column trust layout */}
+        <div className="mobile-trust-card">
+          <div className="mobile-trust-column">
+            <div className="trust-icon-con">
+              <Shield size={18} color="#cf4185" />
+            </div>
+            <h4>100% Secure</h4>
+            <p>Your data is safe with us</p>
+          </div>
+
+          <div className="mobile-trust-column">
+            <div className="trust-icon-con">
+              <Lock size={18} color="#cf4185" />
+            </div>
+            <h4>Private & Safe</h4>
+            <p>We respect your privacy</p>
+          </div>
+
+          <div className="mobile-trust-column">
+            <div className="trust-icon-con">
+              <Heart size={18} color="#cf4185" />
+            </div>
+            <h4>Meaningful Connections</h4>
+            <p>Built for real conversations</p>
+          </div>
+        </div>
+
+        {/* Trusted by thousands signature */}
+        <div className="mobile-trusted-signature">
+          <div className="signature-text-row">
+            <span className="leaf-decor left">🌿</span>
+            <span>Trusted by Thousands</span>
+            <span className="leaf-decor right">🌿</span>
+          </div>
+          <div className="signature-heart-con">
+            <Heart size={12} fill="#cf4185" color="#cf4185" />
+          </div>
+        </div>
+      </div>
+
       <div className='signup-left'>
         <div className='signup-sidebar'>
           <div className='sideup-top-sanp'>

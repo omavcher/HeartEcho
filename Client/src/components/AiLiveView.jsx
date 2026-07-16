@@ -55,6 +55,16 @@ function LiveCard({ model, index, onOpen }) {
   );
 }
 
+const shuffleArray = (array) => {
+  if (!array || !Array.isArray(array)) return [];
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 // ── Main section ──────────────────────────────────────────────────────────────
 export default function AiLiveView() {
   const [activeModel, setActiveModel] = useState(null);
@@ -72,7 +82,7 @@ export default function AiLiveView() {
       const ONE_MINUTE_MS = 60000; // 1 minute
       
       if (cachedData && cachedTime && (now - parseInt(cachedTime)) < ONE_MINUTE_MS) {
-        setInfluencers(JSON.parse(cachedData));
+        setInfluencers(shuffleArray(JSON.parse(cachedData)));
         setLoading(false);
         return;
       }
@@ -81,9 +91,9 @@ export default function AiLiveView() {
         const { data } = await axios.get(`${api.Url}/ai-live`);
         if (data.success) {
           const activeOnly = data.data.filter(inf => inf.isActive !== false);
-          setInfluencers(activeOnly);
           sessionStorage.setItem(cacheKey, JSON.stringify(activeOnly));
           sessionStorage.setItem(cacheTimeKey, now.toString());
+          setInfluencers(shuffleArray(activeOnly));
         }
       } catch (error) {
         console.error("Error fetching AI Live Influencers:", error);
