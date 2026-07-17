@@ -823,7 +823,7 @@ const ChatBox = ({ chatId, onBackBTNSelect = () => {}, onSendMessage = () => {} 
       }
 
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || 'rzp_live_SMglmw6VtV4h2O',
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || 'rzp_live_TEWBVyfe0Fy4IS',
         amount: amount * 100,
         currency: 'INR',
         name: 'HeartEcho Gems',
