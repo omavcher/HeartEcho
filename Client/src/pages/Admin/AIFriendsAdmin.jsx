@@ -276,6 +276,45 @@ const AIFriendsAdmin = () => {
   const [batchUploadPreviews, setBatchUploadPreviews] = useState({ images: [], videos: [] });
   const [dragOver, setDragOver] = useState({ images: false, videos: false });
   const [uploadProgress, setUploadProgress] = useState({ images: null, videos: null, avatar: null });
+  const [originalMedia, setOriginalMedia] = useState({ avatar_img: "", avatar_motion_video: "", img_gallery: [], video_gallery: [] });
+
+  const deleteMediaFromR2 = async (url) => {
+    if (!url) return;
+    try {
+      const token = getToken();
+      await axios.post(`${api.Url}/admin/delete-media`, { url }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log("Deleted media from R2:", url);
+    } catch (error) {
+      console.error("Failed to delete media from R2:", url, error);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    if (editFriend) {
+      const currentImgs = editFriend.img_gallery || [];
+      const currentVids = editFriend.video_gallery || [];
+      
+      const newImgs = currentImgs.filter(url => !originalMedia.img_gallery.includes(url));
+      const newVids = currentVids.filter(url => !originalMedia.video_gallery.includes(url));
+      
+      if (editFriend.avatar_img && editFriend.avatar_img !== originalMedia.avatar_img) {
+        newImgs.push(editFriend.avatar_img);
+      }
+      if (editFriend.avatar_motion_video && editFriend.avatar_motion_video !== originalMedia.avatar_motion_video) {
+        newVids.push(editFriend.avatar_motion_video);
+      }
+
+      const allToDelete = [...newImgs, ...newVids];
+      for (const url of allToDelete) {
+        if (url) {
+          deleteMediaFromR2(url).catch(err => console.error("Failed to clean up cancelled upload:", url, err));
+        }
+      }
+    }
+    setEditFriend(null);
+  };
 
   const fileInputRef = useRef({ avatar: null, motionVideo: null, images: null, videos: null });
 
@@ -579,20 +618,28 @@ const AIFriendsAdmin = () => {
                 <button className="fif-btn-x30sn" onClick={fetchAllData} disabled={refreshing}>
                     <FaSync className={refreshing ? 'spinner' : ''}/> Sync
                 </button>
-                <button className="fif-btn-x30sn primary" onClick={() => setEditFriend({
-                    name: "",
-                    relationship: "Stranger",
-                    gender: "female",
-                    age: 20,
-                    description: "",
-                    interests: "",
-                    avatar_img: "",
-                    avatar_motion_video: "",
-                    img_gallery: [],
-                    video_gallery: [],
-                    isActive: true,
-                    isPremium: false
-                })}>
+                <button className="fif-btn-x30sn primary" onClick={() => {
+                    setEditFriend({
+                        name: "",
+                        relationship: "Stranger",
+                        gender: "female",
+                        age: 20,
+                        description: "",
+                        interests: "",
+                        avatar_img: "",
+                        avatar_motion_video: "",
+                        img_gallery: [],
+                        video_gallery: [],
+                        isActive: true,
+                        isPremium: false
+                    });
+                    setOriginalMedia({
+                        avatar_img: "",
+                        avatar_motion_video: "",
+                        img_gallery: [],
+                        video_gallery: []
+                    });
+                }}>
                     <FaPlus /> Add New Companion
                 </button>
             </div>
@@ -727,7 +774,15 @@ const AIFriendsAdmin = () => {
                                 <FaPlay size={10}/>
                             </button>
                         )}
-                        <button className="fif-act-btn-x30sn" onClick={() => setEditFriend({...friend, interests: friend.interests?.join(', ') || ''})}>
+                        <button className="fif-act-btn-x30sn" onClick={() => {
+                            setEditFriend({...friend, interests: friend.interests?.join(', ') || ''});
+                            setOriginalMedia({
+                                avatar_img: friend.avatar_img || "",
+                                avatar_motion_video: friend.avatar_motion_video || "",
+                                img_gallery: friend.img_gallery || [],
+                                video_gallery: friend.video_gallery || []
+                            });
+                        }}>
                             <FaEdit />
                         </button>
                         <button className="fif-act-btn-x30sn del" onClick={() => handleDelete(friend._id)}>
@@ -744,7 +799,7 @@ const AIFriendsAdmin = () => {
                 <div className="fif-modal-content-x30sn">
                     <div className="fif-modal-header-x30sn">
                         <h3>{editFriend._id ? "Edit Companion Profile" : "Create New AI Companion"}</h3>
-                        <button className="fif-close-btn-x30sn" onClick={() => setEditFriend(null)}>×</button>
+                        <button className="fif-close-btn-x30sn" onClick={handleCancelEdit}>×</button>
                     </div>
                     <form onSubmit={handleEditSubmit} className="fif-modal-body-x30sn">
                         <div className="fif-form-grid-x30sn">
@@ -857,6 +912,13 @@ const AIFriendsAdmin = () => {
                                             <div key={i} className="fif-media-item-x30sn">
                                                 <img src={url} alt="" onClick={() => setPreviewMedia({type:'image', url})} style={{cursor:'pointer'}}/>
                                                 <button type="button" className="fif-media-remove-x30sn" onClick={() => {
+                                                    const url = editFriend.img_gallery[i];
+                                                    if (url) {
+                                                        const isExisting = originalMedia.img_gallery.includes(url);
+                                                        if (!isExisting) {
+                                                            deleteMediaFromR2(url);
+                                                        }
+                                                    }
                                                     const newGal = [...editFriend.img_gallery];
                                                     newGal.splice(i, 1);
                                                     setEditFriend({...editFriend, img_gallery: newGal});
@@ -931,6 +993,13 @@ const AIFriendsAdmin = () => {
                                                     style={{cursor:'pointer'}}
                                                 />
                                                 <button type="button" className="fif-media-remove-x30sn" onClick={() => {
+                                                    const url = editFriend.video_gallery[i];
+                                                    if (url) {
+                                                        const isExisting = originalMedia.video_gallery.includes(url);
+                                                        if (!isExisting) {
+                                                            deleteMediaFromR2(url);
+                                                        }
+                                                    }
                                                     const newGal = [...editFriend.video_gallery];
                                                     newGal.splice(i, 1);
                                                     setEditFriend({...editFriend, video_gallery: newGal});
@@ -944,7 +1013,7 @@ const AIFriendsAdmin = () => {
                         </div>
                         
                         <div style={{marginTop:20, display:'flex', justifyContent:'flex-end', gap:10}}>
-                            <button type="button" className="fif-btn-x30sn" onClick={() => setEditFriend(null)}>Cancel</button>
+                            <button type="button" className="fif-btn-x30sn" onClick={handleCancelEdit}>Cancel</button>
                             <button type="submit" className="fif-btn-x30sn primary">
                                 {editFriend._id ? "Save Changes" : "Create Companion"}
                             </button>

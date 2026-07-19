@@ -16,6 +16,7 @@ const { sendPushNotification, sendMulticastNotification, sendEachPersonalizedNot
 const NotificationLog = require("../models/NotificationLog");
 const Feedback = require("../models/Feedback");
 const { getCityFromCoordinates, isStateName } = require("../utils/geocoding");
+const { deleteS3Object } = require("../utils/s3Upload");
 
 const syncDeletedAccountPayments = async () => {
   try {
@@ -1353,19 +1354,40 @@ exports.aiAllModelData = async (req, res) => {
         });
       }
   
-      // Find and delete the AI Friend
-      const deletedFriend = await PrebuiltAIFriend.findByIdAndDelete(id);
+      // Find the AI Friend to get its media URLs first
+      const friend = await PrebuiltAIFriend.findById(id);
   
-      if (!deletedFriend) {
+      if (!friend) {
         return res.status(404).json({
           success: false,
           message: "AI Friend not found",
         });
       }
+
+      // Collect all media URLs
+      const urlsToDelete = [];
+      if (friend.avatar_img) urlsToDelete.push(friend.avatar_img);
+      if (friend.avatar_motion_video) urlsToDelete.push(friend.avatar_motion_video);
+      if (Array.isArray(friend.img_gallery)) {
+        urlsToDelete.push(...friend.img_gallery.filter(Boolean));
+      }
+      if (Array.isArray(friend.video_gallery)) {
+        urlsToDelete.push(...friend.video_gallery.filter(Boolean));
+      }
+
+      // Delete all media from Cloudflare R2
+      for (const url of urlsToDelete) {
+        await deleteS3Object(url).catch(err => 
+          console.error("Failed to delete R2 media on friend deletion:", url, err)
+        );
+      }
+
+      // Delete from DB
+      const deletedFriend = await PrebuiltAIFriend.findByIdAndDelete(id);
   
       res.status(200).json({
         success: true,
-        message: "AI Friend deleted successfully",
+        message: "AI Friend and all associated media deleted successfully",
         data: deletedFriend,
       });
     } catch (error) {
@@ -1445,6 +1467,55 @@ exports.aiAllModelData = async (req, res) => {
         });
       }
   
+      // Retrieve the existing friend to see which media files are removed/replaced
+      const existingFriend = await PrebuiltAIFriend.findById(id);
+      if (!existingFriend) {
+        return res.status(404).json({
+          success: false,
+          message: "AI Friend not found",
+        });
+      }
+
+      // Collect URLs that are being replaced or removed
+      const urlsToDelete = [];
+
+      // 1. Check Avatar Image
+      if (existingFriend.avatar_img && existingFriend.avatar_img !== updatedData.avatar_img) {
+        urlsToDelete.push(existingFriend.avatar_img);
+      }
+
+      // 2. Check Avatar Motion Video
+      if (existingFriend.avatar_motion_video && existingFriend.avatar_motion_video !== updatedData.avatar_motion_video) {
+        urlsToDelete.push(existingFriend.avatar_motion_video);
+      }
+
+      // 3. Check Image Gallery
+      if (Array.isArray(existingFriend.img_gallery)) {
+        const updatedImgGallery = Array.isArray(updatedData.img_gallery) ? updatedData.img_gallery : [];
+        for (const url of existingFriend.img_gallery) {
+          if (url && !updatedImgGallery.includes(url)) {
+            urlsToDelete.push(url);
+          }
+        }
+      }
+
+      // 4. Check Video Gallery
+      if (Array.isArray(existingFriend.video_gallery)) {
+        const updatedVidGallery = Array.isArray(updatedData.video_gallery) ? updatedData.video_gallery : [];
+        for (const url of existingFriend.video_gallery) {
+          if (url && !updatedVidGallery.includes(url)) {
+            urlsToDelete.push(url);
+          }
+        }
+      }
+
+      // Delete the collected URLs from Cloudflare R2
+      for (const url of urlsToDelete) {
+        await deleteS3Object(url).catch(err => 
+          console.error("Failed to delete R2 media on friend update:", url, err)
+        );
+      }
+  
       // Update the AI Friend
       const updatedFriend = await PrebuiltAIFriend.findByIdAndUpdate(
         id,
@@ -1466,6 +1537,38 @@ exports.aiAllModelData = async (req, res) => {
       });
     } catch (error) {
       console.error("Error updating AI Friend:", error);
+      res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
+        error: error.message,
+      });
+    }
+  };
+
+  exports.deleteMedia = async (req, res) => {
+    try {
+      const { url } = req.body;
+      if (!url) {
+        return res.status(400).json({
+          success: false,
+          message: "Media URL is required",
+        });
+      }
+
+      const deleted = await deleteS3Object(url);
+      if (deleted) {
+        return res.status(200).json({
+          success: true,
+          message: "Media deleted successfully from Cloudflare R2",
+        });
+      } else {
+        return res.status(500).json({
+          success: false,
+          message: "Failed to delete media from Cloudflare R2",
+        });
+      }
+    } catch (error) {
+      console.error("Error in deleteMedia controller:", error);
       res.status(500).json({
         success: false,
         message: "Internal Server Error",

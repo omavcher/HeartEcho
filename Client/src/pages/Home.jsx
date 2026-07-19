@@ -17,7 +17,6 @@ const Footer             = dynamic(() => import("../components/Footer"),        
 const HomeSubscriptions  = dynamic(() => import("../components/HomeSubscriptions"),  { ssr: false });
 const HomeReferralSection= dynamic(() => import("../components/HomeReferralSection"),{ ssr: false });
 const HomeAppDownload    = dynamic(() => import("../components/HomeAppDownload"),    { ssr: false });
-const HomeRandomStories  = dynamic(() => import("../components/HomeRandomStories"),  { ssr: false });
 const HomeLiveStories    = dynamic(() => import("../components/HomeLiveStories"),    { ssr: false });
 import api from "../config/api";
 
@@ -78,15 +77,6 @@ export default function Home() {
             <HomeSubscriptions />
           </Suspense>
         </section>
-
-        {/* ─── 9. STORIES ─────────────────────────────────────── */}
-        {country === 'IN' && (
-          <section>
-            <Suspense fallback={null}>
-              <HomeRandomStories />
-            </Suspense>
-          </section>
-        )}
 
         {/* ─── 8. REFERRAL ────────────────────────────────────── */}
         <section className="section-spacer">

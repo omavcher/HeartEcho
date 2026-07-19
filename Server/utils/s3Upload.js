@@ -1,4 +1,4 @@
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const multer = require("multer");
 const multerS3 = require("multer-s3");
@@ -73,4 +73,36 @@ const uploadS3 = multer({
   }),
 });
 
-module.exports = { s3Config, uploadS3, generatePresignedPutUrl };
+const deleteS3Object = async (keyOrUrl) => {
+  if (!keyOrUrl) return false;
+  let key = keyOrUrl;
+  
+  if (keyOrUrl.startsWith(CDN_URL)) {
+    key = keyOrUrl.substring(CDN_URL.length);
+  } else if (keyOrUrl.startsWith("https://")) {
+    try {
+      const url = new URL(keyOrUrl);
+      key = url.pathname;
+    } catch (e) {
+      console.error("Invalid URL in deleteS3Object:", keyOrUrl);
+    }
+  }
+
+  // Remove leading slashes
+  key = key.replace(/^\/+/, "");
+
+  try {
+    const command = new DeleteObjectCommand({
+      Bucket: process.env.R2_BUCKET || defaultBucket,
+      Key: key,
+    });
+    await s3Config.send(command);
+    console.log(`Successfully deleted ${key} from R2`);
+    return true;
+  } catch (error) {
+    console.error(`Error deleting ${key} from R2:`, error);
+    return false;
+  }
+};
+
+module.exports = { s3Config, uploadS3, generatePresignedPutUrl, deleteS3Object };
