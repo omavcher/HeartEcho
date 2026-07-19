@@ -251,6 +251,25 @@ const styles = `
 }
 .fif-preview-content-x30sn { max-width: 90%; max-height: 80vh; border-radius: 12px; border: 1px solid #333; }
 
+/* TOAST NOTIFICATION */
+.fif-toast-x30sn {
+  position: fixed; bottom: 20px; right: 20px; z-index: 3000;
+  background: #050505; border: 1px solid #222; border-left: 4px solid #ff69b4;
+  padding: 15px 20px; border-radius: 8px; display: flex; align-items: center; gap: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  transform: translateY(150%); opacity: 0; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  max-width: 350px;
+}
+.fif-toast-x30sn.visible {
+  transform: translateY(0); opacity: 1;
+}
+.fif-toast-x30sn.error {
+  border-left-color: #ff4444;
+}
+.fif-toast-x30sn-msg {
+  font-size: 13px; font-weight: 500; color: #eee; line-height: 1.4;
+}
+
 @media (max-width: 768px) {
   .fif-header-x30sn { flex-direction: column; align-items: flex-start; }
   .fif-filters-x30sn { flex-direction: column; align-items: stretch; }
@@ -277,17 +296,39 @@ const AIFriendsAdmin = () => {
   const [dragOver, setDragOver] = useState({ images: false, videos: false });
   const [uploadProgress, setUploadProgress] = useState({ images: null, videos: null, avatar: null });
   const [originalMedia, setOriginalMedia] = useState({ avatar_img: "", avatar_motion_video: "", img_gallery: [], video_gallery: [] });
+  const [toast, setToast] = useState({ visible: false, message: "", type: "success" });
 
-  const deleteMediaFromR2 = async (url) => {
+  const fileInputRef = useRef({ avatar: null, motionVideo: null, images: null, videos: null });
+
+  const colors = useMemo(() => ["#4facfe", "#ff69b4", "#00F260", "#ff3b30", "#333333"], []);
+
+  const getToken = useCallback(() => (typeof window !== 'undefined' ? localStorage.getItem("token") || "" : ""), []);
+
+  const showToast = (message, type = "success") => {
+    setToast({ visible: true, message, type });
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, visible: false }));
+    }, 4500);
+  };
+
+  const deleteMediaFromR2 = async (url, silent = false) => {
     if (!url) return;
     try {
       const token = getToken();
-      await axios.post(`${api.Url}/admin/delete-media`, { url }, {
+      const res = await axios.post(`${api.Url}/admin/delete-media`, { url }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log("Deleted media from R2:", url);
+      if (res.data.success) {
+        if (!silent) {
+          showToast(`File deleted from Cloudflare R2 bucket.`, "success");
+        }
+        console.log("Deleted media from R2:", url);
+      } else {
+        showToast(`Failed to delete file from Cloudflare R2.`, "error");
+      }
     } catch (error) {
       console.error("Failed to delete media from R2:", url, error);
+      showToast(`Error deleting file from Cloudflare R2.`, "error");
     }
   };
 
@@ -309,18 +350,15 @@ const AIFriendsAdmin = () => {
       const allToDelete = [...newImgs, ...newVids];
       for (const url of allToDelete) {
         if (url) {
-          deleteMediaFromR2(url).catch(err => console.error("Failed to clean up cancelled upload:", url, err));
+          deleteMediaFromR2(url, true).catch(err => console.error("Failed to clean up cancelled upload:", url, err));
         }
+      }
+      if (allToDelete.length > 0) {
+        showToast(`Cancelled. Cleaned up ${allToDelete.length} unsaved files from Cloudflare.`, "success");
       }
     }
     setEditFriend(null);
   };
-
-  const fileInputRef = useRef({ avatar: null, motionVideo: null, images: null, videos: null });
-
-  const colors = useMemo(() => ["#4facfe", "#ff69b4", "#00F260", "#ff3b30", "#333333"], []);
-
-  const getToken = useCallback(() => (typeof window !== 'undefined' ? localStorage.getItem("token") || "" : ""), []);
 
   // ─── FIXED: Use 'ai_friends' (underscore) to match allowed server prefixes ───
   const uploadToCloudflareR2 = async (file, type = 'image', onProgress = null) => {
@@ -553,23 +591,31 @@ const AIFriendsAdmin = () => {
             video_gallery: (editFriend.video_gallery || []).filter(x => x)
         };
 
+        let response;
         if (editFriend._id) {
             // Update existing
-            await axios.put(`${api.Url}/admin/aiuser-data/${editFriend._id}`, payload, { 
+            response = await axios.put(`${api.Url}/admin/aiuser-data/${editFriend._id}`, payload, { 
                 headers: { Authorization: `Bearer ${token}` } 
             });
+            const delCount = response.data.deletedMediaCount || 0;
+            if (delCount > 0) {
+              showToast(`Companion saved! Cleaned up ${delCount} replaced/removed files from Cloudflare.`, "success");
+            } else {
+              showToast(`Companion saved successfully.`, "success");
+            }
         } else {
             // Create new
-            await axios.post(`${api.Url}/admin/aiuser-data`, payload, { 
+            response = await axios.post(`${api.Url}/admin/aiuser-data`, payload, { 
                 headers: { Authorization: `Bearer ${token}` } 
             });
+            showToast(`Companion created successfully!`, "success");
         }
 
         setEditFriend(null);
         fetchAllData();
     } catch (e) { 
         console.error(e);
-        alert(editFriend._id ? "Update failed" : "Creation failed"); 
+        showToast(editFriend._id ? "Update failed" : "Creation failed", "error"); 
     }
   };
 
@@ -577,9 +623,14 @@ const AIFriendsAdmin = () => {
       if(!confirm("Delete AI Friend?")) return;
       try {
           const token = getToken();
-          await axios.delete(`${api.Url}/admin/aiuser-data/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+          const res = await axios.delete(`${api.Url}/admin/aiuser-data/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+          const delCount = res.data.deletedMediaCount || 0;
+          showToast(`Companion deleted! Cleaned up ${delCount} files from Cloudflare bucket.`, "success");
           setAIFriends(prev => prev.filter(f => f._id !== id));
-      } catch (e) { alert("Delete failed"); }
+      } catch (e) { 
+          console.error(e);
+          showToast("Delete failed", "error"); 
+      }
   };
 
   if (loading) return <div className="fif-root-x30sn" style={{display:'flex',alignItems:'center',justifyContent:'center'}}><FaSpinner className="spinner" size={30} style={{color:'#ff69b4'}}/></div>;
@@ -1026,6 +1077,11 @@ const AIFriendsAdmin = () => {
                 </div>
             </div>
         )}
+
+        {/* TOAST NOTIFICATION */}
+        <div className={`fif-toast-x30sn ${toast.visible ? 'visible' : ''} ${toast.type}`}>
+            <span className="fif-toast-x30sn-msg">{toast.message}</span>
+        </div>
 
       </div>
     </>
