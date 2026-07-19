@@ -912,16 +912,18 @@ const AIFriendsAdmin = () => {
                                             <div key={i} className="fif-media-item-x30sn">
                                                 <img src={url} alt="" onClick={() => setPreviewMedia({type:'image', url})} style={{cursor:'pointer'}}/>
                                                 <button type="button" className="fif-media-remove-x30sn" onClick={() => {
-                                                    const url = editFriend.img_gallery[i];
                                                     if (url) {
                                                         const isExisting = originalMedia.img_gallery.includes(url);
                                                         if (!isExisting) {
                                                             deleteMediaFromR2(url);
                                                         }
+                                                        const idx = editFriend.img_gallery.indexOf(url);
+                                                        if (idx > -1) {
+                                                            const newGal = [...editFriend.img_gallery];
+                                                            newGal.splice(idx, 1);
+                                                            setEditFriend({...editFriend, img_gallery: newGal});
+                                                        }
                                                     }
-                                                    const newGal = [...editFriend.img_gallery];
-                                                    newGal.splice(i, 1);
-                                                    setEditFriend({...editFriend, img_gallery: newGal});
                                                 }}>×</button>
                                             </div>
                                         ))}
@@ -993,16 +995,18 @@ const AIFriendsAdmin = () => {
                                                     style={{cursor:'pointer'}}
                                                 />
                                                 <button type="button" className="fif-media-remove-x30sn" onClick={() => {
-                                                    const url = editFriend.video_gallery[i];
                                                     if (url) {
                                                         const isExisting = originalMedia.video_gallery.includes(url);
                                                         if (!isExisting) {
                                                             deleteMediaFromR2(url);
                                                         }
+                                                        const idx = editFriend.video_gallery.indexOf(url);
+                                                        if (idx > -1) {
+                                                            const newGal = [...editFriend.video_gallery];
+                                                            newGal.splice(idx, 1);
+                                                            setEditFriend({...editFriend, video_gallery: newGal});
+                                                        }
                                                     }
-                                                    const newGal = [...editFriend.video_gallery];
-                                                    newGal.splice(i, 1);
-                                                    setEditFriend({...editFriend, video_gallery: newGal});
                                                 }}>×</button>
                                             </div>
                                         ))}
