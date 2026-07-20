@@ -265,12 +265,13 @@ async function generateImageWithOpenRouter(promptText) {
       return null;
     }
 
-    console.log(`🎨 Requesting OpenRouter image generation (seedream-4.5) for prompt: "${promptText.substring(0, 60)}..."`);
+    console.log(`🎨 Requesting OpenRouter image generation (bytedance-seed/seedream-4.5) for prompt: "${promptText.substring(0, 60)}..."`);
     
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s timeout for image gen
 
-    const response = await fetch("https://openrouter.ai/api/v1/images", {
+    // Try chat completions endpoint first (recommended by OpenRouter for multimodal/image models like Seedream 4.5)
+    let response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       signal: controller.signal,
       headers: {
@@ -281,9 +282,32 @@ async function generateImageWithOpenRouter(promptText) {
       },
       body: JSON.stringify({
         model: "bytedance-seed/seedream-4.5",
-        prompt: promptText,
+        messages: [
+          {
+            role: "user",
+            content: promptText
+          }
+        ]
       }),
     });
+
+    if (!response.ok) {
+      console.warn(`⚠️ Chat completions endpoint returned status ${response.status}, trying /api/v1/images endpoint...`);
+      response = await fetch("https://openrouter.ai/api/v1/images", {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://www.heartecho.in",
+          "X-Title": "HeartEcho AI"
+        },
+        body: JSON.stringify({
+          model: "bytedance-seed/seedream-4.5",
+          prompt: promptText,
+        }),
+      });
+    }
     clearTimeout(timeoutId);
 
     if (!response.ok) {
@@ -293,17 +317,72 @@ async function generateImageWithOpenRouter(promptText) {
     }
 
     const result = await response.json();
-    if (result && result.data && result.data.length > 0) {
-      const imgItem = result.data[0];
-      if (imgItem.b64_json) {
-        console.log(`✅ OpenRouter generated image successfully (Base64 length: ${imgItem.b64_json.length})`);
-        return `data:image/png;base64,${imgItem.b64_json}`;
-      } else if (imgItem.url) {
-        console.log(`✅ OpenRouter generated image URL: ${imgItem.url}`);
-        return imgItem.url;
+    console.log(`📸 OpenRouter Image API Response keys: ${Object.keys(result).join(", ")}`);
+
+    // Helper to safely extract image string
+    const extractImageStr = (item) => {
+      if (!item) return null;
+      if (typeof item === 'string') {
+        if (item.startsWith("data:image/") || item.startsWith("http://") || item.startsWith("https://")) return item;
+        if (item.length > 500) return `data:image/png;base64,${item}`;
+      }
+      if (typeof item === 'object') {
+        if (item.b64_json) return `data:image/png;base64,${item.b64_json}`;
+        if (item.url) return item.url;
+        if (item.image_url) {
+          if (typeof item.image_url === 'string') return item.image_url;
+          if (item.image_url.url) return item.image_url.url;
+        }
+      }
+      return null;
+    };
+
+    // 1. Check choices array (Chat Completions format)
+    if (result.choices && result.choices.length > 0) {
+      const choice = result.choices[0];
+      if (choice.message) {
+        if (choice.message.images && choice.message.images.length > 0) {
+          const img = extractImageStr(choice.message.images[0]);
+          if (img) {
+            console.log("✅ Extracted image from choices[0].message.images");
+            return img;
+          }
+        }
+        if (choice.message.content) {
+          const content = choice.message.content;
+          const match = content.match(/https?:\/\/[^\s\)\"]+\.(png|jpg|jpeg|webp)/i) || 
+                        content.match(/data:image\/[a-zA-Z]+;base64,[^\s\)\"]+/i);
+          if (match) {
+            console.log("✅ Extracted image URL/base64 from choices[0].message.content markdown");
+            return match[0];
+          }
+          const img = extractImageStr(content);
+          if (img) return img;
+        }
       }
     }
+
+    // 2. Check data array (Images API format)
+    if (result.data && result.data.length > 0) {
+      const img = extractImageStr(result.data[0]);
+      if (img) {
+        console.log("✅ Extracted image from data[0]");
+        return img;
+      }
+    }
+
+    // 3. Check images top-level array
+    if (result.images && result.images.length > 0) {
+      const img = extractImageStr(result.images[0]);
+      if (img) {
+        console.log("✅ Extracted image from images[0]");
+        return img;
+      }
+    }
+
+    console.warn("⚠️ Could not extract image from OpenRouter payload:", JSON.stringify(result).substring(0, 300));
     return null;
+
   } catch (error) {
     console.error("❌ Exception during OpenRouter image generation:", error.message);
     return null;
