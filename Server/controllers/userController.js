@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const PrebuiltAIFriend = require("../models/PrebuiltAIFriend");
+const UserAIFriend = require("../models/UserAIFriend");
 const User = require("../models/User");
 const AIFriend = require("../models/AIFriend");
 const Chat = require("../models/Chat");
@@ -774,6 +775,54 @@ exports.chatFriends = async (req, res) => {
 
     // Apply the filter
     const filteredChatFriends = filterChatFriends(chatFriends);
+
+    // Ensure all user-created custom AI companions belonging to this user appear in their chat list
+    try {
+      const userCustomCompanions = await UserAIFriend.find({
+        $or: [
+          { userId: req.user.id.toString() },
+          { user: userId }
+        ]
+      }).lean();
+
+      const existingCompanionIds = new Set(filteredChatFriends.map(f => f._id.toString()));
+
+      for (const customCompanion of userCustomCompanions) {
+        if (!existingCompanionIds.has(customCompanion._id.toString())) {
+          const companionChat = await Chat.findOne({
+            participants: userId,
+            aiParticipants: customCompanion._id
+          }).lean();
+
+          const lastMsg = companionChat && companionChat.messages && companionChat.messages.length > 0
+            ? companionChat.messages[companionChat.messages.length - 1]
+            : null;
+
+          const lastMsgText = lastMsg
+            ? (lastMsg.mediaType === "text" || !lastMsg.mediaType ? lastMsg.text : `[${lastMsg.mediaType}]`)
+            : (customCompanion.initial_message || `Hi there! 💕 I'm ${customCompanion.name}.`);
+
+          filteredChatFriends.push({
+            _id: customCompanion._id,
+            name: customCompanion.name,
+            avatar: customCompanion.avatar_img || "https://cdn.heartecho.in/custom-avatars/default_female.jpg",
+            lastMessage: lastMsgText,
+            lastMessageTime: lastMsg ? lastMsg.time : (customCompanion.createdAt || new Date()),
+            chatId: companionChat ? companionChat._id : customCompanion._id,
+            unreadCount: 0,
+            streakCount: 0,
+            currentEmotion: "happy",
+            relationshipLevel: 1,
+            relationshipXP: 0
+          });
+        }
+      }
+
+      // Re-sort all chat friends by last message time
+      filteredChatFriends.sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
+    } catch (customLookupErr) {
+      console.warn("⚠️ Warning attaching custom companions to chat friends list:", customLookupErr.message);
+    }
 
     res.status(200).json(filteredChatFriends);
   } catch (error) {

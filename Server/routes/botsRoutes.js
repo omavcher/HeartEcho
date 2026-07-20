@@ -459,6 +459,32 @@ router.post("/custom-companion", authMiddleware, async (req, res) => {
     await newFriend.save();
     console.log(`✅ Grok AI Pipeline completed! Private UserAIFriend saved for user [${userId}] with ID: ${newFriend._id}`);
 
+    // Automatically initialize Chat session for the custom companion so she appears in chat friends list
+    try {
+      const Chat = require("../models/Chat");
+      const initialMsgText = grokProfile.initial_message || rawAttributes.greeting || `Hi there! 💕 I'm ${rawAttributes.name}, your ${rawAttributes.relationship}. I'm so happy we connected! How was your day?`;
+      const initialChat = new Chat({
+        participants: [validUserObjectId || new mongoose.Types.ObjectId(userId)],
+        aiParticipants: [newFriend._id],
+        senderModel: "UserAIFriend",
+        messages: [
+          {
+            sender: newFriend._id,
+            senderModel: "UserAIFriend",
+            text: initialMsgText,
+            time: new Date()
+          }
+        ],
+        statistics: {
+          totalMessages: 1
+        }
+      });
+      await initialChat.save();
+      console.log(`💬 Initialized Chat session [${initialChat._id}] for custom companion ${newFriend.name}`);
+    } catch (chatInitErr) {
+      console.warn("⚠️ Warning initializing chat session for custom companion:", chatInitErr.message);
+    }
+
     return res.status(201).json({
       success: true,
       message: "AI Companion created successfully with Grok AI & OpenRouter Image API!",
