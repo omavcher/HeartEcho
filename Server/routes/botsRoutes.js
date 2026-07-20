@@ -145,16 +145,6 @@ router.get("/chat/:aiFriendId", authMiddleware, async (req, res) => {
       ]
     });
 
-    if (!chat) {
-      return res.json({
-        success: true,
-        message: "No chat history found. Start a new conversation!",
-        chat: null,
-        messageCount: 0,
-        exists: false
-      });
-    }
-
     // Lookup AI friend in order: UserAIFriend -> AIFriend -> PrebuiltAIFriend
     let aiFriend = await UserAIFriend.findById(aiFriendId);
     let senderModel = "UserAIFriend";
@@ -176,8 +166,12 @@ router.get("/chat/:aiFriendId", authMiddleware, async (req, res) => {
       }
     }
 
+    if (!aiFriend) {
+      return res.status(404).json({ success: false, message: "AI Companion not found" });
+    }
+
     // Check premium restriction for Prebuilt AIs
-    if (senderModel === "PrebuiltAIFriend" && aiFriend && aiFriend.isPremium) {
+    if (senderModel === "PrebuiltAIFriend" && aiFriend.isPremium) {
       const userProfile = await User.findById(userId);
       if (!userProfile || !userProfile.isSubscriptionActive()) {
         return res.status(403).json({
@@ -188,16 +182,42 @@ router.get("/chat/:aiFriendId", authMiddleware, async (req, res) => {
       }
     }
 
-    res.json({
+    // If chat doesn't exist yet, automatically initialize chat with her initial_message!
+    if (!chat) {
+      const initialGreeting = aiFriend.initial_message || aiFriend.greeting || `Hi there! 💕 I'm ${aiFriend.name}. I'm so happy to meet you!`;
+      
+      const newChat = new (mongoose.model("Chat"))({
+        participants: [userId],
+        aiParticipants: [aiFriendId],
+        senderModel: senderModel,
+        messages: [
+          {
+            senderId: aiFriendId,
+            senderModel: senderModel,
+            text: initialGreeting,
+            createdAt: new Date()
+          }
+        ]
+      });
+      await newChat.save();
+      chat = newChat;
+    }
+
+    return res.json({
       success: true,
       chat: chat,
-      messageCount: chat.messages.length,
-      aiFriend: aiFriend ? {
+      messageCount: chat.messages ? chat.messages.length : 0,
+      aiFriend: {
         _id: aiFriend._id,
         name: aiFriend.name,
         gender: aiFriend.gender,
-        type: senderModel
-      } : null,
+        avatar_img: aiFriend.avatar_img || aiFriend.avatar,
+        initial_message: aiFriend.initial_message || aiFriend.greeting,
+        description: aiFriend.description || aiFriend.bio,
+        settings: aiFriend.settings,
+        type: senderModel,
+        isCustomAi: senderModel === "UserAIFriend"
+      },
       exists: true
     });
 
@@ -234,10 +254,74 @@ router.get("/user-companions", authMiddleware, async (req, res) => {
 
 const { generateImageWithOpenRouter, generateCompanionProfileWithGrok } = require("../controllers/openrouter-ai-model");
 
-// POST /bots/custom-companion - Grok AI attribute analysis + OpenRouter seedream-4.5 image generation + UserAIFriend saving
-router.post("/custom-companion", async (req, res) => {
+// GET /bots/custom-companion-quota - Check remaining custom AI creation quota for logged in user
+router.get("/custom-companion-quota", authMiddleware, async (req, res) => {
   try {
-    const userId = req.user ? req.user.id.toString() : (req.body.userId || "guest");
+    const userId = req.user.id.toString();
+    const userProfile = await User.findById(req.user.id);
+
+    if (!userProfile) {
+      return res.status(404).json({ success: false, message: "User profile not found" });
+    }
+
+    const maxQuota = userProfile.getCustomAICreationQuota();
+    const createdCount = await UserAIFriend.countDocuments({ userId: userId });
+    const remainingQuota = Math.max(0, maxQuota - createdCount);
+
+    return res.json({
+      success: true,
+      subscriptionTier: userProfile.subscriptionTier,
+      maxQuota: maxQuota,
+      createdCount: createdCount,
+      remainingQuota: remainingQuota,
+      canCreate: remainingQuota > 0
+    });
+  } catch (error) {
+    console.error("Error checking custom companion quota:", error);
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+});
+
+// POST /bots/custom-companion - Grok AI attribute analysis + OpenRouter seedream-4.5 image generation + UserAIFriend saving with quota checks
+router.post("/custom-companion", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id.toString();
+    const userProfile = await User.findById(req.user.id);
+
+    if (!userProfile) {
+      return res.status(404).json({
+        success: false,
+        message: "User profile not found."
+      });
+    }
+
+    // Quota Enforcement: ₹99 -> 0, ₹599 -> 1, ₹1499 -> 2
+    const allowedQuota = userProfile.getCustomAICreationQuota();
+    const existingCount = await UserAIFriend.countDocuments({ userId: userId });
+
+    if (allowedQuota === 0) {
+      return res.status(403).json({
+        success: false,
+        quotaExceeded: true,
+        currentCount: existingCount,
+        maxQuota: 0,
+        message: "Creating custom AI companions is locked on the ₹99 Plan. Please upgrade to ₹599 (1 AI) or ₹1499 (2 AIs) Plan!"
+      });
+    }
+
+    if (existingCount >= allowedQuota) {
+      const upgradeMsg = allowedQuota === 1
+        ? "You have reached your limit of 1 custom AI companion for the ₹599 Plan. Upgrade to the ₹1499 Plan to create up to 2 companions!"
+        : "You have reached the maximum limit of 2 custom AI companions for the ₹1499 Plan.";
+
+      return res.status(403).json({
+        success: false,
+        quotaExceeded: true,
+        currentCount: existingCount,
+        maxQuota: allowedQuota,
+        message: upgradeMsg
+      });
+    }
     const {
       gender,
       name,
@@ -310,7 +394,15 @@ router.post("/custom-companion", async (req, res) => {
         : "assets/create/male/natural.jpg");
     }
 
-    // Step 3: Save complete analyzed profile into private UserAIFriend DB Model
+    // Step 3: Upload generated image directly to Cloudflare R2 bucket and get CDN link
+    const { uploadBase64ToR2 } = require("../utils/s3Upload");
+    let cdnAvatarUrl = generatedAvatar;
+    if (generatedAvatar && (generatedAvatar.startsWith("data:image/") || generatedAvatar.startsWith("http"))) {
+      console.log("☁️ Uploading generated avatar image to Cloudflare R2 bucket...");
+      cdnAvatarUrl = await uploadBase64ToR2(generatedAvatar, "custom-avatars");
+    }
+
+    // Step 4: Save complete analyzed profile into private UserAIFriend DB Model
     const newFriend = new UserAIFriend({
       userId: userId,
       user: req.user ? req.user.id : null,
@@ -341,7 +433,7 @@ router.post("/custom-companion", async (req, res) => {
         image_prompt: imagePromptToUse
       },
       initial_message: grokProfile.initial_message || rawAttributes.greeting || `Hi there! 💕 I'm ${rawAttributes.name}, your ${rawAttributes.relationship}. I'm so happy we connected! How was your day?`,
-      avatar_img: generatedAvatar,
+      avatar_img: cdnAvatarUrl,
       isPrivate: true
     });
 
@@ -354,11 +446,121 @@ router.post("/custom-companion", async (req, res) => {
       aiFriend: newFriend
     });
 
+// POST /bots/generate-custom-photo - Generate character-consistent photos for custom AI companions
+router.post("/generate-custom-photo", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id.toString();
+    const { aiFriendId, promptContext } = req.body;
+
+    if (!aiFriendId || !mongoose.Types.ObjectId.isValid(aiFriendId)) {
+      return res.status(400).json({ success: false, message: "Invalid AI Friend ID" });
+    }
+
+    const aiFriend = await UserAIFriend.findById(aiFriendId);
+    if (!aiFriend) {
+      return res.status(404).json({ success: false, message: "Custom AI Companion not found" });
+    }
+
+    // Security check: Only creator can request photos from their custom companion
+    if (aiFriend.userId !== userId) {
+      return res.status(403).json({ success: false, message: "Access Denied: This custom AI companion is private to its creator." });
+    }
+
+    const userProfile = await User.findById(req.user.id);
+    const tier = userProfile ? (userProfile.subscriptionTier || "").toLowerCase() : "";
+    const planAmount = userProfile ? (userProfile.subscriptionAmount || 0) : 0;
+
+    // Gallery generation limits based on plan:
+    // ₹1499 Plan -> 8 photos
+    // ₹599 Plan -> 5 photos
+    // Basic -> 3 photos
+    let maxGalleryLimit = 3;
+    if (tier === "yearly_pro" || tier === "lifetime" || planAmount >= 1499) {
+      maxGalleryLimit = 8;
+    } else if (tier === "yearly" || planAmount >= 599) {
+      maxGalleryLimit = 5;
+    }
+
+    const currentGallery = aiFriend.img_gallery || [];
+
+    // IF GALLERY LIMIT REACHED: Re-serve random image from existing gallery
+    if (currentGallery.length >= maxGalleryLimit) {
+      console.log(`📸 Gallery limit reached (${currentGallery.length}/${maxGalleryLimit}) for Custom AI [${aiFriend.name}]. Serving from existing gallery.`);
+      const randomIndex = Math.floor(Math.random() * currentGallery.length);
+      const existingPhoto = currentGallery[randomIndex] || aiFriend.avatar_img;
+
+      return res.json({
+        success: true,
+        imageUrl: existingPhoto,
+        isFromGallery: true,
+        limitReached: true,
+        galleryCount: currentGallery.length,
+        maxGalleryLimit: maxGalleryLimit,
+        message: "Here is a photo from my album! 💕"
+      });
+    }
+
+    // GENERATE NEW CHARACTER-CONSISTENT PHOTO WITH OPENROUTER SEEDREAM-4.5
+    console.log(`🎨 Generating NEW consistent photo #${currentGallery.length + 1}/${maxGalleryLimit} for Custom AI [${aiFriend.name}]...`);
+
+    const settings = aiFriend.settings || {};
+    const gender = aiFriend.gender || "female";
+    const name = aiFriend.name || "Companion";
+    const hairStyle = settings.hairStyle || "soft hair";
+    const hairColor = settings.hairColor || "";
+    const eyeColor = settings.eyeColor || "";
+    const skinTone = settings.skinTone || "fair";
+    const bodyType = settings.bodyType || "fit";
+    const defaultOutfit = settings.outfitStyle || "stylish outfit";
+
+    const locationsAndPoses = [
+      "sitting at a sunlit aesthetic coffee shop, smiling warmly at camera",
+      "walking through a scenic autumn park, casual candid pose",
+      "standing on a cozy apartment balcony at sunset, soft warm light",
+      "enjoying a candlelit dinner at a stylish restaurant",
+      "smiling at a golden hour beach boardwalk, breeze blowing hair",
+      "relaxing in a cozy indoor lounge with fairy lights",
+      "wearing a chic casual outfit, looking charmingly into camera",
+      "outdoor portrait shot with soft bokeh background and natural lighting"
+    ];
+
+    const randomPose = promptContext || locationsAndPoses[currentGallery.length % locationsAndPoses.length];
+
+    const photoPrompt = `A gorgeous photorealistic 8k studio photo of the exact same ${gender} named ${name}, ${hairStyle} ${hairColor} hair, ${eyeColor} eyes, ${skinTone} skin tone, ${bodyType} build, wearing ${defaultOutfit}, ${randomPose}, cinematic studio lighting, highly detailed portrait photography, 8k resolution, masterpiece.`;
+
+    const generatedPhoto = await generateImageWithOpenRouter(photoPrompt);
+
+    let cdnPhotoUrl = generatedPhoto;
+    if (generatedPhoto && (generatedPhoto.startsWith("data:image/") || generatedPhoto.startsWith("http"))) {
+      const { uploadBase64ToR2 } = require("../utils/s3Upload");
+      cdnPhotoUrl = await uploadBase64ToR2(generatedPhoto, "custom-gallery");
+    }
+
+    if (!cdnPhotoUrl) {
+      cdnPhotoUrl = aiFriend.avatar_img;
+    }
+
+    // Append to img_gallery array in MongoDB
+    aiFriend.img_gallery.push(cdnPhotoUrl);
+    await aiFriend.save();
+
+    console.log(`✅ New Custom AI photo saved to Cloudflare R2 and DB (${aiFriend.img_gallery.length}/${maxGalleryLimit}): ${cdnPhotoUrl}`);
+
+    return res.status(201).json({
+      success: true,
+      imageUrl: cdnPhotoUrl,
+      isFromGallery: false,
+      limitReached: false,
+      galleryCount: aiFriend.img_gallery.length,
+      maxGalleryLimit: maxGalleryLimit,
+      message: "Here's a photo I just took for you! 📸✨"
+    });
+
   } catch (error) {
-    console.error("❌ Error in AI Creation Pipeline:", error);
+    console.error("❌ Error generating custom AI photo:", error);
     return res.status(500).json({
       success: false,
-      message: "Failed to generate AI companion",
+      message: "Failed to generate photo",
       error: error.message
     });
   }

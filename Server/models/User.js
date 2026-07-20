@@ -247,6 +247,24 @@ userSchema.methods.isSubscriptionActive = function () {
   return new Date() <= new Date(this.subscriptionExpiry);
 };
 
+// Method to get max custom AI creation quota based on subscription plan
+userSchema.methods.getCustomAICreationQuota = function () {
+  if (!this.isSubscriptionActive()) {
+    return 0; // Free / non-subscribers: 0 custom AIs
+  }
+
+  const tier = (this.subscriptionTier || "").toLowerCase();
+  const planAmount = this.subscriptionAmount || 0;
+
+  if (tier === "yearly_pro" || tier === "lifetime" || planAmount >= 1499) {
+    return 2; // ₹1499 Ultimate plan: Max 2 custom AIs
+  } else if (tier === "yearly" || planAmount >= 599) {
+    return 1; // ₹599 Pro plan: Max 1 custom AI
+  } else {
+    return 0; // ₹99 Basic plan: 0 custom AIs
+  }
+};
+
 // Method to get remaining quota
 userSchema.methods.getRemainingQuota = function () {
   this.resetDailyQuota(); // Ensure quota is reset if needed

@@ -105,4 +105,64 @@ const deleteS3Object = async (keyOrUrl) => {
   }
 };
 
-module.exports = { s3Config, uploadS3, generatePresignedPutUrl, deleteS3Object };
+/**
+ * Upload a Base64 image string or buffer directly to Cloudflare R2 Bucket
+ * @param {string} base64DataOrUrl - Base64 data string (e.g. data:image/png;base64,...) or image URL
+ * @param {string} folder - Destination folder (default: "custom-avatars")
+ * @returns {Promise<string>} Public CDN URL of uploaded image (https://cdn.heartecho.in/custom-avatars/...)
+ */
+const uploadBase64ToR2 = async (base64DataOrUrl, folder = "custom-avatars") => {
+  if (!base64DataOrUrl) return null;
+  
+  if (base64DataOrUrl.startsWith("https://cdn.heartecho.in")) {
+    return base64DataOrUrl;
+  }
+
+  try {
+    let buffer;
+    let contentType = "image/png";
+    let ext = ".png";
+
+    if (base64DataOrUrl.startsWith("data:image/")) {
+      const matches = base64DataOrUrl.match(/^data:(image\/(\w+));base64,(.+)$/);
+      if (matches) {
+        contentType = matches[1];
+        ext = `.${matches[2]}`;
+        buffer = Buffer.from(matches[3], "base64");
+      } else {
+        const base64String = base64DataOrUrl.split(",").pop();
+        buffer = Buffer.from(base64String, "base64");
+      }
+    } else if (base64DataOrUrl.startsWith("http://") || base64DataOrUrl.startsWith("https://")) {
+      const response = await fetch(base64DataOrUrl);
+      if (!response.ok) return base64DataOrUrl;
+      const arrayBuffer = await response.arrayBuffer();
+      buffer = Buffer.from(arrayBuffer);
+      const headerType = response.headers.get("content-type");
+      if (headerType) contentType = headerType;
+    } else {
+      buffer = Buffer.from(base64DataOrUrl, "base64");
+    }
+
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const key = `${folder}/avatar-${uniqueSuffix}${ext}`;
+
+    const command = new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET || defaultBucket,
+      Key: key,
+      Body: buffer,
+      ContentType: contentType,
+    });
+
+    await s3Config.send(command);
+    const cdnUrl = `${CDN_URL}/${key}`;
+    console.log(`✅ Uploaded AI generated image to Cloudflare R2 bucket: ${cdnUrl}`);
+    return cdnUrl;
+
+  } catch (error) {
+    console.error("❌ Exception uploading image to Cloudflare R2:", error.message);
+    return base64DataOrUrl;
+  }
+};
+
+module.exports = { s3Config, uploadS3, generatePresignedPutUrl, deleteS3Object, uploadBase64ToR2 };

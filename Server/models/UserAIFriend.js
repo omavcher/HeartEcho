@@ -13,6 +13,7 @@ const userAIFriendSchema = new mongoose.Schema({
   settings: { type: Object },
   initial_message: { type: String },
   avatar_img: { type: String },
+  img_gallery: [{ type: String }], // Cloudflare R2 CDN links of generated photos
   isPrivate: { type: Boolean, default: true }, // Only accessible by created user
   createdAt: { type: Date, default: Date.now }
 });
