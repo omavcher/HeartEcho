@@ -121,7 +121,9 @@ function getFreshReply(chatId, gender, firstName, preferredLanguage) {
 
 
 
-// GET /bots/chat/:aiFriendId - Get chat by AI friend (same as your getChatByAiFriend)
+const UserAIFriend = require("../models/UserAIFriend");
+
+// GET /bots/chat/:aiFriendId - Get chat by AI friend with privacy checks
 router.get("/chat/:aiFriendId", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -134,19 +136,15 @@ router.get("/chat/:aiFriendId", authMiddleware, async (req, res) => {
       });
     }
 
-    // Find chat using your EXACT logic
     const chat = await Chat.findOne({
       participants: userId,
       isActive: true,
       $or: [
-        { aiParticipants: aiFriendId }, // ✅ new correct structure
-        { participants: aiFriendId }    // ⚠️ old broken structure
+        { aiParticipants: aiFriendId },
+        { participants: aiFriendId }
       ]
     });
 
-    console.log('chat-> ', chat);
-
-    // ❌ IF STILL NOT FOUND
     if (!chat) {
       return res.json({
         success: true,
@@ -157,34 +155,28 @@ router.get("/chat/:aiFriendId", authMiddleware, async (req, res) => {
       });
     }
 
-    // ⚠️ Auto-fix legacy chat structure (same as your controller)
-    if (
-      chat.aiParticipants.length === 0 &&
-      chat.participants.some(
-        id => id.toString() === aiFriendId.toString()
-      )
-    ) {
-      console.log("🔧 Auto-fixing legacy chat:", chat._id);
+    // Lookup AI friend in order: UserAIFriend -> AIFriend -> PrebuiltAIFriend
+    let aiFriend = await UserAIFriend.findById(aiFriendId);
+    let senderModel = "UserAIFriend";
 
-      // Remove AI ID from participants
-      chat.participants = chat.participants.filter(
-        id => id.toString() !== aiFriendId.toString()
-      );
-
-      chat.aiParticipants = [aiFriendId];
-      await chat.save(); // 🔥 one-time silent fix
+    if (aiFriend) {
+      // Security Check: Only creator can access their private UserAIFriend
+      if (aiFriend.isPrivate && aiFriend.userId !== userId.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: "Access Denied: This custom AI companion is private to its creator."
+        });
+      }
+    } else {
+      aiFriend = await mongoose.model("AIFriend").findById(aiFriendId);
+      senderModel = "AIFriend";
+      if (!aiFriend) {
+        aiFriend = await PrebuiltAIFriend.findById(aiFriendId);
+        senderModel = "PrebuiltAIFriend";
+      }
     }
 
-    // Get AI friend details
-    let aiFriend = await mongoose.model("AIFriend").findById(aiFriendId);
-    let senderModel = "AIFriend";
-    
-    if (!aiFriend) {
-      aiFriend = await PrebuiltAIFriend.findById(aiFriendId);
-      senderModel = "PrebuiltAIFriend";
-    }
-
-    // Check premium restriction
+    // Check premium restriction for Prebuilt AIs
     if (senderModel === "PrebuiltAIFriend" && aiFriend && aiFriend.isPremium) {
       const userProfile = await User.findById(userId);
       if (!userProfile || !userProfile.isSubscriptionActive()) {
@@ -219,74 +211,154 @@ router.get("/chat/:aiFriendId", authMiddleware, async (req, res) => {
   }
 });
 
-// GET /bots/all-chats - Get all chats for user
-router.get("/all-chats", authMiddleware, async (req, res) => {
+// GET /bots/user-companions - Get all private custom companions created by user
+router.get("/user-companions", authMiddleware, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id.toString();
+    const customFriends = await UserAIFriend.find({ userId: userId }).sort({ createdAt: -1 });
 
-    // Find all active chats for the user
-    const chats = await Chat.find({
-      participants: userId,
-      isActive: true
-    }).sort({ updatedAt: -1 }); // Latest first
-
-    // Enrich each chat with AI friend details
-    const enrichedChats = await Promise.all(
-      chats.map(async (chat) => {
-        let aiFriend = null;
-        let aiName = "AI Friend";
-        let aiGender = "female";
-        let senderModel = "AIFriend";
-
-        if (chat.aiParticipants && chat.aiParticipants.length > 0) {
-          const aiId = chat.aiParticipants[0];
-          
-          // Try AIFriend first
-          aiFriend = await mongoose.model("AIFriend").findById(aiId);
-          if (!aiFriend) {
-            // Try PrebuiltAIFriend
-            aiFriend = await PrebuiltAIFriend.findById(aiId);
-            senderModel = "PrebuiltAIFriend";
-          }
-          
-          if (aiFriend) {
-            aiName = aiFriend.name;
-            aiGender = aiFriend.gender;
-          }
-        }
-
-        return {
-          _id: chat._id,
-          aiFriend: aiFriend ? {
-            _id: aiFriend._id,
-            name: aiName,
-            gender: aiGender,
-            type: senderModel
-          } : null,
-          lastMessage: chat.messages.length > 0 
-            ? chat.messages[chat.messages.length - 1] 
-            : null,
-          totalMessages: chat.messages.length,
-          unreadCount: chat.messages.filter(msg => 
-            msg.senderModel !== "User" && !msg.status.read
-          ).length,
-          updatedAt: chat.updatedAt,
-          createdAt: chat.createdAt
-        };
-      })
-    );
-
-    res.json({
+    return res.json({
       success: true,
-      chats: enrichedChats,
-      totalChats: chats.length
+      customFriends: customFriends,
+      totalCount: customFriends.length
+    });
+  } catch (error) {
+    console.error("Error fetching user custom AI companions:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch custom companions",
+      error: error.message
+    });
+  }
+});
+
+const { generateImageWithOpenRouter, generateCompanionProfileWithGrok } = require("../controllers/openrouter-ai-model");
+
+// POST /bots/custom-companion - Grok AI attribute analysis + OpenRouter seedream-4.5 image generation + UserAIFriend saving
+router.post("/custom-companion", async (req, res) => {
+  try {
+    const userId = req.user ? req.user.id.toString() : (req.body.userId || "guest");
+    const {
+      gender,
+      name,
+      nickname,
+      relationship,
+      personalityVibe,
+      age,
+      ethnicity,
+      height,
+      hairStyle,
+      hairColor,
+      eyeColor,
+      skinTone,
+      bodyType,
+      outfitStyle,
+      voiceId,
+      replyLength,
+      replyStyle,
+      emojiUsage,
+      language,
+      traits,
+      tagline,
+      bio,
+      greeting,
+      fallbackAvatarUrl
+    } = req.body;
+
+    console.log(`🚀 Starting AI Creation Pipeline for user [${userId}]: "${name}" (${gender}, ${relationship})`);
+
+    const rawAttributes = {
+      gender: (gender || "female").toLowerCase(),
+      name: name || ((gender || "").toLowerCase() === "male" ? "Leo" : "Anaya"),
+      nickname: nickname || "",
+      relationship: relationship || "Girlfriend",
+      personalityVibe: personalityVibe || "Romantic",
+      age: age || 22,
+      ethnicity: ethnicity || "Indian",
+      height: height || "5ft 6in",
+      hairStyle: hairStyle || "Soft Waves",
+      hairColor: hairColor || "Black",
+      eyeColor: eyeColor || "Hazel",
+      skinTone: skinTone || "Fair",
+      bodyType: bodyType || "Slim & Fit",
+      outfitStyle: outfitStyle || "Casual Chic",
+      voiceId: voiceId ?? 0,
+      replyLength: replyLength ?? 1,
+      replyStyle: replyStyle ?? 1,
+      emojiUsage: emojiUsage ?? 2,
+      language: language || "Hinglish (Default)",
+      traits: traits || ["Romantic", "Caring"],
+      tagline: tagline || "",
+      bio: bio || "",
+      greeting: greeting || ""
+    };
+
+    // Step 1: Analyze all raw data with Grok AI (x-ai/grok-4.3)
+    const grokProfile = await generateCompanionProfileWithGrok(rawAttributes);
+
+    // Step 2: Generate Photorealistic Avatar using OpenRouter Image API (seedream-4.5) with Grok's detailed image_prompt
+    const imagePromptToUse = grokProfile.image_prompt || 
+      `A stunning photorealistic 8k studio portrait of a ${rawAttributes.gender} named ${rawAttributes.name}, ${rawAttributes.hairStyle} ${rawAttributes.hairColor} hair, ${rawAttributes.eyeColor} eyes, ${rawAttributes.bodyType} build, wearing ${rawAttributes.outfitStyle} outfit, cinematic lighting, masterpiece.`;
+
+    let generatedAvatar = await generateImageWithOpenRouter(imagePromptToUse);
+
+    // Fallback if image generation is unavailable
+    if (!generatedAvatar) {
+      console.warn("⚠️ OpenRouter image generation unavailable, using fallback avatar image");
+      generatedAvatar = fallbackAvatarUrl || (rawAttributes.gender === "female" 
+        ? "assets/create/female/natural.jpg" 
+        : "assets/create/male/natural.jpg");
+    }
+
+    // Step 3: Save complete analyzed profile into private UserAIFriend DB Model
+    const newFriend = new UserAIFriend({
+      userId: userId,
+      user: req.user ? req.user.id : null,
+      gender: rawAttributes.gender,
+      relationship: rawAttributes.relationship,
+      interests: rawAttributes.traits,
+      age: rawAttributes.age,
+      name: rawAttributes.name,
+      nickname: rawAttributes.nickname,
+      description: grokProfile.description || rawAttributes.bio || rawAttributes.tagline || `A private ${rawAttributes.relationship} AI companion.`,
+      settings: {
+        ...grokProfile.settings,
+        personalityVibe: rawAttributes.personalityVibe,
+        hairStyle: rawAttributes.hairStyle,
+        hairColor: rawAttributes.hairColor,
+        eyeColor: rawAttributes.eyeColor,
+        skinTone: rawAttributes.skinTone,
+        height: rawAttributes.height,
+        ethnicity: rawAttributes.ethnicity,
+        bodyType: rawAttributes.bodyType,
+        outfitStyle: rawAttributes.outfitStyle,
+        voiceId: rawAttributes.voiceId,
+        replyLength: rawAttributes.replyLength,
+        replyStyle: rawAttributes.replyStyle,
+        emojiUsage: rawAttributes.emojiUsage,
+        language: rawAttributes.language,
+        customCreated: true,
+        image_prompt: imagePromptToUse
+      },
+      initial_message: grokProfile.initial_message || rawAttributes.greeting || `Hi there! 💕 I'm ${rawAttributes.name}, your ${rawAttributes.relationship}. I'm so happy we connected! How was your day?`,
+      avatar_img: generatedAvatar,
+      isPrivate: true
+    });
+
+    await newFriend.save();
+    console.log(`✅ Grok AI Pipeline completed! Private UserAIFriend saved with ID: ${newFriend._id}`);
+
+    return res.status(201).json({
+      success: true,
+      message: "AI Companion created successfully with Grok AI & OpenRouter Image API!",
+      aiFriend: newFriend
     });
 
   } catch (error) {
-    console.error("Error fetching all chats:", error);
-    res.status(500).json({
+    console.error("❌ Error in AI Creation Pipeline:", error);
+    return res.status(500).json({
       success: false,
-      message: "Server error",
+      message: "Failed to generate AI companion",
       error: error.message
     });
   }

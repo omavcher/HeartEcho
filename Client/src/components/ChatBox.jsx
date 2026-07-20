@@ -60,13 +60,24 @@ const PremiumLockOverlay = ({ mediaType, cost, remainingQuota, onUnlock }) => {
 
 // --- MEDIA MESSAGE UI ---
 const MediaMessage = ({ message, isSubscribed, remainingQuota, onSubscribe }) => {
+  const [isLoaded, setIsLoaded] = React.useState(false);
   const isImage = message.mediaType === "image" || !!message.imgUrl;
   const mediaUrl = isImage ? message.imgUrl : message.videoUrl;
   const hasAccess = isSubscribed;
   const cost = isImage ? QUOTA_COSTS.IMAGE : QUOTA_COSTS.VIDEO;
 
   return (
-    <div className={`media-bubble-container ${!hasAccess ? 'locked-state' : ''}`}>
+    <div className={`media-bubble-container ${!hasAccess ? 'locked-state' : ''}`} style={{ position: 'relative' }}>
+      {/* Pulsing Skeleton Loader */}
+      {hasAccess && !isLoaded && (
+        <div className="media-skeleton-loader" style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%)',
+          backgroundSize: '200% 100%',
+          animation: 'shimmer 1.5s infinite linear',
+          borderRadius: '18px', zIndex: 2
+        }} />
+      )}
       <div className="media-wrapper">
         {isImage ? (
           <img 
@@ -74,6 +85,7 @@ const MediaMessage = ({ message, isSubscribed, remainingQuota, onSubscribe }) =>
             alt="AI Content" 
             className={`media-content-img ${!hasAccess ? 'blurred' : ''}`}
             loading="lazy"
+            onLoad={() => setIsLoaded(true)}
           />
         ) : (
           <div className="video-wrapper">
@@ -83,6 +95,8 @@ const MediaMessage = ({ message, isSubscribed, remainingQuota, onSubscribe }) =>
               controlsList="nodownload"
               onContextMenu={(e) => e.preventDefault()}
               className={`media-content-video ${!hasAccess ? 'blurred' : ''}`}
+              preload={hasAccess ? "auto" : "metadata"}
+              onLoadedData={() => setIsLoaded(true)}
             />
             {!hasAccess && <div className="play-overlay"><Play fill="white" size={24} /></div>}
           </div>
@@ -1606,7 +1620,20 @@ const CallPaywallModal = ({ tier, upgradeInfo, onClose, onUpgrade }) => {
         </button>
         
         <div className="header-profile" onClick={() => setShowOverlay(true)}>
-          <div className="header-avatar-ring">
+          <div className="header-avatar-ring" style={{
+            boxShadow: `0 0 10px 2px ${
+              {
+                Happy: "rgba(255, 215, 0, 0.45)",     // Golden Glow
+                Sad: "rgba(30, 144, 255, 0.4)",       // Soft Blue
+                Romantic: "rgba(255, 20, 147, 0.5)",  // Deep Pink
+                Angry: "rgba(220, 20, 60, 0.45)",     // Crimson Red
+                Busy: "rgba(186, 85, 211, 0.4)",      // Lavender/Purple
+                Sleepy: "rgba(75, 0, 130, 0.45)"      // Deep Indigo
+              }[companionEmotion] || "transparent"
+            }`,
+            borderRadius: '50%',
+            transition: 'box-shadow 0.3s ease'
+          }}>
             <img 
               src={userProfile?.avatar_img || "/heartecho_b.png"} 
               alt="Profile" 
@@ -1615,11 +1642,20 @@ const CallPaywallModal = ({ tier, upgradeInfo, onClose, onUpgrade }) => {
             <div className={`status-dot ${isTyping ? 'typing' : 'online'}`}></div>
           </div>
           <div className="header-info">
-            <h3 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
               {userProfile?.name || "AI Companion"} 
               <span style={{ fontSize: '1.1rem' }}>
                 { { Happy: "😊", Sad: "😔", Romantic: "❤️", Angry: "😒", Busy: "💻", Sleepy: "😴" }[companionEmotion] || "😊" }
               </span>
+              {userProfile?.relationship && (
+                <span style={{
+                  fontSize: '0.65rem', color: '#ff6eb4', background: 'rgba(255,110,180,0.12)',
+                  border: '1px solid rgba(255,110,180,0.3)', padding: '2px 8px', borderRadius: '10px',
+                  fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px'
+                }}>
+                  🔒 {userProfile.relationship}
+                </span>
+              )}
               {streakCount > 0 && (
                 <span style={{ color: '#ff9900', fontWeight: 'bold', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '2px' }} title="Snapchat Streak">
                   🔥 {streakCount}
@@ -1628,17 +1664,6 @@ const CallPaywallModal = ({ tier, upgradeInfo, onClose, onUpgrade }) => {
             </h3>
             <span className={`status-text ${isTyping ? 'highlight' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
               {isTyping ? "typing..." : (isBotOnline ? "Online" : "Offline")}
-              {activeDateTimer && (
-                <span style={{
-                  fontSize: '0.72rem', color: '#ff6eb4', fontWeight: '800',
-                  background: 'rgba(255,110,180,0.15)', border: '1px solid rgba(255,110,180,0.3)',
-                  padding: '2px 8px', borderRadius: '20px', marginLeft: '6px',
-                  display: 'inline-flex', alignItems: 'center', gap: '4px',
-                  lineHeight: 1
-                }}>
-                  ⏳ {activeDateTimer.dateType}: {Math.floor(activeDateTimer.remainingSeconds / 60)}:{(activeDateTimer.remainingSeconds % 60).toString().padStart(2, '0')}
-                </span>
-              )}
             </span>
           </div>
         </div>
@@ -1695,6 +1720,25 @@ const CallPaywallModal = ({ tier, upgradeInfo, onClose, onUpgrade }) => {
           <button className="nav-btn" onClick={() => setShowOverlay(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Info size={20} /></button>
         </div>
       </div>
+
+      {/* Styled Active Date Countdown Banner */}
+      {activeDateTimer && (
+        <div style={{
+          background: 'linear-gradient(90deg, rgba(207,65,133,0.18) 0%, rgba(12,12,16,0.9) 100%)',
+          borderBottom: '1px solid rgba(207,65,133,0.3)',
+          padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          fontSize: '0.8rem', zIndex: 10, flexShrink: 0
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', animation: 'pulse 1.5s infinite' }} />
+            <span style={{ color: 'white' }}>On a virtual date: <strong>{activeDateTimer.dateType}</strong></span>
+          </div>
+          <span style={{ color: '#ff6eb4', fontWeight: 800 }}>
+            {Math.floor(activeDateTimer.remainingSeconds / 60)}:
+            {String(activeDateTimer.remainingSeconds % 60).padStart(2, '0')}
+          </span>
+        </div>
+      )}
 
       {/* MESSAGES */}
       <div className="chat-messages-area" ref={chatContainerRef} style={{ position: 'relative' }}>
@@ -2423,6 +2467,7 @@ const STYLES = `
 @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(236, 72, 153, 0); } 100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); } }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
 .pop-notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 30px; z-index: 1000; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
 .pop-notification.error { background: #ef4444; }

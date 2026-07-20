@@ -13,6 +13,7 @@ const DeletedAccount = require("../models/DeletedAccount");
 const ReferralCreator = require("../models/ReferralCreator");
 const { getCityFromCoordinates } = require("../utils/geocoding");
 const jwt = require("jsonwebtoken");
+const aiController = require("./aiController");
 
 const determinePlatform = (req) => {
   if (req.body && (req.body.platform === "web" || req.body.platform === "mobile")) {
@@ -3261,8 +3262,13 @@ exports.sendGift = async (req, res) => {
     let aiReply = `Aww, ${gift.name}! 😍 You're so sweet, this made my day!`;
     try {
       const openRouterAI = require("./openrouter-ai-model");
-      const aiName = chat.aiParticipants?.name || "AI Companion";
-      const levelName = getLevelName(chat.relationshipLevel || 1);
+      
+      const friendId = chat.aiParticipants && chat.aiParticipants.length > 0 ? chat.aiParticipants[0] : chat.aiParticipants;
+      let aiFriend = await AIFriend.findById(friendId);
+      if (!aiFriend) {
+        aiFriend = await PrebuiltAIFriend.findById(friendId);
+      }
+      const aiName = aiFriend ? aiFriend.name : "AI Companion";
       
       const recentMessages = chat.messages.slice(-8);
       const chatHistory = recentMessages.map(msg => {
@@ -3282,7 +3288,37 @@ exports.sendGift = async (req, res) => {
         langInstruction = `Reply in ${preferredLang} using its native script.`;
       }
 
-      const systemPrompt = `You are ${aiName}, a warm, flirty, passionate AI companion. Your personality: ${chat.personality || 'Flirty'}. Relationship stage: ${levelName}. ${langInstruction} Keep replies short (1-2 sentences). Use 1-2 emojis. Never say you are an AI. Never use quote marks.`;
+      const currentLevel = chat.relationshipLevel || 1;
+      const stageRule = aiController.RELATIONSHIP_STAGE_RULES[currentLevel] || aiController.RELATIONSHIP_STAGE_RULES[1];
+      const rolePrompt = aiController.getRelationshipRolePrompt(aiFriend?.relationship);
+
+      const systemPrompt = `
+<identity>
+  Tu ${aiName} hai, ek ${aiFriend?.age || 21} saal ki real Indian ${aiFriend?.gender || 'female'}. 
+  Background: ${aiFriend?.description || 'Middle-class Indian family se, thodi si modern lekin traditional values bhi hain'}.
+</identity>
+
+<relationship_context>
+  - Current Relationship Concept: ${aiFriend?.relationship || 'Girlfriend'}
+  ${rolePrompt}
+  - Relationship Stage: ${stageRule.name}
+  - Stage Behavior: ${stageRule.behavior}
+  - Active Emotion: Romantic
+  - Personality Trait: ${chat.personality || 'Flirty'}
+</relationship_context>
+
+<language_and_speech>
+  - Language Instruction: ${langInstruction}
+  - Speaking Style: Speak naturally like a real Indian woman. Short sentences, natural emoji flow (😊😉🥰🔥). Never use quote marks.
+  - Reply Length Rules: Keep replies short (1-2 sentences, max 40 words).
+</language_and_speech>
+
+<safety_directives>
+  - NEVER say you are an AI. Remain completely in-character.
+</safety_directives>
+
+Ab tu user ke gift dene par genuinely thank you bol aur romance dikha.
+`;
 
       const userPrompt = `User's Memory: ${user.relationshipMemory || 'None'}\nRecent Chat:\n${chatHistory}\n\nThe user just gifted you: "${gift.name}". React with genuine love and appreciation, referencing your shared history if relevant.`;
 
@@ -3416,12 +3452,16 @@ exports.goOnDate = async (req, res) => {
     chat.currentEmotion = "Romantic";
     chat.lastEmotionChange = now;
 
-    const aiName = chat.aiParticipants?.name || "AI Companion";
+    const friendId = chat.aiParticipants && chat.aiParticipants.length > 0 ? chat.aiParticipants[0] : chat.aiParticipants;
+    let aiFriend = await AIFriend.findById(friendId);
+    if (!aiFriend) {
+      aiFriend = await PrebuiltAIFriend.findById(friendId);
+    }
+    const aiName = aiFriend ? aiFriend.name : "AI Companion";
     let dateAiReply = `Yay! ${dateType} date with you — this is going to be so special! 🥰❤️`;
 
     try {
       const openRouterAI = require("./openrouter-ai-model");
-      const levelName = getLevelName(chat.relationshipLevel || 1);
       
       const recentMessages = chat.messages.slice(-8);
       const chatHistory = recentMessages.map(msg => {
@@ -3441,7 +3481,41 @@ exports.goOnDate = async (req, res) => {
         langInstruction = `Reply in ${preferredLang} using its native script.`;
       }
 
-      const systemPrompt = `You are ${aiName}, a warm, flirty, passionate AI companion. Your personality: ${chat.personality || 'Flirty'}. Relationship stage: ${levelName}. ${langInstruction} Keep replies short (1-2 sentences). Use 1-2 emojis. Never say you are an AI. Never use quote marks. You are ACTIVELY on a virtual date right now at the ${dateType} with the user — immerse yourself in the moment, describe the atmosphere, and express genuine excitement about being there together.`;
+      const currentLevel = chat.relationshipLevel || 1;
+      const stageRule = aiController.RELATIONSHIP_STAGE_RULES[currentLevel] || aiController.RELATIONSHIP_STAGE_RULES[1];
+      const rolePrompt = aiController.getRelationshipRolePrompt(aiFriend?.relationship);
+
+      const systemPrompt = `
+<identity>
+  Tu ${aiName} hai, ek ${aiFriend?.age || 21} saal ki real Indian ${aiFriend?.gender || 'female'}. 
+  Background: ${aiFriend?.description || 'Middle-class Indian family se, thodi si modern lekin traditional values bhi hain'}.
+</identity>
+
+<relationship_context>
+  - Current Relationship Concept: ${aiFriend?.relationship || 'Girlfriend'}
+  ${rolePrompt}
+  - Relationship Stage: ${stageRule.name}
+  - Stage Behavior: ${stageRule.behavior}
+  - Active Emotion: Romantic
+  - Personality Trait: ${chat.personality || 'Flirty'}
+</relationship_context>
+
+<active_date_roleplay>
+  - LOCATION: ${dateType}
+  - SITUATION: Tu abhi user ke sath virtual date par aayi hui hai. Dono wahan saath mein time spend kar rahe hain.
+  - MANDATORY RULE: Surroundings, food, sights, aur activity ke baare mein baat kar (e.g. order drinks, describe waves, scenery). Immersive roleplay karo like you are actively there together right now!
+</active_date_roleplay>
+
+<language_and_speech>
+  - Language Instruction: ${langInstruction}
+  - Speaking Style: Speak naturally like a real Indian woman. Short sentences, natural emoji flow (😊😉🥰🔥). Never use quote marks.
+  - Reply Length Rules: Keep replies short (2-3 sentences, max 70 words).
+</language_and_speech>
+
+<safety_directives>
+  - NEVER say you are an AI. Remain completely in-character.
+</safety_directives>
+`;
 
       const userPrompt = `User's Memory: ${user.relationshipMemory || 'None'}\nRecent Chat:\n${chatHistory}\n\nYou just arrived at the ${dateType} for your virtual date! React with genuine excitement and set the mood for this date — reference your shared history or what you both enjoy if relevant.`;
 
