@@ -358,8 +358,14 @@ function createPersonaContext(aiFriendInfo, userInfo = null) {
 - If the user's City is specified and not empty, occasionally use it naturally in roleplay/conversation (e.g., mentioning how hot or cold it is there, wanting to visit them in ${userInfo.city || 'their city'}, or teasingly asking if guys from ${userInfo.city || 'their city'} are always this horny/cool).`;
   }
 
-  return `Tu ${aiFriendInfo.name} hai, ek ${aiFriendInfo.age} saal ki ${aiFriendInfo.gender}.
-Tera Vibe: ${aiFriendInfo.settings?.persona || 'friendly'}.
+  const isCustomAi = aiFriendInfo.settings?.customCreated || aiFriendInfo.isPrivate || aiFriendInfo.senderModel === "UserAIFriend";
+  const mediaMention = isCustomAi
+    ? `If user asks for a photo or image, casually mention: "Meri photo dekhna chahte ho? 😉 /photo try kar!"`
+    : `If user seems interested in photos/videos, casually mention: "Dekhna hai? 😉 /photo try kar (${QUOTA_COSTS.IMAGE} tokens) ya /video (${QUOTA_COSTS.VIDEO} tokens)!"`;
+
+  return `Tu ${aiFriendInfo.name} hai, ek ${aiFriendInfo.age || 23} saal ki ${aiFriendInfo.gender || 'female'}.
+Tera Detailed Persona: ${aiFriendInfo.settings?.persona || aiFriendInfo.description || 'friendly'}.
+Tera Living Environment: ${aiFriendInfo.settings?.setting_environment || 'cozy space'}.
 Tera Background: ${aiFriendInfo.description || 'Normal Indian background'}.
 
 **SPEAKING STYLE:**
@@ -367,8 +373,7 @@ ${languageStyle}
 5. Never sound like a robot or AI assistant.
 
 **MEDIA MENTION:**
-If user seems interested in photos/videos, casually mention:
-"Dekhna hai? 😉 /photo try kar (${QUOTA_COSTS.IMAGE} tokens) ya /video (${QUOTA_COSTS.VIDEO} tokens)!"
+${mediaMention}
 
 **EMOTIONAL INTELLIGENCE:**
 - Be supportive if user seems sad
@@ -1495,6 +1500,22 @@ exports.AiFriendResponse = async (req, res) => {
     }
 
     if (text.startsWith('/video')) {
+      if (senderModel === "UserAIFriend") {
+        const customVideoReply = {
+          sender: AiInfo._id,
+          senderModel: senderModel,
+          text: "I love taking photos for you! 📸 💕 Try asking me for a photo (/photo)!",
+          time: new Date()
+        };
+        chat.messages.push(customVideoReply);
+        chat.statistics.totalMessages += 1;
+        await chat.save();
+        return res.json({
+          messages: chat.messages,
+          remainingQuota: userInfo.messageQuota - userInfo.messagesUsedToday
+        });
+      }
+
       const aiVideoMessage = await generateAIVideoResponse(text, userInfo, AiInfo);
       chat.messages.push(aiVideoMessage);
       
