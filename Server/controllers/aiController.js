@@ -1405,10 +1405,10 @@ exports.AiFriendResponse = async (req, res) => {
       if (senderModel === "UserAIFriend") {
         const tier = (userInfo.subscriptionTier || "").toLowerCase();
         const planAmount = userInfo.subscriptionAmount || 0;
-        let maxGalleryLimit = 3;
+        let maxGalleryLimit = 5;
         if (tier === "yearly_pro" || tier === "lifetime" || planAmount >= 1499) {
           maxGalleryLimit = 8;
-        } else if (tier === "yearly" || planAmount >= 599) {
+        } else {
           maxGalleryLimit = 5;
         }
 

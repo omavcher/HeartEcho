@@ -502,11 +502,10 @@ router.post("/generate-custom-photo", authMiddleware, async (req, res) => {
     // Gallery generation limits based on plan:
     // ₹1499 Plan -> 8 photos
     // ₹599 Plan -> 5 photos
-    // Basic -> 3 photos
-    let maxGalleryLimit = 3;
+    let maxGalleryLimit = 5;
     if (tier === "yearly_pro" || tier === "lifetime" || planAmount >= 1499) {
       maxGalleryLimit = 8;
-    } else if (tier === "yearly" || planAmount >= 599) {
+    } else {
       maxGalleryLimit = 5;
     }
 
