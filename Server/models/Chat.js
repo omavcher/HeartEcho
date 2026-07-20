@@ -9,7 +9,7 @@ const chatSchema = new mongoose.Schema({
       sender: { type: mongoose.Schema.Types.ObjectId, refPath: "senderModel" },
       senderModel: {
         type: String,
-        enum: ["User", "AIFriend", "PrebuiltAIFriend"]
+        enum: ["User", "AIFriend", "PrebuiltAIFriend", "UserAIFriend", "LetterAIFriend", "AiLive"]
       },
       text: String,
       time: { type: Date, default: Date.now },

@@ -1346,7 +1346,8 @@ exports.AiFriendResponse = async (req, res) => {
     }
 
     // Security Check: Only creator can access private UserAIFriend
-    if (senderModel === "UserAIFriend" && AiInfo.isPrivate && AiInfo.userId !== userId.toString()) {
+    const ownerIdStr = (AiInfo.userId ? AiInfo.userId.toString() : (AiInfo.user ? AiInfo.user.toString() : "")).toString();
+    if (senderModel === "UserAIFriend" && AiInfo.isPrivate && ownerIdStr !== userId.toString()) {
       return res.status(403).json({
         success: false,
         message: "Access Denied: This custom AI companion is private to its creator."
