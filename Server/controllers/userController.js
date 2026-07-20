@@ -651,24 +651,46 @@ exports.chatFriends = async (req, res) => {
           as: "prebuiltAIFriend"
         }
       },
+
+      // Stage 5b: Lookup AI friend from UserAIFriend collection
+      {
+        $lookup: {
+          from: "useraifriends",
+          localField: "aiParticipants",
+          foreignField: "_id",
+          as: "userAIFriend"
+        }
+      },
       
       // Stage 6: Combine AI friend data (whichever exists)
       {
         $addFields: {
           friendData: {
             $cond: {
-              if: { $gt: [{ $size: "$aiFriend" }, 0] },
-              then: { $arrayElemAt: ["$aiFriend", 0] },
-              else: { $arrayElemAt: ["$prebuiltAIFriend", 0] }
+              if: { $gt: [{ $size: "$userAIFriend" }, 0] },
+              then: { $arrayElemAt: ["$userAIFriend", 0] },
+              else: {
+                $cond: {
+                  if: { $gt: [{ $size: "$aiFriend" }, 0] },
+                  then: { $arrayElemAt: ["$aiFriend", 0] },
+                  else: { $arrayElemAt: ["$prebuiltAIFriend", 0] }
+                }
+              }
             }
           }
         }
       },
       
-      // Stage 7: Filter out chats without AI friend data
+      // Stage 7: Filter out chats without AI friend data or private custom AIs belonging to OTHER users
       {
         $match: {
-          friendData: { $ne: null }
+          friendData: { $ne: null },
+          $expr: {
+            $or: [
+              { $ne: ["$friendData.isPrivate", true] },
+              { $eq: ["$friendData.userId", req.user.id.toString()] }
+            ]
+          }
         }
       },
       

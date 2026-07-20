@@ -1310,20 +1310,38 @@ exports.AiFriendResponse = async (req, res) => {
       await userInfo.save();
     }
 
-    const AiInfo = await PrebuiltAIFriend.findById(
-      new ObjectId(chatId)
-    );
-    const senderModel = "PrebuiltAIFriend";
+    const UserAIFriend = require("../models/UserAIFriend");
+
+    let AiInfo = await UserAIFriend.findById(chatId);
+    let senderModel = "UserAIFriend";
 
     if (!AiInfo) {
-      return res.status(404).json({ message: "AI Friend not found." });
+      AiInfo = await PrebuiltAIFriend.findById(chatId);
+      senderModel = "PrebuiltAIFriend";
     }
 
-    // Check if AI companion is restricted to premium
-    if (AiInfo.isPremium && !userInfo.isSubscriptionActive()) {
+    if (!AiInfo) {
+      AiInfo = await mongoose.model("AIFriend").findById(chatId);
+      senderModel = "AIFriend";
+    }
+
+    if (!AiInfo) {
+      return res.status(404).json({ message: "AI Companion not found." });
+    }
+
+    // Check if AI companion is restricted to premium for Prebuilt AIs
+    if (senderModel === "PrebuiltAIFriend" && AiInfo.isPremium && !userInfo.isSubscriptionActive()) {
       return res.status(403).json({
         success: false,
         message: "This AI Companion is restricted to premium subscribers."
+      });
+    }
+
+    // Security Check: Only creator can access private UserAIFriend
+    if (senderModel === "UserAIFriend" && AiInfo.isPrivate && AiInfo.userId !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Access Denied: This custom AI companion is private to its creator."
       });
     }
 
@@ -1342,13 +1360,22 @@ exports.AiFriendResponse = async (req, res) => {
     // ✅ Create chat ONLY if it doesn't exist
     if (!chat) {
       isNewChat = true;
+      const initialGreeting = AiInfo.initial_message || AiInfo.greeting || `Hi there! 💕 I'm ${AiInfo.name}. I'm so happy we connected!`;
 
       chat = new Chat({
-        participants: [userId],        // ✅ ONLY USER
-        aiParticipants: [AiInfo._id],  // ✅ ONLY AI FRIEND
-        messages: [],
+        participants: [userId],
+        aiParticipants: [AiInfo._id],
+        senderModel: senderModel,
+        messages: [
+          {
+            sender: AiInfo._id,
+            senderModel: senderModel,
+            text: initialGreeting,
+            time: new Date()
+          }
+        ],
         statistics: {
-          totalMessages: 0,
+          totalMessages: 1,
           totalImages: 0,
           totalVideos: 0,
           lastMediaSent: null
@@ -1369,22 +1396,102 @@ exports.AiFriendResponse = async (req, res) => {
     chat.messages.push(userMessage);
 
     // Check for media commands first
-    if (text.startsWith('/photo')) {
-      const aiImageMessage = await generateAIImageResponse(text, userInfo, AiInfo);
-      chat.messages.push(aiImageMessage);
-      
-      if (aiImageMessage.imgUrl && aiImageMessage.quotaInfo.hasAccess) {
+    if (text.startsWith('/photo') || text.toLowerCase().includes('photo') || text.toLowerCase().includes('picture') || text.toLowerCase().includes('pic')) {
+      if (senderModel === "UserAIFriend") {
+        const tier = (userInfo.subscriptionTier || "").toLowerCase();
+        const planAmount = userInfo.subscriptionAmount || 0;
+        let maxGalleryLimit = 3;
+        if (tier === "yearly_pro" || tier === "lifetime" || planAmount >= 1499) {
+          maxGalleryLimit = 8;
+        } else if (tier === "yearly" || planAmount >= 599) {
+          maxGalleryLimit = 5;
+        }
+
+        const currentGallery = AiInfo.img_gallery || [];
+        let photoUrl;
+        let msgText;
+
+        if (currentGallery.length >= maxGalleryLimit) {
+          const randomIndex = Math.floor(Math.random() * currentGallery.length);
+          photoUrl = currentGallery[randomIndex] || AiInfo.avatar_img;
+          msgText = "Here is a photo from my album for you! 💕";
+        } else {
+          const settings = AiInfo.settings || {};
+          const gender = AiInfo.gender || "female";
+          const name = AiInfo.name || "Companion";
+          const hairStyle = settings.hairStyle || "soft hair";
+          const hairColor = settings.hairColor || "";
+          const eyeColor = settings.eyeColor || "";
+          const skinTone = settings.skinTone || "fair";
+          const bodyType = settings.bodyType || "fit";
+          const defaultOutfit = settings.outfitStyle || "stylish outfit";
+
+          const locationsAndPoses = [
+            "sitting at a sunlit aesthetic coffee shop, smiling warmly at camera",
+            "walking through a scenic autumn park, casual candid pose",
+            "standing on a cozy apartment balcony at sunset, soft warm light",
+            "enjoying a candlelit dinner at a stylish restaurant",
+            "smiling at a golden hour beach boardwalk, breeze blowing hair",
+            "relaxing in a cozy indoor lounge with fairy lights",
+            "wearing a chic casual outfit, looking charmingly into camera",
+            "outdoor portrait shot with soft bokeh background and natural lighting"
+          ];
+
+          const randomPose = locationsAndPoses[currentGallery.length % locationsAndPoses.length];
+          const photoPrompt = `A gorgeous photorealistic 8k studio photo of the exact same ${gender} named ${name}, ${hairStyle} ${hairColor} hair, ${eyeColor} eyes, ${skinTone} skin tone, ${bodyType} build, wearing ${defaultOutfit}, ${randomPose}, cinematic studio lighting, highly detailed portrait photography, 8k resolution, masterpiece.`;
+
+          const generatedPhoto = await openRouterAI.generateImageWithOpenRouter(photoPrompt);
+          let cdnPhotoUrl = generatedPhoto;
+          if (generatedPhoto && (generatedPhoto.startsWith("data:image/") || generatedPhoto.startsWith("http"))) {
+            const { uploadBase64ToR2 } = require("../utils/s3Upload");
+            cdnPhotoUrl = await uploadBase64ToR2(generatedPhoto, "custom-gallery");
+          }
+
+          photoUrl = cdnPhotoUrl || AiInfo.avatar_img;
+          AiInfo.img_gallery.push(photoUrl);
+          await AiInfo.save();
+          msgText = "Here's a photo I just took for you! 📸✨";
+        }
+
+        const aiPhotoMessage = {
+          sender: AiInfo._id,
+          senderModel: senderModel,
+          text: msgText,
+          imgUrl: photoUrl,
+          mediaType: "image",
+          visibility: "show",
+          accessLevel: "free",
+          status: { delivered: true, read: false, generated: true },
+          time: new Date()
+        };
+
+        chat.messages.push(aiPhotoMessage);
         chat.statistics.totalImages += 1;
         chat.statistics.totalMessages += 1;
         chat.statistics.lastMediaSent = new Date();
+        await chat.save();
+
+        return res.json({
+          messages: chat.messages,
+          remainingQuota: userInfo.messageQuota - userInfo.messagesUsedToday
+        });
+      } else {
+        const aiImageMessage = await generateAIImageResponse(text, userInfo, AiInfo);
+        chat.messages.push(aiImageMessage);
+        
+        if (aiImageMessage.imgUrl && aiImageMessage.quotaInfo.hasAccess) {
+          chat.statistics.totalImages += 1;
+          chat.statistics.totalMessages += 1;
+          chat.statistics.lastMediaSent = new Date();
+        }
+        
+        await chat.save();
+        return res.json({ 
+          messages: chat.messages,
+          remainingQuota: userInfo.messageQuota - userInfo.messagesUsedToday,
+          quotaInfo: aiImageMessage.quotaInfo
+        });
       }
-      
-      await chat.save();
-      return res.json({ 
-        messages: chat.messages,
-        remainingQuota: userInfo.messageQuota - userInfo.messagesUsedToday,
-        quotaInfo: aiImageMessage.quotaInfo
-      });
     }
 
     if (text.startsWith('/video')) {
@@ -1850,8 +1957,20 @@ exports.AiFriendDetails = async (req, res) => {
       });
     }
   
+    const UserAIFriend = require("../models/UserAIFriend");
+
+    let AiInfo = await UserAIFriend.findById(aiFriendId);
+    let senderModel = "UserAIFriend";
+
+    if (!AiInfo) {
       AiInfo = await PrebuiltAIFriend.findById(new ObjectId(aiFriendId)).select('-img_gallery -video_gallery');
       senderModel = "PrebuiltAIFriend";
+    }
+
+    if (!AiInfo) {
+      AiInfo = await mongoose.model("AIFriend").findById(aiFriendId).select('-img_gallery -video_gallery');
+      senderModel = "AIFriend";
+    }
 
     // If still not found, return error
     if (!AiInfo) {
@@ -1934,10 +2053,10 @@ exports.AiFriendDetails = async (req, res) => {
       },
       quotaInfo: quotaInfo,
       mediaInfo: {
-        hasImageGallery: AiInfo.img_gallery && AiInfo.img_gallery.length > 0,
-        hasVideoGallery: AiInfo.video_gallery && AiInfo.video_gallery.length > 0,
+        hasImageGallery: (AiInfo.img_gallery && AiInfo.img_gallery.length > 0) || senderModel === "UserAIFriend",
+        hasVideoGallery: senderModel === "UserAIFriend" ? false : (AiInfo.video_gallery && AiInfo.video_gallery.length > 0),
         imageCount: AiInfo.img_gallery ? AiInfo.img_gallery.length : 0,
-        videoCount: AiInfo.video_gallery ? AiInfo.video_gallery.length : 0
+        videoCount: senderModel === "UserAIFriend" ? 0 : (AiInfo.video_gallery ? AiInfo.video_gallery.length : 0)
       }
     });
 
@@ -1966,8 +2085,10 @@ exports.getChatByAiFriend = async (req, res) => {
     }
 
     // 1. Check if AI friend exists
-    const aiFriend = await PrebuiltAIFriend.findById(aiFriendId) || 
-                     await AIFriend.findById(aiFriendId);
+    const UserAIFriend = require("../models/UserAIFriend");
+    const aiFriend = await UserAIFriend.findById(aiFriendId) ||
+                     await PrebuiltAIFriend.findById(aiFriendId) || 
+                     await mongoose.model("AIFriend").findById(aiFriendId);
     
     if (!aiFriend) {
       return res.status(404).json({ 
@@ -1997,15 +2118,24 @@ exports.getChatByAiFriend = async (req, res) => {
 
     console.log("Chat found:", chat ? "Yes" : "No");
 
-    // 3. If no chat exists, create one
+    // 3. If no chat exists, create one and initialize with initial_message
     if (!chat) {
-      console.log("Creating new chat...");
+      console.log("Creating new chat with initial greeting...");
+      const initialGreeting = aiFriend.initial_message || aiFriend.greeting || `Hi there! 💕 I'm ${aiFriend.name}. I'm so happy we connected!`;
+
       chat = new Chat({
-        participants: userId,        // Single user ID
-        aiParticipants: aiFriendId,  // Single AI ID
-        messages: [],
+        participants: [userId],
+        aiParticipants: [aiFriendId],
+        messages: [
+          {
+            sender: aiFriend._id,
+            senderModel: aiFriend.settings?.customCreated ? "UserAIFriend" : "PrebuiltAIFriend",
+            text: initialGreeting,
+            time: new Date()
+          }
+        ],
         statistics: {
-          totalMessages: 0,
+          totalMessages: 1,
           totalImages: 0,
           totalVideos: 0,
           lastMediaSent: null

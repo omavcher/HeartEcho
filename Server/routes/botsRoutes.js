@@ -417,9 +417,14 @@ router.post("/custom-companion", authMiddleware, async (req, res) => {
     }
 
     // Step 4: Save complete analyzed profile into private UserAIFriend DB Model
+    const validUserObjectId = mongoose.Types.ObjectId.isValid(userId) ? userId : null;
+    const finalAvatarImg = cdnAvatarUrl || fallbackAvatarUrl || (rawAttributes.gender === "female"
+      ? "https://cdn.heartecho.in/custom-avatars/default_female.jpg"
+      : "https://cdn.heartecho.in/custom-avatars/default_male.jpg");
+
     const newFriend = new UserAIFriend({
       userId: userId,
-      user: req.user ? req.user.id : null,
+      user: validUserObjectId,
       gender: rawAttributes.gender,
       relationship: rawAttributes.relationship,
       interests: rawAttributes.traits,
@@ -447,12 +452,12 @@ router.post("/custom-companion", authMiddleware, async (req, res) => {
         image_prompt: imagePromptToUse
       },
       initial_message: grokProfile.initial_message || rawAttributes.greeting || `Hi there! 💕 I'm ${rawAttributes.name}, your ${rawAttributes.relationship}. I'm so happy we connected! How was your day?`,
-      avatar_img: cdnAvatarUrl,
+      avatar_img: finalAvatarImg,
       isPrivate: true
     });
 
     await newFriend.save();
-    console.log(`✅ Grok AI Pipeline completed! Private UserAIFriend saved with ID: ${newFriend._id}`);
+    console.log(`✅ Grok AI Pipeline completed! Private UserAIFriend saved for user [${userId}] with ID: ${newFriend._id}`);
 
     return res.status(201).json({
       success: true,
