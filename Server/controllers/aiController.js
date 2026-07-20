@@ -1310,9 +1310,12 @@ exports.AiFriendResponse = async (req, res) => {
     userInfo.resetDailyQuota();
 
     // Only save if ai_friends list was updated (avoid redundant DB write every message)
-    if (!userInfo.ai_friends.includes(chatId)) {
-      userInfo.ai_friends.push(chatId);
-      await userInfo.save();
+    if (userInfo.ai_friends && Array.isArray(userInfo.ai_friends)) {
+      const isSaved = userInfo.ai_friends.some(id => id && id.toString() === chatId.toString());
+      if (!isSaved) {
+        userInfo.ai_friends.push(chatId);
+        await userInfo.save();
+      }
     }
 
     const UserAIFriend = require("../models/UserAIFriend");

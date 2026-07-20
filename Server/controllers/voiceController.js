@@ -1,5 +1,6 @@
 const axios = require('axios');
 const User = require('../models/User');
+const UserAIFriend = require('../models/UserAIFriend');
 const AIFriend = require('../models/AIFriend');
 const PrebuiltAIFriend = require('../models/PrebuiltAIFriend');
 const LetterAIFriend = require('../models/LetterAIFriend');
@@ -24,8 +25,6 @@ exports.handleVoiceCall = async (req, res) => {
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
     // ── SUBSCRIBER GATE ──────────────────────────────────────────────────────
-    // Voice calling is a paid feature. Monthly (₹49) does NOT include calls.
-    // Only yearly (₹399, audioCallQuota=10) and yearly_pro (₹999, unlimited).
     const isSubscriber = user.user_type === "subscriber" && 
       user.subscriptionExpiry && new Date() <= new Date(user.subscriptionExpiry);
     
@@ -39,7 +38,6 @@ exports.handleVoiceCall = async (req, res) => {
     }
 
     // ── CALL PLAN CHECK ──────────────────────────────────────────────────────
-    // monthly (₹49) subscribers have audioCallQuota=0 → no calls allowed
     if ((user.audioCallQuota || 0) === 0) {
       return res.status(403).json({
         success: false,
@@ -51,42 +49,48 @@ exports.handleVoiceCall = async (req, res) => {
 
     // Robust AI Resolution: Search across all potential friend collections
     let aiFriend = null;
-    let senderModelStr = "AIFriend";
+    let senderModelStr = "UserAIFriend";
 
-    // 1. Try Custom AI Friend
-    aiFriend = await AIFriend.findById(chatId);
+    // 1. Try UserAIFriend (User-created custom companion)
+    aiFriend = await UserAIFriend.findById(chatId);
     
-    // 2. Try Prebuilt AI Friend
+    // 2. Try AIFriend
+    if (!aiFriend) {
+      aiFriend = await AIFriend.findById(chatId);
+      senderModelStr = "AIFriend";
+    }
+
+    // 3. Try Prebuilt AI Friend
     if (!aiFriend) {
       aiFriend = await PrebuiltAIFriend.findById(chatId);
       senderModelStr = "PrebuiltAIFriend";
     }
 
-    // 3. Try Letter AI Friend
+    // 4. Try Letter AI Friend
     if (!aiFriend) {
       aiFriend = await LetterAIFriend.findById(chatId);
       senderModelStr = "LetterAIFriend";
     }
 
-    // 4. Try AI Live Model
+    // 5. Try AI Live Model
     if (!aiFriend) {
       aiFriend = await AiLive.findById(chatId);
       senderModelStr = "AiLive";
     }
 
-    // 5. Check if chatId is actually a Chat Document ID
+    // 6. Check if chatId is actually a Chat Document ID
     if (!aiFriend) {
       const activeChat = await Chat.findById(chatId);
       if (activeChat && activeChat.aiParticipants) {
         // Resolve again using the AI ID from the chat session
         const actualAiId = activeChat.aiParticipants;
-        aiFriend = await AIFriend.findById(actualAiId) || 
+        aiFriend = await UserAIFriend.findById(actualAiId) ||
                    await PrebuiltAIFriend.findById(actualAiId) ||
+                   await AIFriend.findById(actualAiId) ||
                    await LetterAIFriend.findById(actualAiId) ||
                    await AiLive.findById(actualAiId);
         
         if (aiFriend) {
-          // Determine model for history logging
           if (aiFriend.constructor.modelName) senderModelStr = aiFriend.constructor.modelName;
         }
       }
