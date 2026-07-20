@@ -378,13 +378,23 @@ router.post("/custom-companion", authMiddleware, async (req, res) => {
     };
 
     // Step 1: Analyze all raw data with Grok AI (x-ai/grok-4.3)
-    const grokProfile = await generateCompanionProfileWithGrok(rawAttributes);
+    let grokProfile = {};
+    try {
+      grokProfile = await generateCompanionProfileWithGrok(rawAttributes);
+    } catch (grokErr) {
+      console.warn("⚠️ Grok AI profile synthesis warning, using raw attributes:", grokErr.message);
+    }
 
     // Step 2: Generate Photorealistic Avatar using OpenRouter Image API (seedream-4.5) with Grok's detailed image_prompt
     const imagePromptToUse = grokProfile.image_prompt || 
       `A stunning photorealistic 8k studio portrait of a ${rawAttributes.gender} named ${rawAttributes.name}, ${rawAttributes.hairStyle} ${rawAttributes.hairColor} hair, ${rawAttributes.eyeColor} eyes, ${rawAttributes.bodyType} build, wearing ${rawAttributes.outfitStyle} outfit, cinematic lighting, masterpiece.`;
 
-    let generatedAvatar = await generateImageWithOpenRouter(imagePromptToUse);
+    let generatedAvatar = null;
+    try {
+      generatedAvatar = await generateImageWithOpenRouter(imagePromptToUse);
+    } catch (imgErr) {
+      console.warn("⚠️ OpenRouter image generation warning:", imgErr.message);
+    }
 
     // Fallback if image generation is unavailable
     if (!generatedAvatar) {
@@ -395,11 +405,15 @@ router.post("/custom-companion", authMiddleware, async (req, res) => {
     }
 
     // Step 3: Upload generated image directly to Cloudflare R2 bucket and get CDN link
-    const { uploadBase64ToR2 } = require("../utils/s3Upload");
     let cdnAvatarUrl = generatedAvatar;
     if (generatedAvatar && (generatedAvatar.startsWith("data:image/") || generatedAvatar.startsWith("http"))) {
-      console.log("☁️ Uploading generated avatar image to Cloudflare R2 bucket...");
-      cdnAvatarUrl = await uploadBase64ToR2(generatedAvatar, "custom-avatars");
+      try {
+        const { uploadBase64ToR2 } = require("../utils/s3Upload");
+        console.log("☁️ Uploading generated avatar image to Cloudflare R2 bucket...");
+        cdnAvatarUrl = await uploadBase64ToR2(generatedAvatar, "custom-avatars");
+      } catch (r2Err) {
+        console.warn("⚠️ Cloudflare R2 upload warning, using raw avatar URL:", r2Err.message);
+      }
     }
 
     // Step 4: Save complete analyzed profile into private UserAIFriend DB Model
@@ -414,7 +428,7 @@ router.post("/custom-companion", authMiddleware, async (req, res) => {
       nickname: rawAttributes.nickname,
       description: grokProfile.description || rawAttributes.bio || rawAttributes.tagline || `A private ${rawAttributes.relationship} AI companion.`,
       settings: {
-        ...grokProfile.settings,
+        ...(grokProfile.settings || {}),
         personalityVibe: rawAttributes.personalityVibe,
         hairStyle: rawAttributes.hairStyle,
         hairColor: rawAttributes.hairColor,
