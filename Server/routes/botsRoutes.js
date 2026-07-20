@@ -446,6 +446,16 @@ router.post("/custom-companion", authMiddleware, async (req, res) => {
       aiFriend: newFriend
     });
 
+  } catch (error) {
+    console.error("❌ Error creating custom companion:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create custom companion",
+      error: error.message
+    });
+  }
+});
+
 // POST /bots/generate-custom-photo - Generate character-consistent photos for custom AI companions
 router.post("/generate-custom-photo", authMiddleware, async (req, res) => {
   try {
