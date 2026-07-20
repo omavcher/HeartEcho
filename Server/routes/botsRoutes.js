@@ -295,7 +295,7 @@ router.post("/custom-companion", authMiddleware, async (req, res) => {
       });
     }
 
-    // Quota Enforcement: ₹99 -> 0, ₹599 -> 1, ₹1499 -> 2
+    // Quota Enforcement: Free/₹99 -> 0, ₹599 -> 1, ₹1499 -> 2
     const allowedQuota = userProfile.getCustomAICreationQuota();
     const existingCount = await UserAIFriend.countDocuments({ userId: userId });
 
@@ -305,14 +305,14 @@ router.post("/custom-companion", authMiddleware, async (req, res) => {
         quotaExceeded: true,
         currentCount: existingCount,
         maxQuota: 0,
-        message: "Creating custom AI companions is locked on the ₹99 Plan. Please upgrade to ₹599 (1 AI) or ₹1499 (2 AIs) Plan!"
+        message: "Custom AI Creation is locked on your current plan. Upgrade to the ₹599 Plan (1 AI Companion) or ₹1499 Pro Plan (2 AI Companions) to create your unique AI companion!"
       });
     }
 
     if (existingCount >= allowedQuota) {
       const upgradeMsg = allowedQuota === 1
-        ? "You have reached your limit of 1 custom AI companion for the ₹599 Plan. Upgrade to the ₹1499 Plan to create up to 2 companions!"
-        : "You have reached the maximum limit of 2 custom AI companions for the ₹1499 Plan.";
+        ? "You have reached your limit of 1 Custom AI Companion for the ₹599 Plan. Upgrade to the ₹1499 Pro Plan to create up to 2 companions!"
+        : "You have reached the maximum limit of 2 Custom AI Companions for the ₹1499 Pro Plan.";
 
       return res.status(403).json({
         success: false,
