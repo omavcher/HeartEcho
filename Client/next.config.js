@@ -48,6 +48,14 @@ const nextConfig = {
           { key: 'Strict-Transport-Security',value: 'max-age=63072000; includeSubDomains; preload' },
         ],
       },
+      // ── App Links & Universal Links verification headers ──
+      {
+        source: '/.well-known/(.*)',
+        headers: [
+          { key: 'Content-Type',                value: 'application/json' },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+        ],
+      },
     ];
   },
 };

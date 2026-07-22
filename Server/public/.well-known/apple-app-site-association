@@ -1,0 +1,19 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAMID.com.heartecho.app",
+        "paths": [
+          "*",
+          "/subscribe",
+          "/chat/*",
+          "/profile/*",
+          "/referral/*",
+          "/login",
+          "/signup"
+        ]
+      }
+    ]
+  }
+}

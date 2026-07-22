@@ -10,8 +10,21 @@ const compression = require("compression");
 const mongoSanitize = require("express-mongo-sanitize");
 const User = require("./models/User");
 
+const path = require("path");
+
 dotenv.config();
 connectDB();
+
+// 🔗 Serve .well-known files for Android App Links & iOS Universal Links
+const app = express();
+
+app.use('/.well-known', express.static(path.join(__dirname, 'public/.well-known'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('apple-app-site-association') || filePath.endsWith('assetlinks.json')) {
+      res.setHeader('Content-Type', 'application/json');
+    }
+  }
+}));
 
 // Seed default email templates
 const seedDefaultTemplates = require("./utils/seedTemplates");
@@ -20,8 +33,6 @@ seedDefaultTemplates();
 // Seed default auto campaigns
 const seedAutoCampaigns = require("./utils/seedAutoCampaigns");
 seedAutoCampaigns();
-
-const app = express();
 
 // Trust reverse proxy (e.g. Render, Cloudflare) to get real client IP for rate limiting
 app.set("trust proxy", 1);
