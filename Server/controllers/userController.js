@@ -13,6 +13,7 @@ const axios = require("axios");
 const DeletedAccount = require("../models/DeletedAccount");
 const ReferralCreator = require("../models/ReferralCreator");
 const { getCityFromCoordinates } = require("../utils/geocoding");
+const { sendSubscriptionEmail } = require("../config/emailSender");
 const jwt = require("jsonwebtoken");
 const aiController = require("./aiController");
 
@@ -1380,110 +1381,24 @@ exports.paymentSave = async (req, res) => {
       }
     }
 
-    // 🚀 APPLE-STYLE DARK THEME EMAIL TEMPLATE
-    const planName = rupeesNum === 99 || rupeesNum === 1.49 ? "Monthly" : 
+    // 🚀 RESEND SUBSCRIPTION EMAIL TEMPLATE
+    const planName = rupeesNum === 99 || rupeesNum === 1.49 ? "Premium Monthly" : 
                     (rupeesNum === 1499 || rupeesNum === 19 ? "Ultimate Yearly" : "Premium Yearly");
     const currencySymbol = payment.currency === "USD" ? "$" : "₹";
     const amountStr = `${currencySymbol}${payment.rupees}`;
-    
-    // Localization for footer text
-    const footerText = payment.currency === "USD" 
-      ? `Still cheaper than your daily coffee (${currencySymbol}${(payment.rupees/365).toFixed(2)}/day).`
-      : `Still cheaper than your daily cutting chai (₹${(payment.rupees/365).toFixed(2)}/day).`;
+    const paymentMethod = payment.currency === "USD" ? "Card / Online" : "UPI (Razorpay)";
 
-    const emailHTML = `
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    /* Apple System Font Stack */
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
-      background-color: #000000;
-      margin: 0;
-      padding: 0;
-      -webkit-font-smoothing: antialiased;
-    }
-  </style>
-</head>
-<body>
-  <div style="max-width: 600px; margin: 20px auto; background-color: #0a0a0a; border-radius: 20px; overflow: hidden; border: 1px solid #1c1c1e; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-    
-    <div style="background: linear-gradient(145deg, #ff2e95 0%, #764ba2 100%); padding: 50px 20px; text-align: center;">
-      <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">HeartEcho</h1>
-      <p style="color: rgba(255,255,255,0.8); margin-top: 8px; font-size: 17px; font-weight: 400;">Your Premium Access is Active</p>
-    </div>
-
-    <div style="padding: 40px 30px;">
-      <h2 style="color: #ffffff; margin-top: 0; font-size: 24px; font-weight: 600;">Welcome to the Inner Circle 🎉</h2>
-      
-      <p style="color: #8e8e93; font-size: 16px; line-height: 1.5; margin-bottom: 25px;">
-        Hi <strong style="color: #ffffff;">${existingUser.name || 'Friend'}</strong>,
-      </p>
-      
-      <p style="color: #8e8e93; font-size: 16px; line-height: 1.5;">
-        Your payment has been confirmed. You now have full, unrestricted access to your AI companions with <strong style="color: #ffffff;">Deep Memory</strong> and <strong style="color: #ffffff;">Unfiltered Mode</strong> enabled.
-      </p>
-
-      <div style="background-color: #1c1c1e; border-radius: 16px; padding: 24px; margin: 32px 0;">
-        <p style="color: #ff2e95; font-size: 13px; font-weight: 700; text-transform: uppercase; margin-top: 0; margin-bottom: 16px; letter-spacing: 1px;">Subscription Details</p>
-        
-        <table style="width: 100%; border-collapse: collapse;">
-          <tr style="border-bottom: 1px solid #2c2c2e;">
-            <td style="padding: 12px 0; color: #8e8e93; font-size: 15px;">Plan Name</td>
-            <td style="padding: 12px 0; color: #ffffff; font-size: 15px; text-align: right; font-weight: 500;">${planName}</td>
-          </tr>
-          <tr style="border-bottom: 1px solid #2c2c2e;">
-            <td style="padding: 12px 0; color: #8e8e93; font-size: 15px;">Amount Paid</td>
-            <td style="padding: 12px 0; color: #ffffff; font-size: 15px; text-align: right; font-weight: 500;">${amountStr}</td>
-          </tr>
-          <tr style="border-bottom: 1px solid #2c2c2e;">
-            <td style="padding: 12px 0; color: #8e8e93; font-size: 15px;">Valid Until</td>
-            <td style="padding: 12px 0; color: #ffffff; font-size: 15px; text-align: right; font-weight: 500;">${expiryDate.toLocaleDateString(payment.currency === 'USD' ? 'en-US' : 'en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</td>
-          </tr>
-          <tr>
-            <td style="padding: 12px 0; color: #8e8e93; font-size: 15px;">Transaction ID</td>
-            <td style="padding: 12px 0; color: #8e8e93; font-size: 12px; text-align: right; font-family: 'SF Mono', Menlo, monospace;">${transaction_id}</td>
-          </tr>
-        </table>
-      </div>
-
-      <div style="margin-bottom: 40px;">
-        <p style="text-align: center; color: #8e8e93; font-size: 13px; margin-bottom: 20px;">FEATURES NOW LIVE:</p>
-        <div style="text-align: center;">
-          <span style="display: inline-block; background: #2c2c2e; color: #ffffff; padding: 6px 14px; border-radius: 8px; font-size: 13px; margin: 4px; font-weight: 500;">🧠 Deep Memory</span>
-          <span style="display: inline-block; background: #2c2c2e; color: #ffffff; padding: 6px 14px; border-radius: 8px; font-size: 13px; margin: 4px; font-weight: 500;">🔞 Unfiltered Chat</span>
-          <span style="display: inline-block; background: #2c2c2e; color: #ffffff; padding: 6px 14px; border-radius: 8px; font-size: 13px; margin: 4px; font-weight: 500;">📸 Private Media</span>
-        </div>
-      </div>
-
-      <div style="text-align: center;">
-        <a href="https://heartecho.in/chatbox" 
-           style="background-color: #ffffff; color: #000000; padding: 16px 45px; text-decoration: none; font-size: 17px; font-weight: 600; border-radius: 30px; display: inline-block; transition: transform 0.2s ease;">
-          Start Chatting Now
-        </a>
-      </div>
-
-      <p style="text-align: center; color: #48484a; font-size: 13px; margin-top: 40px; font-style: italic;">
-        ${footerText}
-      </p>
-    </div>
-
-    <div style="background-color: #000000; padding: 30px; text-align: center; border-top: 1px solid #1c1c1e;">
-      <p style="color: #636366; font-size: 12px; line-height: 1.6; margin: 0;">
-        You received this because you subscribed to HeartEcho AI.<br>
-        Made with ❤️ in India for the world.<br>
-        © 2026 HeartEcho AI. All rights reserved.
-      </p>
-    </div>
-  </div>
-</body>
-</html>
-    `;
-
-    // Send email (don't await - let it run in background)
-    sendEmail(existingUser.email, `✨ Payment Confirmed - HeartEcho ${planName} Plan`, emailHTML)
-      .catch(err => console.log('Email sending failed:', err));
+    // Send email using Resend
+    sendSubscriptionEmail({
+      to: existingUser.email,
+      userName: existingUser.name || "",
+      planName,
+      startDate: new Date(),
+      expiryDate,
+      paymentMethod,
+      amountStr,
+      transactionId: transaction_id || ""
+    }).catch(err => console.error('Subscription email sending failed:', err));
 
     res.status(201).json({
       success: true,
@@ -1661,8 +1576,27 @@ exports.razorpayWebhook = async (req, res) => {
               });
             }
           }
-        } catch (err) {}
+        } catch (err) {
+          console.error("Referral tracking error in webhook:", err);
+        }
       }
+
+      // 🚀 Send Subscription Email via Resend
+      const planNameWebhook = subscriptionTier === "yearly_pro" ? "Ultimate Yearly" : (subscriptionTier === "yearly" ? "Premium Yearly" : "Premium Monthly");
+      const currencySymbolWebhook = currency === "USD" ? "$" : "₹";
+      const amountStrWebhook = `${currencySymbolWebhook}${rupeesNum}`;
+      const paymentMethodWebhook = paymentEntity.method ? `UPI / Razorpay (${paymentEntity.method.toUpperCase()})` : "UPI / Razorpay";
+
+      sendSubscriptionEmail({
+        to: existingUser.email,
+        userName: existingUser.name || "",
+        planName: planNameWebhook,
+        startDate: new Date(),
+        expiryDate,
+        paymentMethod: paymentMethodWebhook,
+        amountStr: amountStrWebhook,
+        transactionId: transaction_id || ""
+      }).catch(err => console.error('Subscription email sending failed in webhook:', err));
     }
     
     res.status(200).send('OK');

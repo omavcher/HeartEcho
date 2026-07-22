@@ -16,7 +16,6 @@ async function sendEmail(to, otp, type = "login") {
         const { data, error } = await resend.emails.send({
             from: "HeartEcho <security@heartecho.in>", 
             to: [to],
-            // UX trick: Putting the OTP first allows users to see the code directly from their phone's lock screen notification
             subject: subject,
             html: `
             <!DOCTYPE html>
@@ -26,7 +25,6 @@ async function sendEmail(to, otp, type = "login") {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <style>
                     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
-                    
                     body {
                         font-family: 'DM Sans', -apple-system, sans-serif;
                         background-color: #120524;
@@ -116,10 +114,286 @@ async function sendEmail(to, otp, type = "login") {
         return data;
 
     } catch (error) {
-        // Catch and log any errors from Resend
         console.error("Failed to send OTP email:", error);
         throw error;
     }
 }
 
+/**
+ * Send Subscription Confirmation Email via Resend
+ * 100% Inline CSS & Table Layout for perfect mobile and desktop client compatibility.
+ */
+async function sendSubscriptionEmail({ 
+    to, 
+    userName = "",
+    planName = "Premium Plan", 
+    startDate, 
+    expiryDate, 
+    paymentMethod = "Online Payment", 
+    amountStr = "₹99.00",
+    transactionId = ""
+}) {
+    if (!to) {
+        throw new Error("Recipient email 'to' is required for sendSubscriptionEmail");
+    }
+
+    const subject = `✨ Subscription Successful - HeartEcho ${planName}`;
+    
+    // Robust date formatting helper
+    const formatDate = (d) => {
+        if (!d) return "N/A";
+        const dateObj = d instanceof Date ? d : new Date(d);
+        if (isNaN(dateObj.getTime())) return String(d);
+        return dateObj.toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
+    };
+
+    const startDateFormatted = formatDate(startDate || new Date());
+    const expiryDateFormatted = formatDate(expiryDate);
+    const greetingText = userName ? `Hi <strong style="color: #ffffff;">${userName}</strong>, ` : '';
+
+    const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Successful - HeartEcho</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #09090b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #ffffff; -webkit-font-smoothing: antialiased;">
+
+<!-- Outer Container Table -->
+<table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #09090b; width: 100%; margin: 0; padding: 20px 10px;">
+    <tr>
+        <td align="center">
+            
+            <!-- Pre-header Table -->
+            <table width="100%" max-width="580" border="0" cellpadding="0" cellspacing="0" role="presentation" style="max-width: 580px; margin-bottom: 12px;">
+                <tr>
+                    <td align="left" style="font-size: 12px; color: #a1a1aa; padding: 0 4px;">
+                        Thank you for choosing HeartEcho 💖
+                    </td>
+                    <td align="right" style="font-size: 12px; color: #ff70a6; padding: 0 4px;">
+                        <a href="https://heartecho.in/profile?setting=subscription" style="color: #ff70a6; text-decoration: underline;">View in browser</a>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Main Card Table -->
+            <table width="100%" max-width="580" border="0" cellpadding="0" cellspacing="0" role="presentation" style="max-width: 580px; background-color: #121214; border-radius: 20px; border: 1px solid #242429; padding: 30px 24px;">
+                
+                <!-- Logo Section -->
+                <tr>
+                    <td align="center" style="padding-bottom: 30px;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation">
+                            <tr>
+                                <td align="center">
+                                    <div style="font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: 1px;">
+                                        <span style="color: #ff3385;">❤️</span> HEART<span style="color: #ff3385;">ECHO</span>
+                                    </div>
+                                    <div style="font-size: 12px; color: #a1a1aa; margin-top: 4px;">Your AI Companion, Always With You</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Hero Section (2-Column Table) -->
+                <tr>
+                    <td style="padding-bottom: 30px;">
+                        <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
+                            <tr>
+                                <td valign="middle" align="left" style="padding-right: 10px;">
+                                    <div style="font-size: 28px; line-height: 1.25; font-weight: 700; color: #ffffff; margin-bottom: 12px;">
+                                        Subscription<br><span style="color: #ff3385;">Successful! 🎉</span>
+                                    </div>
+                                    <div style="font-size: 14px; line-height: 1.5; color: #a1a1aa;">
+                                        ${greetingText}thank you for upgrading to <br><span style="color: #ff70a6; font-weight: 600;">HeartEcho ${planName}</span>. You now have full, unrestricted access to all premium features.
+                                    </div>
+                                </td>
+                                <td valign="middle" align="right" width="130" style="width: 130px;">
+                                    <img src="https://cdn.heartecho.in/Promotion%20And%20Hosting%20Datas/924ffb7e-e2ae-4f51-a65c-5196a4fb802d.png" width="120" style="width: 120px; height: auto; border-radius: 12px; display: block; border: 0;" alt="Subscription Success">
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Section Title: Subscription Details -->
+                <tr>
+                    <td align="left" style="font-size: 16px; font-weight: 700; color: #ffffff; padding-bottom: 12px;">
+                        Subscription Details
+                    </td>
+                </tr>
+
+                <!-- Details Box -->
+                <tr>
+                    <td style="padding-bottom: 30px;">
+                        <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #1c1c1e; border-radius: 14px; border-collapse: separate; border-spacing: 0;">
+                            
+                            <!-- Plan -->
+                            <tr>
+                                <td align="left" style="padding: 14px 16px; color: #a1a1aa; font-size: 14px; border-bottom: 1px solid #2c2c2e;">
+                                    <span style="color: #ff3385; margin-right: 8px;">ℹ️</span> Plan
+                                </td>
+                                <td align="right" style="padding: 14px 16px; color: #ff70a6; font-size: 14px; font-weight: 600; border-bottom: 1px solid #2c2c2e;">
+                                    ${planName}
+                                </td>
+                            </tr>
+
+                            <!-- Start Date -->
+                            <tr>
+                                <td align="left" style="padding: 14px 16px; color: #a1a1aa; font-size: 14px; border-bottom: 1px solid #2c2c2e;">
+                                    <span style="color: #ff3385; margin-right: 8px;">📅</span> Start Date
+                                </td>
+                                <td align="right" style="padding: 14px 16px; color: #ffffff; font-size: 14px; font-weight: 500; border-bottom: 1px solid #2c2c2e;">
+                                    ${startDateFormatted}
+                                </td>
+                            </tr>
+
+                            <!-- Next Billing Date -->
+                            <tr>
+                                <td align="left" style="padding: 14px 16px; color: #a1a1aa; font-size: 14px; border-bottom: 1px solid #2c2c2e;">
+                                    <span style="color: #ff3385; margin-right: 8px;">🔄</span> Next Billing Date
+                                </td>
+                                <td align="right" style="padding: 14px 16px; color: #ffffff; font-size: 14px; font-weight: 500; border-bottom: 1px solid #2c2c2e;">
+                                    ${expiryDateFormatted}
+                                </td>
+                            </tr>
+
+                            <!-- Payment Method -->
+                            <tr>
+                                <td align="left" style="padding: 14px 16px; color: #a1a1aa; font-size: 14px; border-bottom: 1px solid #2c2c2e;">
+                                    <span style="color: #ff3385; margin-right: 8px;">💳</span> Payment Method
+                                </td>
+                                <td align="right" style="padding: 14px 16px; color: #ffffff; font-size: 14px; font-weight: 500; border-bottom: 1px solid #2c2c2e;">
+                                    ${paymentMethod}
+                                </td>
+                            </tr>
+
+                            <!-- Amount Paid -->
+                            <tr>
+                                <td align="left" style="padding: 14px 16px; color: #a1a1aa; font-size: 14px; ${transactionId ? 'border-bottom: 1px solid #2c2c2e;' : ''}">
+                                    <span style="color: #ff3385; margin-right: 8px;">🧾</span> Amount Paid
+                                </td>
+                                <td align="right" style="padding: 14px 16px; color: #ffffff; font-size: 14px; font-weight: 600; ${transactionId ? 'border-bottom: 1px solid #2c2c2e;' : ''}">
+                                    ${amountStr}
+                                </td>
+                            </tr>
+
+                            ${transactionId ? `
+                            <!-- Transaction ID -->
+                            <tr>
+                                <td align="left" style="padding: 14px 16px; color: #a1a1aa; font-size: 14px;">
+                                    <span style="color: #ff3385; margin-right: 8px;">🔢</span> Transaction ID
+                                </td>
+                                <td align="right" style="padding: 14px 16px; color: #a1a1aa; font-size: 12px; font-family: monospace;">
+                                    ${transactionId}
+                                </td>
+                            </tr>
+                            ` : ''}
+
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Section Title: What You Now Get -->
+                <tr>
+                    <td align="left" style="font-size: 16px; font-weight: 700; color: #ffffff; padding-bottom: 14px;">
+                        What You Now Get
+                    </td>
+                </tr>
+
+                <!-- Features Grid (2x2 Table Layout) -->
+                <tr>
+                    <td style="padding-bottom: 30px;">
+                        <table width="100%" border="0" cellpadding="0" cellspacing="8" role="presentation">
+                            <tr>
+                                <!-- Feature 1 -->
+                                <td width="50%" align="center" valign="top" style="background-color: #1c1c1e; border-radius: 12px; padding: 16px 10px;">
+                                    <div style="font-size: 22px; margin-bottom: 6px;">💬</div>
+                                    <div style="font-size: 13px; color: #ffffff; font-weight: 600; line-height: 1.3;">Unlimited<br>Messages</div>
+                                </td>
+                                <!-- Feature 2 -->
+                                <td width="50%" align="center" valign="top" style="background-color: #1c1c1e; border-radius: 12px; padding: 16px 10px;">
+                                    <div style="font-size: 22px; margin-bottom: 6px;">🎙️</div>
+                                    <div style="font-size: 13px; color: #ffffff; font-weight: 600; line-height: 1.3;">Unlimited<br>Voice Chats</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <!-- Feature 3 -->
+                                <td width="50%" align="center" valign="top" style="background-color: #1c1c1e; border-radius: 12px; padding: 16px 10px;">
+                                    <div style="font-size: 22px; margin-bottom: 6px;">🎁</div>
+                                    <div style="font-size: 13px; color: #ffffff; font-weight: 600; line-height: 1.3;">Exclusive<br>Gifts & Rewards</div>
+                                </td>
+                                <!-- Feature 4 -->
+                                <td width="50%" align="center" valign="top" style="background-color: #1c1c1e; border-radius: 12px; padding: 16px 10px;">
+                                    <div style="font-size: 22px; margin-bottom: 6px;">⭐</div>
+                                    <div style="font-size: 13px; color: #ffffff; font-weight: 600; line-height: 1.3;">Priority<br>Support</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- CTA Button -->
+                <tr>
+                    <td align="center" style="padding-bottom: 24px;">
+                        <a href="https://heartecho.in" target="_blank" style="display: block; width: 100%; box-sizing: border-box; background-color: #ff3385; background-image: linear-gradient(135deg, #ff3385 0%, #ff5c9d 100%); color: #ffffff !important; text-align: center; padding: 16px 0; border-radius: 12px; font-size: 16px; font-weight: 700; text-decoration: none;">
+                            Open HeartEcho &nbsp; &rarr;
+                        </a>
+                    </td>
+                </tr>
+
+                <!-- Closing Text -->
+                <tr>
+                    <td align="center" style="font-size: 13px; color: #a1a1aa; line-height: 1.5;">
+                        If you have any questions, feel free to reach out to us.<br>
+                        We're always here for you! 💕
+                    </td>
+                </tr>
+
+            </table>
+
+            <!-- Footer Section -->
+            <table width="100%" max-width="580" border="0" cellpadding="0" cellspacing="0" role="presentation" style="max-width: 580px; margin-top: 20px;">
+                <tr>
+                    <td align="center" style="font-size: 12px; color: #71717a; line-height: 1.6;">
+                        &copy; ${new Date().getFullYear()} HeartEcho. All rights reserved.<br>
+                        HeartEcho Inc. &bull; India
+                    </td>
+                </tr>
+            </table>
+
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>
+    `;
+
+    try {
+        const { data, error } = await resend.emails.send({
+            from: "HeartEcho <security@heartecho.in>",
+            to: [to],
+            subject: subject,
+            html: html
+        });
+
+        if (error) {
+            console.error("Resend Subscription Email Error:", error);
+            throw new Error(error.message || JSON.stringify(error));
+        }
+
+        console.log("✅ Subscription email sent successfully via Resend to:", to);
+        return data;
+    } catch (error) {
+        console.error("Failed to send subscription email:", error);
+        throw error;
+    }
+}
+
+sendEmail.sendSubscriptionEmail = sendSubscriptionEmail;
 module.exports = sendEmail;
+module.exports.sendEmail = sendEmail;
+module.exports.sendSubscriptionEmail = sendSubscriptionEmail;
