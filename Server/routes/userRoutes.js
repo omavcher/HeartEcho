@@ -44,6 +44,8 @@ router.delete("/chats/:chatId/messages/:messageId", authMiddleware, controller.d
 router.post('/payment/save', authMiddleware , controller.paymentSave);
 router.post('/webhook/razorpay', express.raw({type: 'application/json'}), controller.razorpayWebhook);
 router.get('/payment-details', authMiddleware , controller.getPaymentData);
+router.post('/checkout-intent', authMiddleware, controller.trackCheckoutIntent);
+router.post('/payment-failed', authMiddleware, controller.reportPaymentFailure);
 
 
 router.get("/subscription/status", authMiddleware, controller.getSubscriptionStatus);

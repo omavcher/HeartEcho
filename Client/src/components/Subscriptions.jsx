@@ -129,9 +129,14 @@ function SubscriptionContent() {
     };
     if (typeof window !== 'undefined' && localStorage.getItem("token")) fetchUser();
 
-    // Track subscribe page view
-    if (typeof window !== 'undefined' && window.trackAppEvent) {
-      window.trackAppEvent('subscribe_page_view', { page: 'subscribe' });
+    // Track subscribe page view & checkout intent
+    if (typeof window !== 'undefined') {
+      if (window.trackAppEvent) {
+        window.trackAppEvent('subscribe_page_view', { page: 'subscribe' });
+      }
+      axios.post(`${api.Url}/user/checkout-intent`, { planName: 'Explore Subscription Page', platform: 'web' }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      }).catch(() => {});
     }
   }, []);
 
@@ -234,6 +239,11 @@ function SubscriptionContent() {
       if (typeof window !== "undefined" && window.gtag) {
         window.gtag('event', 'payment_initiated', { value: 0, payment_method: 'upi' });
       }
+      // Track checkout intent for specific plan
+      axios.post(`${api.Url}/user/checkout-intent`, { planName: `${plan} Plan`, platform: 'web' }, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).catch(() => {});
+
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || 'rzp_live_TEWBVyfe0Fy4IS',
         amount: amount * 100,

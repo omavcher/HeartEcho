@@ -13,7 +13,8 @@ const axios = require("axios");
 const DeletedAccount = require("../models/DeletedAccount");
 const ReferralCreator = require("../models/ReferralCreator");
 const { getCityFromCoordinates } = require("../utils/geocoding");
-const { sendSubscriptionEmail } = require("../config/emailSender");
+const CheckoutIntent = require("../models/CheckoutIntent");
+const { sendSubscriptionEmail, sendPaymentFailedEmail, sendCheckoutIntentEmail } = require("../config/emailSender");
 const jwt = require("jsonwebtoken");
 const aiController = require("./aiController");
 
@@ -1399,6 +1400,9 @@ exports.paymentSave = async (req, res) => {
       amountStr,
       transactionId: transaction_id || ""
     }).catch(err => console.error('Subscription email sending failed:', err));
+
+    // Mark pending checkout intents as completed
+    await CheckoutIntent.updateMany({ user: existingUser._id, status: "pending" }, { $set: { status: "completed" } }).catch(() => {});
 
     res.status(201).json({
       success: true,
@@ -3645,5 +3649,82 @@ exports.postResetSwipes = async (req, res) => {
   } catch (error) {
     console.error("Error in postResetSwipes:", error);
     return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// 10. Track checkout intent (when user clicks plan / opens pricing modal)
+exports.trackCheckoutIntent = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { planName = "Premium Plan", platform = "web" } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const intent = await CheckoutIntent.findOneAndUpdate(
+      { user: userId, status: "pending" },
+      { planName, platform, createdAt: new Date() },
+      { new: true, upsert: true }
+    );
+
+    res.status(200).json({ success: true, message: "Checkout intent recorded", intent });
+  } catch (error) {
+    console.error("trackCheckoutIntent error:", error);
+    res.status(500).json({ success: false, message: "Error tracking checkout intent", error: error.message });
+  }
+};
+
+// 11. Report payment failure (client error callback)
+exports.reportPaymentFailure = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { planName = "Premium Plan", reason = "Payment declined or cancelled", amountStr = "₹99.00", platform = "web" } = req.body;
+
+    const user = await User.findById(userId);
+    if (user && user.email) {
+      sendPaymentFailedEmail({
+        to: user.email,
+        userName: user.name || "",
+        planName,
+        reason,
+        amountStr,
+        platform
+      }).catch(err => console.error("Error sending payment failure email:", err));
+    }
+
+    res.status(200).json({ success: true, message: "Payment failure reported and email triggered" });
+  } catch (error) {
+    console.error("reportPaymentFailure error:", error);
+    res.status(500).json({ success: false, message: "Error reporting payment failure", error: error.message });
+  }
+};
+
+// 12. Process abandoned checkout intents (Cron / Background Processor)
+exports.processAbandonedCheckoutIntents = async () => {
+  try {
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+    const pendingIntents = await CheckoutIntent.find({
+      status: "pending",
+      createdAt: { $lte: thirtyMinutesAgo }
+    }).populate("user");
+
+    for (const intent of pendingIntents) {
+      if (intent.user && intent.user.email) {
+        if (intent.user.user_type !== "subscriber") {
+          await sendCheckoutIntentEmail({
+            to: intent.user.email,
+            userName: intent.user.name || "",
+            planName: intent.planName || "Premium Plan",
+            platform: intent.platform || "web"
+          }).catch(err => console.error("Abandoned checkout email error:", err));
+        }
+      }
+      intent.status = "email_sent";
+      await intent.save();
+    }
+  } catch (error) {
+    console.error("processAbandonedCheckoutIntents error:", error);
   }
 };
