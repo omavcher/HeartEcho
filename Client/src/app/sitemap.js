@@ -34,6 +34,7 @@ export default async function sitemap() {
     '/best-ai-girlfriend-india',
     '/ai-chat-hindi',
     '/ai-friend-india',
+    '/ai-companion-for-emotional-support',
   ];
 
   const landingRoutes = landingPaths.map((path) => ({
