@@ -6,11 +6,14 @@ export async function GET() {
       apps: [],
       details: [
         {
-          appID: 'TEAMID.com.heartecho.app',
+          appID: 'TEAMID.com.heartecho.ai',
           paths: [
-            '*',
-            '/subscribe',
+            'NOT /ai-sex-chat*',
+            'NOT /hot-*',
+            'NOT /ai-girlfriend-no-filter*',
             '/chat/*',
+            '/subscribe',
+            '/pricing',
             '/profile/*',
             '/referral/*',
             '/login',

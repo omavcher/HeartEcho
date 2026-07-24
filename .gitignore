@@ -17,4 +17,6 @@ serviceAccountKey.json
 !package-lock.json
 !femalePreAIFriend.json
 !malePreAIFriend.json
+!assetlinks.json
+!Client/public/.well-known/assetlinks.json
 Server/config/serviceAccountKey.json

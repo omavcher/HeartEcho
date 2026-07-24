@@ -1,0 +1,37 @@
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+  const assetlinks = [
+    {
+      relation: [
+        'delegate_permission/common.handle_all_urls',
+        'delegate_permission/common.get_login_creds'
+      ],
+      target: {
+        namespace: 'android_app',
+        package_name: 'com.heartecho.ai',
+        sha256_cert_fingerprints: [
+          'D2:34:C3:82:ED:45:41:37:A7:82:8D:52:40:92:06:82:3C:15:6A:C5:EE:9B:AA:9D:2D:C1:61:B1:AB:29:98:F1'
+        ]
+      }
+    },
+    {
+      relation: ['delegate_permission/common.handle_all_urls'],
+      target: {
+        namespace: 'android_app',
+        package_name: 'com.heartecho.app',
+        sha256_cert_fingerprints: [
+          'FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C',
+          '14:6D:E9:7A:AB:16:D2:12:4D:43:97:CE:A9:60:B3:3F:87:C5:BF:39:84:82:1C:89:80:79:F3:D5:19:D9:D2:6C'
+        ]
+      }
+    }
+  ];
+
+  return NextResponse.json(assetlinks, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*'
+    }
+  });
+}
